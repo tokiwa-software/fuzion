@@ -407,7 +407,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
       {
         return this;
       }
-    else if (this == SourcePosition.notAvailable)
+    else if (isBuiltIn())
       {
         return this;
       }

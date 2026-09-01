@@ -34,15 +34,15 @@ reg_issue6263 =>
   data := input.map action
   action(s String) =>
     s3 := s.split " "
-    action s3[0] s3[1].parse_i32.or_panic (s3[2].substring 2 8).parse_i32_hex.or_panic
-  action(dir String, len i32, col i32) is
+    action s3[0] s3[1].parse_i64.or_panic (s3[2].substring 2 8).parse_i64_hex.or_panic
+  action(dir String, len i64, col i64) is
 
   dirs := "UDLR"
   dx := [0,0,-1,+1]
   dy := [-1,+1,0,0]
 
   part1 =>
-    lm.instate_self i32 ()->
+    lm.instate_self i64 ()->
       cell(n lm.new String) ref is
       area := array2 1000 1000 _,_->(cell (lm.env.new $"."))
       say "start: "
@@ -67,7 +67,7 @@ reg_issue6263 =>
             say ""
         show
         say "fill: "
-        fill(x,y i32) unit =>
+        fill(x,y i64) unit =>
           if (min_x <= x <= max_x &&
               min_y <= y <= max_y) then
             if area[_,x,y].n.get = "." then

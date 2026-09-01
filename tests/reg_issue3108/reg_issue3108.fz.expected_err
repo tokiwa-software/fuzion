@@ -9,7 +9,7 @@ To solve this, you may want to consider converting the redefined field into a ro
 
 
 --CURDIR--/reg_issue3108.fz:34:11: error 2: Redefinition of non-argument fields is forbidden.
-  b(redef field i32,           # should flag an error: redefining field forbidden
+  b(redef field i64,           # should flag an error: redefining field forbidden
 ----------^^^^^
 The field being redefined: --CURDIR--/reg_issue3108.fz:31:5:
     field := 3

@@ -74,11 +74,11 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   # This is redefined and implemented using `typed_foldf` to avoid creation of
   # boxed `Typed_Value`s.
   #
-  public redef count i32
+  public redef count i64
   =>
     count_elements : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
-                     container.typed_applicator i32 is
-      public redef apply(A type, e i32, v A) i32 => e + 1
+                     container.typed_applicator i64 is
+      public redef apply(A type, e i64, v A) i64 => e + 1
 
     typed_foldf 0 count_elements
 
@@ -318,10 +318,10 @@ public Types ref : Sequence Type is
   # This is redefined and implemented using `type_foldf` to avoid creation of
   # boxed `Type`s.
   #
-  public redef count i32
+  public redef count i64
   =>
-    count_elements : container.type_applicator i32 is
-      public redef apply(A type, e i32) i32 => e + 1
+    count_elements : container.type_applicator i64 is
+      public redef apply(A type, e i64) i64 => e + 1
 
     type_foldf 0 count_elements
 

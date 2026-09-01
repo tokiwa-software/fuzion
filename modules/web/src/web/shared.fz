@@ -56,7 +56,7 @@ module read_reponse(LM type : mutate) ! LM =>
 #
 module write_request(LM type : mutate, rm http.request_message) ! LM =>
   (io.buffered LM).Writer.env
-    .write (rm.bytes i32.max)
+    .write (rm.bytes i64.max)
     .bind _->
       (io.buffered LM).Writer.env.flush
 
@@ -135,7 +135,7 @@ module do_request(family net.family.val,
         c.with _ net_lm ()->
           if use_https
             ssl_lm ! ()->
-              wolfssl _ net_lm ssl_lm ((write_request ssl_lm rm).bind _->(read_reponse ssl_lm))
+              wolfssl _ net_lm ssl_lm host ((write_request ssl_lm rm).bind _->(read_reponse ssl_lm))
           else
             (write_request net_lm rm).bind _->(read_reponse net_lm)
 

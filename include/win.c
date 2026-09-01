@@ -1180,6 +1180,19 @@ void fzE_cnd_wait(void *cnd, void *mtx) {
     }
 }
 
+void fzE_cnd_timedwait(void *cnd, void *mtx, int64_t time_ns) {
+  DWORD ms = (DWORD)(time_ns / 1000000);
+  BOOL ok = SleepConditionVariableCS(
+      (CONDITION_VARIABLE *)cnd,
+      (CRITICAL_SECTION *)mtx,
+      ms);
+  if (!ok && GetLastError() != ERROR_TIMEOUT)
+    {
+      fprintf(stderr, "*** SleepConditionVariableCS failed\n");
+      exit(EXIT_FAILURE);
+    }
+}
+
 void fzE_cnd_destroy(void *cnd) {
   // Windows CONDITION_VARIABLEs do not need explicit destruction.
   fzE_free(cnd);

@@ -610,6 +610,39 @@ public class Loop extends ANY
   }
 
 
+   /**
+   * Create an actual argument that passes the value of an index var to the tail
+   * recursive loop feature.
+   *
+   * The source position and range are taken from the expression that defines
+   * the value such that error messages, e.g., for failed type inference, refer
+   * to that expression and not to the index variable's name.
+   *
+   * @param f an index var (for the initial value) or the corresponding feature
+   * from _nextValues (for the value used in the next iteration)
+   *
+   * @param prefix ITER_ARG_PREFIX_INIT or ITER_ARG_PREFIX_NEXT
+   *
+   * @param name the base name of the index var
+   *
+   * @param fallback the position to be used in case the value of f does not
+   * correspond to an expression in the source code, e.g., for an iterating
+   * index var ('for x in s') whose Impl was replaced in addIterators.
+   */
+  private Call iterArgActual(Feature f, String prefix, String name, SourcePosition fallback)
+  {
+    var e = f.impl().expr();
+    var useE = e != null && !e.pos().isBuiltIn();
+    var result = new Call(useE ? e.pos() : fallback, prefix + name);
+    // NYI: CLEANUP: set source range/pos in constructor call
+    if (useE && e.sourceRange() instanceof SourceRange r)
+      {
+        result.setSourceRange(r);
+      }
+    return result;
+  }
+
+
   /**
    * Helper routine to determine the formal and actual arguments to be passed to the tail recursive loop
    *
@@ -636,8 +669,8 @@ public class Loop extends ANY
           (f.impl()._kind != Impl.Kind.FieldIter);
 
         var p = f.pos();
-        var ia = new Call(p, FuzionConstants.ITER_ARG_PREFIX_INIT + f.baseName());
-        var na = new Call(p, FuzionConstants.ITER_ARG_PREFIX_NEXT + f.baseName());
+        var ia = iterArgActual(f                 , FuzionConstants.ITER_ARG_PREFIX_INIT, f.baseName(), p);
+        var na = iterArgActual(_nextValues.get(i), FuzionConstants.ITER_ARG_PREFIX_NEXT, f.baseName(), p);
         var type = (f.impl()._kind == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
           : _indexVars.get(i).returnType().functionReturnType();

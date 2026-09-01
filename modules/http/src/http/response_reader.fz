@@ -58,7 +58,7 @@ public read_response(
 
     major, minor := parse_http_version sl[0]
 
-    code := sl[1].parse_i32.or_cause unit _->(error "invalid status code '$(sl[1])")
+    code := sl[1].parse_i64.or_cause unit _->(error "invalid status code '$(sl[1])")
 
     reason := sl[2]
 

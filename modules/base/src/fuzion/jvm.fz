@@ -45,7 +45,7 @@ private:public jvm : effect is
   public type.use(T type, option_strings array String, code ()->T) T =>
     fuzion.jvm ! ()->
       # NYI: UNDER DEVELOPMENT: return error code
-      res := fuzion.jvm.env.create_jvm (option_strings.map (str -> fuzion.sys.c_string str)).as_array.internal_array.data option_strings.count
+      res := fuzion.jvm.env.create_jvm (option_strings.map (str -> fuzion.sys.c_string str)).as_array.internal_array.data option_strings.count.as_i32
       if res != 0
         panic "JVM failed to start, error code $(res)"
       else

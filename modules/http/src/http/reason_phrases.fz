@@ -22,13 +22,13 @@
 # -----------------------------------------------------------------------
 
 # for caching the reason_phrases Map on a per thread level
-reason_phrases_cache_key(val container.Map i32 String) is
+reason_phrases_cache_key(val container.Map i64 String) is
 
 # Map of standard http reason phrases
 #
 # https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
 #
-public type.reason_phrases container.Map i32 String =>
+public type.reason_phrases container.Map i64 String =>
   rp => [
     (100, "Continue"),
     (101, "Switching Protocols"),

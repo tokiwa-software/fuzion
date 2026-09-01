@@ -184,7 +184,7 @@ public class SourceModule extends Module implements SrcModule
             if (s instanceof Feature f)
               {
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
-                if (expr.size() == 1 && !f.isField())
+                if (expr.size() == 1 && !f.isField() && f._qname.size()==1)
                   {
                     res = f.baseName();
                   }

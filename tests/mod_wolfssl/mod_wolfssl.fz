@@ -33,13 +33,15 @@ mod_wolfssl =>
 
   net_lm ! ()->
 
-    match net.client net.family.ipv4 net.protocol.tcp "fuzion-lang.dev" 443
+    host := "fuzion-lang.dev"
+
+    match net.client net.family.ipv4 net.protocol.tcp host 443
       error => Exit.env.exit 1
       c net.connection =>
         c.with _ net_lm ()->
           ssl_lm ! ()->
-            wolfssl _ net_lm ssl_lm ()->
-              check ("GET / HTTP/1.1\r\nHost: fuzion-lang.dev\r\n\r\n".write_to ssl_lm).ok
+            wolfssl _ net_lm ssl_lm host ()->
+              check ("GET / HTTP/1.1\r\nHost: $(host)\r\n\r\n".write_to ssl_lm).ok
               check (io.buffered ssl_lm).Writer.env.flush.ok
               match (io.buffered ssl_lm).read_line
                 str String => say <| str.substring 0 8

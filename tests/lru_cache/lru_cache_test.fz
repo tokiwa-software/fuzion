@@ -69,7 +69,7 @@ lru_cache_test =>
     op_order ordering) unit
   =>
     evictions i64 := 3
-    start := i64.one
+    start := 1
     end   := (cap+evictions)
     half  := end/2
     elems := start..end
@@ -87,7 +87,7 @@ lru_cache_test =>
       say "$c\n"
 
       for e in elems
-          i in i64.zero..
+          i in 0..
       do
         check (i != 0) ^ c.is_empty
         check (i < cap && c.size = i) || (i >= cap && c.size = cap)
@@ -111,7 +111,7 @@ lru_cache_test =>
       check test c del -1 nil .is_nil
 
   for op in (id (array operation) [get, del]) do
-    for cap in [i64.one,2,3,6] do
+    for cap in [1,2,3,6] do
       for ord in (id (array ordering) [original, reverse, split]) do
         put_then_get_or_del cap op ord
 
@@ -150,7 +150,7 @@ lru_cache_test =>
   random(capacity i64, steps i32, seed u64) unit =>
 
     key_range := capacity.as_i32 * 2
-    val_range := 100
+    val_range := i32 100
 
     Random.simple seed ()->
       m : mutate is
@@ -177,7 +177,7 @@ lru_cache_test =>
           exp_ord <- [k] ++ exp_ord
           evict_exp
 
-        for i in 0..steps
+        for i in (i32 0)..steps
             op := Random.env.next_i32 3
             k  := Random.env.next_i32 key_range
         do

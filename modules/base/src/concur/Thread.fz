@@ -86,7 +86,7 @@ is
       safety: 0 ≤ priority0 ≤ 99
   =>
     mtx.synchronized (outcome unit) _ ()->
-      p :=
+      p i32 :=
         match policy0
           concur.scheduling_policy.sched_other => 0
           concur.scheduling_policy.sched_fifo => 1
@@ -188,7 +188,7 @@ is
   # Return early from park in case timeout was reached.
   #
   # result is `true`  if this returns due to a call to `unpark`, it is `false` if there
-  # was no timeout.
+  # was a timeout.
   #
   module park_until(C type : time.Clock,
                     F type : ()->unit,

@@ -101,9 +101,9 @@ is
     if capacity >= new_capacity && (length=capacity || !data[length])
       data
     else
-      internal := fuzion.sys.internal_array_init (container.slot T) new_capacity.as_i32
-      for x in 0..(new_capacity.as_i32-1) do
-        internal[x] := if x < capacity.as_i32 then data[x]
+      internal := fuzion.sys.internal_array_init (container.slot T) new_capacity
+      for x in 0..(new_capacity-1) do
+        internal[x] := if x < capacity then data[x]
                        else                 container.unused
       internal
 
@@ -128,7 +128,7 @@ is
       safety: (length+1).highest_one_bit < i32.max.highest_one_bit.as_i64
   =>
     data0 := realloc (capacity>length ? capacity : (length+1).highest_one_bit*2)
-    data0[length.as_i32] := v
+    data0[length] := v
     expanding_array data0 length+1
 
 
@@ -154,12 +154,12 @@ is
     new_length := length + n
     data0 := realloc (capacity >= new_length ? capacity : new_length.highest_one_bit*2)
     for
-      i in i64.zero..(n-1)
+      i in 0..(n-1)
     do
       data0[(length+i).as_i32] := container.reserved
     (expanding T data0 length n).instate_self filler
     for
-      i in i64.zero..(n-1)
+      i in 0..(n-1)
     do
       match data0[length+i]
         container.reserved => panic "container.expanding_array.expand $n filler did not init element at $(length+i) (=$length+$i)"
@@ -245,8 +245,8 @@ is
     pre
       debug: initial_capacity >= 0
   =>
-    internal := fuzion.sys.internal_array_init (container.slot T) initial_capacity.as_i32
-    for x in 0..(internal.length-1) do
+    internal := fuzion.sys.internal_array_init (container.slot T) initial_capacity.as_i64
+    for x in 0..(internal.length.as_i64-1) do
       internal[x] := container.unused
     container.expanding_array T internal 0
 
@@ -327,7 +327,7 @@ is
       safety: length <= i.as_i64 < length+n
   =>
     replace
-    data[i.as_i32] := v
+    data[i] := v
 
 
   # has element at index `i` been set already?  This is true after an explicit
@@ -336,7 +336,7 @@ is
   #
   public has(I type : integer, i I) bool
     pre
-      safety: i64.zero <= i.as_i64 < length+n
+      safety: 0 <= i.as_i64 < length+n
   =>
     if i.as_i64 < length
       true
@@ -353,7 +353,7 @@ is
   #
   public get(I type : integer, i I) T
     pre
-      safety: i64.zero <= i.as_i64 < length+n
+      safety: 0 <= i.as_i64 < length+n
       debug: has i
   =>
     replace
@@ -364,7 +364,7 @@ is
   #
   public index [](I type : integer, i I) T
     pre
-      safety: i64.zero <= i.as_i64 < length+n
+      safety: 0 <= i.as_i64 < length+n
       debug: has i.as_i32
   =>
     get i.as_i32

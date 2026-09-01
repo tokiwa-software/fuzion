@@ -117,14 +117,14 @@ public i8(public val i8) : num.wrap_around, property.interval, java_primitive is
 
   # count the number of trailing zeros in this integer.
   #
-  public trailing_zeros i32 =>
+  public trailing_zeros i64 =>
     val.cast_to_u8.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public redef ones_count i32 =>
+  public redef ones_count i64 =>
     val.cast_to_u8.ones_count
 
 

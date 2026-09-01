@@ -83,7 +83,7 @@ public Process ref : effect is
 
         res_data := sys.internal_array_init i64 4
 
-        if (fzE_process_create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.data) = -1
+        if (fzE_process_create arg_data.internal_array.data arg_data.count.as_i32 env_data.internal_array.data env_data.count.as_i32 res_data.data) = -1
           error "creating process $n" fzE_last_error
         else
           res := os.process res_data[0] res_data[1] res_data[2] res_data[3] n args
@@ -125,7 +125,7 @@ public Process ref : effect is
               if r = -1 && elapsed_time > timeout
                 error "Waiting for process with id $(p.pid) timed out."
               else if r < -100
-                sig := (r.abs - 100).as_i32
+                sig := (r.abs - 100)
                 sig_name := os.signal.from_number sig .bind s->" ($(s.as_string))" .or_default ""
                 error "Process $(p.pid) was terminated by signal $sig$sig_name"
               else
@@ -135,7 +135,7 @@ public Process ref : effect is
       # send signal to process
       #
       public redef send_signal(p os.process, sig os.signal) outcome unit =>
-        fzE_send_signal p.pid sig.as_i32 = 0 ? unit : error "sending signal to process $(p.pid)" fzE_last_error
+        fzE_send_signal p.pid sig.as_i64.as_i32 = 0 ? unit : error "sending signal to process $(p.pid)" fzE_last_error
 
 
       # the processes that were registered

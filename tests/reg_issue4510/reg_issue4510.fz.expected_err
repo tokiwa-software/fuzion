@@ -3,7 +3,7 @@
 x := true; _ := array 3 i->i=x
 ---------------------------^^^
 Types inferred for first type parameter 'T':
-'i32' found at --CURDIR--/reg_issue4510.fz:24:28:
+'i64' found at --CURDIR--/reg_issue4510.fz:24:28:
 x := true; _ := array 3 i->i=x
 ---------------------------^
 'bool' found at --CURDIR--/reg_issue4510.fz:24:30:

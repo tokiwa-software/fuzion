@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-String.mysubstring(from, to i32) String
+String.mysubstring(from, to i64) String
   pre
     debug: 0 <= from <= to <= String.this.byte_count
   =>

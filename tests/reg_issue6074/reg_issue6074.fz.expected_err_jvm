@@ -4,8 +4,8 @@ Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
-((array i32).slice#3 i32).array_slice.pre slice i32 at {base.fum}/Sequence.fz:353
-((array i32).slice#3 i32).array_slice.precall slice i32 at {base.fum}/Sequence.fz:351
+((array i64).slice#3 i64).array_slice.pre slice i64 at {base.fum}/Sequence.fz:353
+((array i64).slice#3 i64).array_slice.precall slice i64 at {base.fum}/Sequence.fz:351
 reg_issue6074 at --CURDIR--/reg_issue6074.fz:26
 
 *** fatal errors encountered, stopping.

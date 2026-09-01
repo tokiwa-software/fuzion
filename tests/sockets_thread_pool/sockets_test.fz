@@ -31,7 +31,7 @@ sockets_thread_pool_test is
                                     (u16 0),
                                     (u16 0)]
 
-  set_server_port(i i32, new u16) =>
+  set_server_port(i i64, new u16) =>
     for r := servers.read
     while !(servers.compare_and_set r (r.put i new))
 
@@ -94,7 +94,7 @@ sockets_thread_pool_test is
 
   # client
   #
-  client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
+  client(family net.family.val, protocol net.protocol.val, host String, port u16, num i64) =>
 
     match net.client family protocol host port
       error =>

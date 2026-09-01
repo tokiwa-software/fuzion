@@ -28,31 +28,67 @@ lm : mutate is
 # NYI: UNDER DEVELOPMENT: these are unsupported by fzextract
 #
 memcpy(dest Native_Ref, src lm.array u8, sz i64) Native_Ref => native
+wolfSSL_ERR_reason_error_string(err u64) Native_Ref => native
+wolfSSL_CTX_UseSNI(ctx Native_Ref, _type u8, data lm.array u8, size u16) i32 => native
+
+ssl_success => i32 1
+ssl_failure => i32 0
+wolfssl_verify_default => i32 1 << 9
+wolfssl_sni_host_name => u8 0
 
 
 # NYI: UNDER DEVELOPMENT: define effect
-public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, LM2 =>
+#
+# Open a TLS connection using wolfSSL and run `code` within its context.
+#
+# `host` is the name the server's certificate must be valid for.  It is used to
+# enable peer certificate verification and, subsequently, to check the
+# certificate's domain name against the expected host.
+#
+public wolfssl(T type, LM type : mutate, LM2 type: mutate, host String, code ()->T) T ! LM, LM2 =>
 
   c => c lm
 
-  check c.wolfSSL_Init=1
+  check c.wolfSSL_Init=ssl_success
   ctx := c.wolfSSL_CTX_new c.wolfTLSv1_2_client_method
   check !(ffi.is_null ctx)
 
+  # verify the peer's certificate chain against the system's trusted root CAs
+  # and require that the certificate matches the expected `host`.  In case
+  # verification fails, show detailed information about the error.
+  #
+  check c.wolfSSL_CTX_load_system_CA_certs ctx = ssl_success
+
+  lm ! ()->
+    check wolfSSL_CTX_UseSNI ctx wolfssl_sni_host_name (host.as_c_string lm) host.utf8.count.as_u16 = ssl_success
+
+  lmbda : Function i32 i32 Native_Ref is
+    public redef call(preverify_ok i32, store_ctx Native_Ref) i32 =>
+      if preverify_ok = ssl_failure
+        # NYI: BUG: this access of c via outer ref triggers implementation restriction or bug in C backend:
+        # Misuse of native callback detected, outer reference is NULL.
+        # err := c.wolfSSL_X509_STORE_CTX_get_error store_ctx
+        # depth := c.wolfSSL_X509_STORE_CTX_get_error_depth store_ctx
+        err := (c lm).wolfSSL_X509_STORE_CTX_get_error store_ctx
+        depth := (c lm).wolfSSL_X509_STORE_CTX_get_error_depth store_ctx
+        io.Err.env.println "$(ffi.from_native_string (wolfSSL_ERR_reason_error_string err.as_u64)) (error code $err, chain depth $depth)"
+      preverify_ok
+
+  c.wolfSSL_CTX_set_verify ctx wolfssl_verify_default lmbda
 
   c.wolfSSL_CTX_SetIORecv ctx (ssl, buf, sz, ctx)->
     match (io.buffered LM).Reader.env.read
       s Sequence =>
-        (io.buffered LM).Reader.env.discard sz
-        x := (min sz s.count)
+        (io.buffered LM).Reader.env.discard sz.as_i64
+        x := (min sz.as_i64 s.count)
         lm ! ()->
-          _ := memcpy buf (lm.array u8 .from_Sequence s) x.as_i64
-        x
+          _ := memcpy buf (lm.array u8 .from_Sequence s) x
+        x.as_i32
       outcome => Exit.env.exit 1
 
 
   c.wolfSSL_CTX_SetIOSend ctx (ssl, buf, sz, ctx)->
-    arr := ffi.from_native_array u8 buf sz
+    arr := ffi.from_native_array u8 buf sz.as_i64
     ((io.buffered LM).Writer.env.write arr) .or_panic
     (io.buffered LM).Writer.env.flush .or_panic
     sz
@@ -61,13 +97,20 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
   ssl := c.wolfSSL_new ctx
   check !(ffi.is_null ssl)
 
+  # check that the certificate presented by the server is valid for `host`.
+  # This must be done before the handshake is performed (i.e. before the first
+  # read/write on the ssl object).
+  #
+  lm ! ()->
+    check c.wolfSSL_check_domain_name ssl (host.as_c_string lm) = ssl_success
+
 
   wolf_ssl_reader : (io.buffered LM2).Reader is
 
-    public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
+    public redef read(max_count i64) choice (Sequence u8) io.end_of_file error =>
       x choice (Sequence u8) io.end_of_file error =>
         arr := lm.array u8 .new max_count _->0
-        res := c.wolfSSL_read ssl arr max_count
+        res := c.wolfSSL_read ssl arr max_count.as_i32
         if res = -1
           error "error reading from ssl ($res) $(c.wolfSSL_get_error ssl res)"
         else if res = 0
@@ -81,9 +124,13 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
 
     public redef writer(b Sequence u8) outcome unit =>
       write outcome unit =>
-        res := c.wolfSSL_write ssl (lm.array u8 .from_Sequence b) b.count
-        if res <= 0
+        res := c.wolfSSL_write ssl (lm.array u8 .from_Sequence b) b.count.as_i32
+        if res = ssl_failure
           error "error writing to ssl connection ($res) $(c.wolfSSL_get_error ssl res)"
+        else if res < 0
+          error "error writing to ssl connection ($res)"
+        else
+          check debug: res=b.count.as_i32
       lm ! write
 
 

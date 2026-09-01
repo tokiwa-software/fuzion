@@ -24,20 +24,20 @@
 ex_tree is
   Node(A, B, C type) ref is
     datum A => abstract
-    count i32 => abstract
+    count i64 => abstract
     left B => abstract
     right C => abstract
 
   tree(A type : property.orderable) : choice nil (Node A (tree A) (tree A)) is
 
-    size i32 =>
+    size i64 =>
       tree.this ? nil    => 0
                 | n Node => n.count
 
     private smart (datum A, left, right tree A) tree A =>
       _ : Node A (tree A) (tree A) is
         redef datum A => smart.this.datum
-        redef count i32 => (1 + smart.this.left.size + smart.this.right.size)
+        redef count i64 => (1 + smart.this.left.size + smart.this.right.size)
         redef left tree A => smart.this.left
         redef right tree A => smart.this.right
 
@@ -45,5 +45,5 @@ ex_tree is
     empty(A type : property.orderable) tree A =>
       nil
 
-  x := (trees.empty i32).smart 42 nil nil
+  x := (trees.empty i64).smart 42 nil nil
   say x

@@ -28,7 +28,7 @@ lib_concur_thread_pool =>
   # that add `i` to sum. print result of sum.
   #
   test_1 =>
-    sum := concur.atomic i32 .new 0
+    sum := concur.atomic i64 .new 0
 
     _ := concur.thread_pool 3 ()->
 
@@ -49,9 +49,9 @@ lib_concur_thread_pool =>
     sum := concur.thread_pool 3 ()->
 
       (1..49)
-        .map (i -> concur.thread_pool.env.submit i32 ()->i)
+        .map (i -> concur.thread_pool.env.submit i64 ()->i)
         .map (.get)
-        .fold i32.sum
+        .fold i64.sum
 
     say sum
   test_2
@@ -62,9 +62,9 @@ lib_concur_thread_pool =>
     sum := concur.thread_pool 3 ()->
 
       (1..49)
-        .map (i -> concur.thread_pool.env.submit i32 (() -> time.Nano.env.sleep (time.duration.ms 100); i))
+        .map (i -> concur.thread_pool.env.submit i64 (() -> time.Nano.env.sleep (time.duration.ms 100); i))
         .map (.get)
-        .fold i32.sum
+        .fold i64.sum
 
     say sum
   test_3
@@ -76,7 +76,7 @@ lib_concur_thread_pool =>
       data := (u16 0)..100
 
       # split data
-      parts := data.chunk (data.count.as_f64 / thread_count.as_f64).ceil.as_i32
+      parts := data.chunk (data.count.as_f64 / thread_count.as_f64).ceil.as_i64
 
       # distribute and calculate squares
       fut0 := concur.thread_pool.env.submit (Sequence u16) (() -> parts[0].map i->i*i)

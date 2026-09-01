@@ -52,9 +52,9 @@ is
   public postfix ?? bool => exists
 
 
-  # shorthand postfix operator for '!exists'
+  # shorthand postfix operator for 'or_panic'
   #
-  public postfix !! bool => !exists
+  public postfix ! A ! panic => or_panic
 
 
   # shorthand prefix operator for '!exists'
@@ -102,6 +102,24 @@ is
     switch.this ? v A => v
                 |   B => default
 
+
+
+  # value of a switch, or, if this switch contains a `B`, the
+  # result of `f` applied to that `B`.
+  #
+  # in contrast to `or_else`, `f` receives the `B` value, so this can be
+  # used to handle a failure without a `match`, e.g. to log an error
+  # that cannot be propagated:
+  #
+  # example:
+  #
+  #     (fuzion.sys.fileio.close fd)
+  #       .otherwise Ignored_Failure.env.register_failure
+  #
+  public otherwise(f B -> A) A =>
+    match switch.this
+      a A => a
+      b B => f b
 
 
   # converts switch into a list of either a single element in case

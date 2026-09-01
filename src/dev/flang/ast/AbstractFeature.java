@@ -1802,6 +1802,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         _genericsAsActuals = typeArguments().map2(x -> x.asParametricType()).freeze();
       }
+
+    if (POSTCONDITIONS) ensure
+      (_genericsAsActuals != null);
+
     return _genericsAsActuals;
   }
 

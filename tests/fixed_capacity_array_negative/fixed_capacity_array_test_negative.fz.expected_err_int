@@ -22,16 +22,16 @@ fuzion.runtime.pre_fault.cause#1: {base.fum}/flow/fallible.fz:35:6:
 fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:56:3:
   fuzion.runtime.pre_fault.env.cause msg
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(container.Fixed_Capacity_Array fixed_capacity_array_test_negative.m i32).pre add: {base.fum}/container/Dynamic_Array.fz:98:9:
+(container.Fixed_Capacity_Array fixed_capacity_array_test_negative.m i64).pre add: {base.fum}/container/Dynamic_Array.fz:98:9:
     pre safety : can_add
 --------^^^^^^^^^^^^^^^^
-(container.Fixed_Capacity_Array fixed_capacity_array_test_negative.m i32).precall add: {base.fum}/container/Dynamic_Array.fz:98:5:
+(container.Fixed_Capacity_Array fixed_capacity_array_test_negative.m i64).precall add: {base.fum}/container/Dynamic_Array.fz:98:5:
     pre safety : can_add
 ----^^^^^^^^^^^^^^^^^^^^
 fixed_capacity_array_test_negative.(λ()-> fca := container.Fixed_Capacity_A...).call: --CURDIR--/fixed_capacity_array_test_negative.fz:50:5:
     fca.add 21 # should panic: Fixed_Capacity_Array can not grow, exceeded limit of 10 elements
 ----^^^^^^^^^^
-(instate_helper unit fixed_capacity_array_test_negative.m).call_code.call: {base.fum}/effect.fz:416:18:
+(instate_helper unit fixed_capacity_array_test_negative.m).call_code.call: {base.fum}/effect.fz:405:18:
       set res := code()
 -----------------^^^^
 instate_helper unit fixed_capacity_array_test_negative.m: <source position not available>:
@@ -51,7 +51,7 @@ fixed_capacity_array_test_negative.m.infix !#2 unit: {base.fum}/effect.fz:229:5:
 fixed_capacity_array_test_negative: --CURDIR--/fixed_capacity_array_test_negative.fz:28:3:
   m ! ()->
 --^^^^^^^^
-    fca := container.Fixed_Capacity_Array m i32 .empty 10
+    fca := container.Fixed_Capacity_Array m i64 .empty 10
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     check fca.max_capacity = 10
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -61,20 +61,20 @@ fixed_capacity_array_test_negative: --CURDIR--/fixed_capacity_array_test_negativ
 ----^^^^^^^^^^^^^^^^^
       fca.add i
 ------^^^^^^^^^
-      check fca.length = i.as_i64
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      check fca.length = i
+------^^^^^^^^^^^^^^^^^^^^
     for i in (1..10).reverse do
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^
       check i = (fca.remove_last)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      check fca.length = i.as_i64-1
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      check fca.length = i-1
+------^^^^^^^^^^^^^^^^^^^^^^
     for i in 11..20 do
 ----^^^^^^^^^^^^^^^^^^
       fca.add i
 ------^^^^^^^^^
-      check fca.length = i.as_i64-10
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      check fca.length = i-10
+------^^^^^^^^^^^^^^^^^^^^^^^
     check !fca.can_add
 ----^^^^^^^^^^^^^^^^^^
     fca.add 21 # should panic: Fixed_Capacity_Array can not grow, exceeded limit of 10 elements

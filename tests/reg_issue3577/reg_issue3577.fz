@@ -27,8 +27,8 @@ x(T type, v, w T) => say "x2 $T $v $w"
 a => 42
 b => 42
 
-x i32 a
+x i64 a
 x a
 
-x i32 a b
+x i64 a b
 x _ a b   # could work, but does not

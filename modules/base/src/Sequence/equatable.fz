@@ -38,7 +38,7 @@ public starts_with(l Sequence T) bool
 # head of the list, 1 if it comes directly after head, etc. nil if x is
 # not in the list.
 #
-public index_of(x T) option i32
+public index_of(x T) option i64
   pre
     T : property.equatable
 =>
@@ -63,7 +63,7 @@ public contains(x T) bool
 # worst-case performance: O( seq_length ) + O( pattern_length )
 # worst-case space complexity: O( pattern_length )
 #
-public find(pattern Sequence T) option i32
+public find(pattern Sequence T) option i64
   pre
     T : property.equatable
 =>
@@ -100,7 +100,7 @@ public find(pattern Sequence T) option i32
       nil => false
       n Node => !n.top.is_empty && n.top[0] = x
 
-  fold_until(acc option (Node T), i i32) option i32 =>
+  fold_until(acc option (Node T), i i64) option i64 =>
     if is_done acc
       ab.count - (ab.count-i) - p.count
     else if i >= ab.count
@@ -111,12 +111,6 @@ public find(pattern Sequence T) option i32
 
   fold_until init 0
 
-
-# NYI: BUG: Node could be in Sequence?
-# but currently gives confusing error in a few places:
-#
-# Case matches type 'Sequence.this.Node'.
-# Subject type is one of '(option Sequence.this.Node).Node' or 'nil'.
 
 # helper features for knuth morris pratt algorithm
 #
@@ -156,7 +150,7 @@ replace(old, new,
 =>
   match to_be_replaced.find old
     nil   => already_replaced ++ to_be_replaced
-    n i32 =>
+    n i64 =>
       if limit = 0
         already_replaced ++ to_be_replaced
       else
@@ -167,7 +161,7 @@ replace(old, new,
 
 # get the number of matches of l
 #
-public count_matches_overlapping(l Sequence T) i32
+public count_matches_overlapping(l Sequence T) i64
   pre
     T : property.equatable
 =>
@@ -178,7 +172,7 @@ public count_matches_overlapping(l Sequence T) i32
 
 # get the number of non-overlapping matches of l within this
 #
-public count_matches(l Sequence T) i32
+public count_matches(l Sequence T) i64
   pre
     T : property.equatable
 =>
@@ -211,12 +205,12 @@ module split0(s Sequence T, limit option u32, split_after bool) Sequence (Sequen
 
   l := limit.or_else u32.max
   for
-    idx option i32 := i32.min, ar.rest.find s
+    idx option i64 := i64.min, ar.rest.find s
     ar := accum_result (Sequence (Sequence T) .empty) Sequence.this, {
       match idx
         nil =>
           accum_result ar.split_of ar.rest
-        i i32 =>
+        i i64 =>
           accum_result
             (ar.split_of ++ [ar.rest.take (if split_after then i + s.count else i)])
             (ar.rest.drop i+s.count)

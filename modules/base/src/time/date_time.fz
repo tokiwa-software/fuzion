@@ -31,7 +31,7 @@
 #
 
 
-public date_time(public year, month, day, hour, minute, second i32, nano_second_ i32) : property.orderable
+public date_time(public year, month, day, hour, minute, second i64, nano_second_ i64) : property.orderable
 pre
   debug: 1 ≤ month ≤ 12
   debug: is_valid_date year month day
@@ -43,7 +43,7 @@ is
 
   # the millisecond of this datetime
   #
-  public milli_second i32
+  public milli_second i64
     post
       debug: result ≥ 0 & result < 1E3
   =>
@@ -52,7 +52,7 @@ is
 
   # the nanosecond of this datetime
   #
-  public nano_second i32
+  public nano_second i64
     post
       debug: result ≥ 0 & result < 1E6
   =>
@@ -82,20 +82,20 @@ is
   # ISO 8601 string for this datetime
   # example: 2018-09-14T23:59:59.079
   #
-  public as_string(p time.precision) String =>
+  public as_string(p time.precision.val) String =>
     match p
-      time.pyear         =>  "$year_as_string"
-      time.pmonth        =>  "$year_as_string-$month_as_string"
-      time.pday          =>  "$year_as_string-$month_as_string-$day_as_string"
-      time.phour         => ("$year_as_string-$month_as_string-$day_as_string" +
+      time.precision.year         =>  "$year_as_string"
+      time.precision.month        =>  "$year_as_string-$month_as_string"
+      time.precision.day          =>  "$year_as_string-$month_as_string-$day_as_string"
+      time.precision.hour         => ("$year_as_string-$month_as_string-$day_as_string" +
                               "T$hour_as_string")
-      time.pminute       => ("$year_as_string-$month_as_string-$day_as_string" +
+      time.precision.minute       => ("$year_as_string-$month_as_string-$day_as_string" +
                               "T$hour_as_string:$minute_as_string")
-      time.psecond       => ("$year_as_string-$month_as_string-$day_as_string" +
+      time.precision.second       => ("$year_as_string-$month_as_string-$day_as_string" +
                               "T$hour_as_string:$minute_as_string:$second_as_string")
-      time.pmilli_second => ("$year_as_string-$month_as_string-$day_as_string" +
+      time.precision.milli_second => ("$year_as_string-$month_as_string-$day_as_string" +
                               "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string")
-      time.pnano_second  => ("$year_as_string-$month_as_string-$day_as_string" +
+      time.precision.nano_second  => ("$year_as_string-$month_as_string-$day_as_string" +
                               "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string$nano_second_as_string")
 
 
@@ -114,7 +114,7 @@ is
     seconds := total_nanos / 1E9
     new_nano := total_nanos % 1E9
     base := time.date_time.from_seconds_i64 seconds
-    date_time base.year base.month base.day base.hour base.minute base.second new_nano.as_i32
+    date_time base.year base.month base.day base.hour base.minute base.second new_nano
 
 
   # subtract a duration from this date time
@@ -125,7 +125,7 @@ is
     seconds := total_nanos / 1E9
     new_nano := total_nanos % 1E9
     base := time.date_time.from_seconds_i64 seconds
-    date_time base.year base.month base.day base.hour base.minute base.second new_nano.as_i32
+    date_time base.year base.month base.day base.hour base.minute base.second new_nano
 
 
 
@@ -142,7 +142,7 @@ is
   # source: https://c-faq.com/misc/zeller.html
   # original code by: Tomohiko Sakamoto
   #
-  public day_of_week i32 =>
+  public day_of_week i64 =>
     t := [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
     y := year - (if month < 3 then 1 else 0)
     (y + y/4 - y/100 + y/400 + t[month-1] + day) % 7
@@ -221,7 +221,7 @@ is
     seconds_in_minute := u64 60
     minute, second := (r3 / seconds_in_minute, r3 % seconds_in_minute)
 
-    time.date_time year month day.as_i32 hour.as_i32 minute.as_i32 second.as_i32 0
+    time.date_time year month day.as_i64 hour.as_i64 minute.as_i64 second.as_i64 0
 
 
   # create a date_time from given seconds since 1970-01-01T00:00:00 (i64 version for negative values, i.e. dates before 1970)
@@ -257,7 +257,7 @@ is
           else
             (mm, rest)
 
-        (y, m, r1.as_i32 + 1)
+        (y, m, r1.as_i64 + 1)
       else # before 1970, calculate backwards
         for rest := -days, rest - days_in_year.as_i64
             yy := 1969, yy-1
@@ -273,14 +273,14 @@ is
             # for dates before 1970, the day is calculated as the number of days in the month minus the leftover days,
             # because we calculated backwards
             days_in_month_local := time.days_in_month yy mm
-            (yy, mm, days_in_month_local.as_i32 - remaining.as_i32 + 1)
+            (yy, mm, days_in_month_local.as_i64 - remaining.as_i64 + 1)
 
 
 
-    hour := (time_seconds / 3600).as_i32
+    hour := (time_seconds / 3600).as_i64
     r3 := time_seconds % 3600
-    minute := (r3 / 60).as_i32
-    second := (r3 % 60).as_i32
+    minute := (r3 / 60).as_i64
+    second := (r3 % 60).as_i64
 
     time.date_time year month day hour minute second 0
 
@@ -314,7 +314,7 @@ is
 
     ternary_compare.is_yes_or_unknown
 
-public fixed supported_year(y i32) bool =>
+public fixed supported_year(y i64) bool =>
   # Dates too far away from the unix epoch (1970-01-01) would cause an overflow in the unix_time_stamp calculation,
   # which is currently implemented using a 64-bit integer counting nanoseconds since the epoch.
   1650 <= y <= 2260
@@ -322,33 +322,33 @@ public fixed supported_year(y i32) bool =>
 
 # is the given year a leap year?
 #
-is_leap_year(year i32) =>
+is_leap_year(year i64) =>
   (year % 4 = 0 & year % 100 != 0) |
     ((year % 100 = 0) & (year % 400 = 0))
 
 
 # how many days does february have in the given year?
 #
-days_in_february(year i32) =>
+days_in_february(year i64) =>
   if is_leap_year year then 29 else 28
 
 
 # the days in the months of the year
 # starting at january, february, ..., december
 #
-days_in_months(year i32) =>
+days_in_months(year i64) =>
   [31, days_in_february year, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 
 # how many days does a given month of a given year have
 #
-days_in_month(year, month i32) =>
+days_in_month(year, month i64) =>
   (days_in_months year)[month - 1]
 
 
 # is the given date valid?
 #
-public is_valid_date(year, month, day i32) bool
+public is_valid_date(year, month, day i64) bool
   pre
     debug: 1 ≤ month ≤ 12
 =>

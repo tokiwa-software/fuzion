@@ -31,11 +31,23 @@
 # two index parameters.
 #
 private:public array2(
-       T type,
-       public length0, length1 i64,
-       module base array T,
-       _ unit,
-       _ unit) : property.hashable
+      T type,
+      public length0, length1 i64,
+
+      # the underlying one dimensional array
+      #
+      # multidimensional indices are mapped to one dimensional indices as follows:
+      #
+      # [x,y] -> [x * length1 + y]
+      #
+      # resulting in the order:
+      #
+      # arr[0,0], arr[0,1], arr[0,2], ..., arr[1,0], arr[1,1], arr[1,2], ...,
+      # arr[2,0], arr[2,1], arr[2,2], ...
+      #
+      public base array T,
+      _ unit,
+      _ unit) : property.hashable
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0
@@ -107,12 +119,12 @@ is
 
   # indices range in first dimension
   #
-  public indices0 interval i64 => i64.zero..length0-1
+  public indices0 interval i64 => 0..length0-1
 
 
   # indices range in second dimension
   #
-  public indices1 interval i64 => i64.zero..length1-1
+  public indices1 interval i64 => 0..length1-1
 
   # all pairs of indices: (0,0), (0,1), (0,2), .. (length0-1, length1-1)
   #
@@ -123,8 +135,8 @@ is
 
   public index [ ] (I type : integer, i1, i2 I) T
     pre
-      safety: i64.zero ≤ i1.as_i64 < length0
-      safety: i64.zero ≤ i2.as_i64 < length1
+      safety: 0 ≤ i1.as_i64 < length0
+      safety: 0 ≤ i2.as_i64 < length1
   =>
     array2.this.base[i1.as_i64 * length1 + i2.as_i64]
 
@@ -139,7 +151,6 @@ is
         .map (i -> "  " + (base.slice i*length1 (i+1)*length1))
         .fold (String.concat ","+ascii.lf_str)
     "[$(ascii.lf_str)$c$(ascii.lf_str)]"
-
 
 
   # get a list of tuples indices and elements in this array

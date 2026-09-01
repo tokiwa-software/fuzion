@@ -22,10 +22,10 @@ fuzion.runtime.pre_fault.cause#1: {base.fum}/flow/fallible.fz:35:6:
 fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:56:3:
   fuzion.runtime.pre_fault.env.cause msg
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-((array i32).slice#3 i32).array_slice.pre slice i32: {base.fum}/Sequence.fz:353:7:
+((array i64).slice#3 i64).array_slice.pre slice i64: {base.fum}/Sequence.fz:353:7:
       debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-((array i32).slice#3 i32).array_slice.precall slice i32: {base.fum}/Sequence.fz:351:5:
+((array i64).slice#3 i64).array_slice.precall slice i64: {base.fum}/Sequence.fz:351:5:
     pre
 ----^^^
       debug : from ≥ 0

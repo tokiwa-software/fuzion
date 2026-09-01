@@ -1,0 +1,22 @@
+
+--CURDIR--/reg_issue1587.fz:25:14: error 1: Type not found
+  a : choice b.this.type.c is
+-------------^
+Type 'b' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'b'
+in feature: 'reg_issue1587.a'
+To solve this, check the spelling of the type you have used.
+
+
+--CURDIR--/reg_issue1587.fz:25:7: error 2: Wrong number of actual value arguments in call
+  a : choice b.this.type.c is
+------^^^^^^
+Number of actual value arguments is 1, while call expects no value arguments.
+Actual value arguments: ''
+Called feature: 'choice'
+Formal value arguments: --none--
+Declared at {base.fum}/choice.fz:106:8:
+public choice(CHOICE_ELEMENT_TYPE type...) is
+-------^^^^^^
+
+2 errors.

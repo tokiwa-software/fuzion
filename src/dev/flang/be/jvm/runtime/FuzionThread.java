@@ -59,7 +59,7 @@ public class FuzionThread extends Thread
    * Runtime.effect_pop will remove the last element in this list and install it
    * back as the effect instance.
    *
-   * Unitle _installedEffects, this list does not regard effect types or
+   * Unlike _installedEffects, this list does not regard effect types or
    * effectIds, but mixes effects of different types. This is possible since
    * effect_push/effect_pop is guaranteed to be perfectly nested even for
    * different effect types.

@@ -22,13 +22,13 @@ fuzion.runtime.post_fault.cause#1: {base.fum}/flow/fallible.fz:35:6:
 fuzion.runtime.postcondition_fault#1: {base.fum}/fuzion/runtime/post_fault.fz:56:3:
   fuzion.runtime.post_fault.env.cause msg
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-reg_issue7051.outer2.post a i32: --CURDIR--/reg_issue7051.fz:28:12:
+reg_issue7051.outer2.post a i64: --CURDIR--/reg_issue7051.fz:28:12:
       post result < 0
 -----------^^^^^^^^^^
-reg_issue7051.outer2.post a i32: --CURDIR--/reg_issue7051.fz:34:11:
+reg_issue7051.outer2.post a i64: --CURDIR--/reg_issue7051.fz:34:11:
     redef a(T type : integer, t T) T =>
 ----------^
-reg_issue7051.outer2.a#2 i32: --CURDIR--/reg_issue7051.fz:34:11:
+reg_issue7051.outer2.a#2 i64: --CURDIR--/reg_issue7051.fz:34:11:
     redef a(T type : integer, t T) T =>
 ----------^
 reg_issue7051: --CURDIR--/reg_issue7051.fz:37:3:
