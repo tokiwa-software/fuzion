@@ -1158,13 +1158,8 @@ int32_t fzE_file_write(void * file, void * buf, int32_t size)
 {
   errno = 0;
   ssize_t result;
-  do
-  {
-    result = write(fileno(file), buf, size);
-  }
-  while (result == -1 && errno == EINTR);
-
-  return errno == EAGAIN || errno == EWOULDBLOCK
+  FZ_RETRY_ON_EINTR(result, write(fileno(file), buf, size));
+  return result == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)
     ? 0
     : result;
 }
