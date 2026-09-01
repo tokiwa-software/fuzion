@@ -23,45 +23,45 @@
 
 reg_issue5561 =>
 
-  f1(x i32) =>                  # *** fails ***
+  f1(x i64) =>                  # *** fails ***
     if      x = 1 then "aa"
     else if x = 2 then nil
     else               option "bb"
 
-  f2(x i32) =>
+  f2(x i64) =>
     if      x = 1 then option "bb"
     else if x = 2 then nil
     else               "aa"
 
-  f3(x i32) =>                  # *** fails ***
+  f3(x i64) =>                  # *** fails ***
     if      x = 1 then nil
     else if x = 2 then "aa"
     else               option "bb"
 
-  f4(x i32) =>
+  f4(x i64) =>
     if      x = 1 then nil
     else if x = 2 then option "bb"
     else               "aa"
 
-  g1(x i32) =>                  # *** fails ***
+  g1(x i64) =>                  # *** fails ***
     if      x = 1 then "aa"
     else if x = 2 then nil
     else if x = 3 then option "bb"
     else               Any
 
-  g2(x i32) =>
+  g2(x i64) =>
     if      x = 1 then Any
     else if x = 2 then nil
     else if x = 3 then option "bb"
     else               "aa"
 
-  g3(x i32) =>
+  g3(x i64) =>
     if      x = 1 then option "bb"
     else if x = 2 then nil
     else if x = 3 then "aa"
     else               Any
 
-  h(x i32) =>
+  h(x i64) =>
     if      x = 1 then "aa"
     else               option "bb"
 
@@ -70,7 +70,7 @@ reg_issue5561 =>
   a : C is
   b : C is
   C ref is
-  b1(x i32) =>                  # *** fails ***
+  b1(x i64) =>                  # *** fails ***
     if      x = 1 then a
     else if x = 2 then b
     else               C

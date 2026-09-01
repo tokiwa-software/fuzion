@@ -3,7 +3,7 @@
 for s := [1] : nil, s.filter x->d.bla
 ----------------------------------^^^
 Feature not found: 'bla' (no arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: 'd.bla'
 
 
@@ -12,10 +12,10 @@ for s := [1] : nil, s.filter x->d.bla
 --------------------^^^^^^^^^^^^^^^^^
 Actual type for argument #1 's' does not match expected type.
 In call to          : 'loop'
-expected formal type: 'list (array i32)'
-actual type found   : 'Sequence (array i32)'
-assignable to       : 'Sequence (array i32)'
+expected formal type: 'list (array i64)'
+actual type found   : 'Sequence (array i64)'
+assignable to       : 'Sequence (array i64)'
 for value assigned  : 's.filter x->d.bla'
-To solve this, you could change the type of the target 's' to 'Sequence (array i32)' or convert the type of the assigned value to 'list (array i32)'.
+To solve this, you could change the type of the target 's' to 'Sequence (array i64)' or convert the type of the assigned value to 'list (array i64)'.
 
 2 errors.

@@ -65,10 +65,10 @@ clang_Cursor_isNull(crsr CXCursor) i32 => native
 
 # CXChildVisit_Recurse i32 => 2
 CXChildVisit_Continue i32 => 1
-CXCursor_StructDecl => 2
-CXCursor_UnionDecl => 3
-CXCursor_EnumDecl => 5
-CXCursor_FieldDecl => 6
+CXCursor_StructDecl i32 => 2
+CXCursor_UnionDecl i32 => 3
+CXCursor_EnumDecl i32 => 5
+CXCursor_FieldDecl i32 => 6
 CXCursor_FunctionDecl i32 => 8
 
 
@@ -179,11 +179,11 @@ public clang is
           return_type_spelling := clang_getTypeSpelling return_type
           rt := "$(cx_string_to_string return_type_spelling)"
 
-          num_args := clang_Cursor_getNumArguments crsr
+          num_args := clang_Cursor_getNumArguments crsr .as_i64
 
           args := (0..num_args-1)
             .map i->
-              arg := clang_Cursor_getArgument crsr i
+              arg := clang_Cursor_getArgument crsr i.as_i32
               arg_name := clang_getCursorSpelling arg
               arg_type := clang_getCanonicalType (clang_getCursorType arg)
               arg_type_spelling := clang_getTypeSpelling arg_type

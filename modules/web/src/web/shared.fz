@@ -56,7 +56,7 @@ module read_reponse(LM type : mutate) ! LM =>
 #
 module write_request(LM type : mutate, rm http.request_message) ! LM =>
   (io.buffered LM).Writer.env
-    .write (rm.bytes i32.max)
+    .write (rm.bytes i64.max)
     .bind _->
       (io.buffered LM).Writer.env.flush
 

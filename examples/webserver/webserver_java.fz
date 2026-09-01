@@ -37,7 +37,7 @@ webserver_java is
     jio := Java.java.io
 
     # open socket
-    port := 8080
+    port i32 := 8080
     serversocket := jnet.ServerSocket.new port
     match serversocket
       err error => say "#### $err ####"

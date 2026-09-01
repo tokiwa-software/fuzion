@@ -31,26 +31,26 @@ public mod is
   ok(s String) => {say s; true}
 
   public post_accessing_result is
-    public n i32 := 333
-    public m i32 => 333
-    public r i32 => 666
-    public f i32
+    public n i64 := 333
+    public m i64 => 333
+    public r i64 => 666
+    public f i64
       post
         m * 2 = r
         ok "original $result $m $r"
         { io.Out.env.println "hi"; true }
         { v := post_accessing_result.this; true }
-        { [1,result,2].fold i32.sum > 3 }
-        { fn i32->i32 := *result; fn 3 > 120 }
+        { [1,result,2].fold i64.sum > 3 }
+        { fn i64->i64 := *result; fn 3 > 120 }
         result > 23
     =>
       42
 
-    public g i32
+    public g i64
     => 420
 
   public post_accessing_result_child : post_accessing_result is
-    public redef f i32
+    public redef f i64
       post then
         ok "redef $result"
         { io.Out.env.println "hi"; true }
@@ -58,7 +58,7 @@ public mod is
     =>
       4711
 
-    public redef g i32
+    public redef g i64
       post then
         ok "redef g $result"
         { io.Out.env.println "ho"; true }
@@ -66,7 +66,7 @@ public mod is
     => 69
 
   public post_accessing_result_child2 : post_accessing_result_child is
-    public redef f i32
+    public redef f i64
       post then
         ok "redef2 $result"
         { io.Out.env.println "hi"; true }
@@ -74,7 +74,7 @@ public mod is
     =>
       4716
 
-    public redef g i32
+    public redef g i64
       post then
         ok "redef g $result"
         { io.Out.env.println "he"; true }
@@ -82,12 +82,12 @@ public mod is
     => 42069
 
   public post_accessing_result_child3 : post_accessing_result is
-    public redef f i32
+    public redef f i64
       post then
     =>
       32168
 
   public post_accessing_result_child4 : post_accessing_result is
-    public redef f i32
+    public redef f i64
     =>
       112

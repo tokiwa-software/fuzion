@@ -17,4 +17,4 @@ test4.c
 test6.i3.dd.as
 const_string
 const_string
-list i32
+list i64

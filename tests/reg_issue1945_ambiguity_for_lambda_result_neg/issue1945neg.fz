@@ -32,24 +32,24 @@ ambiguous_declaration is
   # ------- declarations -------
 
   # field declarations
-  a ()->i32 := ()->4711
-  b () -> i32 := () -> 4712
+  a ()->i64 := ()->4711
+  b () -> i64 := () -> 4712
   c () (() ->         # we (currently) need explicit arg list `()` to help parser
-        i32  ) := () -> 4713
+        i64  ) := () -> 4713
   _ := (d () ->
-          i32 := () -> 4714)   # illegal, no LF allowed after -> in function result
+          i64 := () -> 4714)   # illegal, no LF allowed after -> in function result
 
   say a.call
   say b.call
   say c.call
 
   # function declarations
-  i ()->i32 => ()->4715
-  j () -> i32 => () -> 4716
+  i ()->i64 => ()->4715
+  j () -> i64 => () -> 4716
   k () (() ->         # we (currently) need explicit arg list `()` to help parser
-        i32  ) => () -> 4717
+        i64  ) => () -> 4717
   (l () ->
-          i32 => () -> 4718)   # illegal, no LF allowed after -> in function result
+          i64 => () -> 4718)   # illegal, no LF allowed after -> in function result
 
   say i.call
   say j.call
@@ -58,7 +58,7 @@ ambiguous_declaration is
   # ------- calls -------
 
   # function to be called
-  f(p ()->i32) =>
+  f(p ()->i64) =>
     say "in f: $(p.call)"
 
   # calls

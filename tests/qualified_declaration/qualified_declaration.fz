@@ -28,12 +28,12 @@ qualified_declaration is
   x is
     y is
       z is
-        f1(i i32) => i+i
+        f1(i i64) => i+i
 
-  x.y.z.f2(i i32) i32 => i*i
-  x.y.z.f3(i i32) i32 => i*i
-  x.y.z.f4(i i32) i32 => i*i
-  x.y.z.f5(i i32) => i*i
+  x.y.z.f2(i i64) i64 => i*i
+  x.y.z.f3(i i64) i64 => i*i
+  x.y.z.f4(i i64) i64 => i*i
+  x.y.z.f5(i i64) => i*i
 
   (1..10).for_each i->
                say ("$i " +

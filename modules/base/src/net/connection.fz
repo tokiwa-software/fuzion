@@ -38,7 +38,7 @@ module:public connection(desc i32) is
 
     reader =>
       _ : io.buffered LM .Reader is
-        public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
+        public redef read(max_count i64) choice (Sequence u8) io.end_of_file error =>
           match fuzion.sys.net.read desc max_count.as_i64
             s Sequence =>
               if s.is_empty && max_count != 0

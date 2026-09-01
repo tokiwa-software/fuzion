@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 
-print_if_present(s String, o option i32) option unit =>
+print_if_present(s String, o option i64) option unit =>
   say o?       # NYI postfix ? operator not supported yet
 
 v := 10000

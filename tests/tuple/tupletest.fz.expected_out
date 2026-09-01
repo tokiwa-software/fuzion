@@ -1,7 +1,7 @@
 PASSED: g1 A infer A==string
-PASSED: g1 A infer A==i32
+PASSED: g1 A infer A==i64
 PASSED: g1a A infer A==string
-PASSED: g1a A infer A==i32
+PASSED: g1a A infer A==i64
 PASSED: g1b AAAA infer AAAA==bool
 PASSED: g1b AAAA infer AAAA==string
 nothing1 is ()

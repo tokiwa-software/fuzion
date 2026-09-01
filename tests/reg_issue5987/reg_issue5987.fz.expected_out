@@ -4,4 +4,4 @@ Unary i32 i32 43
 reg_issue5987.(λx->x+1) 43
 reg_issue5987.(λ(-)) -42
 reg_issue5987.(λ+1) 43
-i32 array i32 [32]
+i64 array i64 [32]

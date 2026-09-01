@@ -23,6 +23,6 @@
 
 # get the maximum path length of the OS
 #
-public max_path_length i32
+public max_path_length i64
   post debug: result > 0
-=> fzE_path_max
+=> fzE_path_max.as_i64

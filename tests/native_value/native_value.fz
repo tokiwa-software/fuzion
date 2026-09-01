@@ -114,7 +114,7 @@ ex =>
         if num_args > 0
           yap "("
 
-        for i in 0..num_args-1 do
+        for i in (i32 0)..num_args-1 do
           arg := clang_Cursor_getArgument crsr i
           arg_name := clang_getCursorSpelling arg
           arg_type := clang_getCursorType arg

@@ -1,4 +1,4 @@
-x: i32
+x: i64
 x: String
 y: f64
 y: option bool
@@ -8,7 +8,7 @@ y: list String String
 x: array f32 f32
 x: list f32 f32
 y: list f32 f32
-x: i32 Sequence i32
+x: i64 Sequence i64
 y: f64 Sequence f64
-x: i32 43
+x: i64 43
 y: f64 3.14

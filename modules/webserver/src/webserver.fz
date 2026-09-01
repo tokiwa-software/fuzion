@@ -61,7 +61,7 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
                 #
                 match (io.buffered mutate)
                     .Writer.env
-                    .write (response.bytes i32.max)
+                    .write (response.bytes i64.max)
                   e error => log "writing response failed: $(e)"
                   unit =>
                     flush_ok := (io.buffered mutate).Writer.env.flush
