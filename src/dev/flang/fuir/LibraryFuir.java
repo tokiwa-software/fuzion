@@ -335,7 +335,7 @@ public class LibraryFuir extends FUIR {
 
     for (int index = 0; index < clazzFieldCount(cl); index++)
       {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("val") == 0)
+        if (clazzBaseName(clazzField(cl, index)).compareTo("mutable_value") == 0)
           {
             return clazzField(cl, index);
           }
