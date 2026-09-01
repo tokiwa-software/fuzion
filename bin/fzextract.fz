@@ -33,7 +33,7 @@
 #
 to_fuzion_type(ct String, is_result_type_or_value_type_arg bool) outcome String =>
   to_fuzion_type ct is_result_type_or_value_type_arg 0
-to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i32) outcome String =>
+to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i64) outcome String =>
 
   # remove any type qualifiers
   c_type := ct

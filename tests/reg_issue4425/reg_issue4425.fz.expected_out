@@ -3,7 +3,7 @@ false
 hi using ()
 false
 should be empty tuple: tuple
-should be tuple String 42: tuple codepoint i32
+should be tuple String 42: tuple codepoint i64
 should be Binary i32 i32 i32: Binary i32 i32 i32
 should be unit: unit
 this should run 1

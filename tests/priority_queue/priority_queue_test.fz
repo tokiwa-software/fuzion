@@ -115,7 +115,7 @@ priority_queue_test =>
     say "\nHeap property min-heap:"
     q4 := container.Binary_Heap_Queue lm i32 .empty
 
-    for i in (1..10).reverse ++ [i32.min, i32.max]
+    for i in ((i32 1)..10).reverse ++ [i32.min, i32.max]
     do
       say "\nenqueue $i\n"
       q4.enqueue i
@@ -133,7 +133,7 @@ priority_queue_test =>
     say "\nHeap property max-heap:"
     q5 := container.Binary_Heap_Queue lm i32 .empty_by property.reverse_order
 
-    for i in (-5..6)
+    for i in ((i32 -5)..6)
     do
       say "enqueue $i"
       q5.enqueue i
@@ -228,7 +228,7 @@ priority_queue_test =>
         q := container.Binary_Heap_Queue m i32 .empty
 
         for sort list i32 := nil, new_sort
-            i in 1..test_size
+            i in (i32 1)..test_size
             enq := true, (Random.env.next_i32 100) < enq_rate
         do
           new_sort :=

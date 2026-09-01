@@ -33,18 +33,18 @@ demo1_unit_types is
     else
       res
 
-  sum : demo1_unit_types.this.Monoid i32 is
+  sum : demo1_unit_types.this.Monoid i64 is
     redef zero => 0
-    redef add (a, b i32) => a + b
+    redef add (a, b i64) => a + b
 
-  product : demo1_unit_types.this.Monoid i32 is
+  product : demo1_unit_types.this.Monoid i64 is
     redef zero => 1
-    redef add (a, b i32) => a * b
+    redef add (a, b i64) => a * b
 
-  i32array     := [ 23, 345 , 3, 1, 3 ]
-  totalSum     := accum i32 i32array sum
-  totalProduct := accum i32 i32array product
+  i64array     := [ 23, 345 , 3, 1, 3 ]
+  totalSum     := accum i64 i64array sum
+  totalProduct := accum i64 i64array product
 
-  say i32array
+  say i64array
   say totalSum
   say totalProduct

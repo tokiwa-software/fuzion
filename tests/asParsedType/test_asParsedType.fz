@@ -156,7 +156,7 @@ say "EXP: y bool"
 y true
 say ""
 
-say "EXP: y i32"
+say "EXP: y i64"
 y true?1:2
 say ""
 

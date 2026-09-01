@@ -170,7 +170,7 @@ public u32(public val u32) : num.wrap_around, property.interval is
 
   # count the number of trailing zeros in this integer.
   #
-  public trailing_zeros i32 =>
+  public trailing_zeros i64 =>
     v, s := (val, 0)
     v1, s1 := if ((v  &     0xffff) != 0) (v , s ) else (v  >> 16, s  + 16)
     v2, s2 := if ((v1 &       0xff) != 0) (v1, s1) else (v1 >>  8, s1 +  8)
@@ -183,12 +183,12 @@ public u32(public val u32) : num.wrap_around, property.interval is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public redef ones_count i32 =>
+  public redef ones_count i64 =>
     v := val;
     m  := v  & 0xaaaaaaaa; v1 := v  - m  + (m  >> 1)
     m1 := v1 & 0xcccccccc; v2 := v1 - m1 + (m1 >> 2)
     m2 := v2 & 0xf0f0f0f0; v3 := v2 - m2 + (m2 >> 4)
-    (v3 *° 0x01010101 >> 24).as_i32
+    (v3 *° 0x01010101 >> 24).as_i64
 
 
   # -----------------------------------------------------------------------

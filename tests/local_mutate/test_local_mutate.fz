@@ -36,7 +36,7 @@ test_local_mutate is
     #
     l0 := [0,8,15,47,11]
 
-    sum(l Sequence i32) =>
+    sum(l Sequence i64) =>
 
       # define a local type `m` to identify the mutate effect:
       #
@@ -133,12 +133,12 @@ test_local_mutate is
 
           arr := (m.array T).new c.as_i64 _->data[0]
 
-          swap(i,j i32) =>
+          swap(i,j i64) =>
             t := arr[i]
             arr[i] := arr[j]
             arr[j] := t
 
-          partition(l, r, pivot i32) =>
+          partition(l, r, pivot i64) =>
             pv := arr[pivot]
             swap pivot r
             for
@@ -152,7 +152,7 @@ test_local_mutate is
               swap b r
               b
 
-          qs(l, r i32) unit => # =>  does not work
+          qs(l, r i64) unit => # =>  does not work
             if l < r
               pi := partition l r (l + r)/2
               qs l pi-1
@@ -167,8 +167,8 @@ test_local_mutate is
 
     say (quicksort [0, 8, 15, 47, 11])
     for i in -1..10 do
-      say (quicksort i32 0..i)
-      say (quicksort i32 (i..0 : -1))
+      say (quicksort i64 0..i)
+      say (quicksort i64 (i..0 : -1))
 
   test_quicksort
 

@@ -16,7 +16,7 @@ To solve this, change type of result to 'choice String i32 nil'
     redef get => 42
 ----------^^^
 In 'testRedefine.bad2.get' that redefines 'testRedefine.getter.get'
-result type is       : 'i32'
+result type is       : 'i64'
 result type should be: 'choice String i32 nil' (from 'testRedefine.getter.A')
 
 Original feature declared at --CURDIR--/testRedefine.fz:37:5:

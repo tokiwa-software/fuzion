@@ -22,21 +22,21 @@ priority_queue_benchmark =>
   #
   # Measure time of individual operations and show their distribution.
   #
-  random_enqueue_dequeue(test_lengths Sequence i32) unit =>
+  random_enqueue_dequeue(test_lengths Sequence i64) unit =>
     say """
         \n********************************************************************************
         *$("Fill empty queue with random elements, then empty it".pad_center 78)*
         ********************************************************************************
         """
 
-    test(size i32) unit =>
+    test(size i64) unit =>
 
       Random.simple 42 ()->
 
         m : mutate is
         m ! ()->
 
-          q := container.Binary_Heap_Queue m i32 .empty (size + 10).as_i64
+          q := container.Binary_Heap_Queue m i64 .empty size+10
 
           hist_enq := time.histogram.new "Enqueue $size" nil
           hist_deq := time.histogram.new "Dequeue $size" nil
@@ -45,7 +45,7 @@ priority_queue_benchmark =>
             for t := time.duration.zero, t + dur
                 i in 1..size
             do
-              rand := Random.env.next_i32
+              rand := Random.env.next_i64
               dur := time.stopwatch (()->q.enqueue rand)
               hist_enq.add dur
             else
@@ -76,14 +76,14 @@ priority_queue_benchmark =>
   # where n is the length of the queue.
   # The results should then be roughly the same size, regardless of the size of the queue.
   #
-  random_log_performance(test_lengths Sequence i32) unit =>
+  random_log_performance(test_lengths Sequence i64) unit =>
     say """
         \n********************************************************************************
         *$("Enqueue and dequeue performance on fixed size queue".pad_center 78)*
         ********************************************************************************
         """
 
-    test(queue_size i32) tuple time.histogram time.histogram =>
+    test(queue_size i64) tuple time.histogram time.histogram =>
 
       sample_size := 1E4 + 20 # histogram ignores first and last 10 samples
 
@@ -92,17 +92,17 @@ priority_queue_benchmark =>
       m : mutate is
       m ! ()->
 
-        q := container.Binary_Heap_Queue m i32 .empty (queue_size + 30).as_i64
+        q := container.Binary_Heap_Queue m i64 .empty queue_size+30
 
         # fill queue
-        for i in 1..queue_size do q.enqueue Random.env.next_i32
+        for i in 1..queue_size do q.enqueue Random.env.next_i64
 
         hist_enq := time.histogram.new "Enqueue in queue of size $queue_size" nil 10 10
         hist_deq := time.histogram.new "Dequeue in queue of size $queue_size" nil 10 10
 
         for i in 1..sample_size
         do
-          rand := Random.env.next_i32
+          rand := Random.env.next_i64
           dur_enq :=time.stopwatch (()->q.enqueue rand)
           hist_enq.add dur_enq
           dur_deq :=time.stopwatch (()->_ := q.dequeue)
@@ -110,8 +110,8 @@ priority_queue_benchmark =>
 
         (hist_enq, hist_deq)
 
-    for enq_hist := Sequence (tuple i32 time.histogram) .empty, enq_hist ++ [(queue_size, enq)]
-        deq_hist := Sequence (tuple i32 time.histogram) .empty, deq_hist ++ [(queue_size, deq)]
+    for enq_hist := Sequence (tuple i64 time.histogram) .empty, enq_hist ++ [(queue_size, enq)]
+        deq_hist := Sequence (tuple i64 time.histogram) .empty, deq_hist ++ [(queue_size, deq)]
         i in test_lengths
     do
       queue_size := i
@@ -138,7 +138,7 @@ priority_queue_benchmark =>
   #
   # Do this for sorted, reverse-sorted, and random elements.
   #
-  make_heap_vs_enqueue_all(test_lengths Sequence i32) unit =>
+  make_heap_vs_enqueue_all(test_lengths Sequence i64) unit =>
     say """
       \n********************************************************************************
       *$("Make heap vs. enqueue all".pad_center 78)*
@@ -168,7 +168,7 @@ priority_queue_benchmark =>
     say "\nRandom:\n"
     Random.simple 904644503766293287 ()->
       for len in test_lengths do
-        test (array i32 .new len _->Random.env.next_i32) "random"
+        test (array i64 .new len _->Random.env.next_i64) "random"
         say ""
 
     say "\nReverse ordered:\n"
@@ -189,7 +189,7 @@ priority_queue_benchmark =>
   # It seems to be dominated by some constant overhead for smaller sizes,
   # linear behavior shows from 1E5.
   #
-  make_heap_linear_time(test_lengths Sequence i32) unit =>
+  make_heap_linear_time(test_lengths Sequence i64) unit =>
     say """
       \n********************************************************************************
       *$("Check if make heap has linear time complexity".pad_center 78)*
@@ -215,7 +215,7 @@ priority_queue_benchmark =>
     say "Random:\n"
     Random.simple 904644503766293287 ()->
       for len in test_lengths do
-        test (array i32 .new len _->Random.env.next_i32) "random"
+        test (array i64 .new len _->Random.env.next_i64) "random"
 
 
 
@@ -240,12 +240,12 @@ priority_queue_benchmark =>
       m : mutate is
       m ! ()->
 
-        q := container.Binary_Heap_Queue m i32 .empty queue_length
+        q := container.Binary_Heap_Queue m i64 .empty queue_length
 
-        for i in 1..queue_length.as_i32 do
+        for i in 1..queue_length do
           hist_enq.add (time.stopwatch ()->(q.enqueue 42))
 
-        for i in 1..queue_length.as_i32 do
+        for i in 1..queue_length do
           hist_deq.add (time.stopwatch ()->(ignore q.dequeue))
 
       say hist_enq
@@ -258,9 +258,9 @@ priority_queue_benchmark =>
 
   # Note: large queue sizes result in considerable memory requirements:
   #
-  #   1E8 * i32 (4 byte) ≈ 400 MB
+  #   1E8 * i64 (8 byte) ≈ 800 MB
   #
-  #   1E9 * i32 (4 byte) ≈ 4 GB
+  #   1E9 * i64 (8 byte) ≈ 8 GB
 
   random_enqueue_dequeue   [1E3, 1E4, 1E5, 1E6]
 

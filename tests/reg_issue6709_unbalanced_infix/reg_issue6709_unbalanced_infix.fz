@@ -30,7 +30,7 @@ reg_6709_unbalanced_infix =>
   a => 42
   b => 67
   a(_) => 0815
-  i32.postfix + => 4711
+  i64.postfix + => 4711
 
   # the cases from #6709
   #
@@ -76,7 +76,7 @@ reg_6709_unbalanced_infix =>
 
   # from tests/reg_issue5252/reg_issue5252.fz
   from_test_reg_issue5252 =>
-    i32.infix --(_) => -val
+    i64.infix --(_) => -val
     say (123.0+ 456)              # 11. should flag an error: unbalanced infix `+`
     say (123.0 +456)              # 12. should flag an error: unbalanced infix `+`
     say (a- b)                    # 13. should flag an error: unbalanced infix `-`
@@ -94,7 +94,7 @@ reg_6709_unbalanced_infix =>
   from_base_time_histogram =>
     ignore_last_buffer => [1,2,3]
     ignore_last_buffer_index := mutate.env.new 42
-    ignore_last_buffer_index <- (ignore_last_buffer_index.get = 0 ? ignore_last_buffer.length.as_i32
+    ignore_last_buffer_index <- (ignore_last_buffer_index.get = 0 ? ignore_last_buffer.length
                                                                   : ignore_last_buffer_index.get)- 1     # 16. should flag an error: unbalanced infix `-`
 
     (" average |" +

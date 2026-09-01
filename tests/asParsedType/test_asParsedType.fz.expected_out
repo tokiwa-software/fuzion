@@ -76,8 +76,8 @@ GOT: y String
 EXP: y bool
 GOT: y bool
 
-EXP: y i32
-GOT: y i32
+EXP: y i64
+GOT: y i64
 
 EXP: y codepoint
 GOT: y codepoint

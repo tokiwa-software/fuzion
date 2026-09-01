@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-fib := memoize (lock_free.Map i32 i32) i32 i32 n->
+fib := memoize (lock_free.Map i64 i64) i64 i64 n->
   if n <= 1 then 1 else fib n-1 + fib n-2
 
 (1..45) .map fib .for_each say

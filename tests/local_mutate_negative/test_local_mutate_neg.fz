@@ -36,7 +36,7 @@ test_local_mutate_neg is
     #
     l0 := [0,8,15,47,11]
 
-    sum(l Sequence i32) =>
+    sum(l Sequence i64) =>
 
       # define a local type `m` to identify the mutate effect:
       #

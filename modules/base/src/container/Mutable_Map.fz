@@ -27,7 +27,7 @@ public Mutable_Map(K type : property.equatable, V type) ref is
 
   # number of entries in this map
   #
-  public size i32 => abstract
+  public size i64 => abstract
 
 
   # get the value k is mapped to, or nil if none.

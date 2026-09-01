@@ -26,7 +26,7 @@
 #
 test_interval is
 
-  test(x interval i32) =>
+  test(x interval i64) =>
     say "$x$(" "*(10 - ($x).codepoint_count))$(
         for
           s := "", s+" "+(if x.contains i then "$i" else " "*($i).byte_count)

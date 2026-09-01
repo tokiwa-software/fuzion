@@ -47,9 +47,9 @@ loop_variant_1 =>
 
 
   test_4 is
-    n := 10
+    n := i32 10
 
-    for i in (0..n)
+    for i in ((i32 0)..n)
     variant (n-i)    # 4. should flag an error: wrong type of variant
     do
       say "i=$i"
