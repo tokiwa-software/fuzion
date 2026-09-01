@@ -35,6 +35,7 @@
 #     interval 1 7 3      # 1, 4, 7
 #     interval 1 8 3      # 1, 4, 7  (10 would exceed through)
 #     interval 7 1 -3     # 7, 4, 1
+#     interval 5 5 0      # 5
 #
 # If `through` is `nil`, the interval is unbounded and limited only by type `T` range.
 #
@@ -52,7 +53,7 @@ public interval(T type : integer,
   : container.Set T
 
 pre
-  debug: ((step.sign = 0): through=from)  # step cannot be zero unless from=through
+  debug: ((step.sign = 0): through = from)  # step cannot be zero unless from=through
 is
 
 
@@ -77,17 +78,24 @@ is
 
   # the values of this interval as a list, in order
   #
-  # Empty if `step` leads from `through`.
-  # Otherwise, from `from`, advancing by `step`
-  # until `through` is reached or `T` overflows.
+  # Returns an empty list if `step` moves in the opposite direction of `through`.
+  #
+  # For `step = 0` the result is the single element `from`: the
+  # precondition guarantees `from = through` in that case.
+  #
+  # Otherwise starts at `from` and advances by `step` until `through`
+  # is passed or `T` overflows.
   #
   public redef as_list list T =>
-    if (through ? nil => false
-                | thru T => step.sign = (from ⋄ thru).sign) then
+    if (through ? nil    => false
+                | thru T => from != thru && step.sign = (from ⋄ thru).sign)
       nil
     else
-      tail => (from+?step ? next T => (interval next through step).as_list
-                          | nil    => nil)
+      tail => if step.sign = 0
+                nil
+              else
+                (from+?step ? next T => (interval next through step).as_list
+                            | nil    => nil)
       list T .of from tail finite
 
 
@@ -108,6 +116,22 @@ is
       nil =>
         T.from_u32 as_list.count.as_u32
 
+  # get the first element of this interval
+  #
+  # Performance O(1)
+  #
+  public redef first option T
+  =>
+    match through
+      thru T =>
+        if from = thru then
+          from
+        else if step.sign = (from ⋄ thru).sign then
+          nil
+        else
+          from
+      nil =>
+        from
 
   # the last element of this interval, `nil` if there is none
   #
@@ -142,7 +166,7 @@ is
       l T =>
         interval l first -step
       nil =>
-        interval T.zero T.zero T.zero
+        interval T.one T.zero T.one # empty interval
 
 
   # does this interval contain the given value?
