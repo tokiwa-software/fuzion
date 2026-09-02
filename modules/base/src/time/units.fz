@@ -17,47 +17,48 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature time.precision
+#  Source code of Fuzion standard library feature time.units
 #
 # -----------------------------------------------------------------------
 
-# precision -- unit feature to group time precision related features
-#
-public precision is
 
-  # unit feature denoting precision to the year
+# units -- unit feature to group time unit related features
+#
+public units is
+
+  # unit feature denoting the time unit year
   #
   public year is
 
-  # unit feature denoting precision to the month
+  # unit feature denoting the time unit month
   #
   public month is
 
-  # unit feature denoting precision to the day
+  # unit feature denoting the time unit day
   #
   public day is
 
-  # unit feature denoting precision to the hour
+  # unit feature denoting the time unit hour
   #
   public hour is
 
-  # unit feature denoting precision to the minute
+  # unit feature denoting the time unit minute
   #
   public minute is
 
-  # unit feature denoting precision to the second
+  # unit feature denoting the time unit second
   #
   public second is
 
-  # unit feature denoting precision to the millisecond
+  # unit feature denoting the time unit millisecond
   #
   public milli_second is
 
-  # unit feature denoting precision to the nanosecond
+  # unit feature denoting the time unit nanosecond
   #
   public nano_second is
 
 
-  # precision level
+  # time unit
   #
   public val : choice year month day hour minute second milli_second nano_second is
