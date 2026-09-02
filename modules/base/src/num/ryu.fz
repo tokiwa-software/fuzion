@@ -31,7 +31,7 @@
 #
 # NYI: UNDER DEVELOPMENT: lacks documentation
 #
-public ryū(public T type : float) is
+public ryū(T type : float) is
 
   five := T.from_u32 5
 
@@ -888,7 +888,7 @@ public ryū(public T type : float) is
         else
           (dv, dp -  1, dm, false, true, e10)
       else if q < 63
-        a := i64.one << q-1
+        a := 1 << q-1
         b := mv & a-1
         (dv, dp, dm, false, b=0, e10)
       else
@@ -1003,9 +1003,9 @@ public ryū(public T type : float) is
     # the float as a decimal string
     full =>
       if exponent < 0
-        "0.$("0" * -{exponent+1}.as_i32)$(output_as_string output output_length)"
+        "0.$("0" * -(exponent+1))$(output_as_string output output_length)"
       else if exponent + 1 >= output_length
-        "$(output_as_string output output_length)$("0" * {exponent+1-output_length}.as_i32).0"
+        "$(output_as_string output output_length)$("0" * (exponent+1-output_length)).0"
       else
         for str0 := "** internal error **", str
             idx in i64 0 .. output_length

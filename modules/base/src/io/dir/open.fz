@@ -30,8 +30,5 @@ module:public open(module dd Directory_Descriptor,
   # close dir when de-instating effect
   #
   public redef finally unit =>
-    #
-    # NYI: UNDER_DEVELOPMENT:
-    #
     if fzE_dir_close dd != 0
-      fuzion.runtime.fault.env.cause ("io.dir.open.finally", "closing directory failed.")
+      Ignored_Failure.env.register_failure (error "io.dir.open.finally: closing directory failed." fzE_last_error)

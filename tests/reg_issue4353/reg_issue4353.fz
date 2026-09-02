@@ -27,4 +27,4 @@ pre
 =>
   map (.values.0)
 
-say ([tuple 42].unzip2 i32)
+say ([tuple 42].unzip2 i64)

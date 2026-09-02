@@ -29,17 +29,17 @@ module:public response_message(
   # the request message for which this response was generated
   public req option http.request_message,
   # the major version
-  public version_major i32,
+  public version_major i64,
   # the minor version
-  public version_minor i32,
+  public version_minor i64,
   # the status code of the response
-  public status_code i32,
+  public status_code i64,
   # the reason-phrase of the response
   public reason_phrase String,
   # the header fields
   public redef header container.Map String String,
   # the body of the response
-  public redef body io.Read_Handler) : Message
+  public redef body i64 -> choice (Sequence u8) io.end_of_file error) : Message
 is
   # the start line of the message, for a response this is also called status line
   public redef start_line String => status_line
@@ -53,17 +53,17 @@ is
     # the request message for which this response was generated
     req option http.request_message,
     # the major version
-    version_major i32,
+    version_major i64,
     # the minor version
-    version_minor i32,
+    version_minor i64,
     # the status code of the response
-    status_code i32,
+    status_code i64,
     # the reason-phrase of the response
     reason_phrase String,
     # the header fields
     header Sequence (String,String),
     # the body of the response
-    body io.Read_Handler) http.response_message
+    body i64 -> choice (Sequence u8) io.end_of_file error) http.response_message
   =>
     http.response_message req version_major version_minor status_code reason_phrase (as_header_map header) body
 
@@ -77,11 +77,11 @@ is
   #
   public type.new(
     # the status code of the response
-    status_code i32,
+    status_code i64,
     # the header fields
     header Sequence (String,String),
     # the body of the response
-    body io.Read_Handler) http.response_message
+    body i64 -> choice (Sequence u8) io.end_of_file error) http.response_message
     pre
       debug: http.reason_phrases[status_code].ok
   =>

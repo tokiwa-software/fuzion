@@ -28,7 +28,7 @@ public Message ref is
 
 
 
-  module version_str(major, minor i32) => "HTTP/" + (major > 1 && minor = 0 ? $major : "$major.$minor")
+  module version_str(major, minor i64) => "HTTP/" + (major > 1 && minor = 0 ? $major : "$major.$minor")
 
 
   # the start line of the message, for requests it is the request line, for responses the status line
@@ -47,19 +47,20 @@ public Message ref is
   # array u8, nil or a specify an LM to read from.
   # The question is what do we need?
   #
-  public body io.Read_Handler => abstract
+  public body i64 -> choice (Sequence u8) io.end_of_file error => abstract
 
 
   # get the body of the message as a String
   #
-  public body_as_string String =>
+  public body_as_string outcome String =>
     lm : mutate is
     lm ! ()->
-      io
-        .buffered lm
-        .reader body ! ()->
-          _ : String is
-            public redef utf8 Sequence u8 := (io.buffered lm).read_fully
+      r : io.buffered lm .Reader is
+        public redef read (max_count i64) choice (Sequence u8) io.end_of_file error =>
+          body max_count
+
+      io.buffered lm .Reader.instate r ()->
+        (io.buffered lm).read_fully.bind String.from
 
 
   # the whole message as a sequence of bytes
@@ -67,18 +68,18 @@ public Message ref is
   public bytes(
     # the maximum number of bytes to read from the body,
     # does not account for the size of the header
-    max_body_bytes i32) Sequence u8
+    max_body_bytes i64) Sequence u8
   =>
     # NYI: BUG: read fully
-    b := match body.read max_body_bytes
+    b := match body max_body_bytes
       s Sequence => s
       * => []
-    (start_line + header_as_canonical_string + crlf).utf8 ++ b
+    (start_line + header_as_canonical_string.unwrap + crlf).utf8 ++ b
 
 
   # String representation of the message header
   #
-  public redef as_string String => start_line + header_as_canonical_string + crlf
+  public redef as_string String => start_line + header_as_canonical_string.unwrap + crlf
 
 
   # String representation of the whole message, i.e. header and body
@@ -86,9 +87,9 @@ public Message ref is
   public as_string_with_body(
     # the maximum number of bytes to read from the body,
     # does not account for the size of the header
-    max_body_bytes i32) outcome String
+    max_body_bytes i64) outcome String
   =>
-    match body.read max_body_bytes
+    match body max_body_bytes
       s Sequence => $Message.this + String.from s
       e error => e
       io.end_of_file => $Message.this
@@ -124,9 +125,7 @@ public Message ref is
   # Host: www.example.com
   # User-Agent: Mozilla/5.0
   #
-  # NYI: PERFORMANCE: compute this only once
-  #
-  header_as_canonical_string =>
+  header_as_canonical_string := once ()->
     header
       .items
       .map kv->
@@ -171,8 +170,8 @@ module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map
     fields
 
 
-module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome io.Read_Handler =>
-  flow.exception unit io.Read_Handler ()->
+module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome (i64 -> choice (Sequence u8) io.end_of_file error) =>
+  flow.exception unit (i64 -> choice (Sequence u8) io.end_of_file error) ()->
 
     cause(s String) void =>
       (flow.exception unit).env.cause (error s)

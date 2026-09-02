@@ -42,26 +42,6 @@ private:public pipe : effect is
   public used concur.atomic bool := concur.atomic bool .new false
 
 
-
-
-
-  # read bytes from a read end
-  #
-  read_handler (desc i64) : io.Read_Handler is
-    public redef read (max_count i32) choice (Sequence u8) io.end_of_file error =>
-      pipe_buffer_size := io.buffer_size.as_i32
-      arr := array u8 _ pipe_buffer_size _->0
-      res := fzE_pipe_read desc arr.internal_array.data arr.count
-      if res = -1
-        _ := fzE_pipe_close desc
-        error "failed reading from $(desc)" fzE_last_error
-      else if res = 0
-        _ := fzE_pipe_close desc
-        io.end_of_file
-      else
-        arr.slice 0 res
-
-
   # with writer for one pipe
   #
   with_writer(T type, LM type : mutate, w () -> outcome unit, r i64 -> T) outcome T ! concur.atomic_access
@@ -74,16 +54,7 @@ private:public pipe : effect is
       used.write true
       read_desc, write_desc := (pipefd[0], pipefd[1])
 
-      # write bytes to a write end
-      #
-      writer : (io.buffered LM).Writer is
-        public redef writer (bytes Sequence u8) outcome unit =>
-          if fzE_pipe_write write_desc bytes.as_array.internal_array.data bytes.count = -1
-            error "failed writing to $(write_desc)" fzE_last_error
-          else
-            unit
-
-      match (io.buffered LM).Writer.instate writer w
+      match (io.buffered LM).Writer.instate (pipe_writer LM write_desc "writing in $(pipe.this.type.name)") w
         unit =>
           _ := fzE_pipe_close write_desc
           r read_desc
@@ -109,8 +80,10 @@ private:public pipe : effect is
       used.write true
       read_desc, write_desc := (pipefd[0], pipefd[1])
 
-      match (io.buffered LM).reader (read_handler read_desc) ! r
+      match (io.buffered LM).Reader.instate (pipe_reader LM read_desc "reading in $(pipe.this.type.name)") r
         unit =>
+          # NYI: UDNER DEVELOPMENT: this explicit closing
+          # should probably be removed
           _ := fzE_pipe_close read_desc
           w write_desc
         e error => e
@@ -132,3 +105,55 @@ private:public pipe : effect is
         _ := fzE_pipe_close fd
       else
         unit # ignore
+
+
+# implementation of a Reader effect to
+# allow reading from a pipe
+#
+module pipe_reader (
+  # the mutate that is used internally by the Reader
+  LM type: mutate,
+  # the descriptor of the pipe
+  desc i64,
+  # the error message to display on read failure
+  error_msg String) : (io.buffered LM).Reader is
+
+  # how many bytes are read at a time
+  pipe_buffer_size := io.buffer_size.as_i32
+
+  # POSIX.1 requires PIPE_BUF to be at least 512 bytes
+  # NYI: UNDER DEVELOPMENT: post conditions for fields not supported yet
+  check debug : pipe_buffer_size >= 512
+
+  public redef read (max_count i64) choice (Sequence u8) io.end_of_file error =>
+    arr := array u8 _ pipe_buffer_size _->0
+    res := fzE_pipe_read desc arr.internal_array.data arr.count.as_i32
+    if res = -1
+      error "$error_msg." fzE_last_error
+    else if res = 0
+      io.end_of_file
+    else
+      arr.slice 0 res
+
+
+# implementation of a Writer effect to
+# allow writing to a pipe
+#
+module pipe_writer (
+  # the mutate that is used internally by the Reader
+  LM type: mutate,
+  # the descriptor of the pipe
+  desc i64,
+  # the error message to display on write failure
+  error_msg String
+) : (io.buffered LM).Writer is
+
+  public redef writer (bytes Sequence u8) outcome unit =>
+    for tbw := bytes.as_array, tbw.drop res .as_array
+        res := fzE_pipe_write desc tbw.internal_array.data tbw.count.as_i32 .as_i64
+    while res >= 0 && res != tbw.length
+    else
+      if res < 0
+        error "$error_msg. Tried writing $(tbw.count) bytes." fzE_last_error
+      else
+        unit

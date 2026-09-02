@@ -27,12 +27,13 @@ reg_issue5967 =>
 
   lines =>
     LM : mutate is
-    o := LM ! ()->(io.stdin.reader LM) ! ()->
-      for
-        li Sequence String := [], li ++ [l]
-        l := io.buffered LM .read_line ? str String => str | * => ""
-      while l != ""  else
-        li
+    o := LM ! ()->
+      io.buffered LM .Reader.instate (io.stdin.reader LM) ()->
+        for
+          li Sequence String := [], li ++ [l]
+          l := io.buffered LM .read_line ? str String => str | * => ""
+        while l != ""  else
+          li
     o.as_array
 
   scheme(ls) is
@@ -40,14 +41,14 @@ reg_issue5967 =>
     a := array2 cp.count cp[0].count i,j->cp[i][j]
     w => a.length1
     h => a.length0
-    at(l,c i32) =>
+    at(l,c i64) =>
       if 0 <= l < h && 0 <= c < w then a[_,l,c] else "."
 
-    number(l, c i32) is
+    number(l, c i64) is
       len := (0.. .filter (x -> !(at l c+x).is_ascii_digit)).first.or_panic
-      ok bool := (-1..1) ∃ y -> (-1..len) ∃ x -> (at l+y c+x) .is_symbol
-      val i32 := ls[l].substring c c+len
-                      .parse_i32.or_panic
+      ok bool := ((i64 -1)..1) ∃ y -> ((i64 -1)..len) ∃ x -> (at l+y c+x) .is_symbol
+      val i64 := ls[l].substring c (c+len)
+                      .parse_i64.or_panic
 
     numbers =>
       a.index_pairs.flat_map number ij->
@@ -57,7 +58,7 @@ reg_issue5967 =>
 
     parts =>
       numbers.map (x -> if x.ok then x.val else 0)
-             .fold i32.type.sum
+             .fold i64.type.sum
 
   s := scheme lines
   p := s.parts

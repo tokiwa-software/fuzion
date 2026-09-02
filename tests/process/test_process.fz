@@ -28,7 +28,7 @@ test_process =>
 
 
   # create string of given byte size
-  get_str(byte_size i32) =>
+  get_str(byte_size i64) =>
     _ : String is
       public redef utf8 Sequence u8 =>
         (1..byte_size)
@@ -45,10 +45,11 @@ test_process =>
 
   test "write to stdin of process" ()->
     (os.process.start "cat").bind p->
-      _ := p.write_string "Hello from the other side."
-      # closing input so cat knows we are done and must write to standard out
-      say p.close_in
-      _ := lm ! ()->
+      lm ! ()->
+        _ := p.with_in unit lm ()->
+          _ := (io.buffered lm).Writer.env.write "Hello from the other side."
+        # closing input so cat knows we are done and must write to standard out
+        say p.close_in
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).or_panic
 
@@ -56,7 +57,7 @@ test_process =>
 
   test "read stdout of process" ()->
     (os.process.start "echo" ["eecchhoo"]).bind p->
-      _ := lm ! ()->
+      lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).or_panic
 
@@ -64,7 +65,7 @@ test_process =>
 
   test "pass environment variable" ()->
     (os.process.start "printenv" [] (container.map_of [("MYENVVAR", "content")])).bind p->
-      _ := lm ! ()->
+      lm ! ()->
         _ := p.with_out unit lm ()->
           out := ((io.buffered lm).read_string 1E9)
             .or_panic
@@ -78,7 +79,7 @@ test_process =>
   test "feed output of process 1 to process 2" ()->
     (os.process.start "echo" ["'feed me to cat'"]).bind p->
       (p | ["cat"]).bind p2->
-        _ := lm ! ()->
+        lm ! ()->
           _ := p2.with_out unit lm ()->
             say ((io.buffered lm).read_string 1E9).or_panic
 
@@ -87,7 +88,7 @@ test_process =>
   test "1kb argument, piped to another process" ()->
     (os.process.start "echo" ["-n", (get_str 1E3)]).bind p->
       (p | ["cat"]).bind p2->
-        _ := lm ! ()->
+        lm ! ()->
           _ := p2.with_out unit lm ()->
             say ((io.buffered lm).read_string 1E9).or_panic.byte_count
           say p2.wait

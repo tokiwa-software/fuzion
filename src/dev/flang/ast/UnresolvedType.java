@@ -875,7 +875,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       (outer.isValueArgument());
 
     var tp = new Feature(pos(),
-                         outer.visibility(),
+                         Visi.UNSPECIFIED,
                          0,
                          freeTypeConstraint().resolve(res, context),
                          _name,

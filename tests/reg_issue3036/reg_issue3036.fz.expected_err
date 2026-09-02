@@ -6,7 +6,7 @@ Types inferred for first type parameter 'T':
 'bool' found at --CURDIR--/reg_issue3036.fz:24:6:
 say (8 %% 5 = 3)
 -----^^^^^^
-'i32' found at --CURDIR--/reg_issue3036.fz:24:15:
+'i64' found at --CURDIR--/reg_issue3036.fz:24:15:
 say (8 %% 5 = 3)
 --------------^
 

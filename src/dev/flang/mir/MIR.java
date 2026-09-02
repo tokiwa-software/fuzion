@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.mir;
 
-import dev.flang.ast.AbstractAssign;  // NYI: Remove dependency!
-import dev.flang.ast.AbstractCall;  // NYI: Remove dependency!
-import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
+import dev.flang.ast.AbstractAssign;  // NYI: CLEANUP: Remove dependency!
+import dev.flang.ast.AbstractCall;  // NYI: CLEANUP: Remove dependency!
+import dev.flang.ast.AbstractFeature;  // NYI: CLEANUP: Remove dependency!
 
 import dev.flang.ir.IR;
 

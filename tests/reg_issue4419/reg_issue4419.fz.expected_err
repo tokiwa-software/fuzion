@@ -1,13 +1,13 @@
 
 --CURDIR--/reg_issue4419.fz:25:8: error 1: Incompatible types when passing argument in a call
-_ => m (id (Sequence i32) [])
+_ => m (id (Sequence i64) [])
 -------^^^^^^^^^^^^^^^^^^^^^^
 Actual type for argument #1 's' does not match expected type.
 In call to          : 'm'
-expected formal type: 'array i32'
-actual type found   : 'Sequence i32'
-assignable to       : 'Sequence i32'
-for value assigned  : '(id (Sequence i32) [])'
-To solve this, you could change the type of the target 's' to 'Sequence i32' or convert the type of the assigned value to 'array i32'.
+expected formal type: 'array i64'
+actual type found   : 'Sequence i64'
+assignable to       : 'Sequence i64'
+for value assigned  : '(id (Sequence i64) [])'
+To solve this, you could change the type of the target 's' to 'Sequence i64' or convert the type of the assigned value to 'array i64'.
 
 one error.

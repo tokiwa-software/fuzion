@@ -64,13 +64,13 @@ hello_world is
     # read someone's name from standard input
     #
     get_name =>
-      (io.stdin.reader lm) ! ()->
+      io.buffered lm .Reader.instate (io.stdin.reader lm) ()->
         (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
 
     # greet someone with the name given
     #
     greet(name String) is
-      say "Hello, {name}!"
+      say "Hello, $(name)!"
 
     # greet the user
     #
@@ -79,7 +79,7 @@ hello_world is
     # you can access any feature - even argument features of other features
     # from outside
     #
-    say "How are you, {x.name}?"
+    say "How are you, $(x.name)?"
 ```
 
 This `hello_world` example demonstrates one important concept in Fuzion quite
@@ -95,7 +95,7 @@ ex_gcd is
 
   # return common divisors of a and b
   #
-  common_divisors_of(a, b i32) =>
+  common_divisors_of(a, b i64) =>
     max := max a.abs b.abs
     (1..max).flat_map i->
       if (a % i = 0) && (b % i = 0)
@@ -106,7 +106,7 @@ ex_gcd is
 
   # find the greatest common divisor of a and b
   #
-  gcd(a, b i32)
+  gcd(a, b i64)
     pre
       safety: (a != 0 || b != 0)
     post
@@ -144,7 +144,7 @@ generator_effect is
 
   # bind the yield operation dynamically
   #
-  (gen i32 (i -> say "yielded $i")) ! ()->
+  (gen i64 (i -> say "yielded $i")) ! ()->
     [0,8,15].as_list.traverse
 ```
 

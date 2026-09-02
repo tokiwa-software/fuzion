@@ -28,7 +28,7 @@
 public bitset : choice nil          # empty bitset
                        u64          # bitset with one element
                        (array bool) # general
-                , property.equatable
+                , property.equatable # NYI: UNDER DEVELOPMENT: implement orderable instead of equatable
 is
 
   # test if the given bit is part of this bitset
@@ -39,9 +39,11 @@ is
       x u64   => bit = x
       a array => a.length.as_u64 > bit && a[bit]
 
+
   # alternative for has using []
   #
   public index[] (I type : integer, bit I) bool => has bit.as_u64
+
 
   # set the given bit
   public put (bit u64) bitset =>
@@ -56,6 +58,7 @@ is
         # mapped trie.
         a array => a.put bit true false unit
 
+
   # union of two bitsets
   #
   public infix ∪ (other bitset) bitset =>
@@ -69,6 +72,7 @@ is
           b array =>
             array bool _ (max a.length b.length) (i -> (has i.as_u64) || (other.has i.as_u64))
 
+
   # get the highest bit in this bitset
   #
   public highest option u64 =>
@@ -77,18 +81,20 @@ is
       x u64   => x
       a array => a.length.as_u64-1
 
+
   # equality
   #
   public fixed redef type.equality(a, b bitset) bool =>
      h := a.highest >>= i -> b.highest >>= j -> max i j
      match h
-       nil   => a.highest!! && b.highest!!
+       nil   => !a.highest && !b.highest
        m u64 =>
          for
            r := true, r && (a.has i = b.has i)
            i in u64 0 .. m
          else
            r
+
 
   # create a string representation of a bitset of the form "{2, 4}"
   #
@@ -108,6 +114,7 @@ is
   # an empty bitset
   #
   public fixed type.empty bitset => nil
+
 
   # monoid of bitset with infix ∪ operation.
   #

@@ -27,13 +27,13 @@
 # in the case of an IPv4 address, this is the canonical mapping of that
 # address to an IPv6 address.
 #
-public ip_address (val u128) : property.equatable is
+public ip_address (val u128) : property.orderable is
 
   # is the stored IP address an IPv4 or IPv6 address?
   #
   public version ip_version =>
     ipv4_prefix_netmask := u128 0x0000_0000_0000_0000 0x0000_ffff_0000_0000
-    if (val & ipv4_prefix_netmask) = (ipv4_prefix_netmask & ipv4_prefix_netmask)
+    if (val & ipv4_prefix_netmask) = ipv4_prefix_netmask
       family.ipv4
     else
       family.ipv6
@@ -41,19 +41,34 @@ public ip_address (val u128) : property.equatable is
 
   # renders the IP address as a string
   #
-  # NYI: ENHANCEMENT: should we add the well-known IPv4 format?
-  #
   public redef as_string String =>
-    s := val.as_string 32 16
-            .chunk 4
+    match version
+      family.ipv4 =>
+        # extract the last 32 bits and format as dotted decimal
+        ipv4_val := (val & u32.max.as_u128).as_u32
+        b0 := (ipv4_val >> 24) & 0xff
+        b1 := (ipv4_val >> 16) & 0xff
+        b2 := (ipv4_val >> 8)  & 0xff
+        b3 := ipv4_val & 0xff
 
-    String.join s ":"
+        "$(b0).$(b1).$(b2).$(b3)"
+      family.ipv6 =>
+        s := val.as_string 32 16
+                .chunk 4
+
+        String.join s ":"
 
 
   # are two given IP addresses equal?
   #
   public redef type.equality (a, b ip_address.this) bool =>
     a.val = b.val
+
+
+  # dummy orderable implementation
+  #
+  public redef type.lteq (a, b ip_address.this) bool =>
+    a.val <= b.val
 
 
   # creates an ip_address from a Sequence of u8 like returned by the
@@ -122,7 +137,7 @@ public ip_address (val u128) : property.equatable is
       # NYI: BUG: this is a hack, write a proper parser
       # NYI: CLEANUP: move this code into from_string_v6
       match sv6.index_of ""
-        i i32 =>
+        i i64 =>
           f, b := sv6.split_at i
           amount_of_padding_zeros := 8 - f.count - b.count
           check amount_of_padding_zeros > 0

@@ -40,5 +40,5 @@ module:public a is
 
   field := 0
 
-  public get_field i32 =>
+  public get_field i64 =>
     field

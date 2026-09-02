@@ -54,10 +54,6 @@
 public mutate : linear_effect is
 
 
-  # does this effect support abort?
-  public redef abortable bool => false
-
-
   # shorthand to access effect type
   #
   module M := mutate.this.type
@@ -157,7 +153,7 @@ public mutate : linear_effect is
   # 'mutate' effect in the current environment
   #
   public new (
-    public T type,
+    T type,
 
     # initial value, will be updated by 'put' or 'infix <-'.
     mutable_value T

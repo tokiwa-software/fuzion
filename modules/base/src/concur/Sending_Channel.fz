@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# an interface for a send only Channel
+# an interface for a send-only Channel
 #
 public Sending_Channel(T type) ref is
 

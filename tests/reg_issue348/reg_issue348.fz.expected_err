@@ -7,7 +7,7 @@ Callchain that lead to this point:
 effect environment '--empty--' for call to 'reg_issue348.type.m.type.from_env' at {base.fum}/mutate/array.fz:97:5:
     mutate.this.env.array T data
 ----^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to '(reg_issue348.type.m.type.array.type reg_issue348.a).new#3 i32' at --CURDIR--/reg_issue348.fz:33:10:
+effect environment '--empty--' for call to '(reg_issue348.type.m.type.array.type reg_issue348.a).new#3 i64' at --CURDIR--/reg_issue348.fz:33:10:
   arr := m.array a .new 10 _->a
 ---------^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'reg_issue348'

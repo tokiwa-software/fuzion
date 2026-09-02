@@ -90,13 +90,13 @@ is
         # h1 is the mutable index within the current first heap, this is updated
         # by the function passed to the array constructor.
         #
-        h1 := m.env.new i64.zero
+        h1 := m.env.new 0
 
         na := array a.length i->
           # index in current pair of heaps
           hi := i & (heap_size*2-1)
           # reset h1 in case we start new pair of heaps
-          h1 <- (if (hi = 0) 0 else h1)
+          h1 <- if hi = 0 then 0 else h1
           # index within second heap
           h2 := hi - h1
 
@@ -147,7 +147,7 @@ is
       else if !less_than_or_equal sorted_array.this[m] key then binary_search l m-1
       else                                                 m
 
-    binary_search i64.zero length-1
+    binary_search 0 length-1
 
 
   # find index using a comparator function

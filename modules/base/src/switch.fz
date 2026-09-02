@@ -52,9 +52,9 @@ is
   public postfix ?? bool => exists
 
 
-  # shorthand postfix operator for '!exists'
+  # shorthand postfix operator for 'or_panic'
   #
-  public postfix !! bool => !exists
+  public postfix ! A ! panic => or_panic
 
 
   # shorthand prefix operator for '!exists'
@@ -96,12 +96,30 @@ is
       B   => f()
 
 
-  # unwraps an switch if it exists, returns default value otherwise.
+  # unwraps a switch if it exists, returns default value otherwise.
   #
   public or_else(default Lazy A) A =>
     switch.this ? v A => v
                 |   B => default
 
+
+
+  # value of a switch, or, if this switch contains a `B`, the
+  # result of `f` applied to that `B`.
+  #
+  # in contrast to `or_else`, `f` receives the `B` value, so this can be
+  # used to handle a failure without a `match`, e.g. to log an error
+  # that cannot be propagated:
+  #
+  # example:
+  #
+  #     (fuzion.sys.fileio.close fd)
+  #       .otherwise Ignored_Failure.env.register_failure
+  #
+  public otherwise(f B -> A) A =>
+    match switch.this
+      a A => a
+      b B => f b
 
 
   # converts switch into a list of either a single element in case
@@ -126,7 +144,7 @@ is
   public as_outcome outcome A
   =>
     switch.this ? a A => a
-                | B => error "switch.as_outcome: no error message provided"
+                | B => error "converted to outcome from '$(switch.this.type.name)' with no error message provided"
 
 
   # convert this switch to an outcome
@@ -160,7 +178,7 @@ is
   # get A or panic with `B.as_string`
   #
   public or_panic A =>
-    or_panic b->"'switch.or_panic' called on '$(switch.this.type.name)' that is '$b'"
+    or_panic b->"'or_panic' called on '$(switch.this.type.name)' that is '$b'"
 
 
   # get A or panic with result of `msg`
@@ -199,7 +217,7 @@ is
 
   # equality implementation
   #
-  # result is only true if both x and y or
+  # result is only true if both x and y are
   # of choice type A and x.A = y.A
   #
   public redef fixed type.equality(x, y switch A B) bool

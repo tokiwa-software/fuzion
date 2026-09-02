@@ -41,7 +41,7 @@ module multi is
 
   # apply parser between m and n times, return results as sequence
   #
-  public many_m_n (I, O type, m, n i32, p Parser I I O)  Parser I I (Sequence O)
+  public many_m_n (I, O type, m, n i64, p Parser I I O)  Parser I I (Sequence O)
   pre m<=n
       n>0
   =>

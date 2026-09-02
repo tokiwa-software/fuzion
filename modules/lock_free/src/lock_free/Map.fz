@@ -103,7 +103,7 @@ is
   # remove a child node and return a new container_node
   remove(pos, flag u32, g uid)
     pre
-      debug: (array.indices u32).contains pos
+      debug: array.length > pos.as_i64
     post
       debug: array.length = result.array.length + 1
   =>
@@ -272,8 +272,8 @@ root_node(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK
 
 
 # the ctrie
-private:public Map(public CTK type : property.hashable,
-                   public CTV type,
+private:public Map(CTK type : property.hashable,
+                   CTV type,
                    root concur.atomic (root_node CTK CTV),
                    public read_only bool) ref : container.Mutable_Map CTK CTV
 is
@@ -465,7 +465,7 @@ is
   clean(nd option (Indirection_Node CTK CTV), lev u32) =>
     _ := nd.bind i->
       m := gcas_read i
-      _ := match m.data
+      match m.data
         c container_node =>
           _ := gcas i m (compress c lev i.gen)
         * =>
@@ -661,7 +661,7 @@ is
 
 
   # the size of the ctrie
-  public redef size i32 =>
+  public redef size i64 =>
     items.count
 
 
@@ -704,6 +704,16 @@ is
   # #       sp.as_persistent_map
 
 
+  # create an immutable copy of this mutable map
+  #
+  public fixed redef as_map container.Map CTK CTV =>
+    s := snapshot true
+    _ : container.Map CTK CTV is
+      public redef size i64 => s.size.as_i64
+      public redef index [] (k CTK) option CTV => s[k]
+      public redef items Sequence (tuple CTK CTV) => s.items
+
+
   # initialize a new ctrie
   public fixed redef type.empty lock_free.Map CTK CTV =>
 
@@ -713,15 +723,3 @@ is
       lock_free.indirection_node (lock_free.Main_Node (lock_free.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
 
     lock_free.Map (concur.atomic (lock_free.root_node CTK CTV) .new initial_root_node) false
-
-
-  # lock_free.Map.from_entries -- routine to initialize a ctrie from a sequence of key value tuples
-  #
-  # This feature creates an instance of a ctrie.
-  #
-  # example: lock_free.Map.from_entries [(key1, value1), (key2, value2)]
-  #
-  public type.from_entries(kvs Sequence (tuple CTK CTV)) lock_free.Map CTK CTV =>
-    m := (lock_free.Map CTK CTV).empty
-    kvs.for_each (kv -> m.put kv.0 kv.1)
-    m

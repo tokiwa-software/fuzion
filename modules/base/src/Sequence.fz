@@ -33,7 +33,7 @@
 #
 # Heirs of Sequence must implement 'as_list'.
 #
-public Sequence(public T type) ref
+public Sequence(T type) ref
   : property.countable,
     property.orderable,
     property.hashable
@@ -172,15 +172,15 @@ is
   #
   # For Sequences that are not array backed, this might require time in O(count).
   #
-  public redef count i32
-  => (map i32 (_ -> 1)).fold i32.sum
+  public redef count i64
+  => (map _->1).fold i64.sum
 
 
   # count the number of elements in this Sequence that match the
   # given predicate. Note that this typically
   # runs forever if executed on an endless Sequence.
   #
-  public count(f T->bool) i32 =>
+  public count(f T->bool) i64 =>
     (filter f).count
 
 
@@ -354,7 +354,7 @@ is
       debug : from <= to
     post
       debug: result.finite.is_yes_or_unknown
-      debug: result.count = (to-from).as_i32
+      debug: result.count = (to-from).as_i64
   =>
     drop from
       .take to-from
@@ -373,9 +373,9 @@ is
   #
   #    at first result of condition function
   #
-  public split_at(c i32 | T->bool) tuple (Sequence T) (Sequence T) =>
+  public split_at(c i64 | T->bool) tuple (Sequence T) (Sequence T) =>
     match c
-      at i32 => ((take at), (drop at))
+      at i64 => ((take at), (drop at))
       cond T->bool =>
         split_at (first_index_of cond)
 
@@ -386,7 +386,7 @@ is
   #
   # NYI: UNDER DEVELOPMENT: do we want this public?
   #
-  first_index_of(F type: T->bool, cond F) i32
+  first_index_of(F type: T->bool, cond F) i64
   =>
     for i:=0, i+1
         el in Sequence.this
@@ -486,12 +486,15 @@ is
 
   # create a Sequence that repeats the current Sequence `n` times.
   #
-  public infix *(n i32) Sequence T
+  public infix *(n i64) Sequence T
     pre
       debug: n >= 0
   =>
-    if n <= 0 || is_empty then (Sequence T).empty
-                          else Sequence.this ++ Sequence.this * (n-1)
+    for i   := n                , i-1
+        res := Sequence T .empty, res ++ Sequence.this
+    while i > 0
+    else
+      res
 
 
   # create a lazy list of all the tails of this Sequence, including the complete Sequence
@@ -811,7 +814,7 @@ is
   #
   # Complexity: if Sequence is array backed O(1) otherwise O(n)
   #
-  public nth(n i32) option T
+  public nth(n i64) option T
     pre
       debug: n ≥ 0
   =>
@@ -827,8 +830,8 @@ is
   # Sequence is_array_backed.
   #
   public is_valid_index(I type : integer, i I) bool =>
-    (0 ≤ i.as_i32 && (if is_array_backed then i.as_i32 ≤ count
-                                         else !(drop i.as_i32).is_empty))
+    (0 ≤ i && (if is_array_backed then i.as_i64 ≤ count
+                                  else !(drop i).is_empty))
 
 
   # the nth element in the sequence, must exist
@@ -837,13 +840,13 @@ is
     pre
       debug: is_valid_index i
   =>
-    (nth i.as_i32).or_panic
+    (nth i.as_i64).or_panic
 
 
   # adds the corresponding index to
   # every element in the sequence
   #
-  public indexed Sequence (tuple i32 T) =>
+  public indexed Sequence (tuple i64 T) =>
     indexed 0
 
 
@@ -857,7 +860,7 @@ is
   # chop this Sequence into chunks of `chunk_size`.
   # the last chunk may be smaller than `chunk_size`.
   #
-  public chunk(chunk_size i32) Sequence (Sequence T)
+  public chunk(chunk_size i64) Sequence (Sequence T)
   pre debug: chunk_size > 0
   =>
     if is_empty
@@ -973,8 +976,8 @@ is
       c1 Cons =>
         match c1.tail
           c2 Cons => (c1.head, c2.head)
-          nil => panic "as_tuple called on single element Sequence"
-      nil => panic "as_tuple called on empty Sequence"
+          nil => panic "as_tuple called on single element $(Sequence.this.type.name)"
+      nil => panic "as_tuple called on empty $(Sequence.this.type.name)"
 
 
   # convert a Sequence's head into a 3-tuple.
@@ -1141,7 +1144,7 @@ is
   # `(0..5).sliding 3`
   # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
   #
-  public sliding (size i32) Sequence (Sequence T) =>
+  public sliding (size i64) Sequence (Sequence T) =>
     sliding size 1
 
 
@@ -1155,7 +1158,7 @@ is
   # `(0..9).sliding 3 2`
   # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
   #
-  public sliding (size i32, step i32) Sequence (Sequence T)
+  public sliding (size i64, step i64) Sequence (Sequence T)
     pre
       debug: size > 0
       debug: step > 0
@@ -1335,12 +1338,4 @@ is
   # Maximum number of elements shown for on a call to `as_string` for a non-finite
   # Sequence.
   #
-  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i32 => 10
-
-
-
-# helper features for knuth morris pratt algorithm
-#
-# NYI: UNDER DEVELOPMENT: move to Sequence/equatable once we can do universe.find_lm
-module find_lm : mutate is
-module Node(T type, module top Sequence T, module next once find_lm (option (Node T)), module rest option (Node T)) ref is
+  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i64 => 10

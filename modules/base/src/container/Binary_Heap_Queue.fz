@@ -34,11 +34,11 @@
 module:public Binary_Heap_Queue(
   # the mutate effect
   #
-  public LM type : mutate,
+  LM type : mutate,
 
   # type of the elements in the queue
   #
-  public T type,
+  T type,
 
   # comparator to determine priority of the elements
   #
@@ -313,7 +313,7 @@ module:public Binary_Heap_Queue(
     # b long_node_name
     #
     lvl(i i64) Sequence String
-      pre debug 5 : i64.zero <= i < elements.length
+      pre debug 5 : 0 <= i < elements.length
     =>
       str := elements[_,i].as_string
       str_len := {l := str.codepoint_count; l%%2 ? l+1 : l}

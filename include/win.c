@@ -724,10 +724,29 @@ void * fzE_thread_create(void *(*code)(void *),
 * Join with a running thread.
 */
 int fzE_thread_join(void * thrd) {
-  // NYI: BUG: error handling!
-  WaitForSingleObject((HANDLE)thrd, INFINITE);
+  DWORD result = WaitForSingleObject((HANDLE)thrd, INFINITE);
   CloseHandle((HANDLE)thrd);
-  return 0;
+  switch (result)
+    {
+      case WAIT_OBJECT_0:
+        return 0;
+      case WAIT_ABANDONED:
+        return 1;
+      case WAIT_TIMEOUT:
+        return 2;
+      case WAIT_FAILED:
+        {
+          DWORD err = GetLastError();
+          if (err == ERROR_INVALID_HANDLE)
+            {
+              return 3;
+            }
+          return 2;
+        }
+      default:
+        assert(false);
+        return -1;
+    }
 }
 
 
@@ -948,19 +967,57 @@ int64_t fzE_process_poll(int64_t p){
         return -1;
     }
 
-    // Process has exited.
-    CloseHandle((HANDLE)p);
     return (int64_t)status;
 }
 
+/**
+ * close process handle, free memory
+ */
+int fzE_process_close(int64_t p)
+{
+  return CloseHandle((HANDLE)p)
+    ? 0
+    : 1;
+}
 
-// always return 38, pipe creation not yet implemented
+
+// returns -1 on error or length of the hostname otherwise
 //
-// NYI: ENHANCEMENT: support pipe creation on Windows
+int fzE_hostname(char *buf, size_t nbytes)
+{
+    if (buf == NULL || nbytes == 0)
+        return -1;
+
+    if (gethostname(buf, (int)nbytes) == SOCKET_ERROR) {
+        return -1;
+    }
+
+    buf[nbytes - 1] = '\0';
+
+    return (int)strnlen(buf, nbytes);
+}
+
+
+// open a new pipe
 //
 int fzE_pipe_create(int64_t *fds)
 {
-  return 38; // ENOSYS on Linux
+  HANDLE hRead, hWrite;
+
+  SECURITY_ATTRIBUTES saAttr = {
+    .nLength = sizeof(SECURITY_ATTRIBUTES),
+    .bInheritHandle = FALSE,
+    .lpSecurityDescriptor = NULL
+  };
+
+  if (CreatePipe(&hRead, &hWrite, &saAttr, 0)) {
+    fds[0] = (int64_t) hRead;
+    fds[1] = (int64_t) hWrite;
+    return 0;
+  }
+  DWORD le = GetLastError();
+  assert(le > 0);
+  return (int)le;
 }
 
 // returns -1 on error, 0 on pipe exhausted/closed
@@ -988,7 +1045,6 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI: UNDER DEVELOPMENT: do we need to flush?
   return CloseHandle((HANDLE)desc)
     ? 0
     : -1;
@@ -1118,6 +1174,19 @@ void fzE_cnd_wait(void *cnd, void *mtx) {
       (CRITICAL_SECTION *)mtx,
       INFINITE);
   if (!ok)
+    {
+      fprintf(stderr, "*** SleepConditionVariableCS failed\n");
+      exit(EXIT_FAILURE);
+    }
+}
+
+void fzE_cnd_timedwait(void *cnd, void *mtx, int64_t time_ns) {
+  DWORD ms = (DWORD)(time_ns / 1000000);
+  BOOL ok = SleepConditionVariableCS(
+      (CONDITION_VARIABLE *)cnd,
+      (CRITICAL_SECTION *)mtx,
+      ms);
+  if (!ok && GetLastError() != ERROR_TIMEOUT)
     {
       fprintf(stderr, "*** SleepConditionVariableCS failed\n");
       exit(EXIT_FAILURE);

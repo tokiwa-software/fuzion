@@ -28,12 +28,12 @@
 # use `concur.thread_pool.env.submit` to
 # submit a task to the thread_pool.
 #
-public thread_pool(R type, size i32, code ()->R) outcome R =>
+public thread_pool(R type, size i64, code ()->R) outcome R =>
   (thread_pool size) ! code
 
 
 # concrete implementation of concur.Future
-# meant to run on a thread thread_pool
+# meant to run on a thread_pool
 #
 Computable_Future(
   # result type of the computation
@@ -69,7 +69,7 @@ Computable_Future(
 
 # simple, fixed size thread pool
 #
-private:public thread_pool(size i32) : effect
+private:public thread_pool(size i64) : effect
 pre debug: size > 0
 is
 
@@ -116,5 +116,7 @@ is
 
     # wait for all threads to finish
     thrds.for_each t->
-      # NYI: UNDER DEVELOPMENT: register failures somewhere
-      _ := t.join
+      match t.join
+        unit =>
+        e error =>
+          Ignored_Failure.env.register_failure (error "thread_pool failed joining thread $t, got $e")

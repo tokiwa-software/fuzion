@@ -349,7 +349,7 @@ public class Function extends AbstractLambda
                   {
                     var n = _names.get(i);
                     var arg = new Feature(n._pos,
-                                          Visi.PRIV,
+                                          i < cl.typeArguments().size() ? Visi.UNSPECIFIED : Visi.PRIV,
                                           0,
                                           at,
                                           n._name,

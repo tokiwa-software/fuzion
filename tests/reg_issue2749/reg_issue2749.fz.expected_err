@@ -1,0 +1,16 @@
+
+--CURDIR--/reg_issue2749.fz:27:14: error 1: Visibility of outer features type is more restrictive than features type.
+      public b
+-------------^
+Parent feature is here: --CURDIR--/reg_issue2749.fz:26:5:
+    _ : String is
+----^
+To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.
+
+
+--CURDIR--/reg_issue2749.fz:28:11: error 2: Called feature in precondition has more restrictive visibility than feature.
+      pre a > 0
+----------^
+To solve this, increase the visibility of 'ex.some_feat.a' or do not use this feature in the precondition.
+
+2 errors.

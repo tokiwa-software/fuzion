@@ -41,9 +41,9 @@ module:public Type ref is
 
   # string representation of this type to be used for debugging.
   #
-  # result has the form "Type of '<name>'", but this might change in the future
+  # result has the form "<name>", but this might change in the future
   #
-  public redef as_string String => "Type of '$name'"
+  public redef as_string String => name
 
 
   # convenience prefix operator to create a string from a value.
@@ -60,6 +60,9 @@ module:public Type ref is
   # There is no dynamic type of a type instance since this would result in an
   # endless hierarchy of types, so dynamic_type is redefined to just return
   # Type.type here.
+  #
+  # Note: Typechecking is undecidable when 'type' is a type, Mark B. Reinhold, 1989
+  # see: https://dspace.mit.edu/bitstream/handle/1721.1/149366/MIT-LCS-TR-458.pdf?sequence=6
   #
   public redef dynamic_type Type => Type.type
 

@@ -55,7 +55,7 @@ effect_wormholes =>
       whAm <- effect_wormhole
       concur.Threads.env.spawn ()->
               io.Out.env.println "03 - using inherited          out_A          in spawned thread!"
-              _ := wh0.teleport ()->
+              wh0.teleport ()->
                 io.Out.env.println "04 - using level 1 teleported default io.Out in spawned thread!"
             .join
             .or_panic

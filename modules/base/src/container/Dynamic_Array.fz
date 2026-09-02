@@ -30,11 +30,11 @@ module:public Dynamic_Array (
 
   # the mutate effect
   #
-  public LM type : mutate,
+  LM type : mutate,
 
   # element type
   #
-  public T type,
+  T type,
 
   # contents of the array
   #
@@ -72,7 +72,7 @@ is
   #
   public redef set [ ] (I type : integer, i I, o T) unit
   =>
-    data[i.as_i32] := o
+    data[i] := o
 
 
   # can another element be added to the end of this Dynamic_Array?
@@ -109,12 +109,12 @@ is
            panic "'$(Dynamic_Array.this.type.name)' can not grow, exceeded capacity of $(data.length) elements"
 
 
-    d[len.as_i32] := o
+    d[length] := o
     data <- d
     len  <- len+1
 
 
-  # iteratively add all element at the end of this Dynamic_Array
+  # iteratively add all elements at the end of this Dynamic_Array
   #
   public add_all (s Sequence T) unit =>
     for e in s do add e
@@ -168,7 +168,7 @@ is
    pre safety: length > 0
   =>
     d := Dynamic_Array.this.empty length
-    for i in i64.zero..(length-1) do
+    for i in 0..(length-1) do
       d.add (init i)
     d
 

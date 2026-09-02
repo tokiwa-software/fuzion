@@ -96,19 +96,7 @@ public order : choice less greater equal, property.equatable is
 
 
   public fixed redef type.equality(a, b order) bool =>
-    match a
-      less =>
-        match b
-          less => true
-          * => false
-      greater =>
-        match b
-          greater => true
-          * => false
-      equal =>
-        match b
-          equal => true
-          * => false
+    a.sign = b.sign
 
 
 

@@ -1,3 +1,4 @@
+Ignored_Failure
 concur.A0_park_mutex
 concur.Threads
 fuzion.runtime.check_fault
@@ -12,4 +13,5 @@ io.Out
 io.dir.Make
 io.dir.Read
 io.file.Delete
+once_mutate
 panic

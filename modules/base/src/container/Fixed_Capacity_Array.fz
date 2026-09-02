@@ -32,11 +32,11 @@ module:public Fixed_Capacity_Array(
 
   # the mutate effect
   #
-  public LM type : mutate,
+  LM type : mutate,
 
   # element type
   #
-  public T type,
+  T type,
 
   # contents of the array
   #
@@ -69,7 +69,7 @@ is
    ) container.Dynamic_Array LM T
   =>
     d := container.Fixed_Capacity_Array LM T .empty length
-    for i in i64.zero..(length-1) do
+    for i in 0..(length-1) do
       d.add (init i)
     d
 

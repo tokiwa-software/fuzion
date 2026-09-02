@@ -65,10 +65,10 @@ clang_Cursor_isNull(crsr CXCursor) i32 => native
 
 # CXChildVisit_Recurse i32 => 2
 CXChildVisit_Continue i32 => 1
-CXCursor_StructDecl => 2
-CXCursor_UnionDecl => 3
-CXCursor_EnumDecl => 5
-CXCursor_FieldDecl => 6
+CXCursor_StructDecl i32 => 2
+CXCursor_UnionDecl i32 => 3
+CXCursor_EnumDecl i32 => 5
+CXCursor_FieldDecl i32 => 6
 CXCursor_FunctionDecl i32 => 8
 
 
@@ -141,7 +141,7 @@ public clang is
   # get the fields of a struct/union
   #
   get_fields(crsr CXCursor) =>
-    childs := lm.new (container.expanding_array clang.arg .empty)
+    childs := lm.env.new (container.expanding_array clang.arg .empty)
 
     visitor : Function i32 CXCursor Native_Ref Native_Ref is
       public redef call(cxc CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
@@ -170,20 +170,20 @@ public clang is
 
         ck := clang_getCursorKind crsr
 
+        n := cx_string_to_string (clang_getCursorSpelling crsr)
+
         if ck = CXCursor_FunctionDecl
 
-          func_name := clang_getCursorSpelling crsr
-          fn := "$(cx_string_to_string func_name)"
 
           return_type := clang_getCanonicalType (clang_getCursorResultType crsr)
           return_type_spelling := clang_getTypeSpelling return_type
           rt := "$(cx_string_to_string return_type_spelling)"
 
-          num_args := clang_Cursor_getNumArguments crsr
+          num_args := clang_Cursor_getNumArguments crsr .as_i64
 
           args := (0..num_args-1)
             .map i->
-              arg := clang_Cursor_getArgument crsr i
+              arg := clang_Cursor_getArgument crsr i.as_i32
               arg_name := clang_getCursorSpelling arg
               arg_type := clang_getCanonicalType (clang_getCursorType arg)
               arg_type_spelling := clang_getTypeSpelling arg_type
@@ -193,46 +193,37 @@ public clang is
 
               res
 
-          cb (clang.function_decl fn args.as_array rt)
+          cb (clang.function_decl n args.as_array rt)
 
         else if ck = CXCursor_StructDecl
-
-          name := clang_getCursorSpelling crsr
-          n := "$(cx_string_to_string name)"
           if !n.contains_whitespace
             cb (clang.struct_decl n (get_fields crsr))
 
         else if ck = CXCursor_UnionDecl
-
-          name := clang_getCursorSpelling crsr
-          n := "$(cx_string_to_string name)"
           if !n.contains_whitespace
             cb (clang.union_decl n (get_fields crsr))
 
         else if ck = CXCursor_EnumDecl
-
-          name := clang_getCursorSpelling crsr
-          n := "$(cx_string_to_string name)"
           if !n.contains_whitespace
             cb (clang.enum_decl n)
 
 
         CXChildVisit_Continue
 
+    lm.instate_self (outcome unit) ()->
 
-    ci := clang_createIndex 0 0
+      ci := clang_createIndex 0 0
 
-    check !(ffi.is_null ci)
+      check !(ffi.is_null ci)
 
-    tu := lm ! ()->
-      clang_parseTranslationUnit ci (header_file.as_c_string lm) ((lm.array Native_Ref).from_Sequence (Sequence Native_Ref .empty)) 0 ffi.null 0 0
+      tu := clang_parseTranslationUnit ci (header_file.as_c_string lm) ((lm.array Native_Ref).from_Sequence (Sequence Native_Ref .empty)) 0 ffi.null 0 0
 
-    if ffi.is_null tu
-      error "failed to open header file: $header_file"
-    else
-      cursor := clang_getTranslationUnitCursor tu
+      if ffi.is_null tu
+        error "failed to open header file: $header_file"
+      else
+        cursor := clang_getTranslationUnitCursor tu
 
-      _ := clang_visitChildren cursor visitor ffi.null
+        _ := clang_visitChildren cursor visitor ffi.null
 
-      clang_disposeTranslationUnit tu
-      clang_disposeIndex ci
+        clang_disposeTranslationUnit tu
+        clang_disposeIndex ci

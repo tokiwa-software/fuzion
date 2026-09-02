@@ -23,15 +23,13 @@
 
 sockets_thread_pool_test is
 
-  lm : racy_mutate is
-
   servers :=
     concur.atomic (array u16) .new [(u16 0),
                                     (u16 0),
                                     (u16 0),
                                     (u16 0)]
 
-  set_server_port(i i32, new u16) =>
+  set_server_port(i i64, new u16) =>
     for r := servers.read
     while !(servers.compare_and_set r (r.put i new))
 
@@ -45,11 +43,11 @@ sockets_thread_pool_test is
     accept =>
       (net.server.env.accept.bind c->
         sc := c.in_thread_pool unit concur.thread_pool mutate ()->
-          chan => net.channel.env
+          endp => net.endpoint.env
 
           say_silent "$protocol/$family-server, accepted connection"
-          say_silent chan.get_peer_address
-          say_silent chan.get_peer_port
+          say_silent endp.get_peer_address
+          say_silent endp.get_peer_port
 
           rr := (io.buffered mutate).read_line_while (s -> !s.is_empty)
 
@@ -94,7 +92,7 @@ sockets_thread_pool_test is
 
   # client
   #
-  client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
+  client(family net.family.val, protocol net.protocol.val, host String, port u16, num i64) =>
 
     match net.client family protocol host port
       error =>
@@ -102,8 +100,6 @@ sockets_thread_pool_test is
       c net.connection =>
 
         res := c.in_thread_pool String concur.thread_pool mutate ()->
-
-            chan => net.channel.env
 
             req := ("GET / HTTP\n"
               + "Host: $host\n"
@@ -181,7 +177,7 @@ sockets_thread_pool_test is
     for p in protocols do
       _ := concur.Threads.env.spawn ()->
         _ := concur.thread_pool 3 ()->
-          _ := server f p
+          server f p
 
   for f in families do
     for p in protocols do

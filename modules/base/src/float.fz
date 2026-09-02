@@ -80,7 +80,7 @@ public float : numeric is
   # NYI: ENHANCEMENT: In the future, this should be replaced by a version of as_string with more formatting options,
   # as described here : https://github.com/tokiwa-software/fuzion/pull/7152#issuecomment-4613267795
   #
-  public as_string_decimals(fraction_digits i32) String => abstract
+  public as_string_decimals(fraction_digits i64) String => abstract
 
 
   # floor: the greatest integer lower or equal to this
@@ -104,26 +104,26 @@ public float : numeric is
   # number of bits used for mantissa,
   # including leading '1' that is not actually stored
   #
-  public type.significand_bits i32 => abstract
+  public type.significand_bits i64 => abstract
 
   # number of bits used for exponent
   #
-  public type.exponent_bits i32 => abstract
+  public type.exponent_bits i64 => abstract
 
 
   # the amount of bits that are used to encode the mantissa
   #
-  public type.mantissa_bits i32 => significand_bits - 1
+  public type.mantissa_bits i64 => significand_bits - 1
 
 
   # the biased exponent of this float
   #
-  public exponent_biased i32 => abstract
+  public exponent_biased i64 => abstract
 
 
   # the normalized exponent of this float
   #
-  public exponent i32 => abstract
+  public exponent i64 => abstract
 
 
   # the normalized mantissa of this float
@@ -181,14 +181,14 @@ public float : numeric is
   public atan float.this => abstract
 
 
-  # hyperbolicus
+  # hyperbolic
 
   public sinh float.this => abstract
   public cosh float.this => abstract
   public tanh float.this => abstract
 
 
-  # area hyperbolicus
+  # inverse hyperbolic
 
   public asinh float.this =>
     # ln(x+sqrt(x^2+1))
@@ -204,12 +204,12 @@ public float : numeric is
 
   # number of bytes required to store this value
   #
-  public type.bytes i32 => abstract
+  public type.bytes i64 => abstract
 
 
   # number of bits required to store this value
   #
-  public type.size i32 => 8*bytes
+  public type.size i64 => 8*bytes
 
 
   # eulers number 2.72..
@@ -233,7 +233,7 @@ public float : numeric is
   public type.from_i64(val i64) float.this => abstract
 
 
-  public type.exponent_range interval i32 => -min_exp..max_exp
+  public type.exponent_range interval i64 => -min_exp..max_exp
 
 
   # non signaling not a number
@@ -257,8 +257,8 @@ public float : numeric is
   public type.infinity float.this => positive_infinity
 
 
-  public type.min_exp i32 => abstract
-  public type.max_exp i32 => abstract
+  public type.min_exp i64 => abstract
+  public type.max_exp i64 => abstract
   public type.min_positive float.this => abstract
   public type.max float.this => abstract
   public type.epsilon float.this => abstract

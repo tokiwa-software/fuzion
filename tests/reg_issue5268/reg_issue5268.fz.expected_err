@@ -3,7 +3,7 @@
   r  ()->bool := *2                       # 3. should flag an error: 0 actual args, expected 1
 -----------------^
 Feature not found: 'prefix *' (no arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: '*2'
 
 
@@ -11,7 +11,7 @@ In call: '*2'
   r1 ()->bool := *2                       # 4. should flag an error: 0 actual args, expected 1
 -----------------^
 Feature not found: 'prefix *' (no arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: '*2'
 
 
@@ -19,7 +19,7 @@ In call: '*2'
   t  (unit, f64, String)->bool := *2      # 7. should flag an error: 3 actual args, expected 1
 ----------------------------------^
 Feature not found: 'prefix *' (3 arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: '*2'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
 
@@ -28,7 +28,7 @@ This call was created automatically by partial application. To solve this, you m
   t1 (unit, f64, String)->bool := *2      # 8. should flag an error: 3 actual args, expected 1
 ----------------------------------^
 Feature not found: 'prefix *' (3 arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: '*2'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
 
@@ -37,7 +37,7 @@ This call was created automatically by partial application. To solve this, you m
   q1 ()->bool => *2                       # 2. should flag an error: 0 actual args, expected 1
 -----------------^
 Feature not found: 'prefix *' (no arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: '*2'
 
 
@@ -45,7 +45,7 @@ In call: '*2'
   s1 (unit, f64, String)->bool => *2      # 6. should flag an error: 3 actual args, expected 1
 ----------------------------------^
 Feature not found: 'prefix *' (3 arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: '*2'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
 
@@ -54,7 +54,7 @@ This call was created automatically by partial application. To solve this, you m
   q  ()->bool => *2                       # 1. should flag an error: 0 actual args, expected 1
 -----------------^
 Feature not found: 'prefix *' (no arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: '*2'
 
 
@@ -62,7 +62,7 @@ In call: '*2'
   s  (unit, f64, String)->bool => *2      # 5. should flag an error: 3 actual args, expected 1
 ----------------------------------^
 Feature not found: 'prefix *' (3 arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: '*2'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
 

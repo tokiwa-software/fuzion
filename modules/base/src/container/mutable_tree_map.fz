@@ -24,9 +24,9 @@
 
 # mutable_tree_map -- a mutable map using an AVL tree
 #
-private:public mutable_tree_map(public LM  type : mutate,
-                                public KEY type : property.orderable,
-                                public VAL type                      ) : container.Mutable_Map KEY VAL
+private:public mutable_tree_map(LM  type : mutate,
+                                KEY type : property.orderable,
+                                VAL type                      ) : container.Mutable_Map KEY VAL
 is
 
 
@@ -35,15 +35,15 @@ is
   # mutable because this might change, for example when the key stored at the root
   # is removed.
   #
-  # if this map is entry, this is nil
+  # if this map is empty, this is nil
   #
   root := LM.env.new (option Entry) nil
 
 
   # returns the size of the map, i.e. the number of elements it contains
   #
-  public redef size i32 =>
-    fold i32 0 ((i, _) -> i + 1)
+  public redef size i64 =>
+    fold i64 0 ((i, _) -> i + 1)
 
 
   # get a sequence of all key/value pairs in this map

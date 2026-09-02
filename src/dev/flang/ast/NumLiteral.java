@@ -424,7 +424,7 @@ public class NumLiteral extends Constant
         var i = hasDot() ? null : intValue();
         result = i == null
           ? Types.resolved.t_f64
-          : Types.resolved.t_i32;
+          : Types.resolved.t_i64;
       }
     return result;
   }

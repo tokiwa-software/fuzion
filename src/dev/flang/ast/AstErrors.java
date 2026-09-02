@@ -249,7 +249,7 @@ public class AstErrors extends ANY
           : ", you must provide "
             + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
             + (f.typeArguments().size() > 0
-                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.."
+                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments."
                 : ""));
   }
 
@@ -1930,16 +1930,32 @@ public class AstErrors extends ANY
           "Declared at " + cf.pos().show());
   }
 
-  static void incompatibleActualGeneric(SourcePosition pos, AbstractFeature f, AbstractType constraint, AbstractType g)
+  static void incompatibleActualGeneric(SourcePosition pos,
+                                        AbstractFeature f,
+                                        AbstractType constraint,
+                                        AbstractType g,
+                                        Set<AbstractType> assignableTo)
   {
-    if (g != Types.t_UNDEFINED || !any())
+    var errorOrUndefinedFound = g.containsUndefined();
+    var assignableToSB = new StringBuilder();
+    for (var ts : assignableTo)
+      {
+        errorOrUndefinedFound |= ts.containsUndefined();
+        assignableToSB
+          .append(assignableToSB.length() == 0
+                  ?    "assignable to constraint: "
+                  : ",\n                          ")
+          .append(st(ts.toString(true)));
+      }
+    if (!any() || !errorOrUndefinedFound)
       {
         error(pos,
               "Incompatible type parameter",
               "formal type parameter " + sc(f)
                 + (f.constraint().compareTo(constraint)==0 ? "" : " with constraint " + s(constraint))
                 + "\n" +
-              "actual type parameter " + s(g) + "\n");
+              "actual type parameter " + s(g) + "\n" +
+              assignableToSB + (assignableToSB.length() > 0 ? "\n" : ""));
       }
   }
 
@@ -2673,6 +2689,21 @@ public class AstErrors extends ANY
     error(range, "Anonymous feature must not inherit from multiple features.",
       "Found inheritance calls:\n\n" +
       i.stream().map(ic -> ic.pos().showInSource()).collect(Collectors.joining("\nand\n\n")));
+  }
+
+  public static void unitResultExplicitlyIgnored(SourcePosition range)
+  {
+    error(range, "A result of type " + st("unit") + " must not be ignored explicitly.",
+      "Remove " + ss("_ :=") + " to fix this error.");
+  }
+
+  public static void typeParameterMustNotDefineTypeVisibility(Feature f)
+  {
+    error(
+      f.pos(),
+      "Setting the visibility is not allowed for a type parameter.",
+      "A type parameters visibility is always public. To fix this, remove the visibility modifier."
+    );
   }
 
 }
