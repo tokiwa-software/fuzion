@@ -23,8 +23,6 @@
 
 sockets_thread_pool_test is
 
-  lm : racy_mutate is
-
   servers :=
     concur.atomic (array u16) .new [(u16 0),
                                     (u16 0),
