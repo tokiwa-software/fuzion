@@ -11,11 +11,11 @@ Additional test vectors are decoded correctly
 Test error messages when decoding broken base64:
 
 Zm9v
-Yg==: --error: line breaks are not allowed within encoded data, as required by RFC464, found LF at position 4--
+Yg==: --error: line breaks are not allowed within encoded data, as required by RFC4648, found LF at position 4--
 Zm9vYg=: --error: length of input data is not multiple of four, as required by RFC4648--
 Zm9vY==: --error: length of input data is not multiple of four, as required by RFC4648--
-Zm9vY===: --error: padding character '=' not allowed within the input data, only at the very end, as required by RFC464--
-Zm9=vYg==: --error: padding character '=' not allowed within the input data, only at the very end, as required by RFC464--
+Zm9vY===: --error: padding character '=' not allowed within the input data, only at the very end, as required by RFC4648--
+Zm9=vYg==: --error: padding character '=' not allowed within the input data, only at the very end, as required by RFC4648--
 Zm9🌏️Yg==: --error: invalid base64 input at byte position 3, decoding to unicode character '🌏'--
 Zm9v Yg==: --error: invalid base64 input at byte position 4, decoding to unicode character ' '--
 Zm9v;Yg==: --error: invalid base64 input at byte position 4, decoding to unicode character ';'--

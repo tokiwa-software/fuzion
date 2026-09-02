@@ -132,7 +132,7 @@ is
             if d.length%%8
               error """
                     padding character '=' not allowed within the input data, only at the very end, \
-                    as required by RFC464 (padding length of 2 or 5 can never occur)"""
+                    as required by RFC4648 (padding length of 2 or 5 can never occur)"""
             else
               error "length of input data is not multiple of 8, as required by RFC4648"
           else outcome (u64 0)  # replace padding with zeros for decoding
@@ -140,7 +140,7 @@ is
         # line break
         else if c = 10 || c = 13
           error """
-                line breaks are not allowed within encoded data, as required by RFC464, found \
+                line breaks are not allowed within encoded data, as required by RFC4648, found \
                 $(if c=10 then "LF" else "CR") at position $i"""
 
         # other non alphabet character
