@@ -123,6 +123,7 @@ is
         else
           (thru - from) / step + T.one
       nil =>
+        # unreachable under the precondition
         T.from_u32 as_list.count.as_u32
 
 
@@ -172,7 +173,7 @@ is
   # Complexity: O(1), which relies on the O(1) `contains` redefined in
   # this feature.
   #
-  public redef nth(n i32) option T
+  public redef nth(n i64) option T
   =>
     if n < 0 || (n > 0 && step.sign = 0) then
       nil
@@ -202,14 +203,14 @@ is
   # Complexity: O(1), unlike the inherited O(n) search.This depends on
   # `contains` being redefined in this feature to be O(1) as well.
   #
-  public redef index_of(e T) option i32
+  public redef index_of(e T) option i64
   =>
     if !contains e then
       nil
     else if step.sign = 0 then
       0 # single-element interval: avoid division by zero
     else
-      ((e - from) / step).as_i32
+      ((e - from) / step).as_i64
 
 
   # two intervals are equal if they contain the same elements,

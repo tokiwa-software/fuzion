@@ -26,9 +26,9 @@
 #
 test_interval is
 
-  test(x interval i32) =>
+  test(x interval i64) =>
     inv := (0..3) ∀ (n -> match x.nth n
-                            e i32 => (x.index_of e ? i i32 => i = n
+                            e i64 => (x.index_of e ? i i64 => i = n
                                                    | nil   => false)
                             nil   => true)
     say "$(pad $x 10)|$(
@@ -46,26 +46,26 @@ test_interval is
             i in 0..3
         else s
       ) | $(if inv then "ok  " else "FAIL") | $(
-        if x.through.exists && x.first.exists && (i32.zero -! x.step) then
+        if x.through.exists && x.first.exists && (i64.zero -! x.step) then
           $(x.reverse_interval)
         else
           "n/a"
       )"
 
 
-  # option i32 as a fixed-width cell: "." for nil
-  cell(o option i32) String =>
-    s := o ? v i32 => $v
+  # option 64 as a fixed-width cell: "." for nil
+  cell(o option i64) String =>
+    s := o ? v i64 => $v
            | nil   => "."
     " "*(3 - s.codepoint_count) + s
 
 
   # String padded to width w (never truncates, never negative)
-  pad(s String, w i32) String =>
+  pad(s String, w i64) String =>
     n := w - s.codepoint_count
     if n > 0 then s + " "*n else s
 
-  test_eq(a, b interval i32) =>
+  test_eq(a, b interval i64) =>
       say "$(pad $a 12) = $(pad $b 12) -> $(a = b)"
 
   say ""
