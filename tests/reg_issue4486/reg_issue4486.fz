@@ -63,7 +63,7 @@ reg_issue4486 =>
     lm ! ()->
       b := io.buffered lm
       io.buffered lm .Reader.instate (reader input) ()->
-        for l in b.read_lines
+        for l in b.read_lines.or_panic
             i in 1..
         do
           say "  using read_lines: $i: '$l'"
