@@ -1886,24 +1886,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For a clazz of concur.atomic, lookup the inner clazz of the value field.
-   *
-   * @param cl index of a clazz representing cl's value field
-   *
-   * @return the index of the requested {@code concur.atomic.value} field's clazz.
-   */
-  @Override
-  public int lookupAtomicValue(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_concur_atomic_v)._id;
-  }
-
-
-  /**
    * For a clazz inheriting from {@code mutate.new}, lookup the inner clazz of
    * the {@code val} field.
    *

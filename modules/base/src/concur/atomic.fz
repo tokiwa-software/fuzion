@@ -39,7 +39,7 @@ is
 
   # the underlying mutable value
   #
-  value := (builtin_atomic_mutate atomic.this).env.new initial_value
+  value := (AAA_builtin_atomic_mutate atomic.this).env.new initial_value
 
 
   # Does the current system permit racy accesses to the value of type T
@@ -49,7 +49,9 @@ is
   # such as `i32`, `f64`, etc. while this is typically not the case for
   # more complex types such as `point(x,y i64)`.
   #
-  public racy_accesses_supported bool => intrinsic
+  public racy_accesses_supported bool
+  =>
+    value.atomic_access_supported
 
 
   # read the value stored in this atomic and do not care about synchronization.
@@ -61,9 +63,9 @@ is
   # In general, this is useful only for debugging or monitoring purposes where
   # occasionally wrong random results are acceptable.
   #
-  public racy_read T ! racy (builtin_atomic_mutate T)
+  public racy_read T ! racy (AAA_builtin_atomic_mutate T)
   =>
-    racy (builtin_atomic_mutate T) .env.replace
+    racy (AAA_builtin_atomic_mutate T) .env.replace
     value.get_racy
 
 
@@ -72,9 +74,9 @@ is
   # Note that in conjunction with `racy_read`, this might create arbitrary
   # out-of-thin-air values.
   #
-  public racy_write(new_value T) unit ! racy (builtin_atomic_mutate T)
+  public racy_write(new_value T) unit ! racy (AAA_builtin_atomic_mutate T)
   =>
-    racy (builtin_atomic_mutate T) .env.replace
+    racy (AAA_builtin_atomic_mutate T) .env.replace
     value.put_racy new_value
 
 
@@ -113,35 +115,6 @@ is
   public compare_and_set(expected, new_value T) bool ! atomic_access =>
     atomic_access.env.replace
     value.compare_and_set expected new_value
-
-
-  # intrinsic to read this value in a way that is atomic with respect to write
-  # operations performed by concurrent threads
-  #
-  read0 T => intrinsic
-
-
-  # intrinsic to write this value in a way that is atomic with respect to read
-  # and write operations performed by concurrent threads
-  #
-  write0(new_value T) unit => intrinsic
-
-
-  # intrinsic to perform a bit-wise comparison of the value contained in this atomic
-  # and `expected`.  In case both values are equal, replace this value with `new_value`.
-  #
-  # returns the old value, independent of whether the old value is bit-wise
-  # equal to `expected` or not.
-  #
-  compare_and_swap0(expected, new_value T) T => intrinsic
-
-
-  # intrinsic to perform a bit-wise comparison of the value contained in this atomic
-  # and `expected`.  In case both values are equal, replace this value with `new_value`.
-  #
-  # returns true, if successful
-  #
-  module compare_and_set0(expected, new_value T) bool => intrinsic
 
 
   # unwrap this atomic value
@@ -184,11 +157,14 @@ is
 #
 # NYI: CLEANUP: REMOVE: replace all uses of concur.atomic by concur.atomic_mutate
 #
-private builtin_atomic_mutate(T type) : atomic_mutate is
+# NYI: UNDER DEVELOPMENT: Effects are currently instated alphabetically at the big
+# bang, this is why this needs a name starting 'AAA'...
+#
+private universe.AAA_builtin_atomic_mutate(T type) : concur.atomic_mutate is
 
 
   # This is instated autmatically at the effect big bang singularity:
   #
-  public redef fixed type.default_value option (concur.builtin_atomic_mutate T)
+  public redef fixed type.default_value option (AAA_builtin_atomic_mutate T)
   =>
-    concur.builtin_atomic_mutate T
+    AAA_builtin_atomic_mutate T

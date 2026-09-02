@@ -96,172 +96,6 @@ public class Intrinsics extends ANY
         c.boxedConstString(c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl)))
          .ret());
 
-    put("concur.atomic.compare_and_swap0",  (c,cl,outer,in) ->
-        {
-          var ac = c._fuir.clazzOuterClazz(cl);
-          var v = c._fuir.lookupAtomicValue(ac);
-          var rc  = c._fuir.clazzResultClazz(v);
-          var expected  = A0;
-          var new_value = A1;
-          var tmp = new CIdent("tmp");
-          var code = CStmnt.EMPTY;
-          if (!c._fuir.clazzIsUnitType(rc))
-            {
-              var f = c.accessField(outer, ac, v);
-              if (mayUseAtomicOps(c, rc))
-                {
-                  code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
-                                    CExpr.call("atomic_compare_exchange_strong_explicit", new List<>(
-                                      f.adrOf().castTo(c._types.atomicType(rc)+"*"),
-                                      tmp.adrOf().castTo("void *" /* the underlying type e.g. `uintptr_t *`, `uint_least64_t` */),
-                                      new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(),
-                                      new CIdent("memory_order_seq_cst"),
-                                      new CIdent("memory_order_seq_cst"))),
-                                    tmp.ret());
-                }
-              else
-                {
-                  var res = c._names.newTemp();
-                  code = CStmnt.seq(locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                      CStmnt.seq(CLocal.decl("bool", res),
-                                                                 compareValues(c, tmp, expected, rc, res),
-                                                                 CStmnt.iff(res,
-                                                                            f.assign(new_value))))),
-                                    tmp.ret());
-                }
-            }
-          return code;
-        });
-
-    put("concur.atomic.compare_and_set0",  (c,cl,outer,in) ->
-        {
-          var ac = c._fuir.clazzOuterClazz(cl);
-          var v = c._fuir.lookupAtomicValue(ac);
-          var rc  = c._fuir.clazzResultClazz(v);
-          var expected  = A0;
-          var new_value = A1;
-          var tmp = new CIdent("tmp");
-          var res = new CIdent("set_successful");
-          var code = CStmnt.EMPTY;
-          if (!c._fuir.clazzIsUnitType(rc))
-            {
-              var f = c.accessField(outer, ac, v);
-              if (mayUseAtomicOps(c, rc))
-                {
-                  code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
-                                    CStmnt.iff(CExpr.call("atomic_compare_exchange_strong_explicit",
-                                                          new List<>(
-                                                            f.adrOf().castTo(c._types.atomicType(rc)+"*"),
-                                                            tmp.adrOf().castTo("void *" /* the underlying type e.g. `uintptr_t *`, `uint_least64_t` */),
-                                                            new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(),
-                                                            new CIdent("memory_order_seq_cst"),
-                                                            new CIdent("memory_order_seq_cst"))),
-                                      c._names.FZ_TRUE.ret()),
-                                    c._names.FZ_FALSE.ret());
-                }
-              else
-                {
-                  code = CStmnt.seq(CStmnt.decl("bool", res),
-                                    locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                      compareValues(c, tmp, expected, rc, res),
-                                                      CStmnt.iff(res,
-                                                                 f.assign(new_value)
-                                                                 ))),
-                                    CStmnt.seq(CStmnt.iff(res, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret()));
-                }
-            }
-          return code;
-        });
-
-    put("concur.atomic.racy_accesses_supported",  (c,cl,outer,in) ->
-        {
-          var v = c._fuir.lookupAtomicValue(c._fuir.clazzOuterClazz(cl));
-          var rc  = c._fuir.clazzResultClazz(v);
-          var r =
-            c._fuir.clazzIsRef(rc) ||
-            c._fuir.clazzIsBuiltInPrimitive(rc) ||
-            c._fuir.clazzIsUnitType(rc);
-          return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
-        });
-
-    put("concur.atomic.read0",  (c,cl,outer,in) ->
-        {
-          var ac = c._fuir.clazzOuterClazz(cl);
-          var v = c._fuir.lookupAtomicValue(ac);
-          var rc  = c._fuir.clazzResultClazz(v);
-          var tmp = new CIdent("tmp");
-          CStmnt code;
-          if (c._fuir.clazzIsUnitType(rc))
-            {
-              code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
-            }
-          else if (mayUseAtomicOps(c, rc))
-            {
-              var f = c.accessField(outer, ac, v);
-              code = CStmnt.seq(
-                CExpr.decl(c._types.atomicType(rc), tmp),
-                tmp.assign(CExpr.call("atomic_load_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new CIdent("memory_order_seq_cst")))),
-                tmp.adrOf()
-                  .castTo(c._types.clazz(rc) + "*")
-                  .deref()
-                  .ret()
-              );
-            }
-          else
-            {
-              var f = c.accessField(outer, ac, v);
-              code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp),
-                                locked(tmp.assign(f)),
-                                tmp.ret());
-            }
-          return code;
-        });
-
-    put("concur.atomic.write0", (c,cl,outer,in) ->
-        {
-          var ac = c._fuir.clazzOuterClazz(cl);
-          var v = c._fuir.lookupAtomicValue(ac);
-          var rc  = c._fuir.clazzResultClazz(v);
-          var new_value = A0;
-          var code = CStmnt.EMPTY;
-          if (c._fuir.clazzIsUnitType(rc))
-            {
-              code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
-            }
-          else if (mayUseAtomicOps(c, rc))
-            {
-              var f = c.accessField(outer, ac, v);
-              code = CExpr.call("atomic_store_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(), new CIdent("memory_order_seq_cst")));
-            }
-          else
-            {
-              var f = c.accessField(outer, ac, v);
-              code = locked(f.assign(new_value));
-            }
-          return code;
-        });
-
-    put("concur.util.load_fence", (c,cl,outer,in) ->
-        {
-          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
-        });
-
-    put("concur.util.store_fence", (c,cl,outer,in) ->
-        {
-          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
-        });
-
-    put("mutate.new.atomic_access_supported",  (c,cl,outer,in) ->
-        {
-          var nc  = c._fuir.clazzOuterClazz(cl);
-          var rc  = c._fuir.clazzActualGeneric(nc, 0);
-          var r =
-            c._fuir.clazzIsRef(rc) ||
-            c._fuir.clazzIsBuiltInPrimitive(rc) ||
-            c._fuir.clazzIsUnitType(rc);
-          return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
-        });
-
     put("mutate.new.compare_and_swap0",  (c,cl,outer,in) ->
         {
           var nc = c._fuir.clazzOuterClazz(cl);
@@ -302,7 +136,7 @@ public class Intrinsics extends ANY
     put("mutate.new.compare_and_set0",  (c,cl,outer,in) ->
         {
           var nc = c._fuir.clazzOuterClazz(cl);
-          var v = c._fuir.lookupAtomicValue(nc);
+          var v = c._fuir.lookupMutableValue(nc);
           var rc  = c._fuir.clazzResultClazz(v);
           var expected  = A0;
           var new_value = A1;
@@ -335,6 +169,74 @@ public class Intrinsics extends ANY
                                                                  ))),
                                     CStmnt.seq(CStmnt.iff(res, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret()));
                 }
+            }
+          return code;
+        });
+
+    put("mutate.new.atomic_access_supported",  (c,cl,outer,in) ->
+        {
+          var nc  = c._fuir.clazzOuterClazz(cl);
+          var rc  = c._fuir.clazzActualGeneric(nc, 0);
+          var r =
+            c._fuir.clazzIsRef(rc) ||
+            c._fuir.clazzIsBuiltInPrimitive(rc) ||
+            c._fuir.clazzIsUnitType(rc);
+          return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
+        });
+
+    put("mutate.new.atomic_read0",  (c,cl,outer,in) ->
+        {
+          var ac = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupMutableValue(ac);
+          var rc  = c._fuir.clazzResultClazz(v);
+          var tmp = new CIdent("tmp");
+          CStmnt code;
+          if (c._fuir.clazzIsUnitType(rc))
+            {
+              code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
+            }
+          else if (mayUseAtomicOps(c, rc))
+            {
+              var f = c.accessField(outer, ac, v);
+              code = CStmnt.seq(
+                CExpr.decl(c._types.atomicType(rc), tmp),
+                tmp.assign(CExpr.call("atomic_load_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new CIdent("memory_order_seq_cst")))),
+                tmp.adrOf()
+                  .castTo(c._types.clazz(rc) + "*")
+                  .deref()
+                  .ret()
+              );
+            }
+          else
+            {
+              var f = c.accessField(outer, ac, v);
+              code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp),
+                                locked(tmp.assign(f)),
+                                tmp.ret());
+            }
+          return code;
+        });
+
+    put("mutate.new.atomic_write0", (c,cl,outer,in) ->
+        {
+          var ac = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupMutableValue(ac);
+          var rc  = c._fuir.clazzResultClazz(v);
+          var new_value = A0;
+          var code = CStmnt.EMPTY;
+          if (c._fuir.clazzIsUnitType(rc))
+            {
+              code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
+            }
+          else if (mayUseAtomicOps(c, rc))
+            {
+              var f = c.accessField(outer, ac, v);
+              code = CExpr.call("atomic_store_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(), new CIdent("memory_order_seq_cst")));
+            }
+          else
+            {
+              var f = c.accessField(outer, ac, v);
+              code = locked(f.assign(new_value));
             }
           return code;
         });

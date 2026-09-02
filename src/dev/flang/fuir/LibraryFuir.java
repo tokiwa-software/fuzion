@@ -311,20 +311,6 @@ public class LibraryFuir extends FUIR {
     return _clazzes[clazzId2num(cl)].lookupStaticFinally();
   }
 
-  @Override
-  public int lookupAtomicValue(int cl)
-  {
-    for (int index = 0; index < clazzFieldCount(cl); index++)
-      {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("v") == 0)
-          {
-            return clazzField(cl, index);
-          }
-      }
-    Errors.fatal("v field not found!");
-    return NO_CLAZZ;
-  }
-
 
   @Override
   public int lookupMutableValue(int cl)

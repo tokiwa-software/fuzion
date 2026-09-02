@@ -620,16 +620,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a clazz of concur.atomic, lookup the inner clazz of the value field.
-   *
-   * @param cl index of a clazz representing cl's value field
-   *
-   * @return the index of the requested {@code concur.atomic.value} field's clazz.
-   */
-  public abstract int lookupAtomicValue(int cl);
-
-
-  /**
    * For a clazz inheriting from {@code mutate.new}, lookup the inner clazz of
    * the {@code val} field.
    *

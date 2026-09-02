@@ -125,109 +125,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(tvalue.drop().andThen(jvm.boxedConstString(str)), Expr.UNIT);
         });
 
-    put("concur.atomic.racy_accesses_supported",
-        (jvm, si, cc, tvalue, args) ->
-        {
-          var v = jvm._fuir.lookupAtomicValue(jvm._fuir.clazzOuterClazz(cc));
-          var rc  = jvm._fuir.clazzResultClazz(v);
-          var r =
-            jvm._fuir.clazzIsRef(rc) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_f32 ) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_bool) ||
-            jvm._fuir.clazzIsUnitType(rc);
-          return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
-        });
-
-    put("concur.util.load_fence",
-        "concur.util.store_fence",
-        (jvm, si, cc, tvalue, args) ->
-        {
-          return new Pair<>(Expr.UNIT,
-                            locked(Expr.UNIT));
-        });
-
-    put("concur.atomic.read0",
-        (jvm, si, cc, tvalue, args) ->
-        {
-          var ac = jvm._fuir.clazzOuterClazz(cc);
-          var v = jvm._fuir.lookupAtomicValue(ac);
-          var val = locked(tvalue
-                           .andThen(jvm.getfield(v)));
-          return new Pair<>(val, Expr.UNIT);
-        });
-
-    put("concur.atomic.write0",
-        (jvm, si, cc, tvalue, args) ->
-        {
-          var ac = jvm._fuir.clazzOuterClazz(cc);
-          var v = jvm._fuir.lookupAtomicValue(ac);
-          var code = locked(tvalue
-                            .andThen(args.get(0))
-                            .andThen(jvm.putfield(v)));
-          return new Pair<>(Expr.UNIT, code);
-        });
-
-    put("concur.atomic.compare_and_set0",
-        "concur.atomic.compare_and_swap0",
-        (jvm, si, cc, tvalue, args) ->
-        {
-          var ac = jvm._fuir.clazzOuterClazz(cc);
-          var v = jvm._fuir.lookupAtomicValue(ac);
-          var rc  = jvm._fuir.clazzResultClazz(v);
-          var tt = tvalue.type();
-          var jt = jvm._types.resultType(rc);
-          int tslot  = jvm.allocLocal(si, 1);                  // local var slot for target
-          int nvslot = jvm.allocLocal(si, jt.stackSlots());    // local var slot for arg(1), new value, not casted
-          int vslot  = jvm.allocLocal(si, jt.stackSlots());    // local var slot for old value, not casted.
-
-          Expr pos, neg, oldv;
-          if (jvm._fuir.clazzOriginalName(cc).equals("concur.atomic.compare_and_set0"))
-            { // compare_and_set: return true or false
-              pos = Expr.iconst(1);            // 1
-              neg = Expr.iconst(0);            // 0
-              oldv = Expr.UNIT;
-            }
-          else
-            { // compare_and_swap: return old value
-              pos = Expr.UNIT;
-              neg = Expr.UNIT;
-              oldv = jt.load(vslot);
-            }
-
-          Expr val =
-            locked(
-                   // preparation: store target in tslot, arg1 in nvslot and value field in vslot
-                   tvalue                                   // target       -> tslot
-                   .andThen(Expr.astore(tslot, tt.vti()))   //
-                   .andThen(args.get(1))                    // new value    -> nslot
-                   .andThen(jt.store(nvslot))               //
-                   .andThen(tt.load(tslot))                 // target.value -> vslot
-                   .andThen(jvm.getfield(v))                //
-                   .andThen(jt.store(vslot))                //
-                   // actual comparison:
-                   .andThen(jvm.compareValues(si,
-                                              args.get(0),
-                                              jt.load(vslot),
-                                              rc))              // cmp_result
-                   // conditional assignment code and result
-                   .andThen(Expr.branch(O_ifne,                         // -
-                                        tt.load(tslot)                  // tv
-                                        .andThen(jt.load(nvslot))       // tv nv
-                                        .andThen(jvm.putfield(v))       // -
-                                        .andThen(pos),                  // - --or-- 1
-                                        neg))                           // - --or-- 0
-                   .andThen(oldv));                                     // v --or-- 0/1
-          return new Pair<>(val, Expr.UNIT);
-        });
-
     put("mutate.new.atomic_access_supported",
         (jvm, si, cc, tvalue, args) ->
         {
@@ -248,6 +145,35 @@ public class Intrinsix extends ANY implements ClassFileConstants
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_bool) ||
             jvm._fuir.clazzIsUnitType(rc);
           return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
+        });
+
+    put("concur.atomic_mutate.read_fence",
+        "concur.atomic_mutate.write_fence",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          return new Pair<>(Expr.UNIT,
+                            locked(Expr.UNIT));
+        });
+
+    put("mutate.new.atomic_read0",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var ac = jvm._fuir.clazzOuterClazz(cc);
+          var v = jvm._fuir.lookupMutableValue(ac);
+          var val = locked(tvalue
+                           .andThen(jvm.getfield(v)));
+          return new Pair<>(val, Expr.UNIT);
+        });
+
+    put("mutate.new.atomic_write0",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var ac = jvm._fuir.clazzOuterClazz(cc);
+          var v = jvm._fuir.lookupMutableValue(ac);
+          var code = locked(tvalue
+                            .andThen(args.get(0))
+                            .andThen(jvm.putfield(v)));
+          return new Pair<>(Expr.UNIT, code);
         });
 
     put("mutate.new.compare_and_set0",
@@ -301,14 +227,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                         neg))                           // - --or-- 0
                    .andThen(oldv));                                     // v --or-- 0/1
           return new Pair<>(val, Expr.UNIT);
-        });
-
-    put("concur.atomic_mutate.read_fence",
-        "concur.atomic_mutate.write_fence",
-        (jvm, si, cc, tvalue, args) ->
-        {
-          return new Pair<>(Expr.UNIT,
-                            locked(Expr.UNIT));
         });
 
     put("debug",

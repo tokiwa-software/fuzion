@@ -51,7 +51,29 @@
 #
 #     w := v.get + 1
 #
-public mutate : linear_effect is
+public mutate : effect is
+
+  _depleted := false
+
+  module redef check_depletion =>
+    match tid0
+      nil =>
+        # instated during the effect big bang singularity before concur.Threads
+        # effect is there, so we are the only thread:
+        set _depleted := true
+
+      t concur.Thread =>
+        if t != concur.Threads.env.current then
+          # used by different thread
+          fuzion.std.panic "effect $(mutate.this.type) instated by different thread than the thread it was created with"
+
+        else if _depleted then
+          # used repeatedly
+          fuzion.std.panic "effect $(mutate.this.type) already depleted. effect may only be instated once."
+
+        else
+          # record that this was used:
+          set _depleted := true
 
 
   # shorthand to access effect type
@@ -130,7 +152,7 @@ public mutate : linear_effect is
     #
     module check_and_replace
     =>
-      if !is_exclusive
+      if !is_exclusive && supports_exclusive
         mpanic "*** invalid mutate for '$(M.name)'"
       mutate.this.env.replace
 
@@ -169,7 +191,7 @@ public mutate : linear_effect is
     #
     public get T ! mutate.this
       pre
-        safety: !open || is_exclusive
+        safety: !open || is_exclusive || !supports_exclusive /* ie., is atomic_mutate */
     =>
       if open
         check_and_replace
@@ -214,7 +236,10 @@ public mutate : linear_effect is
     #
     module get_racy_internal T
     =>
-      mutable_value
+      if mutate.this.type : concur.atomic_mutate
+        atomic_read0
+      else
+        mutable_value
 
 
     # read the mutable value that is now immutable after it was closed for mutation.
@@ -245,7 +270,7 @@ public mutate : linear_effect is
       to T) unit
       ! mutate.this
     pre
-      safety: open && is_exclusive
+      safety: open && (is_exclusive || !supports_exclusive /* ie., is atomic_mutate */)
     =>
       check_and_replace
       put_racy_internal to   # we are exclusive, so this is not racy
@@ -294,7 +319,10 @@ public mutate : linear_effect is
     pre
       safety: open
     =>
-      set mutable_value := to
+      if mutate.this.type : concur.atomic_mutate
+        atomic_write0 to
+      else
+        set mutable_value := to
 
 
     # infix operator for put, OCaml/F#-style syntax
@@ -341,17 +369,18 @@ public mutate : linear_effect is
       ) T
       ! mutate.this
     pre
-      T : property.equatable   # NYI: UNDER DEVELOPMENT: remove!
       safety: open
-      atomic_access_supported
     =>
       if supports_exclusive
         exclusive ()->
           check_and_replace
           old := val
-          if old = expected    # NYI: UNDER DEVELOPMENT: use bitwise comparison!
-            put modified
-          old
+          if T : property.equatable   # NYI: UNDER DEVELOPMENT: remove!
+            if old = expected    # NYI: UNDER DEVELOPMENT: use bitwise comparison!
+              put modified
+            old
+          else
+            panic "in $(mutate.this) used compare_and_swap on type '$(T)' that is not `property.equatable`"
       else
         mutate.this.env.replace
         compare_and_swap0 expected modified
@@ -395,19 +424,20 @@ public mutate : linear_effect is
       ) bool
       ! mutate.this
     pre
-      T : property.equatable   # NYI: UNDER DEVELOPMENT: remove!
       safety: open
-      atomic_access_supported
     =>
       if supports_exclusive
         exclusive ()->
           check_and_replace
           old := val
-          if old = expected    # NYI: UNDER DEVELOPMENT: use bitwise comparison!
-            put modified
-            true
+          if T : property.equatable   # NYI: UNDER DEVELOPMENT: remove!
+            if old = expected    # NYI: UNDER DEVELOPMENT: use bitwise comparison!
+              put modified
+              true
+            else
+              false
           else
-            false
+            panic "in $(mutate.this) used compare_and_set on type '$(T)' that is not `property.equatable`"
       else
         mutate.this.env.replace
         compare_and_set0 expected modified
@@ -421,6 +451,18 @@ public mutate : linear_effect is
     # more complex types such as `point(x,y i64)`.
     #
     public atomic_access_supported bool => intrinsic
+
+
+    # intrinsic to read this value in a way that is atomic with respect to write
+    # operations performed by concurrent threads
+    #
+    atomic_read0 T => intrinsic
+
+
+    # intrinsic to write this value in a way that is atomic with respect to read
+    # and write operations performed by concurrent threads
+    #
+    atomic_write0(new_value T) unit => intrinsic
 
 
     # intrinsic to perform a bit-wise comparison of the value contained in this atomic
