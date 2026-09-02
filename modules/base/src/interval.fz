@@ -105,12 +105,14 @@ is
 
   # get the number of elements in this interval
   #
-  # Performance O(1).
+  # Complexity: O(1).
   #
-  # NOTE: diverges if `through` is `nil` —
+  # NOTE: enters an infinite loop if `through` is `nil` —
   # use `size_option`, which returns `nil` for unbounded intervals.
   #
   public size T
+  pre
+   debug: through.exists   # unbounded intervals have no size, use `size_option`
   =>
     match through
       thru T =>
@@ -126,7 +128,7 @@ is
 
   # get the first element of this interval
   #
-  # Performance O(1)
+  # Complexity: O(1)
   #
   public redef first option T
   =>
@@ -146,7 +148,7 @@ is
   #
   # There is no last element if the interval is empty or unbounded.
   #
-  # Performance: O(1)
+  # Complexity: O(1)
   #
   public redef last option T
   =>
@@ -167,7 +169,8 @@ is
   # For `step = 0` only index 0 exists: every index would otherwise
   # yield `from`.
   #
-  # Performance: O(1)
+  # Complexity: O(1), which relies on the O(1) `contains` redefined in
+  # this feature.
   #
   public redef nth(n i32) option T
   =>
@@ -196,7 +199,8 @@ is
   # Inverse of `nth`: for a valid index `i`, `index_of` of the `i`-th
   # element returns `i`.
   #
-  # Performance: O(1), unlike the inherited O(n) search.
+  # Complexity: O(1), unlike the inherited O(n) search.This depends on
+  # `contains` being redefined in this feature to be O(1) as well.
   #
   public redef index_of(e T) option i32
   =>
@@ -212,7 +216,7 @@ is
   # regardless of how `through` and `step` are stated:
   # `interval 1 8 3 = interval 1 7 3` and `2..10:2 = interval 2 10 2`.
   #
-  # Performance: O(1)
+  # Complexity: O(1)
   #
   # NOTE: two intervals with the same elements in opposite order are not
   # equal, e.g. `1..10 ≠ 10..1:-1` — an `interval` compares as an ordered
@@ -230,7 +234,7 @@ is
 
   # reverse the order of the elements in this interval
   #
-  # Performance: O(1)
+  # Complexity: O(1)
   #
   public reverse_interval interval T
   pre
