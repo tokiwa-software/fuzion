@@ -273,7 +273,7 @@ public class Types extends ANY
       f_flow_fallible_cause      = f_flow_fallible.get(mod, "cause", 1);
       f_concur                  = universe.get(mod, "concur", 0);
       f_concur_atomic           = f_concur.get(mod, "atomic", 2);
-      f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);
+      f_concur_atomic_v         = null; // f_concur_atomic.get(mod, "v", 0);
       f_effect_types            = universe.get(mod, "effect_types", 0);
       f_effect_types_type_foldf = f_effect_types.get(mod, "type_foldf", 4);
       f_Open_Types              = universe.get(mod, FuzionConstants.OPEN_TYPES_FEAT, 0);

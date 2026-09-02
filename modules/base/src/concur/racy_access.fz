@@ -26,6 +26,8 @@
 # racy_access -- an effect that permits reading and writing values in instances
 # of atomic using the racy access functions
 #
+# NYI: UNDER_DEVELOPTMENT: Remove, replaced by `concur.racy`.
+#
 private:module racy_access : effect is
 
   # default implementation of racy_access
@@ -34,3 +36,24 @@ private:module racy_access : effect is
   #
   public redef fixed type.default_value option concur.racy_access =>
     concur.racy_access  /* NYI: `concur.` could be added automatically by front end */
+
+
+# racy -- an effect that permits reading and writing values in instances
+# of `mutate.new` using the racy access functions
+#
+public racy(M type : mutate) : effect is
+
+  # dummy operation to register a racy access.
+  #
+  # This is used by all racy accesses such that static analysis of effects finds code
+  # that performs racy accesses.
+  #
+  public register unit =>
+
+
+  # default implementation of racy
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option (concur.racy M) =>
+    concur.racy M

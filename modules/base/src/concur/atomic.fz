@@ -28,11 +28,19 @@
 # Atomic values can be used for communication between threads in a safe
 # way.
 #
+# NYI: CLEANUP: REMOVE: replace all uses of concur.atomic by concur.atomic_mutate
+#
 private:public atomic (
   T type,
-  v T
+  initial_value T
   ) : auto_unwrap T atomic_access
 is
+
+
+  # the underlying mutable value
+  #
+  value := (builtin_atomic_mutate atomic.this).env.new initial_value
+
 
   # Does the current system permit racy accesses to the value of type T
   # stored in this atomic?
@@ -53,12 +61,10 @@ is
   # In general, this is useful only for debugging or monitoring purposes where
   # occasionally wrong random results are acceptable.
   #
-  public racy_read T ! racy_access
-  pre
-    debug: racy_accesses_supported
+  public racy_read T ! racy (builtin_atomic_mutate T)
   =>
-    racy_access.env.replace
-    v
+    racy (builtin_atomic_mutate T) .env.replace
+    value.get_racy
 
 
   # write a value in this atomic and do not care about synchronization.
@@ -66,12 +72,10 @@ is
   # Note that in conjunction with `racy_read`, this might create arbitrary
   # out-of-thin-air values.
   #
-  public racy_write(new_value T) unit ! racy_access
-  pre
-    debug: racy_accesses_supported
+  public racy_write(new_value T) unit ! racy (builtin_atomic_mutate T)
   =>
-    racy_access.env.replace
-    set v := new_value
+    racy (builtin_atomic_mutate T) .env.replace
+    value.put_racy new_value
 
 
   # read this value in a way that is atomic with respect to write operations
@@ -79,7 +83,7 @@ is
   #
   public read T ! atomic_access =>
     atomic_access.env.replace
-    read0
+    value.get
 
 
   # write this value in a way that is atomic with respect to read and write
@@ -87,7 +91,7 @@ is
   #
   public write(new_value T) unit ! atomic_access =>
     atomic_access.env.replace
-    write0 new_value
+    value.put new_value
 
 
   # Perform a bit-wise comparison of the value contained in this atomic and
@@ -98,7 +102,7 @@ is
   #
   public compare_and_swap(expected, new_value T) T  ! atomic_access =>
     atomic_access.env.replace
-    compare_and_swap0 expected new_value
+    value.compare_and_swap expected new_value
 
 
   # Perform a bit-wise comparison of the value contained in this atomic and
@@ -108,7 +112,7 @@ is
   #
   public compare_and_set(expected, new_value T) bool ! atomic_access =>
     atomic_access.env.replace
-    compare_and_set0 expected new_value
+    value.compare_and_set expected new_value
 
 
   # intrinsic to read this value in a way that is atomic with respect to write
@@ -167,13 +171,24 @@ is
   # returns the (old_value, new_value)
   #
   public update(F type : T->T, compute_new F) (T,T) =>
-    for current_value := read
-        new_value     := compute_new current_value
-    while !(compare_and_set current_value new_value)
-    else (current_value, new_value)
+    value.update compute_new
 
 
   # create a new atomic of type T
   #
   public type.new(v T) concur.atomic T =>
     concur.atomic v
+
+
+# atomic_mutate to be used by `concur.atomic`.
+#
+# NYI: CLEANUP: REMOVE: replace all uses of concur.atomic by concur.atomic_mutate
+#
+private builtin_atomic_mutate(T type) : atomic_mutate is
+
+
+  # This is instated autmatically at the effect big bang singularity:
+  #
+  public redef fixed type.default_value option (concur.builtin_atomic_mutate T)
+  =>
+    concur.builtin_atomic_mutate T

@@ -173,6 +173,14 @@ public mutate : linear_effect is
     =>
       if open
         check_and_replace
+      # NYI: UNDER DEVELOPMENT: This needs some thought and changes to ensure this does not suffer from memory access reordering:
+      #
+      #  - for single-threaded mutate, `read_fence` is a NOP, so accesses by other threads should be forbidden since there is no ordering
+      #    between the writes to and reads from `open` and `mutable_value`
+      #
+      #  - for blocking_mutate and atomic_mutate, we should check that there are write fences between the last write to `mutable_value`
+      #    and setting `open` to `false` and corresponding read fences between reading `open` and `mutable_value`
+      #
       read_fence
       get_racy_internal   # we are closed (immutable) or exclusive, so this is not racy
 
@@ -182,15 +190,15 @@ public mutate : linear_effect is
     # The read might be reordered resulting in an outdated or even an out-of-thin-air
     # result.
     #
-    # This will use the effect `racy mutate.this` such that static analysis
+    # This will use the effect `concur.racy mutate.this` such that static analysis
     # of effects will detect and report code that uses racy accesses to mutable
     # variables.
     #
-    public get_racy T ! racy mutate.this
+    public get_racy T ! concur.racy mutate.this
     pre
       atomic_access_supported
     =>
-      racy mutate.this .env.register
+      concur.racy mutate.this .env.register
 
       get_racy_internal
 
@@ -204,7 +212,7 @@ public mutate : linear_effect is
     # will not depend on the `racy` effect.  It is assumed that internal
     # uses of `get_racy_internal` are correct and effecively not racy.
     #
-    module get_racy_internal T ! mutate.this
+    module get_racy_internal T
     =>
       mutable_value
 
@@ -215,8 +223,16 @@ public mutate : linear_effect is
     pre
       safety: !open
     =>
+      # NYI: UNDER DEVELOPMENT: This needs some thought and changes to ensure this does not suffer from memory access reordering:
+      #
+      #  - for single-threaded mutate, `read_fence` is a NOP, so accesses by other threads should be forbidden since there is no ordering
+      #    between the writes to and reads from `open` and `mutable_value`
+      #
+      #  - for blocking_mutate and atomic_mutate, we should check that there are write fences between the last write to `mutable_value`
+      #    and setting `open` to `false` and corresponding read fences between reading `open` and `mutable_value`
+      #
       read_fence
-      mutable_value
+      get_racy_internal
 
 
     # update mutable field with new value
@@ -232,7 +248,7 @@ public mutate : linear_effect is
       safety: open && is_exclusive
     =>
       check_and_replace
-      put_racy_internal to   # we are closed (immutable) or exclusive, so this is not racy
+      put_racy_internal to   # we are exclusive, so this is not racy
       write_fence
 
 
@@ -250,12 +266,12 @@ public mutate : linear_effect is
         # the new value to be stored with 'h'
         to T
       ) unit
-      ! racy mutate.this
+      ! concur.racy mutate.this
     pre
       safety: open
       atomic_access_supported
     =>
-      racy mutate.this .env.register
+      concur.racy mutate.this .env.register
 
       put_racy_internal to
 
@@ -274,7 +290,7 @@ public mutate : linear_effect is
         # the new value to be stored with 'h'
         to T
       )
-      ! racy mutate.this
+      ! concur.racy mutate.this
     pre
       safety: open
     =>
@@ -444,22 +460,22 @@ public mutate : linear_effect is
 
         # function calculating the new value from the old value
         f F
-      ) T
+      ) (T,T)
     pre
-      T : property.equatable  # strictly required only for `concur.atomic_mutate`
       safety: open
     =>
       if supports_exclusive
         exclusive ()->
-          v := f get
-          put v
-          v
+          cur_val := get
+          new_val := f cur_val
+          put new_val
+          (cur_val, new_val)
       else if mutate.this.type : concur.atomic_mutate
         do
-          old := get_racy_internal
-          nju := f old
-        until old = compare_and_swap old nju
-          old
+          cur_val := get_racy_internal
+          new_val := f cur_val
+        until compare_and_set cur_val new_val
+          (cur_val, new_val)
       else
         panic "NYI: $(mutate.this).new.update"  # NYI: UNDER DEVELOPMENT
 
@@ -606,21 +622,3 @@ public mutate : linear_effect is
 public mut(T type, v T) mutate.new T ! mutate
 =>
   mutate.env.new v
-
-
-public racy(M type : mutate) : effect is
-
-  # dummy operation to register a racy access.
-  #
-  # This is used by all racy accesses such that static analysis of effects finds code
-  # that performs racy accesses.
-  #
-  public register unit =>
-
-
-  # default implementation of racy
-  #
-  # this will get instated automatically at startup
-  #
-  public redef fixed type.default_value option (racy M) =>
-    racy M
