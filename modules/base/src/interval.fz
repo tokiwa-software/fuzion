@@ -26,7 +26,7 @@
 
 # A `from..through` interval with a given `step`.
 #
-# Generates a sequence by repeatedly adding `step` to `from`.
+# Generates an interval by repeatedly adding `step` to `from`.
 # Stops before passing `through` (exceeding it for `step > 0`, falling below for `step < 0`).
 #
 # Empty if `step` points away from `through`:
