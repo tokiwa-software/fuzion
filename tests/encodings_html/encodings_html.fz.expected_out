@@ -1,11 +1,27 @@
 PASSED: (<div>, &lt;div&gt;)
+PASSED decode: <div>
 PASSED: (Tom & Jerry, Tom &amp; Jerry)
+PASSED decode: Tom & Jerry
 PASSED: ("Hello", &quot;Hello&quot;)
+PASSED decode: "Hello"
 PASSED: ('Single quotes', &#39;Single quotes&#39;)
+PASSED decode: 'Single quotes'
 PASSED: (<a href="#">Link</a>, &lt;a href=&quot;#&quot;&gt;Link&lt;&#x2F;a&gt;)
+PASSED decode: <a href="#">Link</a>
 PASSED: (😊 <3 & "fun", 😊 &lt;3 &amp; &quot;fun&quot;)
+PASSED decode: 😊 <3 & "fun"
 PASSED: (こんにちは <世界>, こんにちは &lt;世界&gt;)
+PASSED decode: こんにちは <世界>
 PASSED: (Résumé & café, Résumé &amp; café)
+PASSED decode: Résumé & café
 PASSED: (<img src=x onerror=alert(1)>, &lt;img src=x onerror=alert(1)&gt;)
+PASSED decode: <img src=x onerror=alert(1)>
 PASSED: (<svg><script>alert('x')</script></svg>, &lt;svg&gt;&lt;script&gt;alert(&#39;x&#39;)&lt;&#x2F;script&gt;&lt;&#x2F;svg&gt;)
+PASSED decode: <svg><script>alert('x')</script></svg>
 PASSED: (<body onload=alert(document.cookie)>, &lt;body onload=alert(document.cookie)&gt;)
+PASSED decode: <body onload=alert(document.cookie)>
+⚙️ 
+⚙︎ 
+👨‍💻 
+􏿿
+�
