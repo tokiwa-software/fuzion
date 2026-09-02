@@ -113,9 +113,9 @@ priority_queue_test =>
     # This also checks the correct alignment in the output of the tree.
     #
     say "\nHeap property min-heap:"
-    q4 := container.Binary_Heap_Queue lm i32 .empty
+    q4 := container.Binary_Heap_Queue lm i64 .empty
 
-    for i in ((i32 1)..10).reverse ++ [i32.min, i32.max]
+    for i in (1..10).reverse ++ [i64.min, i64.max]
     do
       say "\nenqueue $i\n"
       q4.enqueue i
@@ -131,9 +131,9 @@ priority_queue_test =>
     # Output the tree structure of the binary heap to check the heap property.
     #
     say "\nHeap property max-heap:"
-    q5 := container.Binary_Heap_Queue lm i32 .empty_by property.reverse_order
+    q5 := container.Binary_Heap_Queue lm i64 .empty_by property.reverse_order
 
-    for i in ((i32 -5)..6)
+    for i in (-5..6)
     do
       say "enqueue $i"
       q5.enqueue i
@@ -147,18 +147,18 @@ priority_queue_test =>
     #
     say "\nCustom comparator:"
 
-    digit_sum(i i32) i32 =>
+    digit_sum(i i64) i64 =>
       i.as_string.codepoints
-       .map (.parse_i32.or_panic)
+       .map (.parse_i64.or_panic)
        .sum
 
-    digit_sum_comp(a,b i32) bool => (digit_sum a) <= (digit_sum b)
+    digit_sum_comp(a,b i64) bool => (digit_sum a) <= (digit_sum b)
 
-    q6 := container.Binary_Heap_Queue lm i32 .empty_by digit_sum
+    q6 := container.Binary_Heap_Queue lm i64 .empty_by digit_sum
     _ := q6
     Random.simple 42 ()->
       for i in 0..9
-          r := Random.env.next_i32 199 - 99
+          r := Random.env.next_i64 199 - 99
       do
         say "enqueue $r"
         q6.enqueue r
@@ -173,17 +173,17 @@ priority_queue_test =>
   # Use one queue created from initial elements (make heap) as well as one where
   # elements were iteratively inserted.
   #
-  sort_test_random(random_test_size i32) =>
+  sort_test_random(random_test_size i64) =>
 
     Random.simple 42 ()->
 
     m : mutate is
     m ! ()->
 
-      elements := array random_test_size _->Random.env.next_i32
+      elements := array random_test_size _->Random.env.next_i64
 
-      pq_make := container.Binary_Heap_Queue m i32 .from elements
-      pq_add  := container.Binary_Heap_Queue m i32 .empty
+      pq_make := container.Binary_Heap_Queue m i64 .from elements
+      pq_add  := container.Binary_Heap_Queue m i64 .empty
 
       for e in elements do
         pq_add.enqueue e
@@ -218,28 +218,28 @@ priority_queue_test =>
   #
   interleaved_random_test(
     # rate of enqueue operations in percent
-    enq_rate i32,
+    enq_rate i64,
     # number of operations
-    test_size i32)
+    test_size i64)
   =>
     Random.simple 273661186099400849 ()->
       m : mutate is
       m ! ()->
-        q := container.Binary_Heap_Queue m i32 .empty
+        q := container.Binary_Heap_Queue m i64 .empty
 
-        for sort list i32 := nil, new_sort
-            i in (i32 1)..test_size
-            enq := true, (Random.env.next_i32 100) < enq_rate
+        for sort list i64 := nil, new_sort
+            i in 1..test_size
+            enq := true, (Random.env.next_i64 100) < enq_rate
         do
           new_sort :=
             if enq
-              e := Random.env.next_i32 test_size
+              e := Random.env.next_i64 test_size
               yap "🡩"
               q.enqueue e
               (sort ++ [e]).sort.as_list
             else
               match q.dequeue
-                e i32 => yap (e = sort[0] ? "🡫" : "\nError in round $i expected '$(sort[i])' but cot '$e'\n")
+                e i64 => yap (e = sort[0] ? "🡫" : "\nError in round $i expected '$(sort[i])' but cot '$e'\n")
                 nil => yap (sort.is_empty ? "-" : "\nError queue is empty but sort is $sort\n")
               sort.tail
     say "\n"
