@@ -82,21 +82,21 @@ is
   # ISO 8601 string for this datetime
   # example: 2018-09-14T23:59:59.079
   #
-  public as_string(p time.precision.val) String =>
-    match p
-      time.precision.year         =>  "$year_as_string"
-      time.precision.month        =>  "$year_as_string-$month_as_string"
-      time.precision.day          =>  "$year_as_string-$month_as_string-$day_as_string"
-      time.precision.hour         => ("$year_as_string-$month_as_string-$day_as_string" +
-                              "T$hour_as_string")
-      time.precision.minute       => ("$year_as_string-$month_as_string-$day_as_string" +
-                              "T$hour_as_string:$minute_as_string")
-      time.precision.second       => ("$year_as_string-$month_as_string-$day_as_string" +
-                              "T$hour_as_string:$minute_as_string:$second_as_string")
-      time.precision.milli_second => ("$year_as_string-$month_as_string-$day_as_string" +
-                              "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string")
-      time.precision.nano_second  => ("$year_as_string-$month_as_string-$day_as_string" +
-                              "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string$nano_second_as_string")
+  public as_string(u time.units.val) String =>
+    match u
+      time.units.year             =>  "$year_as_string"
+      time.units.month            =>  "$year_as_string-$month_as_string"
+      time.units.day              =>  "$year_as_string-$month_as_string-$day_as_string"
+      time.units.hour             => ("$year_as_string-$month_as_string-$day_as_string" +
+                                  "T$hour_as_string")
+      time.units.minute           => ("$year_as_string-$month_as_string-$day_as_string" +
+                                  "T$hour_as_string:$minute_as_string")
+      time.units.second           => ("$year_as_string-$month_as_string-$day_as_string" +
+                                  "T$hour_as_string:$minute_as_string:$second_as_string")
+      time.units.milli_second     => ("$year_as_string-$month_as_string-$day_as_string" +
+                                  "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string")
+      time.units.nano_second      => ("$year_as_string-$month_as_string-$day_as_string" +
+                                  "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string$nano_second_as_string")
 
 
   # internal helper: total nanoseconds since unix epoch
