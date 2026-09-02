@@ -274,17 +274,19 @@ public String ref : property.hashable, property.orderable is
       .map x->
         match x
           c codepoint => c
-          error       => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
+          error       => codepoint.replacement_character
 
 
   # replaces invalid UTF-8 byte sequences in this string with the Unicode
   # replacement character (U+FFFD).
+  #
   public to_valid_utf8 String =>
-    to_valid_utf8 (codepoint 0xFFFD) # 'REPLACEMENT CHARACTER'
+    to_valid_utf8 codepoint.replacement_character
 
 
   # replaces invalid UTF-8 byte sequences in this string with the given
   # string.
+  #
   public to_valid_utf8(replacement String) String =>
     codepoints_and_errors
       .reduce "" r,x->
