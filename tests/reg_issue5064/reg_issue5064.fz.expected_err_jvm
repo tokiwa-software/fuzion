@@ -1,11 +1,11 @@
 
-error 1: FATAL FAULT `*** panic ***`: 'switch.or_panic' called on 'option Stack.Node' that is '--nil--'
+error 1: FATAL FAULT `*** panic ***`: 'or_panic' called on 'option Stack.Node' that is '--nil--'
 Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 panic#1 at {base.fum}/panic.fz:53
-(option Stack.Node).or_panic#1 at {base.fum}/switch.fz:171
-(option Stack.Node).or_panic at {base.fum}/switch.fz:163
+(option Stack.Node).or_panic#1 at {base.fum}/switch.fz:189
+(option Stack.Node).or_panic at {base.fum}/switch.fz:181
 Stack.push#2 i64 at --CURDIR--/reg_issue5064.fz:46
 universe at --builtin--:48
 

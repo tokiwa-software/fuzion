@@ -28,6 +28,7 @@ reg_issue6263 =>
     io.buffered lm .Reader.instate (io.stdin.reader lm) ()->
       io.buffered lm
         .read_lines
+        .or_panic
         .filter !=""
 
   data := input.map action

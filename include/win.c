@@ -1306,6 +1306,10 @@ void * fzE_file_stderr(void) { return GetStdHandle(STD_ERROR_HANDLE); }
 
 int fzE_send_signal(int64_t pid, int sig)
 {
+  if (sig == 9 /* KILL */ || sig == 15 /* TERM */)
+    {
+      return TerminateProcess((HANDLE)pid, 1) ? 0 : -1;
+    }
   // windows does not have signals
   return -1;
 }

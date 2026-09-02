@@ -33,6 +33,9 @@
 # In case `step.sign = (from ⋄ through).sign`, this `Set` is empty, e.g.,
 # `interval 1 2 -1` and `interval 2 1 1` are both empty.
 #
+# This is not an interval in the mathematical sense, but rather a representation
+# of an arithmetic progression.
+#
 public interval(T type : integer,
 
                 # the first element of this Set when used as a Sequence

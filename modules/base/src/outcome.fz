@@ -51,7 +51,7 @@
 #
 public outcome(T type)
   : switch T error,
-    property.equatable
+    property.equatable # NYI: UNDER DEVELOPMENT: implement orderable instead of equatable
 is
 
   # Does this outcome contain an error
@@ -79,7 +79,7 @@ is
   #
   public redef as_string String =>
     outcome.this ? v T     => $v
-                 | e error => "--$e--"
+                 | e error => $e
 
 
   # monadic operator

@@ -131,14 +131,10 @@ public tokiwa is
     (concur.thread_pool 2 ()->
         fout := concur.thread_pool.env.submit _ ()->
           lm ! ()->
-            match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
-              e error => panic "failed reading stdout from $cmd, error is: $e"
-              out String => out
+            p.with_out String lm (() -> (io.buffered lm).read_fully.bind String.from)
         ferr := concur.thread_pool.env.submit _ ()->
           lm ! ()->
-            match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
-              e error => panic "failed reading stderr from $cmd, error is: $e"
-              err String => err
+            p.with_err String lm (() -> (io.buffered lm).read_fully.bind String.from)
 
         match feed_stdin
           nil =>
@@ -161,5 +157,5 @@ public tokiwa is
             e := ferr.get
             p.close_out.or_panic
             p.close_err.or_panic
-            process_result o e ec)
+            process_result $o $e ec)
       .or_panic

@@ -82,12 +82,12 @@ lib_time_date_time =>
       .from_seconds i
 
 
-  say <| a.as_string time.precision.year
-  say <| a.as_string time.precision.month
-  say <| a.as_string time.precision.day
-  say <| a.as_string time.precision.hour
-  say <| a.as_string time.precision.minute
-  say <| a.as_string time.precision.second
-  say <| a.as_string time.precision.milli_second
-  say <| a.as_string time.precision.nano_second
+  say <| a.as_string time.units.year
+  say <| a.as_string time.units.month
+  say <| a.as_string time.units.day
+  say <| a.as_string time.units.hour
+  say <| a.as_string time.units.minute
+  say <| a.as_string time.units.second
+  say <| a.as_string time.units.milli_second
+  say <| a.as_string time.units.nano_second
   check time.date_time.from_seconds 1762961342 .unix_time_stamp = 1762961342

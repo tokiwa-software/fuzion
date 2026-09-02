@@ -30,7 +30,7 @@ module:public Thread(thrd Internal_Thread,
                      # NYI: CLEANUP: use thread id
                      id uid
                      ) ref
-  : property.equatable
+  : property.orderable
 is
 
   joined := concur.atomic trit .new trit.no
@@ -133,6 +133,11 @@ is
   public fixed redef type.equality(a, b Thread.this) bool
   =>
     a.id = b.id
+
+
+  # compare two Threads
+  #
+  public fixed redef type.lteq(a, b Thread.this) bool => a.id <= b.id
 
 
   # mutex used to make accesses to this thread exclusive.

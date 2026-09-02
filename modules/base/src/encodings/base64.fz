@@ -113,13 +113,13 @@ is
           if i.as_i64 < d.length - pad_size
             error """
                   padding character '=' not allowed within the input data, \
-                  only at the very end, as required by RFC464"""
+                  only at the very end, as required by RFC4648"""
           else outcome (u32 0)  # replace padding with zero byte for decoding
 
         # line break
         else if c = 10 || c = 13
           error """
-                line breaks are not allowed within encoded data, as required by RFC464, found \
+                line breaks are not allowed within encoded data, as required by RFC4648, found \
                 $(if c=10 then "LF" else "CR") at position $i"""
         # other non alphabet character
         else
