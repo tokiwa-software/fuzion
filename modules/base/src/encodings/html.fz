@@ -115,7 +115,11 @@ public html is
   # "&#x2F;" => "/"
   #
   # Numeric entities of the form "&#<decimal>;" and "&#x<hex>;"
-  # (e.g. "&#39;" or "&#x2F;") are decoded using the same base maps.
+  # (e.g. "&#39;" or "&#x2F;") are supported. Illegal values
+  # will result in `codepoint.replacement_character`
+  #
+  # NYI: UNDER DEVELOPMENT: Named character references other than the once listed above are not supported (yet):
+  # https://html.spec.whatwg.org/multipage/named-characters.html#named-character-references
   #
   public decode(str String) String =>
     bytes := str.utf8.as_array_backed
@@ -129,8 +133,8 @@ public html is
       else if e = "gt"  then ">"
       else if e = "quot" then "\""
       else if e = "nbsp" then " "
-      else if e.starts_with "#x" then e.substring 2 .parse_u32_hex.bind codepoint .as_option
-      else if e.starts_with "#"  then e.substring 1 .parse_u32    .bind codepoint .as_option
+      else if e.starts_with "#x" then e.substring 2 .parse_u32_hex.bind codepoint.type.create .as_option
+      else if e.starts_with "#"  then e.substring 1 .parse_u32    .bind codepoint.type.create .as_option
       else nil
 
     # decode recursively, accumulating the result byte sequence

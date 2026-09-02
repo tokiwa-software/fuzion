@@ -165,7 +165,7 @@ public read_string(n i64) outcome String ! Reader
 pre debug: n >= 0
 =>
 
-  take_valid_codepoints(a Sequence u8, max i64) =>
+  take_legal_codepoints(a Sequence u8, max i64) =>
     v := String.from_bytes a
       .codepoints_and_errors
       .take_while (.ok)
@@ -181,7 +181,7 @@ pre debug: n >= 0
     cur := Reader.env.read
     is_eof                 := cur ? outcome => true | Sequence => false
     next_bytes Sequence u8 := (cur ? outcome => []   | s Sequence => s), rest ++ (cur ? outcome => [] | s Sequence => s)
-    next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
+    next_codepoints        := take_legal_codepoints next_bytes n, take_legal_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
     # we trigger a `discard` and remember what we read so far via `rest`.
     # this is necessary e.g. for stdin where we read one byte at a time.

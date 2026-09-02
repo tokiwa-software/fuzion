@@ -20,3 +20,8 @@ PASSED: (<svg><script>alert('x')</script></svg>, &lt;svg&gt;&lt;script&gt;alert(
 PASSED decode: <svg><script>alert('x')</script></svg>
 PASSED: (<body onload=alert(document.cookie)>, &lt;body onload=alert(document.cookie)&gt;)
 PASSED decode: <body onload=alert(document.cookie)>
+⚙️ 
+⚙︎ 
+👨‍💻 
+􏿿
+�
