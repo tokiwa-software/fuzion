@@ -37,21 +37,13 @@ private:public pipe : effect is
   status := fzE_pipe_create pipefd.internal_array.data
 
 
-  # has this pipe been used already?
-  #
-  public used concur.atomic bool := concur.atomic bool .new false
-
-
   # with writer for one pipe
   #
   with_writer(T type, LM type : mutate, w () -> outcome unit, r i64 -> T) outcome T ! concur.atomic_access
-  pre
-    debug: !used.read
   =>
     if status != 0
       error "creating pipe" status.as_i64
     else
-      used.write true
       read_desc, write_desc := (pipefd[0], pipefd[1])
 
       match (io.buffered LM).Writer.instate (pipe_writer LM write_desc "writing in $(pipe.this.type.name)") w
@@ -71,13 +63,10 @@ private:public pipe : effect is
   # with reader for one pipe
   #
   with_reader(T type, LM type : mutate, r () -> outcome unit, w i64 -> T) outcome T ! concur.atomic_access
-  pre
-    debug: !used.read
   =>
     if status != 0
       error "creating pipe" status.as_i64
     else
-      used.write true
       read_desc, write_desc := (pipefd[0], pipefd[1])
 
       match (io.buffered LM).Reader.instate (pipe_reader LM read_desc "reading in $(pipe.this.type.name)") r
