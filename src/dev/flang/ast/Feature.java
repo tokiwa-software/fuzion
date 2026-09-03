@@ -2836,7 +2836,6 @@ A pre-condition of a feature that does not redefine an inherited feature must st
     return kind() == AbstractFeature.Kind.Field
           && visibility().eraseTypeVisibility() != Visi.PUB  // public fields may be unused
           && !featureName().isInternal()                     // don't warn for internal features
-          && !this.outer().featureName().isInternal()        // don't warn for inner features of internal features
           && !featureName().isNameless()                     // don't warn for nameless features
           && !isArgument()                                   // don't warn for arguments
           && redefines().isEmpty();                          // don't warn for unused redefinitions

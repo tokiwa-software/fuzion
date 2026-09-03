@@ -134,7 +134,7 @@ public type.read_bytes(n i64) outcome (Sequence u8) ! Reader
   for res Sequence u8 := container.Finger_Tree u8 .empty,
             {
               match r
-                o outcome => res
+                outcome => res
                 s Sequence =>
                   a := s.take n-res.count
                   check debug: a.is_array_backed
