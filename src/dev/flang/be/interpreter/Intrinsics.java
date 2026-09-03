@@ -235,9 +235,11 @@ public class Intrinsics extends ANY
              (t == executor.fuir().clazz(SpecialClazzes.c_i8  )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i16 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_i64 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u8  )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u16 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_u64 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_f32 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_bool)));
         });
