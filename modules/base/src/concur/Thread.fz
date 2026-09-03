@@ -180,7 +180,7 @@ is
       code()
       set parked_on := (c, condition)
       mtx.unlock
-      while parked_on??   # perform this in a while to catch spurious wakeups
+      while parked_on.ok   # perform this in a while to catch spurious wakeups
         c.wait
 
 
@@ -213,7 +213,7 @@ is
       mtx.unlock
       while C.env.read < timeout   # while timeout not reached
         c.wait timeout
-      until !(parked_on??)                # perform unpark was called
+      until !parked_on # perform unpark was called
         true        # unpark was used to wake us up
       else
         false       # timed out
@@ -229,7 +229,7 @@ is
     # `condition` do not work if the remove `c.synchronized`.
     #
     mtx.lock
-    if parked_on??
+    if parked_on.ok
       c := parked_on.or_panic.0
       c.synchronized ()->            # this is redundant for C backend, but required for Java where mtx differ
         parked_on.for_each x->x.0.signal

@@ -34,7 +34,7 @@ test_interval is
         else
           s
       ) contained in size $(
-        if x.through.exists then
+        if x.through.ok then
           $(x.size)
         else
           "∞"
