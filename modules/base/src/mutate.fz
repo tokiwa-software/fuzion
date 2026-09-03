@@ -271,7 +271,7 @@ public mutate : effect is
       to T) unit
       ! mutate.this
     pre
-      safety: open && (( is_atomic) || is_exclusive)
+      safety: open && (is_atomic || is_exclusive)
     =>
       check_and_replace
       put_racy_internal to   # we are exclusive, so this is not racy
@@ -546,7 +546,11 @@ public mutate : effect is
   #
   public exclusive_allowed bool
   =>
-    is_exclusive
+    if mutate.this.type : concur.atomic_mutate
+      false
+    else
+      mutate.this.type.get_if_instated >>? x->
+        id = x.id && ((mutate.this.type : concur.blocking_mutate_using_clock0) || x.exclusive_thread=concur.Threads.env.current)
 
 
   # perform given code with exclusive access to the mutable values created with

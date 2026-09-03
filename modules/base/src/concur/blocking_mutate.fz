@@ -205,15 +205,6 @@ public blocking_mutate_using_clock(C type : time.Clock) : blocking_mutate_using_
           nil
 
 
-  # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
-  # not support use in several threads, check we are running in the thread `mutate.this`
-  # was created in?
-  #
-  public redef exclusive_allowed bool
-  =>
-    blocking_mutate_using_clock.this.get_if_instated >>? (x -> id = x.id)
-
-
   # cleanup feature to destroy mutex and other resources associated with this
   # effect.
   #

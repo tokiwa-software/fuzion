@@ -50,15 +50,6 @@ public atomic_mutate : mutate is
     compile_time_panic   # exclusive access not supported by atomic_mutate
 
 
-  # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
-  # not support use in several threads, check we are running in the thread `mutate.this`
-  # was created in?
-  #
-  public redef exclusive_allowed bool
-  =>
-    false
-
-
   # Perform a read fence, i.e., enforce ordering between the previous and the next
   # read operations: make sure that no previous read will be swapped with the any
   # following read operation.
