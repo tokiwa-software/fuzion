@@ -129,6 +129,13 @@ public mutate : effect is
     M.get_if_instated >>? (x -> id = x.id && x.exclusive_thread=concur.Threads.env.current)
 
 
+  # check if the current mutate is a child of 'conur.atomic_mutate'
+  #
+  public is_atomic bool
+  =>
+    mutate.this.type : concur.atomic_mutate
+
+
   # panic operation to be used in case of a severe problem.  This is redefined within the
   # base lib to make sure fundamental uses of local mutability do not cause dependency
   # on the panic effect.
@@ -145,9 +152,10 @@ public mutate : effect is
     #
     module check_and_replace
     =>
-      if !is_exclusive && supports_exclusive
+      if !is_atomic && !is_exclusive
         mpanic "*** invalid mutate for '$(M.name)'"
-      mutate.this.env.replace
+      else
+        mutate.this.env.replace
 
 
     # is this element open, i.e., can it be mutated?
@@ -184,7 +192,7 @@ public mutate : effect is
     #
     public get T ! mutate.this
       pre
-        safety: !open || is_exclusive || !supports_exclusive /* ie., is atomic_mutate */
+        safety: !open || is_atomic || is_exclusive
     =>
       if open
         check_and_replace
@@ -229,7 +237,7 @@ public mutate : effect is
     #
     module get_racy_internal T
     =>
-      if mutate.this.type : concur.atomic_mutate
+      if is_atomic
         atomic_read0
       else
         mutable_value
@@ -263,7 +271,7 @@ public mutate : effect is
       to T) unit
       ! mutate.this
     pre
-      safety: open && (is_exclusive || !supports_exclusive /* ie., is atomic_mutate */)
+      safety: open && (( is_atomic) || is_exclusive)
     =>
       check_and_replace
       put_racy_internal to   # we are exclusive, so this is not racy
@@ -312,7 +320,7 @@ public mutate : effect is
     pre
       safety: open
     =>
-      if mutate.this.type : concur.atomic_mutate
+      if is_atomic
         atomic_write0 to
       else
         set mutable_value := to
@@ -364,9 +372,11 @@ public mutate : effect is
     pre
       safety: open
     =>
-      if supports_exclusive
+      check_and_replace
+      if is_atomic
+        compare_and_swap0 expected modified
+      else
         exclusive ()->
-          check_and_replace
           old := val
           if T : property.equatable   # NYI: UNDER DEVELOPMENT: remove!
             if old = expected    # NYI: UNDER DEVELOPMENT: use bitwise comparison!
@@ -374,9 +384,6 @@ public mutate : effect is
             old
           else
             panic "in $(mutate.this) used compare_and_swap on type '$(T)' that is not `property.equatable`"
-      else
-        mutate.this.env.replace
-        compare_and_swap0 expected modified
 
 
     # compare the value of this mutable field with an `expected` value. If it is equal,
@@ -419,9 +426,11 @@ public mutate : effect is
     pre
       safety: open
     =>
-      if supports_exclusive
+      check_and_replace
+      if is_atomic
+        compare_and_set0 expected modified
+      else
         exclusive ()->
-          check_and_replace
           old := val
           if T : property.equatable   # NYI: UNDER DEVELOPMENT: remove!
             if old = expected    # NYI: UNDER DEVELOPMENT: use bitwise comparison!
@@ -431,9 +440,6 @@ public mutate : effect is
               false
           else
             panic "in $(mutate.this) used compare_and_set on type '$(T)' that is not `property.equatable`"
-      else
-        mutate.this.env.replace
-        compare_and_set0 expected modified
 
 
     # Does the current system permit racy accesses to the value of type T
@@ -499,20 +505,18 @@ public mutate : effect is
     pre
       safety: open
     =>
-      if supports_exclusive
-        exclusive ()->
-          cur_val := get
-          new_val := f cur_val
-          put new_val
-          (cur_val, new_val)
-      else if mutate.this.type : concur.atomic_mutate
+      if is_atomic
         do
           cur_val := get_racy_internal
           new_val := f cur_val
         until compare_and_set cur_val new_val
           (cur_val, new_val)
       else
-        panic "NYI: $(mutate.this).new.update"  # NYI: UNDER DEVELOPMENT
+        exclusive ()->
+          cur_val := get
+          new_val := f cur_val
+          put new_val
+          (cur_val, new_val)
 
 
     # creates a copy of the mutable field
@@ -543,19 +547,6 @@ public mutate : effect is
   public exclusive_allowed bool
   =>
     is_exclusive
-
-
-  # Does this mutate support `exclusive` and `exclusive_when`?
-  #
-  # This is the case for `mutate` (since this supports only a single thread), and
-  # `concur.blocking_mutate` / `concur.blocking_mutate_using_clock` (since these
-  # support synchronization using a lock).
-  #
-  # This is not the case for `concur.atomic_mutate`.
-  #
-  public supports_exclusive bool
-  =>
-    !(mutate.this.type : concur.atomic_mutate)   # NYI: CLEANUP: Do inline!
 
 
   # perform given code with exclusive access to the mutable values created with
