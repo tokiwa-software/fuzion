@@ -172,16 +172,36 @@ public mutate : effect is
 
     # is this element open, i.e., can it be mutated?
     #
-    public open bool := true
+    open0 bool := true
+
+
+    # is this element open, i.e., can it be mutated?
+    #
+    public open bool
+    =>
+      read_fence
+      open0
 
 
     # stop any further mutations of this element
     #
     public close unit
     pre
-      safety: is_exclusive
+      safety: is_atomic || is_exclusive
     =>
-      set open := false
+      set open0 := false
+      write_fence
+
+
+  # Does the current system permit atomic accesses to values of type T?
+  #
+  # This is typically true for ref values and for small primitive types
+  # such as `i32`, `f64`, etc. while this is typically not the case for
+  # more complex types such as `point(x,y i64)`.
+  #
+  public atomic_access_supported(T type) bool
+  =>
+    intrinsic
 
 
   # create a new mutable value with the given initial value and update the
@@ -231,7 +251,7 @@ public mutate : effect is
     #
     public get_racy T ! concur.racy mutate.this
     pre
-      atomic_access_supported
+      safety: !is_atomic || atomic_access_supported T
     =>
       concur.racy mutate.this .env.register
 
@@ -307,7 +327,7 @@ public mutate : effect is
       ! concur.racy mutate.this
     pre
       safety: open
-      atomic_access_supported
+      safety: !is_atomic || atomic_access_supported T
     =>
       concur.racy mutate.this .env.register
 
@@ -340,7 +360,11 @@ public mutate : effect is
 
     # infix operator for put, OCaml/F#-style syntax
     #
-    public infix <- (to T) unit => put to
+    public infix <- (to T) unit
+    pre
+      safety: open && (is_atomic && atomic_access_supported T || is_exclusive)
+    =>
+      put to
 
 
     # compare the value of this mutable field with an `expected` value. If it is equal,
@@ -452,16 +476,6 @@ public mutate : effect is
               false
           else
             panic "in $(mutate.this) used compare_and_set on type '$(T)' that is not `property.equatable`"
-
-
-    # Does the current system permit racy accesses to the value of type T
-    # stored in this atomic?
-    #
-    # This is typically true for ref values and for small primitive types
-    # such as `i32`, `f64`, etc. while this is typically not the case for
-    # more complex types such as `point(x,y i64)`.
-    #
-    public atomic_access_supported bool => intrinsic
 
 
     # intrinsic to read this value in a way that is atomic with respect to write

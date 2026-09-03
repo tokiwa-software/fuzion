@@ -1875,9 +1875,9 @@ public class DFA extends ANY
           return cl._dfa.bool();
         });
 
-    put("mutate.new.atomic_access_supported",  cl ->
+    put("mutate.atomic_access_supported",  cl ->
         {
-          // NYI: atomic_access_supported could return true or false depending on the backend's behavior.
+          // atomic_access_supported could return true or false depending on the backend's behavior.
           return cl._dfa.bool();
         });
 

@@ -51,7 +51,7 @@ is
   #
   public racy_accesses_supported bool
   =>
-    value.atomic_access_supported
+    (AAA_builtin_atomic_mutate atomic.this).env.atomic_access_supported T
 
 
   # read the value stored in this atomic and do not care about synchronization.

@@ -173,10 +173,9 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("mutate.new.atomic_access_supported",  (c,cl,outer,in) ->
+    put("mutate.atomic_access_supported",  (c,cl,outer,in) ->
         {
-          var nc  = c._fuir.clazzOuterClazz(cl);
-          var rc  = c._fuir.clazzActualGeneric(nc, 0);
+          var rc  = c._fuir.clazzActualGeneric(cl, 0);
           var r =
             c._fuir.clazzIsRef(rc) ||
             c._fuir.clazzIsBuiltInPrimitive(rc) ||

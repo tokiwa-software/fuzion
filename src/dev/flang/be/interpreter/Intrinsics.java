@@ -229,10 +229,9 @@ public class Intrinsics extends ANY
             }
         });
 
-    put("mutate.new.atomic_access_supported",  (executor, innerClazz) -> args ->
+    put("mutate.atomic_access_supported",  (executor, innerClazz) -> args ->
         {
-          var nc = executor.fuir().clazzOuterClazz(innerClazz);
-          var t = executor.fuir().clazzActualGeneric(nc, 0);
+          var t = executor.fuir().clazzActualGeneric(innerClazz, 0);
           return new boolValue
             (executor.fuir().clazzIsRef(t)                            ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i8  )) ||
@@ -242,9 +241,9 @@ public class Intrinsics extends ANY
              (t == executor.fuir().clazz(SpecialClazzes.c_u8  )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u16 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u32 )) ||
-             (t == executor.fuir().clazz(SpecialClazzes.c_u64 )) ||
+             // (t == executor.fuir().clazz(SpecialClazzes.c_u64 )) ||  -- we split up 64-bit values to store tham in an array of ints
              (t == executor.fuir().clazz(SpecialClazzes.c_f32 )) ||
-             (t == executor.fuir().clazz(SpecialClazzes.c_f64 )) ||
+             // (t == executor.fuir().clazz(SpecialClazzes.c_f64 )) ||  -- we split up 64-bit values to store tham in an array of ints
              (t == executor.fuir().clazz(SpecialClazzes.c_bool)));
         });
 

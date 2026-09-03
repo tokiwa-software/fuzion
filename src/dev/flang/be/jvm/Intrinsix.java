@@ -125,11 +125,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(tvalue.drop().andThen(jvm.boxedConstString(str)), Expr.UNIT);
         });
 
-    put("mutate.new.atomic_access_supported",
+    put("mutate.atomic_access_supported",
         (jvm, si, cc, tvalue, args) ->
         {
-          var nc = jvm._fuir.clazzOuterClazz(cc);
-          var rc  = jvm._fuir.clazzActualGeneric(nc, 0);
+          var rc  = jvm._fuir.clazzActualGeneric(cc, 0);
           var r =
             jvm._fuir.clazzIsRef(rc) ||
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||

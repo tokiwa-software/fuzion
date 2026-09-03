@@ -28,9 +28,19 @@
 # This mutate ensures exclusive access to shared memory via lock-free atomic
 # operations like compare-and-swap.
 #
-# Accidental racy accesses are not permitted by this mutate, i.e., accessing
-# mutable elements, e.g, via `get` or `put` on a mutable var
-# `atomic_mutate.this.env.new T`, are not permitted.
+# In case the type of a mutable field does not permit lock-free atomic accesses,
+# an internal global lock is used instead to ensure these accesses are
+# atomic.
+#
+# Read accesses usng `get` are protected from reusing outdated values
+# by a `read_fence` while Write accesses using `put` include a `write_fence`
+# after writing the value to ensure the write is not delayed after any
+# subsequent writes.
+#
+# Racy accesses using `get_racy` and `put_racy` are permitted only for types
+# for which `atomic_mutate.this.atomic_access_supported T` is true. This ensures
+# that racy accesses do not yield crippled values such as an `i128` consisting
+# of lower and upper 64 bits that come from different values.
 #
 public atomic_mutate : mutate is
 
@@ -39,7 +49,9 @@ public atomic_mutate : mutate is
   #
   # This is always `nil`, atomic_mutate does not give exclusive access.
   #
-  module redef exclusive_thread option concur.Thread => nil
+  module redef exclusive_thread option concur.Thread
+  =>
+    nil
 
 
   # perform given code with exclusive access to the mutable values created with
