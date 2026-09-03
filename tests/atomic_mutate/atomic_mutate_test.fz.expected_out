@@ -6,7 +6,7 @@ Use SAMPLE_MS=<n> to change the time for each sample run.
 single threaded test for atomic_mutate_test.lm
 single threaded test for atomic_mutate_test.bm
 single threaded test for atomic_mutate_test.am
-multi threaded test for atomic_mutate_test.lm, ERROR: (precondition, safety: is_this_mutate_instated_and_usable)
+multi threaded test for atomic_mutate_test.lm, ERROR: (precondition, safety: exclusive_allowed)
 multi threaded test for atomic_mutate_test.bm
 multi threaded test for atomic_mutate_test.am
 multi threaded racy test for atomic_mutate_test.lmr
