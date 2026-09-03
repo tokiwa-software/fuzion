@@ -34,10 +34,15 @@ strings_multiline_negative is
   """
 
   _ := """
-  4. should flag an error: (error in line 43) Illegal trailing whitespace in multiline string. 
+  4. should flag an error: Illegal trailing whitespace in multiline string. 
   """
 
   _ := """
   A string 'ending' in four quotes, essentially ending the multiline
   string and immediately starting a new string.
   """"  # 5. should flag an error: Found unexpected control sequence 'LF '
+
+  _ := """
+    illegal space
+    
+    in empty line in the middle of the string.""" # 6. should flag (for line above) an error: Illegal trailing whitespace in multiline string.
