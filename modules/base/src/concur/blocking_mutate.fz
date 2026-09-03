@@ -196,7 +196,7 @@ public blocking_mutate_using_clock(C type : time.Clock) : blocking_mutate_using_
                           code F
                           ) option R
     pre
-      safety: is_this_mutate_instated_and_usable
+      safety: exclusive_allowed
     =>
       blocking_mutate_using_clock.this.env.exclusive ()->
         if timeout.this.wait condition
@@ -209,7 +209,7 @@ public blocking_mutate_using_clock(C type : time.Clock) : blocking_mutate_using_
   # not support use in several threads, check we are running in the thread `mutate.this`
   # was created in?
   #
-  public redef is_this_mutate_instated_and_usable bool
+  public redef exclusive_allowed bool
   =>
     blocking_mutate_using_clock.this.get_if_instated >>? (x -> id = x.id)
 

@@ -42,19 +42,6 @@ public atomic_mutate : mutate is
   module redef exclusive_thread option concur.Thread => nil
 
 
-  # Does this mutate support `exclusive` and `exclusive_when`?
-  #
-  # This is the case for `mutate` (since this supports only a single thread), and
-  # `concur.blocking_mutate` / `concur.blocking_mutate_using_clock` (since these
-  # support synchronization using a lock).
-  #
-  # This is not the case for `concur.atomic_mutate`.
-  #
-  public redef supports_exclusive bool
-  =>
-    false
-
-
   # perform given code with exclusive access to the mutable values created with
   # this instance of `mutate`.
   #
@@ -67,9 +54,9 @@ public atomic_mutate : mutate is
   # not support use in several threads, check we are running in the thread `mutate.this`
   # was created in?
   #
-  public redef is_this_mutate_instated_and_usable bool
+  public redef exclusive_allowed bool
   =>
-    atomic_mutate.this.get_if_instated >>? (x -> id = x.id)
+    false
 
 
   # Perform a read fence, i.e., enforce ordering between the previous and the next
