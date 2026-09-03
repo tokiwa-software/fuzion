@@ -1905,12 +1905,12 @@ public class DFA extends ANY
           return Value.UNIT;
         });
 
-    put("concur.atomic_mutate.read_fence",  cl ->
+    put("mutate.read_fence",  cl ->
         {
           return Value.UNIT;
         });
 
-    put("concur.atomic_mutate.write_fence",  cl ->
+    put("mutate.write_fence",  cl ->
         {
           return Value.UNIT;
         });

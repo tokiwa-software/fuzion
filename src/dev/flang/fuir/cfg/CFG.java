@@ -213,8 +213,8 @@ public class CFG extends ANY
     put("mutate.new.compare_and_swap0"   , (cfg, cl) -> { } );
     put("mutate.new.atomic_read0"        , (cfg, cl) -> { } );
     put("mutate.new.atomic_write0"       , (cfg, cl) -> { } );
-    put("concur.atomic_mutate.read_fence", (cfg, cl) -> { } );
-    put("concur.atomic_mutate.write_fence",(cfg, cl) -> { } );
+    put("mutate.read_fence"              , (cfg, cl) -> { } );
+    put("mutate.write_fence"             , (cfg, cl) -> { } );
 
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );

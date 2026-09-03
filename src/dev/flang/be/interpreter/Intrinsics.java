@@ -270,13 +270,13 @@ public class Intrinsics extends ANY
           return Value.UNIT;
         });
 
-    put("concur.atomic_mutate.read_fence",   (executor, innerClazz) -> args ->
+    put("mutate.read_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
           return Value.UNIT;
         });
 
-    put("concur.atomic_mutate.write_fence",   (executor, innerClazz) -> args ->
+    put("mutate.write_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
           return Value.UNIT;

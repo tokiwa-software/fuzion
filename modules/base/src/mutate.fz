@@ -185,6 +185,11 @@ public mutate : effect is
 
     # stop any further mutations of this element
     #
+    # NYI: UNDER DEVELOPMENT: The open/close/val features are tricky
+    # for multi-threaded accesses.  I think these should be removed
+    # and added only to a closable variant of mutable fields to avoid
+    # the extra checks and memory fences when accessing `open0`.
+    #
     public close unit
     pre
       safety: is_atomic || is_exclusive
@@ -198,6 +203,10 @@ public mutate : effect is
   # This is typically true for ref values and for small primitive types
   # such as `i32`, `f64`, etc. while this is typically not the case for
   # more complex types such as `point(x,y i64)`.
+  #
+  # For mutable fields created by heirs of `concur.atomic_mutate`, it will
+  # not be possible to use `get_racy` or `put_racy` unless they are
+  # performed on a type where these accesses are atomic.
   #
   public atomic_access_supported(T type) bool
   =>
@@ -228,16 +237,12 @@ public mutate : effect is
     =>
       if open
         check_and_replace
-      # NYI: UNDER DEVELOPMENT: This needs some thought and changes to ensure this does not suffer from memory access reordering:
-      #
-      #  - for single-threaded mutate, `read_fence` is a NOP, so accesses by other threads should be forbidden since there is no ordering
-      #    between the writes to and reads from `open` and `mutable_value`
-      #
-      #  - for blocking_mutate and atomic_mutate, we should check that there are write fences between the last write to `mutable_value`
-      #    and setting `open` to `false` and corresponding read fences between reading `open` and `mutable_value`
-      #
-      read_fence
-      get_racy_internal   # we are closed (immutable) or exclusive, so this is not racy
+
+      if is_atomic
+        read_fence
+        atomic_read0
+      else
+        mutable_value   # we are closed (immutable) or exclusive, so this is not racy
 
 
     # read the current value of this mutable value without any synchronization.
@@ -255,24 +260,7 @@ public mutate : effect is
     =>
       concur.racy mutate.this .env.register
 
-      get_racy_internal
-
-
-    # read the current value of this mutable value without any synchronization.
-    #
-    # The read might be reordered resulting in an outdated or even an out-of-thin-air
-    # result.
-    #
-    # This is the internal variant of `get_racy`, the only difference is that this
-    # will not depend on the `racy` effect.  It is assumed that internal
-    # uses of `get_racy_internal` are correct and effecively not racy.
-    #
-    module get_racy_internal T
-    =>
-      if is_atomic
-        atomic_read0
-      else
-        mutable_value
+      mutable_value
 
 
     # read the mutable value that is now immutable after it was closed for mutation.
@@ -281,16 +269,8 @@ public mutate : effect is
     pre
       safety: !open
     =>
-      # NYI: UNDER DEVELOPMENT: This needs some thought and changes to ensure this does not suffer from memory access reordering:
-      #
-      #  - for single-threaded mutate, `read_fence` is a NOP, so accesses by other threads should be forbidden since there is no ordering
-      #    between the writes to and reads from `open` and `mutable_value`
-      #
-      #  - for blocking_mutate and atomic_mutate, we should check that there are write fences between the last write to `mutable_value`
-      #    and setting `open` to `false` and corresponding read fences between reading `open` and `mutable_value`
-      #
       read_fence
-      get_racy_internal
+      mutable_value
 
 
     # update mutable field with new value
@@ -306,8 +286,11 @@ public mutate : effect is
       safety: open && (is_atomic || is_exclusive)
     =>
       check_and_replace
-      put_racy_internal to   # we are exclusive, so this is not racy
-      write_fence
+      if is_atomic
+        atomic_write0 to
+        write_fence
+      else
+        set mutable_value := to  # we are exclusive, so this is not racy
 
 
     # update mutable field with new value without any synchronization.
@@ -331,38 +314,14 @@ public mutate : effect is
     =>
       concur.racy mutate.this .env.register
 
-      put_racy_internal to
-
-
-    # update mutable field with new value without any synchronization.
-    #
-    # The write might be reordered resulting in the new value becoming visible
-    # to other thread earlier or later.
-    #
-    # This is the internal variant of `put_racy`, the only difference is that this
-    # will not depend on the `racy` effect.  It is assumed that internal
-    # uses of `put_racy_internal` are correct and effecively not racy.
-    #
-    module put_racy_internal
-      (
-        # the new value to be stored with 'h'
-        to T
-      )
-      ! concur.racy mutate.this
-    pre
-      safety: open
-    =>
-      if is_atomic
-        atomic_write0 to
-      else
-        set mutable_value := to
+      set mutable_value := to
 
 
     # infix operator for put, OCaml/F#-style syntax
     #
     public infix <- (to T) unit
     pre
-      safety: open && (is_atomic && atomic_access_supported T || is_exclusive)
+      safety: open && (is_atomic || is_exclusive)
     =>
       put to
 
@@ -530,10 +489,11 @@ public mutate : effect is
       ) (T,T)
     pre
       safety: open
+      safety: !is_atomic || atomic_access_supported T
     =>
       if is_atomic
         do
-          cur_val := get_racy_internal
+          cur_val := get_racy
           new_val := f cur_val
         until compare_and_set cur_val new_val
           (cur_val, new_val)
@@ -639,7 +599,7 @@ public mutate : effect is
   #
   public read_fence unit
   =>
-    # no code needed except for the redefinition in `atomic_mutate`
+    intrinsic
 
 
   # Perform a write fence, i.e., enforce ordering between the previous and the next
@@ -660,7 +620,7 @@ public mutate : effect is
   #
   public write_fence unit
   =>
-    # no code needed except for the redefinition in `atomic_mutate`
+    intrinsic
 
 
   # default implementation of mutate
