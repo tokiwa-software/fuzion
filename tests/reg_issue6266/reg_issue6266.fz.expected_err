@@ -10,7 +10,7 @@ Target type: 'Stack'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'concur.atomic T', or change the result type of 'concur.atomic.read' to no longer depend on 'Stack.this'.
 
 
-{base.fum}/concur/atomic.fz:88:5: error 2: Call has an ambiguous result type since target of the call is a 'ref' type.
+{base.fum}/concur/atomic.fz:86:5: error 2: Call has an ambiguous result type since target of the call is a 'ref' type.
     value.get
 ----^^^^^^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
@@ -21,7 +21,7 @@ Target type: 'Stack'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'mutate.new T', or change the result type of 'mutate.new.precall get' to no longer depend on 'Stack.this'.
 
 
-{base.fum}/mutate.fz:194:7: error 3: Call has an ambiguous result type since target of the call is a 'ref' type.
+{base.fum}/mutate.fz:235:7: error 3: Call has an ambiguous result type since target of the call is a 'ref' type.
       pre
 ------^^^
         safety: !open || is_atomic || is_exclusive
@@ -33,15 +33,4 @@ Type depending on target: 'Stack.this'
 Target type: 'Stack'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'mutate.new T', or change the result type of 'mutate.new.get' to no longer depend on 'Stack.this'.
 
-
-{base.fum}/mutate.fz:208:7: error 4: Call has an ambiguous result type since target of the call is a 'ref' type.
-      get_racy_internal   # we are closed (immutable) or exclusive, so this is not racy
-------^^^^^^^^^^^^^^^^^
-The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
-Called feature: 'mutate.new.get_racy_internal'
-Original result type: 'option Stack.this.node'
-Type depending on target: 'Stack.this'
-Target type: 'Stack'
-To solve this, you could try to use a value type as the target type of the call, e,g., 'mutate.new T', or change the result type of 'mutate.new.get_racy_internal' to no longer depend on 'Stack.this'.
-
-4 errors.
+3 errors.
