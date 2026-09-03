@@ -305,11 +305,11 @@ visibility is
       ix3 := a + ix1 + ix2 + it1 + it2   # can make unqualified call to a, ix1, ix2, it1, it2 ..
     while a + ix1 + ix2 + it1 + it2 + ix3 < 10000
       b => 6
-      q := a + ix1 + ix2 + it1 + it2 + ix3 + b
+      _ := a + ix1 + ix2 + it1 + it2 + ix3 + b
     until a * (ix1 + ix2 + it1 + it2 + ix3 + b) > 1000000
-      r := a + ix1 + ix2 + it1 + it2 + ix3 + b
+      _ := a + ix1 + ix2 + it1 + it2 + ix3 + b
     else
-      s := a + ix1 + ix2
+      _ := a + ix1 + ix2
     _ := a
   visi9
 

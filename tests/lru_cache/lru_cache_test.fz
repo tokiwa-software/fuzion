@@ -140,6 +140,7 @@ lru_cache_test =>
       for i in elems do
         exp := i%%2 ?  "~$(i**2)~" : "_$(i)_"
         act := test c get i nil .or_panic
+        check exp = act
 
   update_value 7
 

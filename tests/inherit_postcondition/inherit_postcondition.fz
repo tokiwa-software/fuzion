@@ -198,7 +198,7 @@ test_postcondition is
       post
         ok "original $result"
         { io.Out.env.println "hi"; true }
-        { v := post_accessing_result.this; true }
+        { _ := post_accessing_result.this; true }
         { [1,result,2].fold i64.sum > 3 }
         { fn i64->i64 := *result; fn 3 > 120 }
         result > 23
