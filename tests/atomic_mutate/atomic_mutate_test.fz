@@ -43,13 +43,11 @@ atomic_mutate_test =>
   =>
    c := M.env.new u64 0
    do
-     n := c.update u64->u64 (+1) .1
-     # say "c is $c max $max $(c<max)"
+     n := c.update (+1) .1
    until n>=max
-     # say "c is $c -- done."
      if n = n-1 && c = (c-1) then say "here $c"   # NOP that uses `c`
 
-  sample(M type : mutate)
+  sample0(M type : mutate)
   =>
     for
       start := time.Nano.env.read, end
@@ -60,6 +58,12 @@ atomic_mutate_test =>
     until (end - start) > sample_time
       say "single threaded test for $M$(benchmark ? ", needed $((end-start).scale 1.0/i.as_f64) per update, $i samples in $(end-start)" : "")"
 
+  sample(M type : mutate)
+  =>
+    if M.env.is_atomic && !(M.env.atomic_access_supported u64)
+      say "*** skipping test for $M since atomic u64 support is missing"
+    else
+      sample0 M
 
   lm : mutate is
   bm : concur.blocking_mutate is
@@ -69,7 +73,7 @@ atomic_mutate_test =>
   bm ! (()-> sample bm)
   am ! (()-> sample am)
 
-  sample_threaded(M type : mutate)
+  sample_threaded0(M type : mutate)
   =>
     tm : concur.blocking_mutate is   #  mutate to manage thread starting / stopping
 
@@ -102,7 +106,7 @@ atomic_mutate_test =>
         tm.env.exclusive ()->
           started <- 0
           error <- nil
-        _ := c.update u64->u64 _->0
+        _ := c.update _->0
         ta := array N _->(concur.Threads.env.spawn (()->count_threaded i))
         ta.for_each (.join.or_panic)
         end := time.Nano.env.read
@@ -110,6 +114,14 @@ atomic_mutate_test =>
         say "multi threaded test for $M$(benchmark ? ", needed $((end-start).scale 1.0/i.as_f64) per update, $i samples in $(end-start)" : "")"
       else
         say "multi threaded test for $M, ERROR: $(tm.env.exclusive ()->error.get)"
+
+  sample_threaded(M type : mutate)
+  =>
+    if M.env.is_atomic && !(M.env.atomic_access_supported u64)
+      say "*** skipping test for $M since atomic u64 support is missing"
+    else
+      sample_threaded0 M
+
 
   lm ! (()-> sample_threaded lm)
   bm ! (()-> sample_threaded bm)
@@ -119,7 +131,7 @@ atomic_mutate_test =>
   bmr : concur.blocking_mutate is
   amr : concur.atomic_mutate is
 
-  sample_racy(M type : mutate)
+  sample_racy0(M type : mutate)
   =>
     tm : concur.blocking_mutate is   #  mutate to manage thread starting / stopping
 
@@ -161,6 +173,12 @@ atomic_mutate_test =>
       else
         say "multi threaded racy test for $M, ERROR: $(tm.env.exclusive ()->error.get)"
 
+  sample_racy(M type : mutate)
+  =>
+    if M.env.is_atomic && !(M.env.atomic_access_supported u64)
+      say "*** skipping test for $M since atomic u64 support is missing"
+    else
+      sample_racy0 M
 
   lmr ! (()-> sample_racy lmr)
   bmr ! (()-> sample_racy bmr)
