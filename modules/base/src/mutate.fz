@@ -53,27 +53,39 @@
 #
 public mutate : effect is
 
-  _depleted := false
+  depleted := Depleted
 
-  module redef check_depletion =>
-    match tid0
-      nil =>
-        # instated during the effect big bang singularity before concur.Threads
-        # effect is there, so we are the only thread:
-        set _depleted := true
+  Depleted ref is
 
-      t concur.Thread =>
-        if t != concur.Threads.env.current then
-          # used by different thread
-          fuzion.std.panic "effect $(mutate.this.type) instated by different thread than the thread it was created with"
+    _depleted := false
 
-        else if _depleted then
-          # used repeatedly
-          fuzion.std.panic "effect $(mutate.this.type) already depleted. effect may only be instated once."
-
-        else
-          # record that this was used:
+    chck =>
+      match tid0
+        nil =>
+          # instated during the effect big bang singularity before concur.Threads
+          # effect is there, so we are the only thread:
           set _depleted := true
+
+        t concur.Thread =>
+          if t != concur.Threads.env.current then
+            # used by different thread
+            fuzion.std.panic "effect $(mutate.this.type) instated by different thread than the thread it was created with"
+
+          else if _depleted then
+            # used repeatedly
+            fuzion.std.panic "effect $(mutate.this.type) already depleted. effect may only be instated once."
+
+          else
+            # record that this was used:
+            set _depleted := true
+
+
+  # trigger runtime check if effect is
+  # already depleted and may not be used any more
+  #
+  module redef check_depletion
+  =>
+    depleted.chck
 
 
   # shorthand to access effect type
