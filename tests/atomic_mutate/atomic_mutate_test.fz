@@ -43,7 +43,7 @@ atomic_mutate_test =>
   =>
    c := M.env.new u64 0
    do
-     n := c.update u64->u64 (+1)
+     n := c.update u64->u64 (+1) .1
      # say "c is $c max $max $(c<max)"
    until n>=max
      # say "c is $c -- done."
