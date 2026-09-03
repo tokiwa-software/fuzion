@@ -250,15 +250,15 @@ public mutate : effect is
     # The read might be reordered resulting in an outdated or even an out-of-thin-air
     # result.
     #
-    # This will use the effect `concur.racy mutate.this` such that static analysis
+    # This will use the effect `concur.racy_access mutate.this` such that static analysis
     # of effects will detect and report code that uses racy accesses to mutable
     # variables.
     #
-    public get_racy T ! concur.racy mutate.this
+    public get_racy T ! concur.racy_access mutate.this
     pre
       safety: !is_atomic || atomic_access_supported T
     =>
-      concur.racy mutate.this .env.register
+      concur.racy_access mutate.this .env.register
 
       mutable_value
 
@@ -307,12 +307,12 @@ public mutate : effect is
         # the new value to be stored with 'h'
         to T
       ) unit
-      ! concur.racy mutate.this
+      ! concur.racy_access mutate.this
     pre
       safety: open
       safety: !is_atomic || atomic_access_supported T
     =>
-      concur.racy mutate.this .env.register
+      concur.racy_access mutate.this .env.register
 
       set mutable_value := to
 
@@ -493,7 +493,7 @@ public mutate : effect is
     =>
       if is_atomic
         do
-          cur_val := get_racy
+          cur_val := mutable_value
           new_val := f cur_val
         until compare_and_set cur_val new_val
           (cur_val, new_val)
