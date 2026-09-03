@@ -1,9 +1,14 @@
+AAA_builtin_atomic_mutate (concur.atomic bool)
+AAA_builtin_atomic_mutate (concur.atomic trit)
 Ignored_Failure
 Unique_Id
 concur.A0_park_mutex
 concur.A1_park_condition time.Monotonic
 concur.Threads
 concur.atomic_access
+concur.racy atomic_mutate_test.amr
+concur.racy atomic_mutate_test.bmr
+concur.racy atomic_mutate_test.lmr
 envir.Vars
 fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
@@ -14,7 +19,4 @@ fuzion.runtime.stackoverflow
 io.Err
 io.Out
 panic
-racy atomic_mutate_test.amr
-racy atomic_mutate_test.bmr
-racy atomic_mutate_test.lmr
 time.Nano
