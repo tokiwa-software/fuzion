@@ -50,7 +50,7 @@ public Mutable_Map(K type : property.equatable, V type) ref is
 
   # check if key k exists in this map
   #
-  public has (k K) bool => Mutable_Map.this[k]??
+  public has (k K) bool => Mutable_Map.this[k].ok
 
 
   # get a sequence of all keys in this map

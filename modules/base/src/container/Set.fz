@@ -33,7 +33,7 @@ is
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  public redef finite trit => if size_option?? then trit.yes else trit.unknown
+  public redef finite trit => if size_option.ok then trit.yes else trit.unknown
 
 
   # number of entries in this set.  May be undefined, i.e., a range of

@@ -103,7 +103,7 @@ webserver_java is
                       r := "", "$r$s\n"
                       s := input.readLine
                       ready := input.ready
-                    while s?? && (ready??)
+                    while s.ok && ready.ok
                     until s.or_panic = "" || !ready.or_panic
                       r
                     else

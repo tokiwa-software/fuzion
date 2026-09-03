@@ -95,7 +95,7 @@ is
 
   # Does this option contain no value of type T?
   #
-  public is_nil bool => !exists
+  public is_nil bool => !ok
 
 
   # monadic operator

@@ -65,7 +65,7 @@ is
   public infix : (step_factor T) interval T
   pre
     debug: ((step_factor.sign = 0): through=from)  # step cannot be zero unless from=through
-    safety: (step *? step_factor).exists
+    safety: (step *? step_factor).ok
   =>
     interval from through step*step_factor
 
@@ -84,7 +84,7 @@ is
 
   # get the number of elements in this interval
   #
-  # Performance O(1) in case  through.exists, otherwise O(result)
+  # Performance O(1) in case  through.ok, otherwise O(result)
   #
   public size T
   =>
@@ -126,4 +126,4 @@ is
   # count diverge.
   #
   public redef finite trit =>
-    if through.exists then trit.yes else trit.no
+    if through.ok then trit.yes else trit.no
