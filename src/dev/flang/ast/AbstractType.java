@@ -2682,19 +2682,17 @@ there is no common super type of the two types (Types.t_ERROR)
             a.checkChoice(p, context);
             if (!c.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
+                !f.isCoTypesRelayTypeParameter() &&
                 !c.constraintAssignableFrom(context, a, null) &&
                 // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
                 (!a.isParametricType() ||
                  f != a.typeParameter())
                 )
               {
-                if (!f.isCoTypesRelayTypeParameter())
-                  {
-                    var assignableTo = new TreeSet<AbstractType>();
-                    var ignore = c.constraintAssignableFrom(context, a, assignableTo);
-                    AstErrors.incompatibleActualGeneric(p, f, c, a, assignableTo);
-                    result = false;
-                  }
+                var assignableTo = new TreeSet<AbstractType>();
+                var ignore = c.constraintAssignableFrom(context, a, assignableTo);
+                AstErrors.incompatibleActualGeneric(p, f, c, a, assignableTo);
+                result = false;
               }
           }
       }
