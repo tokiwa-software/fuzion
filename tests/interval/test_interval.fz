@@ -28,8 +28,7 @@ test_interval is
 
   test(x interval i64) =>
     inv := (0..3) ∀ (n -> match x.nth n
-                            e i64 => (x.index_of e ? i i64 => i = n
-                                                   | nil   => false)
+                            e i64 => x.index_of e >>? =n
                             nil   => true)
     say "$(pad $x 10)|$(
         for
@@ -82,8 +81,9 @@ test_interval is
   say "interval  |  contains -4..4            |size | frs lst | index_of -3..3        | nth 0..3    | inv  | reverse"
   say "----------+----------------------------+-----+---------+-----------------------+-------------+------+---------"
   test -3..3
-  test -10..(10):3
+  test -3..(-3)
   test 0..0
+  test 3..3
   test 3..10
   test -3..3:1
   test 3..(-3):(-1)

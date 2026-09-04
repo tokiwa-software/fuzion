@@ -26,7 +26,7 @@
 
 # A `from..through` interval with a given `step`.
 #
-# Generates an interval by repeatedly adding `step` to `from`.
+# This is a `Set T` and a `Sequence T` created by repeatedly adding `step` to `from`.
 # Stops before passing `through` (exceeding it for `step > 0`, falling below for `step < 0`).
 #
 # Empty if `step` points away from `through`:
@@ -110,24 +110,18 @@ is
   #
   # Complexity: O(1).
   #
-  # NOTE: enters an infinite loop if `through` is `nil` —
-  # use `size_option`, which returns `nil` for unbounded intervals.
   #
   public size T
   pre
    debug: through.exists   # unbounded intervals have no size, use `size_option`
   =>
-    match through
-      thru T =>
-        if from = thru then
-          T.one
-        else if step.sign = (from ⋄ thru).sign then
-          T.zero
-        else
-          (thru - from) / step + T.one
-      nil =>
-        # unreachable under the precondition
-        T.from_u32 as_list.count.as_u32
+    thru := through.or_panic
+    if from = thru then
+      1
+    else if step.sign = (from ⋄ thru).sign then
+      0
+    else
+      (thru - from) / step + 1
 
 
   # get the first element of this interval
@@ -203,7 +197,7 @@ is
   # Inverse of `nth`: for a valid index `i`, `index_of` of the `i`-th
   # element returns `i`.
   #
-  # Complexity: O(1), unlike the inherited O(n) search.This depends on
+  # Complexity: O(1), unlike the inherited O(n) search. This depends on
   # `contains` being redefined in this feature to be O(1) as well.
   #
   public redef index_of(e T) option i64
@@ -249,7 +243,7 @@ is
       l T =>
         interval l first -step
       nil =>
-        interval T.one T.zero T.one # any empty interval; from/step are irrelevant
+        interval T 1 T.zero 1  # empty interval
 
 
   # does this interval contain the given value?
@@ -257,8 +251,8 @@ is
   # `e` must lie within the bounds and be reachable from `from` by whole steps
   #
   public redef contains(e T) bool =>
-    if      step.sign > 0 then from <= e <= through.or_else e && (e - from) %  step = T.zero
-    else if step.sign < 0 then from >= e >= through.or_else e && (e - from) % -step = T.zero
+    if      step.sign > 0 then from <= e <= through.or_else e && (e - from) %  step = 0
+    else if step.sign < 0 then from >= e >= through.or_else e && (e - from) % -step = 0
     else                       from =  e
 
 
@@ -282,4 +276,4 @@ is
   # count diverge.
   #
   public redef finite trit =>
-    through.exists ? trit.yes : trit.no
+    through.exists.as_trit
