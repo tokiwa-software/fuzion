@@ -39,7 +39,7 @@ test_interval is
         else
           "∞"
       ) first $(x.first) last $(x.last) reverse $(
-        if x.through.exists && x.first.exists && (i32.zero -! x.step) then
+        if x.through.exists && x.first.exists && (0 -! x.step) then
           $(x.reverse_interval)
         else
           "n/a"
