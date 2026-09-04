@@ -63,9 +63,9 @@ is
   # In general, this is useful only for debugging or monitoring purposes where
   # occasionally wrong random results are acceptable.
   #
-  public racy_read T ! racy_access (AAA_builtin_atomic_mutate T)
+  public racy_read T ! racy_access (AAA_builtin_atomic_mutate atomic.this)
   pre
-    safety: (AAA_builtin_atomic_mutate T).env.atomic_access_supported T
+    safety: (AAA_builtin_atomic_mutate atomic.this).env.atomic_access_supported T
   =>
     value.get_racy
 
@@ -75,9 +75,9 @@ is
   # Note that in conjunction with `racy_read`, this might create arbitrary
   # out-of-thin-air values.
   #
-  public racy_write(new_value T) unit ! racy_access (AAA_builtin_atomic_mutate T)
+  public racy_write(new_value T) unit ! racy_access (AAA_builtin_atomic_mutate atomic.this)
   pre
-    safety: (AAA_builtin_atomic_mutate T).env.atomic_access_supported T
+    safety: (AAA_builtin_atomic_mutate atomic.this).env.atomic_access_supported T
   =>
     value.put_racy new_value
 
