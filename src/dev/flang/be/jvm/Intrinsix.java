@@ -125,6 +125,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(tvalue.drop().andThen(jvm.boxedConstString(str)), Expr.UNIT);
         });
 
+    // NYI: COMMENT: assumes atomic 64-bit access, which JLS 17.7  (Non-Atomic Treatment of double and long
+    // https://docs.oracle.com/javase/specs/jls/se25/html/jls-17.html#jls-17.7)
+    // encourages but does not require. Visibility comes from locked().
+    //
+    // NYI: document this as a JVM requirement.
     put("concur.atomic.racy_accesses_supported",
         (jvm, si, cc, tvalue, args) ->
         {
