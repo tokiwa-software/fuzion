@@ -1833,7 +1833,7 @@ there is no common super type of the two types (Types.t_ERROR)
         result = kind().compareTo(other.kind());
         if (result == 0)
           {
-            result = backingFeature().compareTo(other.backingFeature());
+            result = normalize(backingFeature()).compareTo(normalize(other.backingFeature()));
           }
         if (result == 0 && isNormalType() /* no need for this since kind=o.kind :  && other.isNormalType()  */)
           {
@@ -1870,6 +1870,13 @@ there is no common super type of the two types (Types.t_ERROR)
       (result != 0 || kind() == other.kind());
 
     return result;
+  }
+
+
+  private AbstractFeature normalize(AbstractFeature backingFeature) {
+    return backingFeature.isTypeParameter()
+      ? backingFeature.cotypeOriginGeneric()
+      : backingFeature;
   }
 
 
