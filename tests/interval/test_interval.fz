@@ -27,35 +27,64 @@
 test_interval is
 
   test(x interval i64) =>
-    say "$x$(" "*(10 - ($x).codepoint_count))$(
+    inv := (0..3) ∀ (n -> match x.nth n
+                            e i64 => x.index_of e >>? =n
+                            nil   => true)
+    say "$(pad $x 10)|$(
         for
-          s := "", s+" "+(if x.contains i then "$i" else " "*($i).byte_count)
+          s := "", s+" "+(if x.contains i then pad "$i" 2 else "  ")
           i in -4 .. +4
         else
           s
-      ) contained in size $(
-        if x.through.exists then
-          $(x.size)
-        else
-          "∞"
-      ) first $(x.first) last $(x.last) reverse $(
-        if x.through.exists && x.first.exists && (0 -! x.step) then
+            ) | $(pad (x.size_option.bind ($) .or_else "∞") 3) | $(cell x.first) $(cell x.last) | $(
+        for s := "", s + cell (x.index_of i)
+            i in -3..3
+        else s
+      ) |$(
+        for s := "", s + cell (x.nth i)
+            i in 0..3
+        else s
+      ) | $(if inv then "ok  " else "FAIL") | $(
+        if x.through.exists && x.first.exists && (i64.zero -! x.step) then
           $(x.reverse_interval)
         else
           "n/a"
-      ) IN $(
-        for
-          s := "", s+" "+i;
-          i in x;
-          limit in 0..10  # make sure we do not run forever in case of open interval
-        else
-          s
       )"
 
+
+  # option 64 as a fixed-width cell: "." for nil
+  cell(o option i64) String =>
+    s := o ? v i64 => $v
+           | nil   => "."
+    " "*(3 - s.codepoint_count) + s
+
+
+  # String padded to width w (never truncates, never negative)
+  pad(s String, w i64) String =>
+    n := w - s.codepoint_count
+    if n > 0 then s + " "*n else s
+
+  test_eq(a, b interval i64) =>
+      say "$(pad $a 12) = $(pad $b 12) -> $(a = b)"
+
+  say ""
+  say "equality"
+  say "--------"
+  test_eq (interval 1 8 3) (interval 1 7 3)
+  test_eq (interval 5 5 1) (interval 5 5 99)
+  test_eq (interval 2 1 1) (interval 9 3 2)
+  test_eq (1..5)           (interval 1 5 2)
+  test_eq (-3..3:2)        (-3..4:2)
+  test_eq (1..10)          (1..10)
+  test_eq (1..10)          (10..1:(-1))
+
+  say "interval  |  contains -4..4            |size | frs lst | index_of -3..3        | nth 0..3    | inv  | reverse"
+  say "----------+----------------------------+-----+---------+-----------------------+-------------+------+---------"
   test -3..3
   test -3..(-3)
   test 0..0
   test 3..3
+  test 3..10
   test -3..3:1
   test 3..(-3):(-1)
   test -3..3:2
