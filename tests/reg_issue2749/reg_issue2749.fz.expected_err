@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue2749.fz:27:14: error 1: Visibility of outer features type is more restrictive than features type.
+--CURDIR--/reg_issue2749.fz:27:14: error 1: Visibility of outer features type is more restrictive than feature's type.
       public b
 -------------^
 Parent feature is here: --CURDIR--/reg_issue2749.fz:26:5:
