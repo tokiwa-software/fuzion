@@ -344,8 +344,8 @@ public mutate : effect is
       put to
 
 
-    # compare the value of this mutable field with an `expected` value. If it is equal,
-    # replace the value by with the `modified` value.
+    # compare the value of this mutable field with an `expected` value. If it is bitwise
+    # equal, replace the value by with the `modified` value.
     #
     # Independently of whether the value was replaced, return the original value. I.e.,
     # the value was replaced iff `result` is bitwise equal to `e`.
@@ -391,16 +391,16 @@ public mutate : effect is
       else
         exclusive ()->
           old := val
-          if T : property.equatable   # NYI: UNDER DEVELOPMENT: remove!
-            if old = expected    # NYI: UNDER DEVELOPMENT: use bitwise comparison!
+          if T : property.equatable   # NYI: UNDER DEVELOPMENT: #7708: remove!
+            if old = expected    # NYI: UNDER DEVELOPMENT: #7708: use bitwise comparison!
               put modified
             old
           else
             panic "in $(mutate.this) used compare_and_swap on type '$(T)' that is not `property.equatable`"
 
 
-    # compare the value of this mutable field with an `expected` value. If it is equal,
-    # replace the value by with the `modified` value.
+    # compare the value of this mutable field with an `expected` value. If it is bitwise
+    # equal, replace the value by with the `modified` value.
     #
     # If the value was replaced, return true, otherwise return false,
     #
@@ -449,8 +449,8 @@ public mutate : effect is
       else
         exclusive ()->
           old := val
-          if T : property.equatable   # NYI: UNDER DEVELOPMENT: remove!
-            if old = expected    # NYI: UNDER DEVELOPMENT: use bitwise comparison!
+          if T : property.equatable   # NYI: UNDER DEVELOPMENT: #7708: remove!
+            if old = expected    # NYI: UNDER DEVELOPMENT: #7708: use bitwise comparison!
               put modified
               true
             else
@@ -607,17 +607,10 @@ public mutate : effect is
   # read operations: make sure that no previous read will be swapped with the any
   # following read operation.
   #
-  # Different kinds of mutate will redefine this to make different to ensure the
-  # correct order
-  #
-  #   - for a thread-local `mutate`, this is a nop since re-ordering that would
-  #     break thread-local consistency is forbidden on all
-  #
-  #   - for a `concur.blocking_mutate`/`concur.blocking_mutate_using_clock`, this is
-  #     a nop since we expect all read and writes to be done in an exclusive
-  #     section.
-  #
-  #   - for a `atomic_mutate`, this will emit an actual memory barrier
+  # When no other synchronization mechanism is used, this is required between reads
+  # of fields that are accessed by concurrent threads to ensure that the order seen
+  # by the reading thread corresponds to the syntacticyl order the reads are
+  # performed in.
   #
   public read_fence unit
   =>
@@ -628,17 +621,10 @@ public mutate : effect is
   # write operations: make sure that no previous write will be swapped with the any
   # following write operation.
   #
-  # Different kinds of mutate will redefine this to make different to ensure the
-  # correct order
-  #
-  #   - for a thread-local `mutate`, this is a nop since re-ordering that would
-  #     break thread-local consistency is forbidden on all
-  #
-  #   - for a `concur.blocking_mutate`/`concur.blocking_mutate_using_clock`, this is
-  #     a nop since we expect all read and writes to be done in an exclusive
-  #     section.
-  #
-  #   - for a `atomic_mutate`, this will emit an actual memory barrier
+  # When no other synchronization mechanism is used, this is required between writes
+  # of fields that are accessed by concurrent threads to ensure that the order seen
+  # by the reading thread corresponds to the syntactiyl order the writes were
+  # performed in.
   #
   public write_fence unit
   =>
