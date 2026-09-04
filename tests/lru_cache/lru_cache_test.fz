@@ -140,6 +140,7 @@ lru_cache_test =>
       for i in elems do
         exp := i%%2 ?  "~$(i**2)~" : "_$(i)_"
         act := test c get i nil .or_panic
+        check exp = act
 
   update_value 7
 
@@ -147,44 +148,44 @@ lru_cache_test =>
 
   # randomly get, put or remove elements, and compare against naive solution
   #
-  random(capacity i64, steps i32, seed u64) unit =>
+  random(capacity i64, steps i64, seed u64) unit =>
 
-    key_range := capacity.as_i32 * 2
-    val_range := i32 100
+    key_range := capacity * 2
+    val_range := 100
 
     Random.simple seed ()->
       m : mutate is
       m ! ()->
 
         # expected key value pairs
-        exp_map := container.mutable_tree_map m i32 i32 .empty
+        exp_map := container.mutable_tree_map m i64 i64 .empty
         # expected order from mru to lru
-        exp_ord := m.env.new (Sequence i32) []
-        cache := container.LRU_Cache m i32 i32 .new capacity
+        exp_ord := m.env.new (Sequence i64) []
+        cache := container.LRU_Cache m i64 i64 .new capacity
 
-        remove_exp(k i32) unit =>
+        remove_exp(k i64) unit =>
           exp_ord <- exp_ord.filter (!=k)
           _ := exp_map.remove k
 
         evict_exp unit =>
           exp_ord.drop capacity
-                 .for_each k->({yap ""; ignore (option i32) (exp_map.remove k)})
+                 .for_each k->({yap ""; ignore (option i64) (exp_map.remove k)})
           exp_ord <- exp_ord.take capacity .as_list
 
-        update_exp(k, v i32) unit =>
+        update_exp(k, v i64) unit =>
           remove_exp k
           exp_map.put k v
           exp_ord <- [k] ++ exp_ord
           evict_exp
 
-        for i in (i32 0)..steps
-            op := Random.env.next_i32 3
-            k  := Random.env.next_i32 key_range
+        for i in 0..steps
+            op := Random.env.next_i64 3
+            k  := Random.env.next_i64 key_range
         do
           if i %% 1E3 then yap "." # progress indicator
 
           if op = 0       # put
-            v := Random.env.next_i32 val_range
+            v := Random.env.next_i64 val_range
             update_exp k v
             cache.put k v
 

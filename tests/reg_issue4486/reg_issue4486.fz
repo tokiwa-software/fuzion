@@ -51,9 +51,8 @@ reg_issue4486 =>
     say "input: '$(input.replace "\n" "\\n")'"
 
     lm ! ()->
-      b := io.buffered lm
       io.buffered lm .Reader.instate (reader input) ()->
-        for l := b.read_line
+        for l := io.buffered lm .read_line
             i in 1..
         while l??
           say "  using read_line:  $i: '$l'"
@@ -61,9 +60,8 @@ reg_issue4486 =>
     say ""
 
     lm ! ()->
-      b := io.buffered lm
       io.buffered lm .Reader.instate (reader input) ()->
-        for l in b.read_lines.or_panic
+        for l in io.buffered lm .read_lines.or_panic
             i in 1..
         do
           say "  using read_lines: $i: '$l'"

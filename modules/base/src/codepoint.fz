@@ -27,8 +27,7 @@
 #
 public codepoint(public val u32) : String
   pre
-    debug: codepoint.range.contains val
-    debug: !codepoint.utf16_surrogate.contains val
+    debug: codepoint.valid_codepoint val
 is
 
   # the utf8 encoded bytes for the string representation
@@ -80,7 +79,7 @@ is
   #
   public is_utf16_surrogate bool => codepoint.utf16_surrogate.contains val
 
-  # is this codepoint guaranteed to never be a legal unicode character
+  # is this codepoint guaranteed to never be a valid unicode character
   #
   public is_not_a_character bool => codepoint.not_a_character.contains val
 
@@ -138,9 +137,29 @@ is
   public type.utf16_surrogate interval u32 => u32 0xd800 .. 0xdfff
 
 
-  # values guaranteed never to be a legal unicode character
+  # values guaranteed never to be a valid unicode character
   #
   public type.not_a_character interval u32 => u32 0xfffe .. 0xffff
+
+
+  # 'REPLACEMENT CHARACTER' (U+FFFD)
+  #
+  public type.replacement_character codepoint =>
+    "�"
+
+
+  # does `val` denote a valid codepoint?
+  #
+  public type.valid_codepoint(val u32) bool =>
+    codepoint.range.contains val && !codepoint.utf16_surrogate.contains val
+
+
+  # create codepoint from u32
+  # if result would not be a valid
+  # codepoint return replacement_character
+  #
+  public type.create(val u32) codepoint =>
+    if valid_codepoint val then codepoint val else replacement_character
 
 
   # compare two codepoints for equality

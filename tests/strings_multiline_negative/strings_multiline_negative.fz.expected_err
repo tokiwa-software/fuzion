@@ -22,9 +22,9 @@ To solve this, indent offending line by at least 2 spaces.
 Alternatively decrease indentation of first line. One way to do this is by using the \s escape code which equals a space.
 
 
---CURDIR--/strings_multiline_negative.fz:37:95: error 4: Illegal trailing whitespace in multiline string.
-  4. should flag an error: (error in line 43) Illegal trailing whitespace in multiline string. 
-----------------------------------------------------------------------------------------------^
+--CURDIR--/strings_multiline_negative.fz:37:76: error 4: Illegal trailing whitespace in multiline string.
+  4. should flag an error: Illegal trailing whitespace in multiline string. 
+---------------------------------------------------------------------------^
 To solve this, remove this whitespace or replace it by escape codes.
 
 
@@ -35,4 +35,10 @@ Found unexpected control sequence 'LF ' (0xa) in constant string starting at --C
   """"  # 5. should flag an error: Found unexpected control sequence 'LF '
 -----^
 
-5 errors.
+
+--CURDIR--/strings_multiline_negative.fz:47:4: error 6: Illegal trailing whitespace in multiline string.
+    
+---^
+To solve this, remove this whitespace or replace it by escape codes.
+
+6 errors.

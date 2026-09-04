@@ -43,6 +43,9 @@
 #
 # If `through` is `nil`, the interval is unbounded and limited only by type `T` range.
 #
+# This is not an interval in the mathematical sense, but rather a representation
+# of an arithmetic progression.
+#
 public interval(T type : integer,
 
                 # Start value. Included unless the interval is empty.

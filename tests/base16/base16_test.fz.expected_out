@@ -10,9 +10,9 @@ Additional test vectors are decoded correctly
 
 Test error messages when decoding broken base16:
 
-666F6F: --error: line breaks are not allowed within encoded data, as required by RFC464, found CR at position 2--
+666F6F: --error: line breaks are not allowed within encoded data, as required by RFC4648, found CR at position 2--
 6
-66F6F: --error: line breaks are not allowed within encoded data, as required by RFC464, found LF at position 1--
+66F6F: --error: line breaks are not allowed within encoded data, as required by RFC4648, found LF at position 1--
 666F6: --error: unexpected end of input, i.e. not of even length--
 GHIJK: --error: invalid base16 input at byte position 0, decoding to unicode character 'G'--
 abcde: --error: invalid base16 input at byte position 0, decoding to unicode character 'a'--

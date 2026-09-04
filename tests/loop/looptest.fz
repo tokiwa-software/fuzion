@@ -175,7 +175,7 @@ looptest is
   testLoop7(data array i64, isWhatWeWant (i64) -> bool) i64 =>
     for ix := 0, ix + 1
     while ix < data.length
-      element := data[ix]
+      _ := data[ix]
     until isWhatWeWant data[ix]
       3333
     else
@@ -187,7 +187,7 @@ looptest is
   testLoop8(data array i64, isWhatWeWant (i64) -> bool) i64 =>
     for ix := 0, ix + 1
     while ix < data.length
-      element := data[ix]
+      _ := data[ix]
     until isWhatWeWant data[ix]
       ix
     else
@@ -199,7 +199,7 @@ looptest is
   testLoop9(data array i64, isWhatWeWant (i64) -> bool) i64 =>
     for ix := 0, ix + 1
     while ix < data.length
-      element := data[ix]
+      _ := data[ix]
     until isWhatWeWant data[ix]
       3333
     else
@@ -211,7 +211,7 @@ looptest is
   testLoop10(data array i64, isWhatWeWant (i64) -> bool) i64 =>
     for ix := 0, ix + 1
     while ix < data.length
-      element := data[ix]
+      _ := data[ix]
     else
       4444
   chck (testLoop10(a, (i -> i >    100)) = 4444) "testLoop10 returns 4444 in else branch"

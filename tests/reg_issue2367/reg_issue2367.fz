@@ -31,13 +31,13 @@ else
 for s := 1230, s+3
     j in 0..
 while j < 4
-   sm := 3
+   _ := 3
 else
    say s
 
 for s := 1230, s+3
     j := 0, j+1
 while j < 4
-   sm := 3
+   _ := 3
 else
    say s

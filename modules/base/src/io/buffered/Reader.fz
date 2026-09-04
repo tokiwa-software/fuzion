@@ -123,7 +123,7 @@ public Reader ref : effect is
 
 # read n bytes using the currently installed byte reader effect
 #
-public read_bytes(n i64) outcome (Sequence u8) ! Reader
+public type.read_bytes(n i64) outcome (Sequence u8) ! Reader
   post debug: {
     match result
       error => true
@@ -134,7 +134,7 @@ public read_bytes(n i64) outcome (Sequence u8) ! Reader
   for res Sequence u8 := container.Finger_Tree u8 .empty,
             {
               match r
-                o outcome => res
+                outcome => res
                 s Sequence =>
                   a := s.take n-res.count
                   check debug: a.is_array_backed
@@ -161,7 +161,7 @@ public read_bytes(n i64) outcome (Sequence u8) ! Reader
 # read string, up to n codepoints or until end of file
 # requires `buffered.reader` effect to be installed.
 #
-public read_string(n i64) outcome String ! Reader
+public type.read_string(n i64) outcome String ! Reader
 pre debug: n >= 0
 =>
 
@@ -201,7 +201,7 @@ pre debug: n >= 0
 # if specified, strips carriage return bytes before
 # the delimiter before returning the read data
 #
-public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! Reader =>
+public type.read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! Reader =>
 
   if Reader.env.read ? outcome => true | * => false
     io.end_of_file
@@ -241,7 +241,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! R
 # to read until a line feed occurs.
 # returns the line
 #
-public read_line switch String io.end_of_file ! Reader =>
+public type.read_line switch String io.end_of_file ! Reader =>
   read_delimiter encodings.ascii.lf true
 
 
@@ -251,14 +251,14 @@ public read_line switch String io.end_of_file ! Reader =>
 # may need to call this several times or use another api
 # like memory-mapped access.
 #
-public read_fully outcome (Sequence u8) ! Reader =>
+public type.read_fully outcome (Sequence u8) ! Reader =>
   read_bytes i64.max
 
 
 # Read input fully and split it at the given delimiter. If specified, delete
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
-public read_delimiter_full(delim String, strip_cr bool) outcome (array String) ! Reader =>
+public type.read_delimiter_full(delim String, strip_cr bool) outcome (array String) ! Reader =>
   read_fully.bind x->
     str := String.from_bytes x
     if str.byte_count > 0
@@ -273,14 +273,14 @@ public read_delimiter_full(delim String, strip_cr bool) outcome (array String) !
 # Read input fully and split it at linefeed (ASCII 10) characters. Delete
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
-public read_lines outcome (array String) ! Reader =>
+public type.read_lines outcome (array String) ! Reader =>
   read_delimiter_full "\n" true
 
 
 # Read input line by line calling `f` for each line until `f` returns false
 # or end_of_file is reached.
 #
-public read_line_while(f String -> bool) String ! Reader =>
+public type.read_line_while(f String -> bool) String ! Reader =>
   for s := "",  s + "\n" + match rl
                              s1 String => s1
                              io.end_of_file => panic "unreachable code path"
