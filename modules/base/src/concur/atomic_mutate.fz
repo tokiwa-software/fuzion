@@ -37,11 +37,6 @@
 # after writing the value to ensure the write is not delayed after any
 # subsequent writes.
 #
-# Racy accesses using `get_racy` and `put_racy` are permitted only for types
-# for which `atomic_mutate.this.atomic_access_supported T` is true. This ensures
-# that racy accesses do not yield crippled values such as an `i128` consisting
-# of lower and upper 64 bits that come from different values.
-#
 public atomic_mutate : mutate is
 
 

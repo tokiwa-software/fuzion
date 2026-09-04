@@ -53,6 +53,9 @@
 #
 public mutate : effect is
 
+  # NYI: UNDER_DEVELOPMENT: #6820: Effects and Threads: This currently currently ensures
+  # manually that this effect is not instated repeatedly by different threads.
+  #
   depleted := Depleted
 
   Depleted ref is
@@ -177,10 +180,16 @@ public mutate : effect is
 
     # is this element open, i.e., can it be mutated?
     #
+    # NYI: UNDER_DEVELOPMENT: #7705 Proper synchronziation for accesses to this
+    # flag and the mutable field is currently not ensured, the read_fences
+    # are most likely insufficient
+    #
     public open bool
     =>
       read_fence
-      open0
+      res := open0
+      read_fence
+      res
 
 
     # stop any further mutations of this element
@@ -194,6 +203,7 @@ public mutate : effect is
     pre
       safety: is_atomic || is_exclusive
     =>
+      write_fence
       set open0 := false
       write_fence
 
@@ -254,9 +264,13 @@ public mutate : effect is
     # of effects will detect and report code that uses racy accesses to mutable
     # variables.
     #
+    # Racy accesses are permitted only for types for which `mutate.this.atomic_access_supported T`
+    # is true. This ensures that racy accesses do not yield crippled values such as an `i128`
+    # consisting of lower and upper 64 bits that come from different values.
+    #
     public get_racy T ! concur.racy_access mutate.this
     pre
-      safety: !is_atomic || atomic_access_supported T
+      safety: atomic_access_supported T
     =>
       concur.racy_access mutate.this .env.register
 
@@ -302,6 +316,10 @@ public mutate : effect is
     # of effects will detect and report code that uses racy accesses to mutable
     # variables.
     #
+    # Racy accesses are permitted only for types for which `mutate.this.atomic_access_supported T`
+    # is true. This ensures that racy accesses do not yield crippled values such as an `i128`
+    # consisting of lower and upper 64 bits that come from different values.
+    #
     public put_racy
       (
         # the new value to be stored with 'h'
@@ -310,7 +328,7 @@ public mutate : effect is
       ! concur.racy_access mutate.this
     pre
       safety: open
-      safety: !is_atomic || atomic_access_supported T
+      safety: atomic_access_supported T
     =>
       concur.racy_access mutate.this .env.register
 
@@ -422,6 +440,10 @@ public mutate : effect is
       safety: open
     =>
       check_and_replace
+      # NYI: UNDER_DEVELOPMENT: #7707 Would be nicer to add `mutate.compare_and_set(T type, v new T, exp, mod T) T`
+      # and redefine it in `concur.atomic_mutate`.
+      #
+      # same for other features that test `is_atomic`.
       if is_atomic
         compare_and_set0 expected modified
       else
