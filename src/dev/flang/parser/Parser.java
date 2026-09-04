@@ -286,8 +286,8 @@ routOrField : routine
             ;
 routine     : formArgsOpt
               returnType
-              effects
               inherits
+              effects
               contract
               implRout
             ;
@@ -303,9 +303,9 @@ field       : returnType
     var forkAtFormArgs = isEmptyFormArgs() ? null : fork();
     var a = formArgsOpt(false);
     var r = returnType();
-    var eff = effects();
     var hasType = r instanceof FunctionReturnType;
     var inh = inherits();
+    var eff = effects();
     Contract c = contract(forkAtFormArgs);
     Impl p;
 
@@ -376,8 +376,8 @@ field       : returnType
         var p = fork();
         yield
           (!p.isTypePrefix() || p.skipType(true, true)) &&
-          (!p.isOperator("!") || p.skipEffects()) &&
           p.skipInherits() &&
+          (!p.isOperator("!") || p.skipEffects()) &&
           (p.isContractPrefix() ||
             p.isImplPrefix());
       }
