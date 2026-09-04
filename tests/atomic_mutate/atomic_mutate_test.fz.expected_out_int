@@ -9,6 +9,6 @@ single threaded test for atomic_mutate_test.bm
 multi threaded test for atomic_mutate_test.lm, ERROR: (precondition, safety: exclusive_allowed)
 multi threaded test for atomic_mutate_test.bm
 *** skipping test for atomic_mutate_test.am since atomic u64 support is missing
-multi threaded racy test for atomic_mutate_test.lmr
-multi threaded racy test for atomic_mutate_test.bmr
+multi threaded racy test for atomic_mutate_test.lmr, ERROR: (precondition, safety: atomic_access_supported T)
+multi threaded racy test for atomic_mutate_test.bmr, ERROR: (precondition, safety: atomic_access_supported T)
 *** skipping test for atomic_mutate_test.amr since atomic u64 support is missing
