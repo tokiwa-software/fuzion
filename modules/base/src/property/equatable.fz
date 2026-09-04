@@ -32,7 +32,7 @@ public equatable is
   #
   # This relation must be
   #
-  #  - reflexive (equality a b),
+  #  - reflexive (equality a a),
   #  - symmetric (equality a b = equality b a), and
   #  - transitive ((equality a b && equality b c) : equality a c).
   #
