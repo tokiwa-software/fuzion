@@ -976,8 +976,8 @@ is
       c1 Cons =>
         match c1.tail
           c2 Cons => (c1.head, c2.head)
-          nil => panic "as_tuple called on single element Sequence"
-      nil => panic "as_tuple called on empty Sequence"
+          nil => panic "as_tuple called on single element $(Sequence.this.type.name)"
+      nil => panic "as_tuple called on empty $(Sequence.this.type.name)"
 
 
   # convert a Sequence's head into a 3-tuple.

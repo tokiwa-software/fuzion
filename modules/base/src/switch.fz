@@ -144,7 +144,7 @@ is
   public as_outcome outcome A
   =>
     switch.this ? a A => a
-                | B => error "switch.as_outcome: no error message provided"
+                | B => error "converted to outcome from '$(switch.this.type.name)' with no error message provided"
 
 
   # convert this switch to an outcome
@@ -178,7 +178,7 @@ is
   # get A or panic with `B.as_string`
   #
   public or_panic A =>
-    or_panic b->"'switch.or_panic' called on '$(switch.this.type.name)' that is '$b'"
+    or_panic b->"'or_panic' called on '$(switch.this.type.name)' that is '$b'"
 
 
   # get A or panic with result of `msg`

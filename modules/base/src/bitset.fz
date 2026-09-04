@@ -28,7 +28,7 @@
 public bitset : choice nil          # empty bitset
                        u64          # bitset with one element
                        (array bool) # general
-                , property.equatable
+                , property.equatable # NYI: UNDER DEVELOPMENT: implement orderable instead of equatable
 is
 
   # test if the given bit is part of this bitset

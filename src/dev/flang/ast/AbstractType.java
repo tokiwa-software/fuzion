@@ -2808,7 +2808,7 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   public AbstractType selfOrConstraint()
   {
-    return (isParametricType() ? typeParameter().constraint(Context.NONE) : this);
+    return selfOrConstraint(Context.NONE);
   }
 
 
@@ -2819,7 +2819,10 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   AbstractType selfOrConstraint(Context context)
   {
-    return (isParametricType() ? typeParameter().constraint(context) : this);
+    var result = isParametricType() ? typeParameter().constraint(context) : this;
+    return result.isParametricType()
+      ? result.selfOrConstraint(context)
+      : result;
   }
 
 
@@ -2831,7 +2834,10 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   AbstractType selfOrConstraint(Resolution res, Context context)
   {
-    return (isParametricType() ? typeParameter().constraint(res, context) : this);
+    var result = isParametricType() ? typeParameter().constraint(res, context) : this;
+    return result.isParametricType()
+      ? result.selfOrConstraint(res, context)
+      : result;
   }
 
 
