@@ -321,18 +321,21 @@ int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host,
 int fzE_get_peer_address(int sockfd, void * buf) {
   struct sockaddr_storage peeraddr;
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == -1) {
-    return -1;
-  } else if (peeraddr.ss_family == AF_INET) {
-    fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
-    return 4;
-  } else if (peeraddr.ss_family == AF_INET6) {
-    fzE_memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
-    return 16;
-  } else {
-    return -1;
-  }
-  return -1;
+  int result = -1;
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) != -1)
+    {
+      if (peeraddr.ss_family == AF_INET)
+        {
+          fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
+          result = 4;
+        }
+      else if (peeraddr.ss_family == AF_INET6)
+        {
+          fzE_memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
+          result = 16;
+        }
+    }
+  return result;
 }
 
 
@@ -666,9 +669,10 @@ void fzE_init()
     fprintf(stderr, "*** WSAStartup failed\n");
     exit(EXIT_FAILURE);
   }
+  // NYI: UNDER DEVELOPMENT: WSACleanup
 
   InitializeCriticalSection(&fzE_global_mutex);
-  // NYI: DeleteCriticalSection(&fzE_global_mutex);
+  // NYI: UNDER DEVELOPMENT: DeleteCriticalSection(&fzE_global_mutex);
 
   GC_INIT();
 }
