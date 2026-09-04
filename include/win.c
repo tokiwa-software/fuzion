@@ -906,12 +906,41 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   }
 
   PROCESS_INFORMATION pi;
-  STARTUPINFOW si = {0};
-  si.cb = sizeof(STARTUPINFOW);
-  si.dwFlags |= STARTF_USESTDHANDLES;
-  si.hStdInput = hStdinRead;
-  si.hStdOutput = hStdoutWrite;
-  si.hStdError = hStderrWrite;
+
+  // The stdin/stdout/stderr pipe handles are made inheritable so they can be
+  // passed to the child.  However, without a handle list, CreateProcessW
+  // inherits EVERY inheritable handle in this process, and those handles are
+  // further inherited by every process the child spawns (e.g. `make` spawning
+  // the compiler).  The child's descendants then keep the stdout/stderr write
+  // handles open after the direct child has exited, so a blocking ReadFile on
+  // the read ends never sees ERROR_BROKEN_PIPE and `read_fully` starves.
+  // Restrict inheritance to just the three std handles via a handle list.
+  //
+  // https://learn.microsoft.com/en-us/windows/win32/procthread/thread-attribute-list
+  SIZE_T attrSize = 0;
+  InitializeProcThreadAttributeList(NULL, 1, 0, &attrSize);
+  LPPROC_THREAD_ATTRIBUTE_LIST attrList = (LPPROC_THREAD_ATTRIBUTE_LIST)fzE_malloc_safe(attrSize);
+  BOOL attrOk = InitializeProcThreadAttributeList(attrList, 1, 0, &attrSize);
+  if (attrOk)
+    {
+      HANDLE stdHandles[] = { hStdinRead, hStdoutWrite, hStderrWrite };
+      attrOk = UpdateProcThreadAttribute(
+        attrList,
+        0,
+        PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+        stdHandles,
+        sizeof(stdHandles),
+        NULL,
+        NULL);
+    }
+
+  STARTUPINFOEXW si = {0};
+  si.StartupInfo.cb = sizeof(STARTUPINFOEXW);
+  si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+  si.StartupInfo.hStdInput = hStdinRead;
+  si.StartupInfo.hStdOutput = hStdoutWrite;
+  si.StartupInfo.hStdError = hStderrWrite;
+  si.lpAttributeList = attrOk ? attrList : NULL;
 
   BOOL success = CreateProcessW(
     resolvedPath,
@@ -919,12 +948,19 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
     NULL,
     NULL,
     TRUE,
-    CREATE_UNICODE_ENVIRONMENT,
+    CREATE_UNICODE_ENVIRONMENT | (attrOk ? EXTENDED_STARTUPINFO_PRESENT : 0),
     envBlock,
     NULL,
-    &si,
+    &si.StartupInfo,
     &pi
   );
+
+  if (attrList != NULL)
+    {
+      if (attrOk)
+        DeleteProcThreadAttributeList(attrList);
+      fzE_free(attrList);
+    }
 
   CloseHandle(hStdinRead);
   CloseHandle(hStdoutWrite);
