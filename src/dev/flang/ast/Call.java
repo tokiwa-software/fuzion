@@ -3129,7 +3129,38 @@ public class Call extends AbstractCall
         var replace = new ParsedCall(nativeAccessFromEnv, new ParsedName(SourcePosition.notAvailable, "replace"));
         result = new Block(new List<>(replace.resolveTypes(res, context), result));
       }
+    if (_calledFeature != null &&
+        _calledFeature.isEffectFeature() &&
+        // NYI: UNDER DEVELOPMENT: this should better just allow calls from inherited contracts
+        !_calledFeature.featureName().isInternal() &&
+        // calling `env` is okay
+        !(_target instanceof Call c &&
+          c.calledFeature() == Types.resolved.f_effect_from_env) &&
+        // calling from somewhere within the effect is okay
+        !inSameEffect(calledFeature().outer(), context.outerFeature()) &&
+        // NYI: UNDER DEVELOPMENT: should not be necessary
+        !res._module.isBaseModule()
+       )
+      {
+        AstErrors.effectFeaturesMustBeCalledViaEnv(this);
+      }
     return result;
+  }
+
+
+  /**
+   * Check if context is inner feature of effect
+   *
+   * @param effect
+   * @param context
+   * @return
+   */
+  private boolean inSameEffect(AbstractFeature effect, AbstractFeature context) {
+    return context == effect
+      ? true
+      : context.outer() != null
+      ? inSameEffect(effect, context.outer())
+      : false;
   }
 
 

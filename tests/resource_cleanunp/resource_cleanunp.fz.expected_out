@@ -16,7 +16,7 @@ closing Y
 closing X
 closing W
 run default
-got interrupted! stopped: 4 opened
+got interrupted!
 --------------------------- open / throw / close / error
 open: P
 open: Q

@@ -59,7 +59,7 @@ resource_cleanunp =>
   # default operation used to produce result in case of stop
   def(v e) =>
     say "run default"
-    "got interrupted! $(v.status)"
+    "got interrupted!"
 
 
   # -----------------------------------------------------------------------

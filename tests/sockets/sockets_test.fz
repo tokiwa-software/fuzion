@@ -45,11 +45,10 @@ sockets_test is
     accept =>
       (net.server.env.accept.bind c->
         c.with unit lm ()->
-          endp => net.endpoint.env
 
           say_silent "$protocol/$family-server, accepted connection"
-          say_silent endp.get_peer_address
-          say_silent endp.get_peer_port
+          say_silent net.endpoint.env.get_peer_address
+          say_silent net.endpoint.env.get_peer_port
 
           rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 

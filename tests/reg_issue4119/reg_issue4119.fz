@@ -17,11 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test reg_issue4119
 #
 # -----------------------------------------------------------------------
 
-reg_issue1698 is
-  x := flow.exception unit void ()->
-    (flow.exception unit).env.cause (error "a")
-  say x
+reg_issue4119 =>
+
+  lm : racy_mutate is
+  x := lm.new 0

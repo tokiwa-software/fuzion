@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue4119.fz:27:11: error 1: Effect features must be called via 'env'.
+  x := lm.new 0
+----------^^^
+To solve this, insert 'env' before the call to retrieve the current value of the effect from the environment.
+
+one error.

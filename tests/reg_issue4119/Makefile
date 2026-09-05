@@ -17,11 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue1698 is
-  x := flow.exception unit void ()->
-    (flow.exception unit).env.cause (error "a")
-  say x
+override NAME = reg_issue4119
+include ../simple.mk

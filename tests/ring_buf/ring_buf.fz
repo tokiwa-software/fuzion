@@ -88,11 +88,11 @@ ring_buf =>
 
     # testing mutable arrays from another thread
 
-    my_array1 := lm.new_array 256 _->(i64 42)
+    my_array1 := lm.env.new_array 256 _->(i64 42)
     my_array1[192] := 99
-    my_array2 := lm.new_array2 16 16 (u8 67)
+    my_array2 := lm.env.new_array2 16 16 (u8 67)
     my_array2[08,15] := 99
-    my_array3 := lm.new_array3 4 4 4 (i16 -32000)
+    my_array3 := lm.env.new_array3 4 4 4 (i16 -32000)
     my_array3[1,2,3] := 4711
 
     ta := concur.Threads.env.spawn ()->
