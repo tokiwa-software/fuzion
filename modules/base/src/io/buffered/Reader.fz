@@ -176,7 +176,7 @@ pre debug: n >= 0
                                     .take missing_codepoints
                                     .map String (.or_panic)
                                     .as_array
-    used_count             := used.map (.as_string.byte_count) .fold i64.sum
+    used_count             := used.map (.as_string.byte_count) .sum
     rest Sequence u8       := next_bytes.drop used_count
     codepoint_count        := used.count,
                               codepoint_count+used.count
