@@ -26,15 +26,3 @@
 # util -- low-level utility features for concurrency
 #
 util is
-
-
-  # Ensure that load or store operation performed before this fence will not be
-  # re-ordered with load operations after this fence
-  #
-  load_fence unit => intrinsic
-
-
-  # Ensure that load or store operation performed before this fence will not be
-  # re-ordered with store operations after this fence
-  #
-  store_fence unit => intrinsic

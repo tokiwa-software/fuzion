@@ -31,6 +31,8 @@ module:public array (
        module data fuzion.sys.internal_array T
 
       ) : container.Buffer T mutate.this, mutable_element
+pre
+  safety: !is_atomic  # atomic array accesses currently not supported
 is
 
 

@@ -1,3 +1,7 @@
+AAA_builtin_atomic_mutate (concur.atomic (lock_free.Main_Node i32 String))
+AAA_builtin_atomic_mutate (concur.atomic (lock_free.prev_node i32 String))
+AAA_builtin_atomic_mutate (concur.atomic (lock_free.root_node i32 String))
+AAA_builtin_atomic_mutate (concur.atomic trit)
 Unique_Id
 concur.A0_park_mutex
 concur.Threads

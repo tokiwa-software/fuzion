@@ -1,3 +1,17 @@
+AAA_builtin_atomic_mutate (concur.atomic (option i64))
+AAA_builtin_atomic_mutate (concur.atomic String)
+AAA_builtin_atomic_mutate (concur.atomic bool)
+AAA_builtin_atomic_mutate (concur.atomic codepoint)
+AAA_builtin_atomic_mutate (concur.atomic f64)
+AAA_builtin_atomic_mutate (concur.atomic i64)
+AAA_builtin_atomic_mutate (concur.atomic test_atomic.lights)
+AAA_builtin_atomic_mutate (concur.atomic test_atomic.lights2)
+AAA_builtin_atomic_mutate (concur.atomic test_atomic.lights3)
+AAA_builtin_atomic_mutate (concur.atomic test_atomic.my_switch)
+AAA_builtin_atomic_mutate (concur.atomic test_atomic.p)
+AAA_builtin_atomic_mutate (concur.atomic test_atomic.unit_like)
+AAA_builtin_atomic_mutate (concur.atomic test_atomic.unit_like2)
+AAA_builtin_atomic_mutate (concur.atomic trit)
 Ignored_Failure
 Unique_Id
 cached_item (num.ryū f64).step_3#7.pow5_inv_split_cache_key
@@ -5,7 +19,19 @@ cached_item (num.ryū f64).step_3#7.pow5_split_cache_key
 concur.A0_park_mutex
 concur.Threads
 concur.atomic_access
-concur.racy_access
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic (option i64)))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic String))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic bool))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic codepoint))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic f64))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic i64))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic test_atomic.lights))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic test_atomic.lights2))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic test_atomic.lights3))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic test_atomic.my_switch))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic test_atomic.p))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic test_atomic.unit_like))
+concur.racy_access (AAA_builtin_atomic_mutate (concur.atomic test_atomic.unit_like2))
 envir.Args
 fuzion.runtime.check_fault
 fuzion.runtime.contract_fault

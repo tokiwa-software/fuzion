@@ -52,7 +52,7 @@ test_local_mutate is
         for e in l do
 
           # add e to s
-          s.update a->a+e
+          _ := s.update a->a+e
 
         # unwrap the sum value in s and return it
         s.get
@@ -63,7 +63,7 @@ test_local_mutate is
         s := m.env.new 0
 
         for e in l do
-          s.update a->a+e
+          _ := s.update a->a+e
 
         say "inside m.go: s.get = $(s.get)"
         say "inside m.go: count = $(count)"
@@ -73,7 +73,7 @@ test_local_mutate is
       count2 =>
         s := m.env.new 0
         for e in l do
-          s.update a->a+e
+          _ := s.update a->a+e
         option s
 
       # This was moved to test_local_mutate_neg
@@ -90,8 +90,8 @@ test_local_mutate is
       say (fuzion.runtime.pre_fault.try   neg_test3
                                    .catch caught_msg)
 
-      say (panic.try   neg_test4
-                .catch caught_msg)
+      say (fuzion.runtime.pre_fault.try   neg_test4
+                                   .catch caught_msg)
 
       neg_test4 =>
         s := m ! ()->count2
@@ -100,8 +100,8 @@ test_local_mutate is
           say s
         "** failed, did not panic **"
 
-      say (panic.try   neg_test5
-                .catch caught_msg)
+      say (fuzion.runtime.pre_fault.try   neg_test5
+                                   .catch caught_msg)
 
       neg_test5 =>
         q =>

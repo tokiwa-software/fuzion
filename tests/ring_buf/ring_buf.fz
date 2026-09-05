@@ -69,7 +69,7 @@ ring_buf =>
         .try ()->
           say <| "t1: " + rb.poll + "*** FAILED! NOT ALLOWED in other thread!";
         .catch m->
-          if $m = "(precondition, safety: is_this_mutate_instated_and_usable)"
+          if $m = "(precondition, safety: exclusive_allowed)"
             say "OK, expected fault: $m"
           else
             say "*** FAILED! $m"

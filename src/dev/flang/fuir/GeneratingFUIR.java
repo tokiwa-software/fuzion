@@ -1886,21 +1886,22 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For a clazz of concur.atomic, lookup the inner clazz of the value field.
+   * For a clazz inheriting from {@code mutate.new}, lookup the inner clazz of
+   * the {@code mutable_value} field.
    *
-   * @param cl index of a clazz representing cl's value field
+   * @param cl index of a clazz representing cl's {@code mutable_value} field
    *
-   * @return the index of the requested {@code concur.atomic.value} field's clazz.
+   * @return the index of the requested {@code mutate.new.mutable_value} field's clazz.
    */
-  @Override
-  public int lookupAtomicValue(int cl)
+  public int lookupMutableValue(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_concur_atomic_v)._id;
+    return id2clazz(cl).lookupNeeded(Types.resolved.f_mutate_new_mutable_value)._id;
   }
+
 
 
   /**

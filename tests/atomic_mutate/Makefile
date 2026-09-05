@@ -17,31 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature racy_access
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# racy_access -- an effect that permits reading and writing values in instances
-# of `concur.atomic_mutate.new` using the racy access functions `get_racy` and
-# `put_racy`.
-#
-private:module racy_access(M type : mutate) : effect is
-
-  # dummy operation to register a racy access.
-  #
-  # This is used by all racy accesses such that static analysis of effects finds code
-  # that performs racy accesses.
-  #
-  public register unit
-  =>
-
-
-  # default implementation of racy
-  #
-  # this will get instated automatically at startup
-  #
-  public redef fixed type.default_value option (concur.racy_access M)
-  =>
-    concur.racy_access M
+override NAME = atomic_mutate_test
+include ../simple.mk

@@ -282,6 +282,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   private static final Clazz NO_CLAZZ = new Clazz()
     {
       @Override void doesNeedCode() { }
+      @Override public String toString() { return "--NO_CLAZZ--"; }
     };
 
 
