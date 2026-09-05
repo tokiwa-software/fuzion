@@ -164,33 +164,29 @@ public type.read_bytes(n i64) outcome (Sequence u8) ! Reader
 public type.read_string(n i64) outcome String ! Reader
 pre debug: n >= 0
 =>
-
-  take_valid_codepoints(a Sequence u8, max i64) =>
-    v := String.from_bytes a
-      .codepoints_and_errors
-      .take_while (.ok)
-      .take max
-      .map String (.or_panic)
-      .as_array
-
-    bytes_used := v.map (.as_string.byte_count) .fold i64.sum
-    Reader.env.discard bytes_used
-    v
-
   for
-    cur := Reader.env.read
-    is_eof                 := cur ? outcome => true | Sequence => false
-    next_bytes Sequence u8 := (cur ? outcome => []   | s Sequence => s), rest ++ (cur ? outcome => [] | s Sequence => s)
-    next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
-    # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
-    # we trigger a `discard` and remember what we read so far via `rest`.
-    # this is necessary e.g. for stdin where we read one byte at a time.
-    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then Reader.env.discard; next_bytes else []
-    codepoint_count        := next_codepoints.count, codepoint_count+next_codepoints.count
-    res Sequence String    := next_codepoints, res ++ next_codepoints
-  while !is_eof && codepoint_count < n
+    cur                    := Reader.env.read
+    at_eof                 := cur ? outcome => true | Sequence => false
+    next_bytes Sequence u8 := cur ? outcome => []   | s Sequence => s,
+                              rest ++ (cur ? outcome => [] | s Sequence => s)
+    missing_codepoints     := n, n-codepoint_count
+    used                   := String.from_bytes next_bytes
+                                    .codepoints_and_errors
+                                    .take_while (.ok)
+                                    .take missing_codepoints
+                                    .map String (.or_panic)
+                                    .as_array
+    used_count             := used.map (.as_string.byte_count) .sum
+    rest Sequence u8       := next_bytes.drop used_count
+    codepoint_count        := used.count,
+                              codepoint_count+used.count
+    res Sequence String    := used,
+                              res ++ used
+  while !at_eof && codepoint_count < n
+    Reader.env.discard
   else
-    if is_eof && res.is_empty
+    Reader.env.discard used_count
+    if at_eof && res.is_empty
       error "-- end of file --"
     else
       String.join res
