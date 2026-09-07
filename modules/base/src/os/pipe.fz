@@ -71,7 +71,7 @@ private:public pipe : effect is
 
       match (io.buffered LM).Reader.instate (pipe_reader LM read_desc "reading in $(pipe.this.type.name)") r
         unit =>
-          # NYI: UDNER DEVELOPMENT: this explicit closing
+          # NYI: UNDER DEVELOPMENT: this explicit closing
           # should probably be removed
           _ := fzE_pipe_close read_desc
           w write_desc

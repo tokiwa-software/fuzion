@@ -127,7 +127,6 @@ public ip_address (val u128) : property.orderable is
   # parse an ip_address from a String
   #
   public type.from_string (s String) outcome net.ip_address =>
-    # NYI: PERFORMANCE: search for . and : in parallel
     if s.contains "."
       sv4 := s.split "."
       check sv4.count = 4
