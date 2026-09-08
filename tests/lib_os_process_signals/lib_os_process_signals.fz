@@ -24,9 +24,9 @@
 lib_os_process_signals =>
 
   p := os.process.start "sleep" ["999m"] .or_panic
-  check p.kill.ok
+  check p.kill??
   check p.wait.err.as_string.contains "was terminated by signal 9 (SIGKILL)"
 
   p2 := os.process.start "sleep" ["999m"] .or_panic
-  check p2.terminate.ok
+  check p2.terminate??
   check p2.wait.err.as_string.contains "was terminated by signal 15 (SIGTERM)"

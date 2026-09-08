@@ -41,7 +41,7 @@ lib_concur_sync =>
       a.join.or_panic
       b.join.or_panic
 
-    check cnd_res.ok
+    check cnd_res??
 
 
 
@@ -63,7 +63,7 @@ lib_concur_sync =>
       a.join.or_panic
       b.join.or_panic
 
-    check cnd_res.ok
+    check cnd_res??
 
 
 

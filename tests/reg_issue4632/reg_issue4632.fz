@@ -26,5 +26,5 @@ reg_issue4632 =>
   x option i32 := nil
   y option i32 := 42
 
-  b := x.ok && y.ok
+  b := x?? && y??
   say b

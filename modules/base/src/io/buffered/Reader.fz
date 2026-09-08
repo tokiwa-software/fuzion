@@ -168,7 +168,7 @@ pre debug: n >= 0
   take_valid_codepoints(a Sequence u8, max i64) =>
     v := String.from_bytes a
       .codepoints_and_errors
-      .take_while (.ok)
+      .take_while (??)
       .take max
       .map String (.or_panic)
       .as_array

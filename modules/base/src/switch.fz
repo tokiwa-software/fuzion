@@ -126,7 +126,7 @@ is
 
 
   # converts switch into a list of either a single element in case
-  # switch.this.ok or `nil` otherwise
+  # switch.this?? or `nil` otherwise
   #
   public redef as_list list A
   =>

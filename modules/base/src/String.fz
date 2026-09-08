@@ -389,7 +389,7 @@ public String ref : property.hashable, property.orderable is
       debug: from=to || String.is_valid_utf8_first_byte utf8[from]
       debug: from=to || !String.is_multi_byte_start_byte utf8[to-1]
     post
-      debug 10 : result.codepoints_and_errors ∀ (.ok)
+      debug 10 : result.codepoints_and_errors ∀ (??)
   =>
     String.from_bytes (String.this.utf8.slice from to)
 
@@ -503,7 +503,7 @@ public String ref : property.hashable, property.orderable is
 
   # does this string contain the given 'substring'
   #
-  public contains (substring String) bool => find(substring).ok
+  public contains (substring String) bool => find substring ??
 
 
   # count number of occurrences of given 'substring' in this string

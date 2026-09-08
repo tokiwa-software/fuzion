@@ -70,7 +70,7 @@ is
     for res := outcome unit, writer [b.or_panic]
         to_be_written := buffer.count, to_be_written-1
         b := buffer.poll
-    while to_be_written>0 && b.ok
+    while to_be_written>0 && b??
     else
       res
 
@@ -85,7 +85,7 @@ is
   #
   public write (data Sequence u8 | String) outcome unit =>
     write_detailed data
-      .error
+      .reslt
 
 
   # buffered writing of the given array, detailed result
@@ -117,9 +117,9 @@ is
 
 # helper type for write result
 #
-private:public write_result(public bytes_written i64, public error outcome unit) is
+private:public write_result(public bytes_written i64, public reslt outcome unit) is
 
 
   # was writing successful?
   #
-  public ok bool => error.ok
+  public ok bool => reslt??

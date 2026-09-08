@@ -311,8 +311,8 @@ is
   as_string_help(iec_or_si_unit choice units.byte_iec units.byte_si) tuple String String =>
     u_bytes, u_short_name, is_smallest, smaller_bytes, factor :=
       match iec_or_si_unit
-        u units.byte_iec => (u.in_bytes, u.short_name, !u.smaller.ok, (u.smaller.bind s->s.in_bytes), 1024.as_f64)
-        u units.byte_si  => (u.in_bytes, u.short_name, !u.smaller.ok, (u.smaller.bind s->s.in_bytes), 1000.as_f64)
+        u units.byte_iec => (u.in_bytes, u.short_name, !u.smaller, (u.smaller.bind s->s.in_bytes), 1024.as_f64)
+        u units.byte_si  => (u.in_bytes, u.short_name, !u.smaller, (u.smaller.bind s->s.in_bytes), 1000.as_f64)
 
     n String := if bytes / u_bytes >= 100.as_u128 || is_smallest
                   $(bytes / u_bytes)
