@@ -1,72 +1,72 @@
-create               count=0 contains(1)=false
+create               length=0 contains(1)=false
 []
 []
 
-add first 2          count=1 contains(2)=true
+add first 2          length=1 contains(2)=true
 [2]
 [2]
 
-add last 3           count=2 contains(3)=true
+add last 3           length=2 contains(3)=true
 [2, 3]
 [2, 3]
 
-add first 5          count=3 contains(5)=true
+add first 5          length=3 contains(5)=true
 [5, 2, 3]
 [5, 2, 3]
 
-add first 1          count=4 contains(1)=true
+add first 1          length=4 contains(1)=true
 [1, 5, 2, 3]
 [1, 5, 2, 3]
 
-add last 4           count=5 contains(4)=true
+add last 4           length=5 contains(4)=true
 [1, 5, 2, 3, 4]
 [1, 5, 2, 3, 4]
 
-add last 5           count=6 contains(5)=true
+add last 5           length=6 contains(5)=true
 [1, 5, 2, 3, 4, 5]
 [1, 5, 2, 3, 4, 5]
 
-remove_first_match=5 count=5
+remove_first_match=5 length=5
 [1, 2, 3, 4, 5]
 [1, 2, 3, 4, 5]
 
-remove_first_match=--nil-- count=5
+remove_first_match=--nil-- length=5
 [1, 2, 3, 4, 5]
 [1, 2, 3, 4, 5]
 
-add first 1          count=6 contains(1)=true
+add first 1          length=6 contains(1)=true
 [1, 1, 2, 3, 4, 5]
 [1, 1, 2, 3, 4, 5]
 
-remove_first=1       count=5 contains(1)=true
+remove_first=1       length=5 contains(1)=true
 [1, 2, 3, 4, 5]
 [1, 2, 3, 4, 5]
 
-remove_last=5        count=4 contains(5)=false
+remove_last=5        length=4 contains(5)=false
 [1, 2, 3, 4]
 [1, 2, 3, 4]
 
-remove_first_match=3 count=3
+remove_first_match=3 length=3
 [1, 2, 4]
 [1, 2, 4]
 
-remove_first_match=2 count=2
+remove_first_match=2 length=2
 [1, 4]
 [1, 4]
 
-remove_last=4        count=1 contains(4)=false
+remove_last=4        length=1 contains(4)=false
 [1]
 [1]
 
-remove_last=1        count=0 contains(1)=false
+remove_last=1        length=0 contains(1)=false
 []
 []
 
-remove_first=--nil--       count=0 
+remove_first=--nil--       length=0 
 []
 []
 
-remove_last=--nil--        count=0 
+remove_last=--nil--        length=0 
 []
 []
 

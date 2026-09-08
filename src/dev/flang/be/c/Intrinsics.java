@@ -96,10 +96,10 @@ public class Intrinsics extends ANY
         c.boxedConstString(c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl)))
          .ret());
 
-    put("concur.atomic.compare_and_swap0",  (c,cl,outer,in) ->
+    put("mutate.new.compare_and_swap0",  (c,cl,outer,in) ->
         {
-          var ac = c._fuir.clazzOuterClazz(cl);
-          var v = c._fuir.lookupAtomicValue(ac);
+          var nc = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupMutableValue(nc);
           var rc  = c._fuir.clazzResultClazz(v);
           var expected  = A0;
           var new_value = A1;
@@ -107,7 +107,7 @@ public class Intrinsics extends ANY
           var code = CStmnt.EMPTY;
           if (!c._fuir.clazzIsUnitType(rc))
             {
-              var f = c.accessField(outer, ac, v);
+              var f = c.accessField(outer, nc, v);
               if (mayUseAtomicOps(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
@@ -133,10 +133,10 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("concur.atomic.compare_and_set0",  (c,cl,outer,in) ->
+    put("mutate.new.compare_and_set0",  (c,cl,outer,in) ->
         {
-          var ac = c._fuir.clazzOuterClazz(cl);
-          var v = c._fuir.lookupAtomicValue(ac);
+          var nc = c._fuir.clazzOuterClazz(cl);
+          var v = c._fuir.lookupMutableValue(nc);
           var rc  = c._fuir.clazzResultClazz(v);
           var expected  = A0;
           var new_value = A1;
@@ -145,7 +145,7 @@ public class Intrinsics extends ANY
           var code = CStmnt.EMPTY;
           if (!c._fuir.clazzIsUnitType(rc))
             {
-              var f = c.accessField(outer, ac, v);
+              var f = c.accessField(outer, nc, v);
               if (mayUseAtomicOps(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
@@ -173,10 +173,9 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("concur.atomic.racy_accesses_supported",  (c,cl,outer,in) ->
+    put("mutate.atomic_access_supported",  (c,cl,outer,in) ->
         {
-          var v = c._fuir.lookupAtomicValue(c._fuir.clazzOuterClazz(cl));
-          var rc  = c._fuir.clazzResultClazz(v);
+          var rc  = c._fuir.clazzActualGeneric(cl, 0);
           var r =
             c._fuir.clazzIsRef(rc) ||
             c._fuir.clazzIsBuiltInPrimitive(rc) ||
@@ -184,23 +183,26 @@ public class Intrinsics extends ANY
           return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
         });
 
-    put("concur.atomic.read0",  (c,cl,outer,in) ->
+    put("mutate.new.atomic_read0",  (c,cl,outer,in) ->
         {
           var ac = c._fuir.clazzOuterClazz(cl);
-          var v = c._fuir.lookupAtomicValue(ac);
+          var v = c._fuir.lookupMutableValue(ac);
           var rc  = c._fuir.clazzResultClazz(v);
           var tmp = new CIdent("tmp");
           CStmnt code;
           if (c._fuir.clazzIsUnitType(rc))
             {
-              code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
+              code = CExpr.call("atomic_thread_fence",
+                                new List<>(new CIdent("memory_order_seq_cst")));         // NYI: UNDER_DEVELOPMENT: this is probably not needed, there is a read_fence in mutate.fz
             }
           else if (mayUseAtomicOps(c, rc))
             {
               var f = c.accessField(outer, ac, v);
               code = CStmnt.seq(
                 CExpr.decl(c._types.atomicType(rc), tmp),
-                tmp.assign(CExpr.call("atomic_load_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new CIdent("memory_order_seq_cst")))),
+                tmp.assign(CExpr.call("atomic_load_explicit",
+                                      new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"),
+                                                 new CIdent("memory_order_seq_cst")))),  // NYI: UNDER_DEVELOPMENT: this is probably overkill, there is a read_fence performed in mutate.fz
                 tmp.adrOf()
                   .castTo(c._types.clazz(rc) + "*")
                   .deref()
@@ -217,21 +219,25 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("concur.atomic.write0", (c,cl,outer,in) ->
+    put("mutate.new.atomic_write0", (c,cl,outer,in) ->
         {
           var ac = c._fuir.clazzOuterClazz(cl);
-          var v = c._fuir.lookupAtomicValue(ac);
+          var v = c._fuir.lookupMutableValue(ac);
           var rc  = c._fuir.clazzResultClazz(v);
           var new_value = A0;
           var code = CStmnt.EMPTY;
           if (c._fuir.clazzIsUnitType(rc))
             {
-              code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
+              code = CExpr.call("atomic_thread_fence",
+                                new List<>(new CIdent("memory_order_seq_cst")));         // NYI: UNDER_DEVELOPMENT: this is probably not needed, there is a write_fence in mutate.fz
             }
           else if (mayUseAtomicOps(c, rc))
             {
               var f = c.accessField(outer, ac, v);
-              code = CExpr.call("atomic_store_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(), new CIdent("memory_order_seq_cst")));
+              code = CExpr.call("atomic_store_explicit",
+                                new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"),
+                                           new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(),
+                                           new CIdent("memory_order_seq_cst")));         // NYI: UNDER_DEVELOPMENT: this is probably overkill, there is a write_fence performed in mutate.fz
             }
           else
             {
@@ -241,14 +247,14 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("concur.util.load_fence", (c,cl,outer,in) ->
+    put("mutate.read_fence", (c,cl,outer,in) ->
         {
-          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
+          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));  // NYI: UNDER_DEVELOPMENT: just a read fence would be enought here!
         });
 
-    put("concur.util.store_fence", (c,cl,outer,in) ->
+    put("mutate.write_fence", (c,cl,outer,in) ->
         {
-          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
+          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));  // NYI: UNDER_DEVELOPMENT: just a write fence would be enought here!
         });
 
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());

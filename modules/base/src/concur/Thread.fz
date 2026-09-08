@@ -271,7 +271,7 @@ is
 #
 # NYI: CLEANUP: This could be just a field in thread as follows
 #
-#    mtx := concur.sync.mtx_init.or_else (panic "failed to create mutex")
+#    mtx := concur.sync.mtx_init.or_panic
 #
 # but there is currently no easy way to access this field while `concur.Threads.env.current`
 # cannot be used becuse `concur.Threads` is not yet instated.
@@ -281,7 +281,7 @@ is
 #
 module A0_park_mutex : thread_local_effect is
 
-  mtx_var := concur.sync.mtx_init.or_else (panic "failed to create mutex")
+  mtx_var := concur.sync.mtx_init.or_panic
   mtx =>
     mtx_var
 
@@ -301,7 +301,7 @@ module A0_park_mutex : thread_local_effect is
 #
 module A1_park_condition(C type : time.Clock) ref : thread_local_effect is
 
-  cond_var := (concur.sync.condition.new C A0_park_mutex.mtx).or_else (panic "failed to create condition variable")
+  cond_var := concur.sync.condition.new C A0_park_mutex.mtx .or_panic
   cond =>
     cond_var
 

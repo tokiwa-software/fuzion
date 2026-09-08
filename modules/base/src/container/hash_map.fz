@@ -202,8 +202,7 @@ is
   #
   public redef items Sequence (tuple HK V) =>
     contents
-      .filter (??)
-      .map (.or_else (panic "filter failed"))
+      .flat_map id
 
 
   # empty -- convenience routine to create an empty instance of hash_map

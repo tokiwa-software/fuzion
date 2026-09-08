@@ -27,70 +27,7 @@
 #
 # option represents an optional value of type T
 #
-public option(T type)
-  : switch T nil,
-    property.orderable,
-    property.hashable
-
-is
-
-
-  # equality of two options is true iff `a` and `b` are both nil or `a` and `b` are both
-  # `T` and T.equality a.or_panic b.or_panic.
-  #
-  # This is defined only if T : property.equatable, it will result in a compile-time panic
-  # if this is not the case.
-  #
-  public redef fixed type.equality(a, b option T) bool
-  =>
-    if T : property.equatable
-      match a
-        av T =>
-          match b
-            bv T => T.equality av bv
-            nil  => false
-        nil =>
-          match b
-            _ T => false
-            nil  => true
-    else
-      compile_time_panic
-
-
-  # A total order for options is defined as follows: `nil` is always less-than-or-equal
-  # any other value and iff `a` and `b` both contain values of type `T`, then
-  # `T.lteq a.or_panic b.or_panic`.
-  #
-  # This is defined only if T : property.orderable, it will result in a compile-time panic
-  # if this is not the case.
-  #
-  public redef fixed type.lteq(a, b option T) bool
-  =>
-    if T : property.orderable
-      match a
-        av T =>
-          match b
-            bv T => T.lteq av bv
-            nil  => false
-        nil =>
-          true
-    else
-      compile_time_panic
-
-
-  # create hash code for this option
-  #
-  # This is defined only if T : property.hashable, it will result in a compile-time panic
-  # if this is not the case.
-  #
-  public redef fixed type.hash_code(a option T) u64
-  =>
-    if T : property.hashable
-      match a
-        v T => T.hash_code v
-        nil => 0xfe6f6476106a56b6  # generated using secure random generator at https://cryptotools.dev/
-    else
-      compile_time_panic
+public option(T type) : switch T nil is
 
 
   # Does this option contain no value of type T?
@@ -105,16 +42,6 @@ is
   public bind(B type, f T -> option B) option B =>
     option.this ? v T => f v
                 | nil => nil
-
-
-  # converts option to a string
-  #
-  # returns the result of $T for an option containing an instance
-  # of T, alternatively returns $nil for an option that is nil.
-  #
-  public redef as_string String =>
-    option.this ? v T => $v
-                | nil => $nil
 
 
   # 'prefix +' (identity)

@@ -125,11 +125,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(tvalue.drop().andThen(jvm.boxedConstString(str)), Expr.UNIT);
         });
 
-    put("concur.atomic.racy_accesses_supported",
+    put("mutate.atomic_access_supported",
         (jvm, si, cc, tvalue, args) ->
         {
-          var v = jvm._fuir.lookupAtomicValue(jvm._fuir.clazzOuterClazz(cc));
-          var rc  = jvm._fuir.clazzResultClazz(v);
+          var rc  = jvm._fuir.clazzActualGeneric(cc, 0);
           var r =
             jvm._fuir.clazzIsRef(rc) ||
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
@@ -141,46 +140,47 @@ public class Intrinsix extends ANY implements ClassFileConstants
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_f32 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_f64 ) ||
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_bool) ||
             jvm._fuir.clazzIsUnitType(rc);
           return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
         });
 
-    put("concur.util.load_fence",
-        "concur.util.store_fence",
+    put("mutate.read_fence",
+        "mutate.write_fence",
         (jvm, si, cc, tvalue, args) ->
         {
           return new Pair<>(Expr.UNIT,
                             locked(Expr.UNIT));
         });
 
-    put("concur.atomic.read0",
+    put("mutate.new.atomic_read0",
         (jvm, si, cc, tvalue, args) ->
         {
           var ac = jvm._fuir.clazzOuterClazz(cc);
-          var v = jvm._fuir.lookupAtomicValue(ac);
+          var v = jvm._fuir.lookupMutableValue(ac);
           var val = locked(tvalue
                            .andThen(jvm.getfield(v)));
           return new Pair<>(val, Expr.UNIT);
         });
 
-    put("concur.atomic.write0",
+    put("mutate.new.atomic_write0",
         (jvm, si, cc, tvalue, args) ->
         {
           var ac = jvm._fuir.clazzOuterClazz(cc);
-          var v = jvm._fuir.lookupAtomicValue(ac);
+          var v = jvm._fuir.lookupMutableValue(ac);
           var code = locked(tvalue
                             .andThen(args.get(0))
                             .andThen(jvm.putfield(v)));
           return new Pair<>(Expr.UNIT, code);
         });
 
-    put("concur.atomic.compare_and_set0",
-        "concur.atomic.compare_and_swap0",
+    put("mutate.new.compare_and_set0",
+        "mutate.new.compare_and_swap0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ac = jvm._fuir.clazzOuterClazz(cc);
-          var v = jvm._fuir.lookupAtomicValue(ac);
+          var nc = jvm._fuir.clazzOuterClazz(cc);
+          var v = jvm._fuir.lookupMutableValue(nc);
           var rc  = jvm._fuir.clazzResultClazz(v);
           var tt = tvalue.type();
           var jt = jvm._types.resultType(rc);
@@ -189,7 +189,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           int vslot  = jvm.allocLocal(si, jt.stackSlots());    // local var slot for old value, not casted.
 
           Expr pos, neg, oldv;
-          if (jvm._fuir.clazzOriginalName(cc).equals("concur.atomic.compare_and_set0"))
+          if (jvm._fuir.clazzOriginalName(cc).equals("mutate.new.compare_and_set0"))
             { // compare_and_set: return true or false
               pos = Expr.iconst(1);            // 1
               neg = Expr.iconst(0);            // 0

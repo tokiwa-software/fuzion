@@ -30,7 +30,8 @@ public switch(A type, B type /* NYI: B should be open generic */)
   : choice A B,
     monad A,
     Sequence A,
-    property.equatable
+    property.hashable,
+    property.orderable
 is
 
   # Does this switch contain a value of type A?
@@ -218,17 +219,67 @@ is
       b B => $b
 
 
-  # equality implementation
+  # generic equality implementation for switch
   #
-  # result is only true if both x and y are
-  # of choice type A and x.A = y.A
+  # a switch is only equal if x and y wrap the same type and
+  # the wrapped values are themselves equal
   #
-  public redef fixed type.equality(x, y switch A B) bool
+  public redef type.equality(x, y switch.this) bool
   =>
     if A : property.equatable
-      x ? xa A =>
-          y ? ya A => xa = ya
-            | _  B => false
-        | _  B => false
+      if B : property.equatable
+        match x
+          ax A =>
+            match y
+              ay A => ax = ay
+              B    => false
+          bx B =>
+            match y
+              A    => false
+              by B => bx = by
+      else
+        compile_time_panic
+    else
+      compile_time_panic
+
+
+  # defines a generic total order for switch
+  #
+  # - switches wrapping the same type use the lteq
+  #   implementation of the corresponding type
+  # - switches wrapping an A are considered lower
+  #   than switches wrapping a B
+  #
+  public redef type.lteq(x, y switch.this) bool
+  =>
+    if A : property.orderable
+      if B : property.orderable
+        match x
+          ax A =>
+            match y
+              ay A => A.lteq ax ay
+              B    => true
+          bx B =>
+            match y
+              A    => false
+              by B => B.lteq bx by
+      else
+        compile_time_panic
+    else
+      compile_time_panic
+
+
+  # generic hash_code implementation for switch
+  #
+  public redef type.hash_code(s switch.this) u64
+  =>
+    if A : property.hashable
+      if B : property.hashable
+        match s
+          # random 64-bit values generated via https://cryptotools.dev/
+          a A => A.xxh_next 0xfc99d7cd2ae81da9 (A.hash_code a)
+          b B => B.xxh_next 0xa59ebdb824e870a7 (B.hash_code b)
+      else
+        compile_time_panic
     else
       compile_time_panic
