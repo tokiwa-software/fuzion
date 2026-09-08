@@ -192,7 +192,7 @@ public xml Parser String (Sequence codepoint) (Sequence nom.parsers.xml_node) =>
   #
   parser_attributes =>
     many0 (delimited whitespace0 parser_attribute whitespace0)
-      .map (o -> container.map_of o.as_array)
+      .map (o -> container.ps_map String String .of o.as_array)
 
 
   # parser for one attribute of a tag

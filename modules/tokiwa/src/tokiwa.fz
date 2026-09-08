@@ -92,8 +92,8 @@ public tokiwa is
       net.family.ipv4
       "https://influxdb.tokiwa.software:8086/api/v2/write?org=$(org)&bucket=$(bucket)&precision=s"
       str.utf8
-      (container.map_of [("Authorization", "Token $(token)"),
-                         ("Content-Type", "text/plain")])
+      (container.ps_map String String .of [("Authorization", "Token $(token)"),
+                                           ("Content-Type", "text/plain")])
 
 
   # stores the results of a process

@@ -200,7 +200,7 @@ public json Parser String (Sequence codepoint) json_value =>
       separated_list1 (tag ",") ()->parser_key_value
 
     delimited (tag "{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
-      .map json_value (x -> container.map_of x.as_array)
+      .map json_value (x -> container.ps_map String json_value .of x)
 
 
   # parser for a json_value: true, false, [], {}, numbers, strings etc.

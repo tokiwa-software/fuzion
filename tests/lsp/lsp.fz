@@ -25,7 +25,7 @@
 
 # envir vars as map
 #
-envir_vars := container.map_of ((envir.Vars.env.map_of [
+envir_vars := container.ps_map String String .of ((envir.Vars.env.map_of [
     "PATH",
     "LANG",
     "JAVA_HOME",

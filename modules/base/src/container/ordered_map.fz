@@ -32,7 +32,7 @@
 # performance of creation of the map is in O(n log n) where n is
 # keys.length.
 #
-public ordered_map(
+private:public ordered_map(
            OK type : property.orderable,
            V  type,
            k0 Sequence OK,
@@ -112,8 +112,5 @@ is
     else
       r
 
-
-  # create an empty instance of ordered_map
-  #
-  public fixed redef type.empty container.ordered_map OK V =>
-    container.ordered_map OK V [] []
+  public fixed redef type.of(kvs Sequence (tuple OK V)) container.ordered_map OK V =>
+    container.ordered_map OK V (kvs.map (.0)) (kvs.map (.1))

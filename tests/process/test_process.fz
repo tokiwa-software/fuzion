@@ -64,7 +64,7 @@ test_process =>
 
 
   test "pass environment variable" ()->
-    (os.process.start "printenv" [] (container.map_of [("MYENVVAR", "content")])).bind p->
+    (os.process.start "printenv" [] (container.ps_map String String .of [("MYENVVAR", "content")])).bind p->
       lm ! ()->
         _ := p.with_out unit lm ()->
           out := ((io.buffered lm).read_string 1E9)
