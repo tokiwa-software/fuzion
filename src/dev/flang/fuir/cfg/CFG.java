@@ -209,10 +209,10 @@ public class CFG extends ANY
     put("Type.name"                      , (cfg, cl) -> { } );
 
     put("mutate.atomic_access_supported" , (cfg, cl) -> { } );
-    put("mutate.new.compare_and_set0"    , (cfg, cl) -> { } );
-    put("mutate.new.compare_and_swap0"   , (cfg, cl) -> { } );
-    put("mutate.new.atomic_read0"        , (cfg, cl) -> { } );
-    put("mutate.new.atomic_write0"       , (cfg, cl) -> { } );
+    put("mutate.var.compare_and_set0"    , (cfg, cl) -> { } );
+    put("mutate.var.compare_and_swap0"   , (cfg, cl) -> { } );
+    put("mutate.var.atomic_read0"        , (cfg, cl) -> { } );
+    put("mutate.var.atomic_write0"       , (cfg, cl) -> { } );
     put("mutate.read_fence"              , (cfg, cl) -> { } );
     put("mutate.write_fence"             , (cfg, cl) -> { } );
 

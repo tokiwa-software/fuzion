@@ -90,7 +90,7 @@ is
         # h1 is the mutable index within the current first heap, this is updated
         # by the function passed to the array constructor.
         #
-        h1 := m.env.new 0
+        h1 := m.env.var 0
 
         na := array a.length i->
           # index in current pair of heaps

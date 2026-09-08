@@ -192,7 +192,7 @@ public class Intrinsics extends ANY
     put("Type.name"            , (executor, innerClazz) -> args ->
       Interpreter.boxedConstString(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
 
-    put("mutate.new.compare_and_swap0",  (executor, innerClazz) -> args ->
+    put("mutate.var.compare_and_swap0",  (executor, innerClazz) -> args ->
         {
           var nc = executor.fuir().clazzOuterClazz(innerClazz);
           var f = executor.fuir().lookupMutableValue(nc);
@@ -211,7 +211,7 @@ public class Intrinsics extends ANY
             }
         });
 
-    put("mutate.new.compare_and_set0",  (executor, innerClazz) -> args ->
+    put("mutate.var.compare_and_set0",  (executor, innerClazz) -> args ->
         {
           var nc = executor.fuir().clazzOuterClazz(innerClazz);
           var f = executor.fuir().lookupMutableValue(nc);
@@ -247,7 +247,7 @@ public class Intrinsics extends ANY
              (t == executor.fuir().clazz(SpecialClazzes.c_bool)));
         });
 
-    put("mutate.new.atomic_read0",  (executor, innerClazz) -> args ->
+    put("mutate.var.atomic_read0",  (executor, innerClazz) -> args ->
         {
           var a = executor.fuir().clazzOuterClazz(innerClazz);
           var f = executor.fuir().lookupMutableValue(a);
@@ -258,7 +258,7 @@ public class Intrinsics extends ANY
             }
         });
 
-    put("mutate.new.atomic_write0",  (executor, innerClazz) -> args ->
+    put("mutate.var.atomic_write0",  (executor, innerClazz) -> args ->
         {
           var a = executor.fuir().clazzOuterClazz(innerClazz);
           var f = executor.fuir().lookupMutableValue(a);

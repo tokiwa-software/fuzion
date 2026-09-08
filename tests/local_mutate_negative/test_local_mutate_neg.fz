@@ -47,7 +47,7 @@ test_local_mutate_neg is
       count =>
 
         # create mutable variable s:
-        s := m.env.new 0
+        s := m.env.var 0
 
         for e in l do
 
@@ -60,7 +60,7 @@ test_local_mutate_neg is
       # run code within an instance of m
       #
       m ! ()->
-        s := m.env.new 0
+        s := m.env.var 0
 
         for e in l do
           _ := s.update a->a+e
@@ -71,7 +71,7 @@ test_local_mutate_neg is
       say "using m.instate_self and count: $(m ! ()->count)"
 
       count2 =>
-        s := m.env.new 0
+        s := m.env.var 0
         for e in l do
           _ := s.update a->a+e
         option s

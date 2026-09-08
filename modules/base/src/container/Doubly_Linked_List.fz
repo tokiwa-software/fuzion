@@ -35,11 +35,11 @@ L_Node(
 
   # the previous list node
   #
-  prev := LM.env.new (L_Node LM T) L_Node.this
+  prev := LM.env.var (L_Node LM T) L_Node.this
 
   # the next list node
   #
-  next := LM.env.new (L_Node LM T) L_Node.this
+  next := LM.env.var (L_Node LM T) L_Node.this
 
   # the element stored in this list node
   #
@@ -114,7 +114,7 @@ private:public Doubly_Linked_List(
 
   # number of elements currently in the list (does not include the sentinel)
   #
-  len := LM.env.new i64 0
+  len := LM.env.var i64 0
 
 
   # is this list empty?

@@ -42,7 +42,7 @@ module body_reader(LM type : mutate) i64 -> choice (Sequence u8) io.end_of_file 
 module body_reader(LM type : mutate, reader_size i64, _ unit) i64 -> choice (Sequence u8) io.end_of_file error =>
 
 
-  remaining := LM.env.new reader_size
+  remaining := LM.env.var reader_size
 
   max_count ->
     if remaining <= 0
@@ -111,9 +111,9 @@ module body_reader_chunked(LM type : mutate) i64 -> choice (Sequence u8) io.end_
 
   extension_limit := (u64 1024) * 64 # arbitrary value, see below
 
-  position := LM.env.new chunk_enum chunk_start
-  current_chunk_size := LM.env.new u64 0
-  extension_size := LM.env.new u64 0
+  position := LM.env.var chunk_enum chunk_start
+  current_chunk_size := LM.env.var u64 0
+  extension_size := LM.env.var u64 0
 
   update_current_chunk_size (new option u64) choice (Sequence u8) io.end_of_file error =>
     match new

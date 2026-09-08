@@ -58,7 +58,7 @@ is
   #
   # This may be in the range `0..(size-1)`.
   #
-  first := M.env.new (i64 0)
+  first := M.env.var (i64 0)
 
   # number of elements that are currently stored in this `Ring_Buffer`.
   #
@@ -66,7 +66,7 @@ is
   # `first..(first + used).map (%size)` contains the elements stored in
   # this buffer.
   #
-  used  := M.env.new (i64 0)
+  used  := M.env.var (i64 0)
 
 
   # is this buffer full?

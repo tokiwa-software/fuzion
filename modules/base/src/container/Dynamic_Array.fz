@@ -38,11 +38,11 @@ module:public Dynamic_Array (
 
   # contents of the array
   #
-  data LM.new (LM.array T),
+  data LM.var (LM.array T),
 
   # length -- number of elements in data that are in use,
   #           i.e. store actual elements
-  len LM.new i64
+  len LM.var i64
 
 ) ref : Buffer T LM
   pre
@@ -179,7 +179,7 @@ is
   =>
     init_len := s.is_array_backed ? s.count.as_i64 : min_length
 
-    d := container.Dynamic_Array LM T (LM.env.new (LM.array T .empty init_len)) (LM.env.new i64 0)
+    d := container.Dynamic_Array LM T (LM.env.var (LM.array T .empty init_len)) (LM.env.var i64 0)
 
     for e in s do d.add e
 
@@ -189,7 +189,7 @@ is
   # initialize an empty Dynamic_Array of type T
   #
   public type.empty container.Dynamic_Array LM T =>
-    container.Dynamic_Array LM T (LM.env.new (LM.array T .empty min_length)) (LM.env.new i64 0)
+    container.Dynamic_Array LM T (LM.env.var (LM.array T .empty min_length)) (LM.env.var i64 0)
 
 
   # initialize an empty Dynamic_Array of type T, allocates the internal array with the given initial length
@@ -199,7 +199,7 @@ is
   # resulting in a reallocation of the internal array
   #
   module type.empty(initial_internal_length i64) container.Dynamic_Array LM T =>
-    container.Dynamic_Array LM T (LM.env.new (LM.array T .empty initial_internal_length)) (LM.env.new i64 0)
+    container.Dynamic_Array LM T (LM.env.var (LM.array T .empty initial_internal_length)) (LM.env.var i64 0)
 
 
   # the length below which the internal array won't shrink

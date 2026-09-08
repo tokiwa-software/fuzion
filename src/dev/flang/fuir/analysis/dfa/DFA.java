@@ -1837,7 +1837,7 @@ public class DFA extends ANY
   {
     put("Type.name"                      , cl -> cl._dfa.newConstString(fuir(cl).clazzTypeName(fuir(cl).clazzOuterClazz(cl.calledClazz())), cl) );
 
-    put("mutate.new.compare_and_swap0",  cl ->
+    put("mutate.var.compare_and_swap0",  cl ->
         {
           var v = fuir(cl).lookupMutableValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
 
@@ -1856,7 +1856,7 @@ public class DFA extends ANY
           return res;
         });
 
-    put("mutate.new.compare_and_set0",  cl ->
+    put("mutate.var.compare_and_set0",  cl ->
         {
           var v = fuir(cl).lookupMutableValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
 
@@ -1881,7 +1881,7 @@ public class DFA extends ANY
           return cl._dfa.bool();
         });
 
-    put("mutate.new.atomic_read0",  cl ->
+    put("mutate.var.atomic_read0",  cl ->
         {
           var v = fuir(cl).lookupMutableValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
 
@@ -1892,7 +1892,7 @@ public class DFA extends ANY
           return atomic.callField(cl._dfa, v, cl.site(), cl);
         });
 
-    put("mutate.new.atomic_write0",  cl ->
+    put("mutate.var.atomic_write0",  cl ->
         {
           var v = fuir(cl).lookupMutableValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
 

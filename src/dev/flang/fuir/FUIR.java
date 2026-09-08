@@ -620,12 +620,12 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a clazz inheriting from {@code mutate.new}, lookup the inner clazz of
+   * For a clazz inheriting from {@code mutate.var}, lookup the inner clazz of
    * the {@code mutable_value} field.
    *
    * @param cl index of a clazz representing cl's {@code mutable_value} field
    *
-   * @return the index of the requested {@code mutate.new.mutable_value} field's clazz.
+   * @return the index of the requested {@code mutate.var.mutable_value} field's clazz.
    */
   public abstract int lookupMutableValue(int cl);
 

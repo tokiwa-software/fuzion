@@ -154,7 +154,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                             locked(Expr.UNIT));
         });
 
-    put("mutate.new.atomic_read0",
+    put("mutate.var.atomic_read0",
         (jvm, si, cc, tvalue, args) ->
         {
           var ac = jvm._fuir.clazzOuterClazz(cc);
@@ -164,7 +164,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(val, Expr.UNIT);
         });
 
-    put("mutate.new.atomic_write0",
+    put("mutate.var.atomic_write0",
         (jvm, si, cc, tvalue, args) ->
         {
           var ac = jvm._fuir.clazzOuterClazz(cc);
@@ -175,8 +175,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, code);
         });
 
-    put("mutate.new.compare_and_set0",
-        "mutate.new.compare_and_swap0",
+    put("mutate.var.compare_and_set0",
+        "mutate.var.compare_and_swap0",
         (jvm, si, cc, tvalue, args) ->
         {
           var nc = jvm._fuir.clazzOuterClazz(cc);
@@ -189,7 +189,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           int vslot  = jvm.allocLocal(si, jt.stackSlots());    // local var slot for old value, not casted.
 
           Expr pos, neg, oldv;
-          if (jvm._fuir.clazzOriginalName(cc).equals("mutate.new.compare_and_set0"))
+          if (jvm._fuir.clazzOriginalName(cc).equals("mutate.var.compare_and_set0"))
             { // compare_and_set: return true or false
               pos = Expr.iconst(1);            // 1
               neg = Expr.iconst(0);            // 0

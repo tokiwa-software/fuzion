@@ -46,8 +46,8 @@ effect_wormholes =>
   lm ! ()->
 
     wh0 := effect_wormhole
-    whAm := lm.env.new (option effect_wormhole nil)
-    whBm := lm.env.new (option effect_wormhole nil)
+    whAm := lm.env.var (option effect_wormhole nil)
+    whBm := lm.env.var (option effect_wormhole nil)
 
     io.Out.env.println "01 - using                    default io.Out in main    thread!"
     io.Out.instate out_A ()->

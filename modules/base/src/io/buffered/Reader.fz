@@ -38,7 +38,7 @@ public Reader ref : effect is
 
   # buffer backing this reader
   #
-  buffer := LM.env.new (Sequence u8) []
+  buffer := LM.env.var (Sequence u8) []
 
 
 
@@ -64,7 +64,7 @@ public Reader ref : effect is
 
     # the current position in the array
     #
-    pos := LM.env.new 0
+    pos := LM.env.var 0
 
     max_count ->
       p := pos.get

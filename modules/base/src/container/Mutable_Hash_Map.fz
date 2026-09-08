@@ -73,7 +73,7 @@ is
 
   # number of entries currently in this map
   #
-  load := LM.env.new 0
+  load := LM.env.var 0
 
   # maximum number of pairs before size is increased
   #
@@ -85,11 +85,11 @@ is
 
   # size of allocated contents array, allows for some empty slots
   #
-  allocated_size := LM.env.new ((num.fraction min_size 1) / upper_load_factor).ceil
+  allocated_size := LM.env.var ((num.fraction min_size 1) / upper_load_factor).ceil
 
   # the contents
   #
-  contents := LM.env.new (LM.env.new_array (choice nil del (tuple HK V)) _ allocated_size.get _->(id (choice nil del (tuple HK V)) nil))
+  contents := LM.env.var (LM.env.new_array (choice nil del (tuple HK V)) _ allocated_size.get _->(id (choice nil del (tuple HK V)) nil))
 
 
   # calculate the index of k within contents array in case of no conflict

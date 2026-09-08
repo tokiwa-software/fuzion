@@ -174,8 +174,8 @@ public class Types extends ANY
     public final AbstractFeature f_array;
     public final AbstractFeature f_mutate;
     public final AbstractFeature f_mutate_array;
-    public final AbstractFeature f_mutate_new;
-    public final AbstractFeature f_mutate_new_mutable_value;
+    public final AbstractFeature f_mutate_var;
+    public final AbstractFeature f_mutate_var_mutable_value;
     public final AbstractFeature f_effect;
     public final AbstractFeature f_effect_finally;
     public final AbstractFeature f_effect_static_finally;
@@ -252,8 +252,8 @@ public class Types extends ANY
       f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 6);
       f_mutate                  = universe.get(mod, "mutate", 0);
       f_mutate_array            = f_mutate.get(mod, FuzionConstants.ARRAY_NAME, 2);
-      f_mutate_new              = f_mutate.get(mod, "new", 2);
-      f_mutate_new_mutable_value= f_mutate_new.get(mod, "mutable_value");
+      f_mutate_var              = f_mutate.get(mod, "var", 2);
+      f_mutate_var_mutable_value= f_mutate_var.get(mod, "mutable_value");
       f_effect                  = universe.get(mod, "effect", 0);
       f_effect_finally          = f_effect.get(mod, "finally", 0);
       f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);

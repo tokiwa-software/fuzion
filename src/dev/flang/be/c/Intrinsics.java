@@ -96,7 +96,7 @@ public class Intrinsics extends ANY
         c.boxedConstString(c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl)))
          .ret());
 
-    put("mutate.new.compare_and_swap0",  (c,cl,outer,in) ->
+    put("mutate.var.compare_and_swap0",  (c,cl,outer,in) ->
         {
           var nc = c._fuir.clazzOuterClazz(cl);
           var v = c._fuir.lookupMutableValue(nc);
@@ -133,7 +133,7 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("mutate.new.compare_and_set0",  (c,cl,outer,in) ->
+    put("mutate.var.compare_and_set0",  (c,cl,outer,in) ->
         {
           var nc = c._fuir.clazzOuterClazz(cl);
           var v = c._fuir.lookupMutableValue(nc);
@@ -183,7 +183,7 @@ public class Intrinsics extends ANY
           return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
         });
 
-    put("mutate.new.atomic_read0",  (c,cl,outer,in) ->
+    put("mutate.var.atomic_read0",  (c,cl,outer,in) ->
         {
           var ac = c._fuir.clazzOuterClazz(cl);
           var v = c._fuir.lookupMutableValue(ac);
@@ -219,7 +219,7 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("mutate.new.atomic_write0", (c,cl,outer,in) ->
+    put("mutate.var.atomic_write0", (c,cl,outer,in) ->
         {
           var ac = c._fuir.clazzOuterClazz(cl);
           var v = c._fuir.lookupMutableValue(ac);
