@@ -135,8 +135,9 @@ public Sieve_Cache(K type : property.hashable, V type, MM type : container.Mutab
 
 
   public redef as_string String =>
-    for res := "", res + "$(n.or_panic) (Visited: $(n.or_panic.visited.read))" + (if n.or_panic.next.read.ok then " -> " else "")
-        n := head.read, n.or_panic.next
-    while n.ok
+    for res := "", res + "$nn (Visited: $(nn.visited.read))" + (if nn.next.read?? then " -> " else "")
+        n := head.read, nn.next
+    while n??
+      nn := n.or_panic
     else
       res

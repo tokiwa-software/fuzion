@@ -57,7 +57,7 @@ reg_issue5967 =>
           (at i j  ).is_ascii_digit   ).as_option number (number i j)
 
     parts =>
-      numbers.map (x -> if x.ok then x.val else 0)
+      numbers.map (x -> if x?? then x.val else 0)
              .fold i64.type.sum
 
   s := scheme lines

@@ -72,8 +72,8 @@ record_process(
   lm ! ()->
     for stdin in feed_stdin do
       x := p.with_in unit lm ()->
-        check (io.buffered lm).Writer.env.write stdin.0 .ok
-      check x.ok
+        check (io.buffered lm).Writer.env.write stdin.0 ??
+      check x??
 
       for i in 1..stdin.1 do
         y := p.with_out _ lm ()->
@@ -82,16 +82,16 @@ record_process(
             out String =>
               len := out.substring "Content-Length:".byte_count .trim .parse_i32.or_panic
               fout <- fout.add (String.from <| (io.buffered lm).read_bytes len+2 /* +2 because \r\n */ .or_panic)
-        check y.ok
+        check y??
 
 
 
-  check p.close_in.ok
+  check p.close_in??
 
   # NYI: BUG: unclear why lsp does not shut down
   match p.wait (time.duration.s 1)
     error =>
-      check p.kill.ok
+      check p.kill??
       tokiwa.process_result (String.join_lines fout.get) "" 1
     ec u32 =>
       tokiwa.process_result (String.join_lines fout.get) "" ec

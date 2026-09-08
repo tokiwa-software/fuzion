@@ -74,7 +74,7 @@ sockets_thread_pool_test is
 
         tmp := sc.get
         _ := c.close
-        tmp.ok).ok
+        tmp??)??
 
 
     for port := u16 30000, port+1
@@ -83,8 +83,8 @@ sockets_thread_pool_test is
                set_server_port (server_ident family protocol) port
                while accept
                do
-    until r.ok || port > 30100
-      if !r.ok
+    until r?? || port > 30100
+      if !r
         panic "last error: $r"
 
 

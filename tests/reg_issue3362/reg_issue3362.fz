@@ -51,7 +51,7 @@ reg_issue3362 is
             else
               outcome "ok"
           e error => error "error in test data"
-    until !out.ok
+    until !out
       out.err.as_string
     else
       "RFC 4648 test vectors are decoded correctly"

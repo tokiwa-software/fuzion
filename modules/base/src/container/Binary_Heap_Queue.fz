@@ -282,7 +282,7 @@ module:public Binary_Heap_Queue(
           indent + prfx + $elements[i] + (lvl new_ind c.0 (c.1.is_nil)) + (lvl new_ind c.1 true)
 
     chd := children 0
-    elements.is_empty ? "" : $elements[0] + (lvl "\n" chd.0 !chd.1.ok) + (lvl "\n" chd.1 true)
+    elements.is_empty ? "" : $elements[0] + (lvl "\n" chd.0 !chd.1) + (lvl "\n" chd.1 true)
 
 
   # create a multiline string representation of the binary heap
@@ -329,7 +329,7 @@ module:public Binary_Heap_Queue(
         cur_w, sub_l_w, sub_r_w :=
           {
             tmp_sub_l_w := sub_l.or_panic[0].codepoint_count
-            tmp_sub_r_w := sub_r.ok ? sub_r.or_panic[0].codepoint_count : 1
+            tmp_sub_r_w := sub_r?? ? sub_r.or_panic[0].codepoint_count : 1
             sub_w := tmp_sub_l_w + tmp_sub_r_w + 1 # width of subtrees with space between them
             if sub_w >= str_len # subtrees are wider, need to pad current node
               (sub_w, tmp_sub_l_w, tmp_sub_r_w)
@@ -349,8 +349,8 @@ module:public Binary_Heap_Queue(
         sub_r_new := sub_r.or_else [$" "," "," "] ++ [$""].cycle
 
         [str.pad_center cur_w]
-          ++ (sub_l.ok ? ["$(" "*lh)┌$("─"*rh)┴$(sub_r.ok ? "$("─"*lh)┐$(" "*rh)" : " "*(lh+rh+1))"] : [])
-          ++ (sub_l.ok ? sub_l.or_panic.zip sub_r_new (s1,s2)->("$(s1.pad_center sub_l_w) $(s2.pad_center sub_r_w)") : [])
+          ++ (sub_l?? ? ["$(" "*lh)┌$("─"*rh)┴$(sub_r?? ? "$("─"*lh)┐$(" "*rh)" : " "*(lh+rh+1))"] : [])
+          ++ (sub_l?? ? sub_l.or_panic.zip sub_r_new (s1,s2)->("$(s1.pad_center sub_l_w) $(s2.pad_center sub_r_w)") : [])
 
     elements.length = 0 ? "" : (lvl 0).as_string "\n"
 

@@ -180,7 +180,7 @@ is
       code()
       set parked_on := (c, condition)
       mtx.unlock
-      while parked_on.ok   # perform this in a while to catch spurious wakeups
+      while parked_on??   # perform this in a while to catch spurious wakeups
         c.wait
 
 
@@ -229,7 +229,7 @@ is
     # `condition` do not work if the remove `c.synchronized`.
     #
     mtx.lock
-    if parked_on.ok
+    if parked_on??
       c := parked_on.or_panic.0
       c.synchronized ()->            # this is redundant for C backend, but required for Java where mtx differ
         parked_on.for_each x->x.0.signal

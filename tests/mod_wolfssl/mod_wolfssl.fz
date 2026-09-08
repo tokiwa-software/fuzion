@@ -41,8 +41,8 @@ mod_wolfssl =>
         c.with _ net_lm ()->
           ssl_lm ! ()->
             wolfssl _ net_lm ssl_lm host ()->
-              check ("GET / HTTP/1.1\r\nHost: $(host)\r\n\r\n".write_to ssl_lm).ok
-              check (io.buffered ssl_lm).Writer.env.flush.ok
+              check ("GET / HTTP/1.1\r\nHost: $(host)\r\n\r\n".write_to ssl_lm)??
+              check (io.buffered ssl_lm).Writer.env.flush??
               match (io.buffered ssl_lm).read_line
                 str String => say <| str.substring 0 8
                 * =>

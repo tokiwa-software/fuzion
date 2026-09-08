@@ -77,7 +77,7 @@ base16_test is
                          arr array u8 => $arr
           error "encode '$plain_str' produced '$code_actual' but should have been '$code_expected'"
     else
-      if results ∀ (.ok)
+      if results ∀ (??)
         say "$name test vectors are encoded correctly"
       else
         say "Failed encoding $name test vectors:"
@@ -117,7 +117,7 @@ base16_test is
                   error "decoding $code produced '$actual' but should have been '$arr'"
           e error => error "decoding failed when it should not have: $(e.msg)"
     else
-      if results ∀ (.ok)
+      if results ∀ (??)
         say "$name test vectors are decoded correctly"
       else
         say "Failed decoding $name test vectors:"

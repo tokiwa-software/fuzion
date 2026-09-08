@@ -103,7 +103,7 @@ lru_cache_test =>
       for i in op_elems do
         res := test c op i nil
         # make sure only non evicted elements return a value and check that it is correct
-        check (res.ok && res.or_panic = "_$(i)_") ^ exp_evicted.contains i
+        check (res >>? (= "_$(i)_")) ^ exp_evicted.contains i
         op ? del => {check (test c get i nil).is_nil} | * =>
 
       # get and del from empty cache

@@ -76,7 +76,7 @@ priority_queue_test =>
 
     for prev := q2.dequeue, head
         head := q2.dequeue
-    while head.ok
+    while head??
     do
       say "$prev: $((prev.or_panic >= head.or_panic) ? "OK" : "WRONG")"
     else

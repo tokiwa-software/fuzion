@@ -52,6 +52,6 @@ public traverse(
               else
                 t
           }
-    while res.ok
+    while res??
       np := io.dir.Read.env.next .bind p.resolve
-    until !np.ok then res else res
+    until !np then res else res
