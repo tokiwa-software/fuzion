@@ -167,7 +167,7 @@ pre debug: n >= 0
     # accumulated result
     codepoints Sequence codepoint := [],
                                      codepoints ++ next_codepoints
-    # what we are read from Reader in this iteration
+    # what we are reading from Reader in this iteration
     read                          := Reader.env.read
     # the next bytes we consider adding to the result
     next_bytes Sequence u8        := read ? outcome => [] | s Sequence => s,
