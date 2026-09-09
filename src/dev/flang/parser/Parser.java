@@ -1115,7 +1115,7 @@ returnType  : boundType
   /**
    * Parse effects
    *
-effects     : EXCLAMATION typeList
+effects     : EXCLAMATION oneTypeList
             |
             ;
 EXCLAMATION : "!"
@@ -1126,7 +1126,7 @@ EXCLAMATION : "!"
     var result = UnresolvedType.NONE;
     if (skip('!'))
       {
-        result = typeList();
+        result = oneTypeList();
       }
     return result;
   }
@@ -1141,7 +1141,7 @@ EXCLAMATION : "!"
    */
   boolean skipEffects()
   {
-    return skip('!') && skipSimpleTypeList();
+    return skip('!') && skipOneTypeList();
   }
 
 
@@ -1526,6 +1526,26 @@ typeList    : type ( COMMA typeList
   }
 
 
+
+  /**
+   * Parse oneTypeList
+   *
+oneTypeList : onetype ( COMMA oneTypeList
+                      |
+                      )
+            ;
+   */
+  List<AbstractType> oneTypeList()
+  {
+    List<AbstractType> result = new List<>(onetype());
+    while (skipComma())
+      {
+        result.add(onetype());
+      }
+    return result;
+  }
+
+
   /**
    * Check if the current position has typeList and skip it.
    *
@@ -1549,7 +1569,7 @@ typeList    : type ( COMMA typeList
    * @return true iff the next token(s) form typeList, otherwise no typeList was
    * found and the parser/lexer is at an undefined position.
    */
-  boolean skipSimpleTypeList()
+  boolean skipOneTypeList()
   {
     boolean result = skipSimpletype();
     while (skipComma())
