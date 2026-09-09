@@ -45,7 +45,7 @@ test_interval is
             i in 0..3
         else s
       ) | $(if inv then "ok  " else "FAIL") | $(
-        if x.through.exists && x.first.exists && (i64.zero -! x.step) then
+        if x.through.ok && x.first.ok && (i64.zero -! x.step) then
           $(x.reverse_interval)
         else
           "n/a"

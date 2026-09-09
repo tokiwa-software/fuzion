@@ -113,7 +113,7 @@ is
   #
   public size T
   pre
-   debug: through.exists   # unbounded intervals have no size, use `size_option`
+   debug: through.ok   # unbounded intervals have no size, use `size_option`
   =>
     thru := through.or_panic
     if from = thru then
@@ -189,7 +189,7 @@ is
   public redef size_option option i64
   =>
     # NYI: for `T` wider than `i64` the result may overflow.
-    through.exists ? size.as_i64 : nil
+    through.ok ? size.as_i64 : nil
 
 
   # index of `e` in this interval, `nil` if not contained
@@ -276,4 +276,4 @@ is
   # count diverge.
   #
   public redef finite trit =>
-    through.exists.as_trit
+    through.ok.as_trit
