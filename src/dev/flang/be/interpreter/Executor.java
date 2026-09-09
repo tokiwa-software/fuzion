@@ -456,7 +456,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Pair<Value, Object> box(int s, Value v, int vc, int rc)
   {
-    return pair(new Boxed(rc, vc, v /* .cloneValue(vcc) */));
+    return pair(new Boxed(rc, vc, v.cloneValue(vc)));
   }
 
   @Override
