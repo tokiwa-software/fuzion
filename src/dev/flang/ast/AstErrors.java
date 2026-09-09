@@ -1500,7 +1500,7 @@ public class AstErrors extends ANY
 
   static void missingResultTypeForField(Feature f)
   {
-    if(PRECONDITIONS) require
+    if (PRECONDITIONS) require
       (f.isField());
 
     if (CHECKS) check

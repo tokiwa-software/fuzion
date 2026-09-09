@@ -872,7 +872,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   private static void checkTagging(Expr expr, AbstractType at, AbstractType frmlT)
   {
-    if(PRECONDITIONS) require
+    if (PRECONDITIONS) require
       (frmlT.isChoice());
 
     // Case 1: types are equal, no tagging necessary
@@ -882,7 +882,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
       }
     // Case 1.1: types are equal, no tagging necessary
     // NYI: BUG: soundness issue?
-    else if(at.isChoice() && frmlT.asThis().compareTo(at.asThis()) == 0)
+    else if (at.isChoice() && frmlT.asThis().compareTo(at.asThis()) == 0)
       {
         return;
       }

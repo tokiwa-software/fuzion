@@ -419,7 +419,7 @@ public abstract class IR extends ANY
    */
   private static Expr tag(Expr expr, AbstractType frmlT)
   {
-    if(PRECONDITIONS) require
+    if (PRECONDITIONS) require
       (frmlT.isChoice());
 
     // Case 1: types are equal, no tagging necessary
@@ -429,7 +429,7 @@ public abstract class IR extends ANY
       }
     // Case 1.1: types are equal, no tagging necessary
     // NYI: BUG: soundness issue? see also isAssignableFrom
-    else if(expr.type().isChoice() && (frmlT.isThisType() || expr.type().isThisType()) && frmlT.asThis().compareTo(expr.type().asThis()) == 0)
+    else if (expr.type().isChoice() && (frmlT.isThisType() || expr.type().isThisType()) && frmlT.asThis().compareTo(expr.type().asThis()) == 0)
       {
         return expr;
       }

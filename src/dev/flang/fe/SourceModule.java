@@ -1905,7 +1905,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    * Check that an abstract feature is at least as visible as the outer feature.
    */
   private void checkAbstractVisibility(Feature f) {
-    if(f.isAbstract() &&
+    if (f.isAbstract() &&
        f.visibility().eraseTypeVisibility().ordinal() < f.outer().visibility().eraseTypeVisibility().ordinal())
       {
         AstErrors.abstractFeaturesVisibilityMoreRestrictiveThanOuter(f);
@@ -1975,7 +1975,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         AstErrors.illegalTypeVisibilityModifier(f);
       }
-    else if(f.definesType() && f.outer() != null && f.outer().visibility().typeVisibility().ordinal() < f.visibility().typeVisibility().ordinal())
+    else if (f.definesType() && f.outer() != null && f.outer().visibility().typeVisibility().ordinal() < f.visibility().typeVisibility().ordinal())
       {
         AstErrors.illegalTypeVisibility(f);
       }

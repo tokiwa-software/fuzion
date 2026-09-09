@@ -285,7 +285,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var tt = ttcc.v0();
     var cc = ttcc.v1();
 
-    if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc)))
+    if (_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc)))
       {
         tt = ((Boxed)tvalue)._valueClazz;
         tvalue = ((Boxed)tvalue)._contents;

@@ -1200,7 +1200,7 @@ public class Fuzion extends Tool
           }
         else
           {
-            if(CHECKS) check
+            if (CHECKS) check
               (options.needsEscapeAnalysis() == true, _backend != Backend.effects);
 
             Path fuirFile = fuirFile(options);
