@@ -280,7 +280,7 @@ private:public LRU_Cache(
     res
 
 
-  # add and empty index to the free list
+  # add an empty index to the free list
   #
   add_free(i i64) unit
     pre debug : 0 <= i < capacity
