@@ -53,7 +53,7 @@ then
 fi
 : "${FUZION_JAVA_STACK_SIZE=5m}"
 : "${FUZION_JAVA_OPTIONS="-Xss$FUZION_JAVA_STACK_SIZE"}"
-: "${FUZION_JAVA_ADDITIONAL_OPTIONS=--enable-preview --enable-native-access=ALL-UNNAMED}"
+: "${FUZION_JAVA_ADDITIONAL_OPTIONS=--enable-native-access=ALL-UNNAMED}"
 
 LINE_SEPARATOR="
 "
