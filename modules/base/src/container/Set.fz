@@ -26,7 +26,7 @@
 # Set -- an abstract set of values
 #
 public Set(E type : property.equatable) ref : Sequence E,
-                                                     property.equatable
+                                              property.equatable
 is
 
 
@@ -181,8 +181,11 @@ is
   #
   public fixed redef type.equality(a, b Set.this) bool
   =>
-    # NYI: a bit expensive
-    (a ∪ b).size_option.or_panic = a.size_option.or_panic
+    if !a.finite.is_yes || !b.finite.is_yes
+      panic "Set.equality called on Set not known to be finite"
+
+    a.size_option = b.size_option &&
+      a.is_superset_of b
 
 
   # monoid of Set with infix ∪ operation.
