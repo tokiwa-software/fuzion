@@ -77,18 +77,10 @@ void fzE_mem_zero_secure(void *dest, size_t sz)
   SecureZeroMemory(dest, sz);
 }
 
-// thread local to hold the last
-// error that occurred in fuzion runtime.
-_Thread_local int64_t last_error = 0;
-
-
 // returns the latest error number of
 // the current thread
 int64_t fzE_last_error(void){
-  // NYI: CLEANUP:
-  return last_error == 0
-    ? GetLastError()
-    : last_error;
+  return GetLastError();
 }
 
 // make directory, return zero on success
@@ -266,13 +258,13 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, AI_PASSIVE, host, port, &addr_info);
   if (addrRes != 0)
   {
-    last_error = fzE_net_error();
+    SetLastError(fzE_net_error());
     return -1;
   }
   int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
   if (bind_res != 0)
     {
-      last_error = fzE_net_error();
+      SetLastError(fzE_net_error());
     }
   freeaddrinfo(addr_info);
   return bind_res;
@@ -302,13 +294,13 @@ int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host,
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, 0, host, port, &addr_info);
   if (addrRes != 0)
   {
-    last_error = fzE_net_error();
+    SetLastError(fzE_net_error());
     return -1;
   }
   int con_res = connect(sockfd, addr_info->ai_addr, addr_info->ai_addrlen);
   if (con_res != 0)
     {
-      last_error = fzE_net_error();
+      SetLastError(fzE_net_error());
     }
   freeaddrinfo(addr_info);
   return con_res;
@@ -893,7 +885,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   );
   free(app);
   if (spw == 0) {
-    last_error = ERROR_FILE_NOT_FOUND;
+    SetLastError(ERROR_FILE_NOT_FOUND);
     return -1;
   }
 
@@ -901,7 +893,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   wchar_t *envBlock = build_unicode_environment_block(env, envLen);
 
   if (!args_w) {
-    last_error = ERROR_INVALID_NAME;
+    SetLastError(ERROR_INVALID_NAME);
     return -1;
   }
 
@@ -934,7 +926,6 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   free(envBlock);
 
   if (!success) {
-    last_error = GetLastError();
     return -1;
   }
 
