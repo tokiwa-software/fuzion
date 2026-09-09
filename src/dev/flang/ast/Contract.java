@@ -379,12 +379,14 @@ public class Contract extends ANY
       {
         addContractFeatures(res, ff, context);
       }
-    return new Call(p,
-                    t,
-                    outer.genericsAsActuals(),
-                    args,
-                    f.preFeature())
-      .resolveTypes(res, context);
+    var typepars = outer.genericsAsActuals();
+    var pf = f.preFeature();
+    return pf.generics().sizeMatches(typepars) ? new Call(p,
+                                                          t,
+                                                          typepars,
+                                                          args,
+                                                          pf).resolveTypes(res, context)
+                                               : Call.ERROR;
   }
 
 
@@ -420,12 +422,14 @@ public class Contract extends ANY
       {
         addContractFeatures(res, ff, context);
       }
-    return new Call(p,
-                    t,
-                    outer.genericsAsActuals(),
-                    args,
-                    f.preBoolFeature())
-      .resolveTypes(res, context);
+    var typepars = outer.genericsAsActuals();
+    var pf = f.preBoolFeature();
+    return pf.generics().sizeMatches(typepars) ? new Call(p,
+                                                          t,
+                                                          typepars,
+                                                          args,
+                                                          pf).resolveTypes(res, context)
+                                               : Call.ERROR;
   }
 
 
@@ -534,13 +538,14 @@ public class Contract extends ANY
       {
         addContractFeatures(res, of, context);
       }
-    var callPostCondition = new Call(p,
-                                     t,
-                                     origouter.isConstructor() ? new List<>() : in.genericsAsActuals(),
-                                     args,
-                                     origouter.postFeature());
-    callPostCondition = callPostCondition.resolveTypes(res, in.context());
-    return callPostCondition;
+    var typepars = origouter.isConstructor() ? new List<AbstractType>() : in.genericsAsActuals();
+    var pf = origouter.postFeature();
+    return pf.generics().sizeMatches(typepars) ? new Call(p,
+                                                          t,
+                                                          typepars,
+                                                          args,
+                                                          pf).resolveTypes(res, in.context())
+                                               : Call.ERROR;
   }
 
 
@@ -1101,12 +1106,14 @@ The conditions of a post-condition are checked at run-time in sequential source-
                       }
                   }
                 var inhpost = callPostCondition(res, inh, pF.context(), args2);
-                inhpost = inhpost.resolveTypes(res, pF.context());
-                if (l2 == null)
+                if (inhpost != Call.ERROR)
                   {
-                    l2 = new List<>();
+                    if (l2 == null)
+                      {
+                        l2 = new List<>();
+                      }
+                    l2.add(inhpost);
                   }
-                l2.add(inhpost);
               }
           }
         if (l2 != null)
