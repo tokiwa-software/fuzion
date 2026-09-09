@@ -42,7 +42,7 @@ test_outer_as_type_parameter is
   test z z.y
 
   # here the code in an example from the Fuzion presentation at TyDe'23
-  count(n (M : mutate).new i64,
+  count(n (M : mutate).var i64,
         l Sequence T) ! M =>
     l.for_each x->
       n <- n.get + 1

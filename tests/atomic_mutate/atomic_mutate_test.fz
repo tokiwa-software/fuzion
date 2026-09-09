@@ -41,7 +41,7 @@ atomic_mutate_test =>
 
   count(M type : mutate, max u64)
   =>
-   c := M.env.new u64 0
+   c := M.env.var u64 0
    do
      n := c.update (+1) .1
    until n>=max
@@ -79,10 +79,10 @@ atomic_mutate_test =>
 
     tm ! ()->
 
-      started := tm.env.new 0
-      error   := tm.env.new (option String) nil
+      started := tm.env.var 0
+      error   := tm.env.var (option String) nil
       N := 3
-      c := M.env.new u64 0
+      c := M.env.var u64 0
 
       count_threaded(max u64)
       =>
@@ -137,10 +137,10 @@ atomic_mutate_test =>
 
     tm ! ()->
 
-      started := tm.env.new 0
-      error   := tm.env.new (option String) nil
+      started := tm.env.var 0
+      error   := tm.env.var (option String) nil
       N := 3
-      c := M.env.new u64 0
+      c := M.env.var u64 0
 
       count_threaded(max u64)
       =>

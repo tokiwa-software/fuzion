@@ -43,7 +43,7 @@ reg_issue6263 =>
 
   part1 =>
     lm.instate_self i64 ()->
-      cell(n lm.new String) ref is
+      cell(n lm.var String) ref is
       area := array2 1000 1000 _,_->(cell (lm.env.var $"."))
       say "start: "
       for px := 500, nx
