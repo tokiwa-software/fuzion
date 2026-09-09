@@ -69,7 +69,7 @@ public class SemanticToken extends ANY
       .flatMap(t -> {
         switch (t.token())
           {
-          case t_stringPQ :    // '}+-*"' in "abc{x}+-*"
+          case t_stringPQ :    //      ')+-*"'  in  "abc$(x)+-*"
             return Stream.of(
               new TokenInfo(t.start(),
                 LexerTool.goRight(t.start()),
@@ -77,10 +77,10 @@ public class SemanticToken extends ANY
               new TokenInfo(LexerTool.goRight(t.start()),
                 t.end(),
                 t.text().substring(1), Token.t_stringQQ));
-          case t_stringQD :    // '"x is $' in "x is $x.".
-          case t_StringDD :    // '+-*$' in "abc$x+-*$x.".
-          case t_stringQB :    // '"a+b is {' in "a+b is {a+b}."
-          case t_StringDB :    // '+-*{' in "abc$x+-*{a+b}."
+          case t_stringQD :    //    '"x is $'  in  "x is $x.".
+          case t_stringDD :    //       '+-*$'  in  "abc$x+-*$x.".
+          case t_stringQP :    // '"a+b is $('  in  "a+b is $(a+b)."
+          case t_stringDP :    //      '+-*$('  in  "abc$x+-*$(a+b)."
             return Stream.of(
               new TokenInfo(t.start(),
                 SourcePositionTool.byLineColumn(t.end()._sourceFile, t.end().line(),
@@ -91,10 +91,10 @@ public class SemanticToken extends ANY
                   t.end().column() - 1),
                 t.end(),
                 t.text().substring(Util.charCount(t.text()) - 1, Util.charCount(t.text())), Token.t_op));
-          case t_stringPD :    // '}+-*$' in "abc{x}+-*$x.".
-          case t_stringPB :    // '}+-*{' in "abc{x}+-*{a+b}."
+          case t_stringPD :    //      ')+-*$'  in  "abc$(x)+-*$x.".
+          case t_stringPP :    //     ')+-*$('  in  "abc$(x)+-*$(a+b)."
             return Stream.of(
-              new TokenInfo(t.start(), LexerTool.goRight(t.start()), "}",
+              new TokenInfo(t.start(), LexerTool.goRight(t.start()), ")",
                 Token.t_op),
               new TokenInfo(LexerTool.goRight(t.start()),
                 SourcePositionTool.byLineColumn(t.start()._sourceFile, t.start().line(),

@@ -290,8 +290,8 @@ public class TokenInfo extends ANY
       {
       case t_comment -> Optional.of(TokenType.Comment);
       case t_numliteral -> Optional.of(TokenType.Number);
-      case t_stringQQ, t_StringDQ -> Optional.of(TokenType.String);
-      case t_stringQD, t_stringQB, t_StringDD, t_StringDB, t_stringPQ, t_stringPD, t_stringPB -> Optional.empty();
+      case t_stringQQ, t_stringDQ -> Optional.of(TokenType.String);
+      case t_stringQD, t_stringQP, t_stringDD, t_stringDP, t_stringPQ, t_stringPD, t_stringPP -> Optional.empty();
       case t_question -> Optional.of(TokenType.Keyword);
       case t_op ->
            (_text.equals("=>")

@@ -54,7 +54,7 @@ reg_issue4486 =>
       io.buffered lm .Reader.instate (reader input) ()->
         for l := io.buffered lm .read_line
             i in 1..
-        while l??
+        while l.ok
           say "  using read_line:  $i: '$l'"
 
     say ""

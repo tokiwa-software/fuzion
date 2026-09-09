@@ -208,12 +208,6 @@ is
     old
 
 
-  # create an immutable map from this
-  #
-  public redef as_map container.Map KEY VAL =>
-    (container.ps_map KEY VAL).new keys.as_array values.as_array
-
-
   # rebalances a tree whose AVL invariants might be violated
   #
   # this determines the balance factor of the given node and applies

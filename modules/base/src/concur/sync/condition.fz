@@ -74,7 +74,7 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
   #
   public type.new(C type : time.Clock) outcome concur.sync.condition
   pre
-    safety: C.posix_id??
+    safety: C.posix_id.ok
   =>
     clockid := C.posix_id.or_panic.val
     concur.sync.mtx_init.bind mtx->
@@ -86,7 +86,7 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
   #
   module type.new(C type : time.Clock, mtx Mutex) outcome concur.sync.condition
   pre
-    safety: C.posix_id??
+    safety: C.posix_id.ok
   =>
     clockid := C.posix_id.or_panic.val
     (concur.sync.cnd_init mtx clockid).bind cnd->

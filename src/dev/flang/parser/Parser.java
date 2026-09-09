@@ -1640,7 +1640,7 @@ actualArgs  : actualSpaces
            t_until           ,
            t_stringPD        ,
            t_stringPQ        ,
-           t_stringPB        ,
+           t_stringPP        ,
            t_question        ,
            t_eof             -> true;
 

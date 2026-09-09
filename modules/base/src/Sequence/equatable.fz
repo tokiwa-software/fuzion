@@ -51,7 +51,7 @@ public contains(x T) bool
   pre
     T : property.equatable
 =>
-  (find [x]).exists
+  find [x] .ok
 
 
 # get the index of pattern within this Sequence or nil if it does not exist

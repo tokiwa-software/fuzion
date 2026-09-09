@@ -506,7 +506,7 @@ is
   # Main_Node -> container_node -> Indirection_Node -> dual x y
   dual(x, y singleton_node CTK CTV, lev u32, gen uid) Main_Node CTK CTV =>
     d choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV) =>
-      # NYI: UNDER DEVELOPMENT: why 35??
+      # NYI: UNDER DEVELOPMENT: why 35?
       if lev < 35
         xidx := ((hash0 (hash x.k)) >> lev) & 0x1f
         yidx := ((hash0 (hash y.k)) >> lev) & 0x1f

@@ -123,7 +123,7 @@ ctrie_threads is
           _ := ctrie.snapshot true
 
         _ := ctrie.remove kt
-        if ctrie[kt].exists
+        if ctrie[kt].ok
           panic "removed key $kt still present"
 
         if k%100 = 0
@@ -145,14 +145,14 @@ ctrie_threads is
         ctrie.put kt kt
         if ctrie[kt].is_nil
           panic "added key $kt not present"
-        if k%5=0 && s[kt].exists
+        if k%5=0 && s[kt].ok
           panic "added key $kt to snapshot"
 
         s2 := if k%5=0 then ctrie.snapshot true else ctrie
         match ctrie.remove kt
           nil => panic "$kt not found"
           i64 =>
-        if ctrie[kt].exists
+        if ctrie[kt].ok
           panic "removed key $kt still present"
         if k%5=0 && s2[kt].is_nil
           panic "removed key $kt from snapshot"

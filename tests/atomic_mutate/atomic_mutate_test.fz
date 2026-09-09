@@ -1,0 +1,185 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test atomic_mutate_test
+#
+# -----------------------------------------------------------------------
+
+atomic_mutate_test =>
+
+  benchmark := envir.Vars.env.get "BENCHMARK" .or_else "false" = "true"
+
+  if benchmark
+    say "atomic mutate benchmark"
+    say ""
+  else
+    say "atomic mutate test"
+    say ""
+    say "to run this as a benchmark, set environment var BENCHMARK=true"
+    say "Use SAMPLE_MS=<n> to change the time for each sample run."
+    say ""
+
+  sample_time_ms := (benchmark ? envir.Vars.env.get "SAMPLE_MS" : nil).or_else "200" .parse_u64.or_panic
+
+  sample_time => time.duration.ms sample_time_ms
+
+  count(M type : mutate, max u64)
+  =>
+   c := M.env.new u64 0
+   do
+     n := c.update (+1) .1
+   until n>=max
+     if n = n-1 && c = (c-1) then say "here $c"   # NOP that uses `c`
+
+  sample0(M type : mutate)
+  =>
+    for
+      start := time.Nano.env.read, end
+      i := u64 1000, i+i
+    do
+      count M i
+      end := time.Nano.env.read
+    until (end - start) > sample_time
+      say "single threaded test for $M$(benchmark ? ", needed $((end-start).scale 1.0/i.as_f64) per update, $i samples in $(end-start)" : "")"
+
+  sample(M type : mutate)
+  =>
+    if M.env.is_atomic && !(M.env.atomic_access_supported u64)
+      say "*** skipping test for $M since atomic u64 support is missing"
+    else
+      sample0 M
+
+  lm : mutate is
+  bm : concur.blocking_mutate is
+  am : concur.atomic_mutate is
+
+  lm ! (()-> sample lm)
+  bm ! (()-> sample bm)
+  am ! (()-> sample am)
+
+  sample_threaded0(M type : mutate)
+  =>
+    tm : concur.blocking_mutate is   #  mutate to manage thread starting / stopping
+
+    tm ! ()->
+
+      started := tm.env.new 0
+      error   := tm.env.new (option String) nil
+      N := 3
+      c := M.env.new u64 0
+
+      count_threaded(max u64)
+      =>
+        tm.env.exclusive ()->
+          started <- started + 1
+          tm.env.wait ()->
+            started = N
+
+        fuzion.runtime.fault.try ()->
+                               for i in (u64 1 .. max) do
+                                 _ := c.update u64->u64 (+1)
+                            .catch s->
+                               tm.env.exclusive ()->
+                                 if !error
+                                   error <- $s
+
+      for
+        start := time.Nano.env.read
+        i := u64 1000, i+i
+      while tm.env.exclusive ()->(!error)
+        tm.env.exclusive ()->
+          started <- 0
+          error <- nil
+        _ := c.update _->0
+        ta := array N _->(concur.Threads.env.spawn (()->count_threaded i))
+        ta.for_each (.join.or_panic)
+        end := time.Nano.env.read
+      until (end - start) >= sample_time && tm.env.exclusive ()->(!error)
+        say "multi threaded test for $M$(benchmark ? ", needed $((end-start).scale 1.0/i.as_f64) per update, $i samples in $(end-start)" : "")"
+      else
+        say "multi threaded test for $M, ERROR: $(tm.env.exclusive ()->error.get)"
+
+  sample_threaded(M type : mutate)
+  =>
+    if M.env.is_atomic && !(M.env.atomic_access_supported u64)
+      say "*** skipping test for $M since atomic u64 support is missing"
+    else
+      sample_threaded0 M
+
+
+  lm ! (()-> sample_threaded lm)
+  bm ! (()-> sample_threaded bm)
+  am ! (()-> sample_threaded am)
+
+  lmr : mutate is
+  bmr : concur.blocking_mutate is
+  amr : concur.atomic_mutate is
+
+  sample_racy0(M type : mutate)
+  =>
+    tm : concur.blocking_mutate is   #  mutate to manage thread starting / stopping
+
+    tm ! ()->
+
+      started := tm.env.new 0
+      error   := tm.env.new (option String) nil
+      N := 3
+      c := M.env.new u64 0
+
+      count_threaded(max u64)
+      =>
+        tm.env.exclusive ()->
+          started <- started + 1
+          tm.env.wait ()->
+            started = N
+
+        fuzion.runtime.fault.try ()->
+                               for i in (u64 1 .. max) do
+                                 c.put_racy c.get_racy+1
+                            .catch s->
+                               tm.env.exclusive ()->
+                                 if !error
+                                   error <- $s
+
+      for
+        start := time.Nano.env.read
+        i := u64 1000, i+i
+      while tm.env.exclusive ()->(!error)
+        tm.env.exclusive ()->
+          started <- 0
+          error <- nil
+        _ := c.update u64->u64 _->0
+        ta := array N _->(concur.Threads.env.spawn (()->count_threaded i))
+        ta.for_each (.join.or_panic)
+        end := time.Nano.env.read
+      until (end - start) >= sample_time && tm.env.exclusive ()->(!error)
+        say "multi threaded racy test for $M$(benchmark ? ", needed $((end-start).scale 1.0/i.as_f64) per update, $i samples in $(end-start)" : "")"
+      else
+        say "multi threaded racy test for $M, ERROR: $(tm.env.exclusive ()->error.get)"
+
+  sample_racy(M type : mutate)
+  =>
+    if M.env.is_atomic && !(M.env.atomic_access_supported u64)
+      say "*** skipping test for $M since atomic u64 support is missing"
+    else
+      sample_racy0 M
+
+  lmr ! (()-> sample_racy lmr)
+  bmr ! (()-> sample_racy bmr)
+  amr ! (()-> sample_racy amr)

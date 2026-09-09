@@ -50,7 +50,7 @@ public Mutable_Map(K type : property.equatable, V type) ref is
 
   # check if key k exists in this map
   #
-  public has (k K) bool => Mutable_Map.this[k]??
+  public has (k K) bool => Mutable_Map.this[k].ok
 
 
   # get a sequence of all keys in this map
@@ -111,9 +111,13 @@ public Mutable_Map(K type : property.equatable, V type) ref is
 
   # create an immutable copy of this mutable map
   #
-  # NYI: maybe add default implementation when there is a naive implementation only requiring property.equatable
-  #
-  public as_map container.Map K V => abstract
+  public as_map container.Map K V =>
+    if K : property.orderable
+      container.ps_map K V .new keys values
+    else if K : property.hashable
+      container.hash_map keys values
+    else
+      compile_time_panic
 
 
   # initializer for this mutable map
@@ -128,9 +132,5 @@ public Mutable_Map(K type : property.equatable, V type) ref is
   #
   public type.from_entries(kvs Sequence (tuple K V)) Mutable_Map.this =>
     m := empty
-    # NYI: BUG: does not work
-    # m.put_all kvs
-    for kv in kvs do
-      m.put kv.0 kv.1
+    m.put_all kvs
     m
-

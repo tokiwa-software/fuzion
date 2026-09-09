@@ -248,14 +248,6 @@ is
         .flat_map (o -> o ? t tuple => [t] | * => [])
 
 
-  # create an immutable map from this
-  #
-  public redef as_map container.Map HK V =>
-    LM.env.exclusive ()->
-      pairs := items
-      container.hash_map HK V (pairs.map (.0) ).as_array (pairs.map (.1)).as_array
-
-
   # create an empty instance of Mutable_Hash_Map
   #
   public fixed redef type.empty container.Mutable_Hash_Map LM HK V =>

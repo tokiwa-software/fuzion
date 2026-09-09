@@ -49,10 +49,7 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-public outcome(T type)
-  : switch T error,
-    property.equatable # NYI: UNDER DEVELOPMENT: implement orderable instead of equatable
-is
+public outcome(T type) : switch T error is
 
   # Does this outcome contain an error
   #
@@ -70,16 +67,6 @@ is
   =>
     outcome.this ? T       => panic "outcome.err called on successful outcome. Enable `safety` to obtain a precondition failure for debugging."
                  | e error => e
-
-
-  # converts outcome to a string
-  #
-  # returns the result of T.as_string for a successful outcome, or
-  # "--$e--" for e error.
-  #
-  public redef as_string String =>
-    outcome.this ? v T     => $v
-                 | e error => $e
 
 
   # monadic operator
@@ -120,21 +107,6 @@ is
   =>
     outcome.this
 
-
-  # equality implementation
-  #
-  # result is only true if both x and y are
-  # of choice type T and the inner values are equal.
-  #
-  public redef fixed type.equality(x, y outcome T) bool
-  =>
-    if T : property.equatable
-      x ? xa T =>
-          y ? ya T => xa = ya
-            | _  error => false
-        | _  error => false
-    else
-      compile_time_panic
 
 
 # outcome with 1 argument provides an shorthand to wrap a value into a

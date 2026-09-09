@@ -267,7 +267,7 @@ public typed_value(# the type
   public redef as_string String
   =>
     t := T.name
-    if t.find " " ??
+    if t.find " " .ok
       "($t) $v"
     else
       "$t $v"

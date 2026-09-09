@@ -37,7 +37,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K
   # does this set contain the given value?
   #
   public redef contains (k K) bool =>
-    map[k].exists
+    map[k].ok
 
 
   # list representation of values in this set

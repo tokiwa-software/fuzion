@@ -2428,7 +2428,7 @@ public class AstErrors extends ANY
   public static void illegalTypeVisibility(Feature f)
   {
     error(f.pos(),
-          "Visibility of outer features type is more restrictive than features type.",
+          "Visibility of outer features type is more restrictive than feature's type.",
           "Parent feature is here: " + f.outer().pos().show() + System.lineSeparator() +
           "To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.");
   }
@@ -2703,6 +2703,16 @@ public class AstErrors extends ANY
       f.pos(),
       "Setting the visibility is not allowed for a type parameter.",
       "A type parameters visibility is always public. To fix this, remove the visibility modifier."
+    );
+  }
+
+  public static void effectFeaturesMustBeCalledViaEnv(Call call)
+  {
+    error(
+      call.pos(),
+      "Effect features must be called via " + skw("env") + ".",
+      "To solve this, insert " + skw("env")  + " before the call " +
+      "to retrieve the current value of the effect from the environment."
     );
   }
 

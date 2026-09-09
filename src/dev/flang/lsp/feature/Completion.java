@@ -112,7 +112,7 @@ public class Completion
           .left()
           .token();
         // NYI: UNDER DEVELOPMENT: do not offer completion for number
-        if (tokenBeforeDot == Token.t_StringDQ ||
+        if (tokenBeforeDot == Token.t_stringDQ ||
             tokenBeforeDot == Token.t_stringPQ ||
             tokenBeforeDot == Token.t_stringQQ ||
             tokenBeforeDot == Token.t_numliteral)
@@ -153,7 +153,7 @@ public class Completion
               Token.t_rbracket,
               Token.t_rparen,
               Token.t_stringQQ,
-              Token.t_StringDQ,
+              Token.t_stringDQ,
               Token.t_stringPQ
           };
         var set = Util.arrayToSet(validTokens);

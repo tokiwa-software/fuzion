@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# a list node
+# a list node, used as sentinel and as parent of a node containing a value.
 #
 L_Node(
   # mutate effect to be used manipulate pointers and stored element
@@ -30,25 +30,65 @@ L_Node(
 
   # type of the element stored in the node
   #
-  T type,
+  T type
+) ref is
 
   # the previous list node
   #
-  prev LM.new (option (L_Node LM T)),
+  prev := LM.env.new (L_Node LM T) L_Node.this
 
   # the next list node
   #
-  next LM.new (option (L_Node LM T)),
+  next := LM.env.new (L_Node LM T) L_Node.this
 
   # the element stored in this list node
   #
-  val option T
-
-) ref is
+  payload T
+  pre
+    debug: !is_sentinel
+  =>
+    panic "L_Node.payload called on sentinel"
 
   # is this node the special node marking start/end of the list
   #
-  is_sentinel bool => val.is_nil
+  is_sentinel bool => true
+
+  # create a list payload, next.payload, next.next.payload, ... until we reach the sentinel.
+  #
+  as_list list T =>
+    is_sentinel ? nil
+                : (payload : next.as_list)
+
+
+# Variant of a list node that contains a value as its payload
+#
+V_Node(# mutate effect to be used manipulate pointers and stored element
+       #
+       LM type: mutate,
+
+       # type of the element stored in the node
+       #
+       T type,
+
+       # the element stored in this list node
+       #
+       # NYI: BUG: #7712: Should be possible to `redef payload` right here
+       #
+       payload0 T
+       ) ref
+       : L_Node LM T
+is
+
+  # the element stored in this list node
+  #
+  # NYI: BUG: #7712: Should be possible to `redef payload` in the argument list
+  #
+  redef payload => payload0
+
+
+  # is this node the special node marking start/end of the list
+  #
+  redef is_sentinel bool => false
 
 
 # Doubly_Linked_List - a simple mutable doubly linked list
@@ -69,9 +109,7 @@ private:public Doubly_Linked_List(
 
   # list is linked in a circle, sentinel marks start/end
   #
-  sentinel := L_Node LM T (LM.env.new (option (L_Node LM T)) nil) (LM.env.new (option (L_Node LM T)) nil) nil
-  sentinel.prev <- sentinel
-  sentinel.next <- sentinel
+  sentinel := L_Node LM T
 
 
   # number of elements currently in the list (does not include the sentinel)
@@ -82,81 +120,85 @@ private:public Doubly_Linked_List(
   # is this list empty?
   #
   public is_empty bool ! LM
-    post debug : !result ^ sentinel.prev.or_panic.is_sentinel
+    post debug : result = sentinel.prev.is_sentinel
   =>
-    LM.env.exclusive ()->sentinel.next.or_panic.is_sentinel
+    LM.env.exclusive ()->sentinel.next.is_sentinel
 
 
   # add an element to the front of the list
   #
-  public add_first(elem T) unit ! LM =>
+  public add_first(elem T) unit ! LM
+  =>
     LM.env.exclusive ()->
-      old_first := sentinel.next.or_panic
-      e := L_Node LM
-                  T
-                  (LM.env.new (option (L_Node LM T)) sentinel)
-                  (LM.env.new (option (L_Node LM T)) old_first)
-                  elem
+      old_first := sentinel.next
+      e := V_Node LM T elem
+      e.next <- old_first
+      e.prev <- sentinel
       old_first.prev <- e
       sentinel.next  <- e
       len <- len+1
-      check debug : !sentinel.next.or_panic.is_sentinel
-      check debug : !sentinel.prev.or_panic.is_sentinel
+      check debug : !sentinel.next.is_sentinel
+      check debug : !sentinel.prev.is_sentinel
 
 
-  # add an element at the back of the list
+  # add an element at the end of the list
   #
-  public add_last(elem T) unit ! LM =>
+  public add_last(elem T) unit ! LM
+  =>
     LM.env.exclusive ()->
-      old_last := sentinel.prev.or_panic
-      e := L_Node LM
-                  T
-                  (LM.env.new (option (L_Node LM T)) old_last)
-                  (LM.env.new (option (L_Node LM T)) sentinel)
-                  elem
+      old_last := sentinel.prev
+      e := V_Node LM T elem
+      e.prev <- old_last
+      e.next <- sentinel
       old_last.next <- e
       sentinel.prev <- e
       len <- len+1
-      check debug : !sentinel.next.or_panic.is_sentinel
-      check debug : !sentinel.prev.or_panic.is_sentinel
+      check debug : !sentinel.next.is_sentinel
+      check debug : !sentinel.prev.is_sentinel
 
 
   # remove the first element, if there is one, and return it
   #
-  public remove_first option T ! LM =>
+  public remove_first option T ! LM
+  =>
     LM.env.exclusive (option T) _ ()->
-      if is_empty then nil
+      if is_empty then
+        nil
       else
-        fst := sentinel.next.or_panic
-        sentinel.next <- fst.next.or_panic
-        fst.next.or_panic.prev <- sentinel
+        fst := sentinel.next
+        sentinel.next <- fst.next
+        fst.next.prev <- sentinel
         len <- len-1
-        fst.val
+        fst.payload
 
 
   # remove the last element, if there is one, and return it
   #
-  public remove_last option T ! LM =>
+  public remove_last option T ! LM
+  =>
     LM.env.exclusive (option T) _ ()->
-      if is_empty then nil
+      if is_empty then
+        nil
       else
-        lst := sentinel.prev.or_panic
-        sentinel.prev <- lst.prev.or_panic
-        lst.prev.or_panic.next <- sentinel
+        lst := sentinel.prev
+        sentinel.prev <- lst.prev
+        lst.prev.next <- sentinel
         len <- len-1
-        lst.val
+        lst.payload
 
 
   # remove the first element that matches the given predicate
   #
-  public remove_first_match(f T->bool) option T ! LM =>
+  public remove_first_match(f T->bool) option T ! LM
+  =>
     LM.env.exclusive (option T) _ ()->
-      for e := sentinel.next.or_panic, e.next.or_panic
-      until e.is_sentinel || f e.val.or_panic
-        if e.is_sentinel then nil
-        else
-          remove e
-          e.val
+      for e := sentinel.next, e.next
+      while !e.is_sentinel
+      until f e.payload
+        remove e
+        e.payload
+      else
+        nil
 
 
   # remove a node from the list
@@ -164,40 +206,35 @@ private:public Doubly_Linked_List(
   remove(node L_Node LM T) unit
     pre debug : !node.is_sentinel
   =>
-    node.prev.or_panic.next <- node.next.or_panic
-    node.next.or_panic.prev <- node.prev.or_panic
+    node.prev.next <- node.next
+    node.next.prev <- node.prev
     len <- len-1
 
 
   # this list as an immutable array
   #
-  public as_array array T ! LM =>
+  public as_array array T ! LM
+  =>
     LM.env.exclusive ()->
-      as_list_from(node L_Node LM T) list T =>
-        node.is_sentinel ? nil : cons T (list T) node.val.or_panic (as_list_from node.next.or_panic)
-      as_list_from sentinel.next.or_panic .as_array
+      sentinel.next.as_list .as_array
 
 
   # return a string representation of this list
   #
-  public redef as_string String ! LM =>
-    LM.env.exclusive ()->
-      "[$(
-        if is_empty then ""
-        else
-          for
-            e := sentinel.next.or_panic, e.next.or_panic
-            s := "$(e.val)", "$s, $(e.val)"
-          until e.next.or_panic.is_sentinel
-            s
-        )]"
+  public redef as_string String ! LM
+  =>
+    "[$(LM.env.exclusive ()->
+          sentinel.next.as_list.as_string ", "
+       )]"
 
 
   # number of elements currently in this list
   #
   # O(1) operation, as length is saved separately
   #
-  public count i64 ! LM => LM.env.exclusive ()->len
+  public length i64 ! LM
+  =>
+    LM.env.exclusive ()->len
 
 
   # does this list contain elem?
@@ -206,12 +243,12 @@ private:public Doubly_Linked_List(
     pre T : property.equatable
   =>
     LM.env.exclusive ()->
-      for e := sentinel.next.or_panic, e.next.or_panic
-      until e.is_sentinel || e.val = elem
-        !e.is_sentinel
-
-
-
+      for e := sentinel.next, e.next
+      while !e.is_sentinel
+      until e.payload = elem then
+        true
+      else
+        false
 
 
   # create a new, empty Doubly_Linked_List

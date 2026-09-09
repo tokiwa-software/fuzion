@@ -23,6 +23,5 @@
 
 reg_issue1698 is
   x := flow.exception unit void ()->
-    t := (flow.exception unit).env
-    t.cause (error "a")
+    (flow.exception unit).env.cause (error "a")
   say x

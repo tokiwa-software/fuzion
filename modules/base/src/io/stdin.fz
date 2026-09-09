@@ -34,7 +34,7 @@
 #       io.buffered lm .Reader.instate (io.stdin.reader lm) ()->
 #         for l := (io.buffered lm).read_line
 #             i in 1..
-#         while l??
+#         while l.ok
 #           say "$i: $l"
 #
 # usage example using read_lines:

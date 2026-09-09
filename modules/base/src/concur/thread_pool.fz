@@ -53,7 +53,7 @@ Computable_Future(
       compute_result.write cr
       cnd.broadcast
 
-  public redef is_done bool  ! atomic_access => compute_result.read.exists
+  public redef is_done bool  ! atomic_access => compute_result.read.ok
 
   public redef get T ! atomic_access =>
     cnd.synchronized ()->
@@ -78,7 +78,7 @@ is
   thrds := array size _->
       concur.Threads.env.spawn ()->
         for x := bq.dequeue
-        while x.exists
+        while x.ok
           x.or_panic.call
 
 

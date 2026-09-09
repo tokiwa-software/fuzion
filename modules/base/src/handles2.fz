@@ -68,7 +68,7 @@ is
 
   # has one element been created using `new`?
   #
-  public has_last bool => last_opt??
+  public has_last bool => last_opt.ok
 
 
   # return the last handle that was created by `new`

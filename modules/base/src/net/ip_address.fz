@@ -124,33 +124,54 @@ public ip_address (val u128) : property.orderable is
         error "Unable to parse provided string as an IP address: $(m)"
 
 
+  # classify string if it may contain ipv4 or ipv6 address
+  #
+  type.classify(s String) choice net.family.ipv4 net.family.ipv6 nil =>
+    for b in s.utf8.take 5
+    until b = ":".as_u8 || b = ".".as_u8 then
+      if b = ":".as_u8 then net.family.ipv6 else net.family.ipv4
+    else
+      nil
+
+
   # parse an ip_address from a String
   #
   public type.from_string (s String) outcome net.ip_address =>
-    # NYI: PERFORMANCE: search for . and : in parallel
-    if s.contains "."
-      sv4 := s.split "."
-      check sv4.count = 4
-      from_string_v4 sv4
-    else if s.contains ":"
-      sv6 := s.split ":"
-      # NYI: BUG: this is a hack, write a proper parser
-      # NYI: CLEANUP: move this code into from_string_v6
-      match sv6.index_of ""
-        i i64 =>
-          f, b := sv6.split_at i
-          amount_of_padding_zeros := 8 - f.count - b.count
-          check amount_of_padding_zeros > 0
 
-          t := f.as_list ++ (array String _ amount_of_padding_zeros x->"").as_list ++ b.as_list
+    e => error "Unable to parse provided string as an IP address: $s"
 
-          check t.count = 8
-          from_string_v6 t
-        nil =>
-          check sv6.count = 8
-          from_string_v6 sv6
-    else
-      error "Unable to parse provided string as an IP address"
+    match classify s
+      net.family.ipv4 =>
+        sv4 := s.split "."
+        if sv4.count = 4
+          from_string_v4 sv4
+        else
+          e
+      net.family.ipv6 =>
+        sv6 := s.split ":"
+        # NYI: BUG: this is a hack, write a proper parser
+        # NYI: CLEANUP: move this code into from_string_v6
+        match sv6.index_of ""
+          i i64 =>
+            f, b := sv6.split_at i
+            amount_of_padding_zeros := 8 - f.count - b.count
+            if amount_of_padding_zeros > 0
+
+              t := f ++ (array String _ amount_of_padding_zeros x->"") ++ b
+
+              if t.count = 8
+                from_string_v6 t
+              else
+                e
+            else
+              e
+          nil =>
+            if sv6.count = 8
+              from_string_v6 sv6
+            else
+              e
+      nil =>
+        e
 
 
 # version of an IP address, either IPv4 or IPv6

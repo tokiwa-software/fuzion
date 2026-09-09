@@ -503,7 +503,7 @@ public String ref : property.hashable, property.orderable is
 
   # does this string contain the given 'substring'
   #
-  public contains (substring String) bool => find(substring).exists
+  public contains (substring String) bool => find(substring).ok
 
 
   # count number of occurrences of given 'substring' in this string

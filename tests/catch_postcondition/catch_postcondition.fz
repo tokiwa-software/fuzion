@@ -164,7 +164,7 @@ catch_postcondition is
       redef try option String  => tries[c].call
       redef catch(s String) option String => {say "*** failed: $s ***"; nil}
     r := h.res
-  until r??
+  until r.ok
     say r
   else
     say "*** all failed ***"
@@ -239,7 +239,7 @@ catch_postcondition is
          .catch s->
            say "*** failed: $s ***"
            nil
-  until r??
+  until r.ok
     say r
   else
     say "*** all failed ***"
@@ -258,7 +258,7 @@ catch_postcondition is
          .catch s->
            say "*** failed: $s ***"
            nil
-  until r??
+  until r.ok
     say r
   else
     say "*** all failed ***"
@@ -277,7 +277,7 @@ catch_postcondition is
          .catch s->
            say "*** failed: $(s.0) $(s.1) ***"
            nil
-  until r??
+  until r.ok
     say r
   else
     say "*** all failed ***"

@@ -23,29 +23,35 @@
 #
 # -----------------------------------------------------------------------
 
-# blocking_mutate_using_clock -- a multi-thread variant mutate using a given Clock
+# Workaround for #7638, intermediate feature that is a parent only of
+# blocking_mutate_using_clock.
+#
+module blocking_mutate_using_clock0 : mutate is
+
+
+# blocking_mutate_using_clock -- a multi-thread variant of mutate using a given Clock
 #
 # This mutate ensures exclusive access to shared memory via using locks and
 # blocking.
 #
-# Accidental race accesses are not permitted by this mutate, i.e., accessing
-# mutable elements, e.g, via `get` or `put` on a mutable var `mutate.new T`,
-# are not permitted unless we are in code run via
-# `blocking_mutate.this.exclusive`.
+# Accidental racy accesses are not permitted by this mutate, i.e., accessing
+# mutable elements, e.g, via `get` or `put` on a mutable var
+# `blocking_mutate_using_clock.this.env.new T`, are not permitted unless we are
+# in code run via `blocking_mutate.this.env.exclusive`.
 #
 # For timeouts, this uses the given clock effect.
 #
-public blocking_mutate_using_clock(C type : time.Clock) : mutate is
+public blocking_mutate_using_clock(C type : time.Clock) : blocking_mutate_using_clock0 is
 
   # mutex to be used for synchronization
   #
-  mtx := concur.sync.mutex.new.or_else
-            (panic "`concur.sync.mutex.new` failed to create mutex for `$(concur.blocking_mutate_using_clock.this.type)`")
+  mtx := concur.sync.mutex.new.or_panic
 
 
   # Threads that are currently blocked in `wait`
   #
   waiting := concur.Thread_List
+
 
   # thread that currently has exclusive access to this mutate.
   #
@@ -189,22 +195,13 @@ public blocking_mutate_using_clock(C type : time.Clock) : mutate is
                           code F
                           ) option R
     pre
-      safety: is_this_mutate_instated_and_usable
+      safety: exclusive_allowed
     =>
       blocking_mutate_using_clock.this.env.exclusive ()->
         if timeout.this.wait condition
           option code()
         else
           nil
-
-
-  # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
-  # not support use in several threads, check we are running in the thread `mutate.this`
-  # was created in?
-  #
-  public redef is_this_mutate_instated_and_usable bool
-  =>
-    blocking_mutate_using_clock.this.get_if_instated >>? (x -> id = x.id)
 
 
   # cleanup feature to destroy mutex and other resources associated with this
@@ -218,14 +215,14 @@ public blocking_mutate_using_clock(C type : time.Clock) : mutate is
     mtx.destroy
 
 
-# blocking_mutate -- a multi-thread variant mutate using time.Monotonic
+# blocking_mutate -- a multi-thread variant of mutate using time.Monotonic
 #
 # This mutate ensures exclusive access to shared memory via using locks and
 # blocking.
 #
-# Accidental race accesses are not permitted by this mutate, i.e., accessing
-# mutable elements, e.g. via `get` or `put` on a mutable var `mutate.new T`,
-# are not permitted unless we are in code run via
-# `blocking_mutate.this.exclusive`.
+# Accidental racy accesses are not permitted by this mutate, i.e., accessing
+# mutable elements, e.g. via `get` or `put` on a mutable var
+# `blocking_mutate.this.env.new T`, are not permitted unless we are in code run via
+# `blocking_mutate.this.env.exclusive`.
 #
 public blocking_mutate : blocking_mutate_using_clock time.Monotonic is

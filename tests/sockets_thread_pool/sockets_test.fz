@@ -43,11 +43,10 @@ sockets_thread_pool_test is
     accept =>
       (net.server.env.accept.bind c->
         sc := c.in_thread_pool unit concur.thread_pool mutate ()->
-          endp => net.endpoint.env
 
           say_silent "$protocol/$family-server, accepted connection"
-          say_silent endp.get_peer_address
-          say_silent endp.get_peer_port
+          say_silent net.endpoint.env.get_peer_address
+          say_silent net.endpoint.env.get_peer_port
 
           rr := (io.buffered mutate).read_line_while (s -> !s.is_empty)
 

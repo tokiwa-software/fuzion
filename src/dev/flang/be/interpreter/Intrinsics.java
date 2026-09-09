@@ -192,69 +192,76 @@ public class Intrinsics extends ANY
     put("Type.name"            , (executor, innerClazz) -> args ->
       Interpreter.boxedConstString(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
 
-    put("concur.atomic.compare_and_swap0",  (executor, innerClazz) -> args ->
+    put("mutate.new.compare_and_swap0",  (executor, innerClazz) -> args ->
         {
-          var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var nc = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupMutableValue(nc);
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              var res = Interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
-              if (Interpreter.compareField(f, a, thiz, expected))
+              var res = Interpreter.getField(f, nc, thiz, false); // NYI: HACK: We must clone this!
+              if (Interpreter.compareField(f, nc, thiz, expected))
                 {
                   res = expected;   // NYI: HACK: workaround since res was not cloned
-                  Interpreter.setField(f, a, thiz, new_value);
+                  Interpreter.setField(f, nc, thiz, new_value);
                 }
               return res;
             }
         });
-    put("concur.atomic.compare_and_set0",  (executor, innerClazz) -> args ->
+
+    put("mutate.new.compare_and_set0",  (executor, innerClazz) -> args ->
         {
-          var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var nc = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupMutableValue(nc);
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              if (Interpreter.compareField(f, a, thiz, expected))
+              if (Interpreter.compareField(f, nc, thiz, expected))
                 {
-                  Interpreter.setField(f, a, thiz, new_value);
+                  Interpreter.setField(f, nc, thiz, new_value);
                   return new boolValue(true);
                 }
               return new boolValue(false);
             }
         });
-    put("concur.atomic.racy_accesses_supported",  (executor, innerClazz) -> args ->
+
+    put("mutate.atomic_access_supported",  (executor, innerClazz) -> args ->
         {
-          var t = executor.fuir().clazzActualGeneric(executor.fuir().clazzOuterClazz(innerClazz), 0);
+          var t = executor.fuir().clazzActualGeneric(innerClazz, 0);
           return new boolValue
             (executor.fuir().clazzIsRef(t)                            ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i8  )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i16 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_i64 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u8  )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u16 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u32 )) ||
+             // (t == executor.fuir().clazz(SpecialClazzes.c_u64 )) ||  -- we split up 64-bit values to store tham in an array of ints
              (t == executor.fuir().clazz(SpecialClazzes.c_f32 )) ||
+             // (t == executor.fuir().clazz(SpecialClazzes.c_f64 )) ||  -- we split up 64-bit values to store tham in an array of ints
              (t == executor.fuir().clazz(SpecialClazzes.c_bool)));
         });
-    put("concur.atomic.read0",  (executor, innerClazz) -> args ->
+
+    put("mutate.new.atomic_read0",  (executor, innerClazz) -> args ->
         {
           var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var f = executor.fuir().lookupMutableValue(a);
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
               return Interpreter.getField(f, a, thiz, false);
             }
         });
-    put("concur.atomic.write0", (executor, innerClazz) -> args ->
+
+    put("mutate.new.atomic_write0",  (executor, innerClazz) -> args ->
         {
           var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var f = executor.fuir().lookupMutableValue(a);
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
@@ -263,13 +270,13 @@ public class Intrinsics extends ANY
           return Value.UNIT;
         });
 
-    put("concur.util.load_fence",   (executor, innerClazz) -> args ->
+    put("mutate.read_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
           return Value.UNIT;
         });
 
-    put("concur.util.store_fence",  (executor, innerClazz) -> args ->
+    put("mutate.write_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
           return Value.UNIT;
