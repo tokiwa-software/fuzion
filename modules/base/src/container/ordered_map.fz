@@ -101,16 +101,5 @@ is
         ordered_map ks va
 
 
-  # create a string containing all mappings
-  #
-  public redef as_string String =>
-    for
-      r := "", r + c + n
-      i in ks.indices
-      n := "($(ks[i]) => $(vs[i]))"
-      c := "", ", "
-    else
-      r
-
   public fixed redef type.of(kvs Sequence (tuple OK V)) container.ordered_map OK V =>
     container.ordered_map OK V (kvs.map (.0)) (kvs.map (.1))
