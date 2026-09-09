@@ -183,10 +183,13 @@ public mail is
                 #
                 if port = 587
                   write_or_cause net_lm init
-                  _ := (io.buffered net_lm).read_line_while (s -> s != "250 STARTTLS")
+                  _ := io.buffered net_lm .read_line_while (s -> s != "250 STARTTLS")
                   write_or_cause net_lm "STARTTLS\r\n"
-                  ok := (io.buffered net_lm).read_line
-                  if ok != "220 OK"
-                    (flow.exception unit).env.cause (error "Expected 220 OK, got $(ok)")
+                  match io.buffered net_lm .read_line
+                    s String =>
+                      if s != "220 OK"
+                        flow.exception unit .env.cause (error "Expected 220 OK, got $s")
+                    io.end_of_file =>
+                      flow.exception unit .env.cause (error "Expected 220 OK, got end-of-file")
 
                 wolfssl _ net_lm ssl_lm host write_request

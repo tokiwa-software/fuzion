@@ -31,48 +31,48 @@ doubly_linked_list_test =>
     test_add_frst(e i32) unit =>
       l.add_first e
       say """
-        add first $e          count=$(l.count) contains($e)=$(l.contains e)
+        add first $e          length=$(l.length) contains($e)=$(l.contains e)
         $l
-        $(l.as_array.as_string)
+        $(l.as_array)
         """
 
     test_add_last(e i32) unit =>
       l.add_last e
       say """
-        add last $e           count=$(l.count) contains($e)=$(l.contains e)
+        add last $e           length=$(l.length) contains($e)=$(l.contains e)
         $l
-        $(l.as_array.as_string)
+        $(l.as_array)
         """
 
     test_rem_frst_mtch(f i32->bool) =>
       say """
-        remove_first_match=$(l.remove_first_match f) count=$(l.count)
+        remove_first_match=$(l.remove_first_match f) length=$(l.length)
         $l
-        $(l.as_array.as_string)
+        $(l.as_array)
         """
 
     test_rem_frst =>
       e := l.remove_first
       say """
-        remove_first=$e       count=$(l.count) $(e ? i i32 => "contains($i)=$(l.contains i)" | * => "")
+        remove_first=$e       length=$(l.length) $(e ? i i32 => "contains($i)=$(l.contains i)" | * => "")
         $l
-        $(l.as_array.as_string)
+        $(l.as_array)
         """
 
     test_rem_last =>
       e := l.remove_last
       say """
-        remove_last=$e        count=$(l.count) $(e ? i i32 => "contains($i)=$(l.contains i)" | * => "")
+        remove_last=$e        length=$(l.length) $(e ? i i32 => "contains($i)=$(l.contains i)" | * => "")
         $l
-        $(l.as_array.as_string)
+        $(l.as_array)
         """
 
 
 
     say """
-      create               count=$(l.count) contains(1)=$(l.contains 1)
+      create               length=$(l.length) contains(1)=$(l.contains 1)
       $l
-      $(l.as_array.as_string)
+      $(l.as_array)
       """
 
     test_add_frst 2

@@ -103,7 +103,7 @@ catch_postcondition is
     lm : mutate is
 
     res := lm ! ()->
-        m := lm.env.new (option String nil)
+        m := lm.env.var (option String nil)
         (fuzion.runtime.post_fault.instate
           T
           (rt.post_fault msg->

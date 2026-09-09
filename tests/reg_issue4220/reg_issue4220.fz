@@ -28,7 +28,7 @@ reg_issue4220 =>
 
   v := m1.instate_self ()->
     say "start"
-    r := m.env.new 42
+    r := m.env.var 42
     say "r = $r"
     r
 

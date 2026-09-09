@@ -83,7 +83,7 @@ is
 
   # total number of measurements, including ignored ones.
   #
-  total_number := time.histogram_mutate.env.new (u64 0)
+  total_number := time.histogram_mutate.env.var (u64 0)
 
 
   # buffer of measurements at the end that should be ignored.
@@ -93,7 +93,7 @@ is
 
   # current index to add new data to ignore_last_buffer
   #
-  ignore_last_buffer_index := histogram_mutate.env.new (i64 0)
+  ignore_last_buffer_index := histogram_mutate.env.var (i64 0)
 
 
   # Number of distinct buckets that are recorded
@@ -105,28 +105,28 @@ is
   # the counts for different value ranges corresponding to buckets are
   # stored in buckets.
   #
-  size := histogram_mutate.env.new (u64 0)
+  size := histogram_mutate.env.var (u64 0)
 
 
   # min and max recorded durations
   #
-  min_ := histogram_mutate.env.new (option time.duration) nil
-  max_ := histogram_mutate.env.new (option time.duration) nil
+  min_ := histogram_mutate.env.var (option time.duration) nil
+  max_ := histogram_mutate.env.var (option time.duration) nil
 
 
   # sum of recorded durations
   #
-  sum := histogram_mutate.env.new time.duration.zero
+  sum := histogram_mutate.env.var time.duration.zero
 
 
   # sum of squares of recorded ns values
   #
-  squares := histogram_mutate.env.new 0.0
+  squares := histogram_mutate.env.var 0.0
 
 
   # time of first sample
   #
-  start_time := histogram_mutate.env.new (option time.instant) nil
+  start_time := histogram_mutate.env.var (option time.instant) nil
 
 
   # table of durations in each bucket, each entry gives the maximum duration for that index

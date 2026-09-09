@@ -655,19 +655,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = isAssignableFrom(actual.selfOrConstraint(context).asRef(true), context, allowBoxing, allowTagging, assignableTo);
       }
-    // NYI: CLEANUP: the bug is probably that target type in a type feature
-    // is considered to be container.Mutable_Map.K
-    // once this is fixed this assignability rule could be removed again...
-    //
-    // in Mutable_Map.type.from_entries we have e.g.:
-    // target_type: container.Mutable_Map.K
-    // actual_type: container.Mutable_Map.type.K
-    // these should be assignable
-    //
-    if (result.no() && target_type.isParametricType() && target_type.typeParameter().cotypeGeneric().asParametricType().compareTo(actual_type) == 0)
-      {
-        result = YesNo.yes;
-      }
     return result;
   }
 
@@ -1833,7 +1820,8 @@ there is no common super type of the two types (Types.t_ERROR)
         result = kind().compareTo(other.kind());
         if (result == 0)
           {
-            result = backingFeature().compareTo(other.backingFeature());
+            result = normalizeCoTypeTypeParameter(backingFeature())
+                        .compareTo(normalizeCoTypeTypeParameter(other.backingFeature()));
           }
         if (result == 0 && isNormalType() /* no need for this since kind=o.kind :  && other.isNormalType()  */)
           {
@@ -1870,6 +1858,21 @@ there is no common super type of the two types (Types.t_ERROR)
       (result != 0 || kind() == other.kind());
 
     return result;
+  }
+
+
+  /**
+   * NYI: CLEANUP: this works around missing type parameter replacements
+   * or re-replacements, cotype type par vs. type par of origin
+   *
+   * @param backingFeature
+   * @return
+   */
+  private AbstractFeature normalizeCoTypeTypeParameter(AbstractFeature backingFeature)
+  {
+    return backingFeature.isTypeParameter()
+      ? backingFeature.cotypeOriginGeneric()
+      : backingFeature;
   }
 
 

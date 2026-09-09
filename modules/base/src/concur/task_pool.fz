@@ -30,7 +30,7 @@ public task_pool (
 ) : realtime.Scheduler
 is
 
-  thrds := M.env.new (list concur.Thread) nil
+  thrds := M.env.var (list concur.Thread) nil
 
 
   # submit a task to the thread pool

@@ -29,17 +29,17 @@ module Entry(module key KEY, module val VAL) ref is
 
   # reference to the left subtree at this entry, or, if it is empty, nil
   #
-  module left := LM.env.new (option Entry) nil
+  module left := LM.env.var (option Entry) nil
 
 
   # reference to the right subtree at this entry, or if it is empty, nil
   #
-  module right := LM.env.new (option Entry) nil
+  module right := LM.env.var (option Entry) nil
 
 
   # height of the subtree whose root is this entry
   #
-  module height := LM.env.new i32 0
+  module height := LM.env.var i32 0
 
 
   # get the value stored in this submap at key k, nil if k is not a key

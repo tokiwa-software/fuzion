@@ -73,7 +73,8 @@ public class Box extends Expr
     if (PRECONDITIONS) require
       (value != null,
        !frmlT.containsUndefined(),
-       frmlT.isParametricType() || frmlT.isThisType() || !value.type().isRef(),
+       frmlT.isParametricType() || frmlT.isThisType() || frmlT.isRef(),
+       !value.type().isRef(),
        !(value instanceof Box));
 
     this._value = value;

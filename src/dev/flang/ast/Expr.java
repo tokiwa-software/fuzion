@@ -845,21 +845,40 @@ public abstract class Expr extends ANY implements HasSourcePosition
         if (frmlT.isChoice() &&
             frmlT.isAssignableFromWithoutBoxing(t).no() &&
             frmlT.isAssignableFrom(t).yes())
-          { // we do both, box and then tag:
-            for (var cg : frmlT.choiceGenerics())
-              {
-                if (cg.isAssignableFrom(t).yes())
-                  {
-                    return cg;
-                  }
-              }
-            throw new Error("Expr.needsBoxing confused for choice type "+frmlT+" which is assignable from "+t.asRef()+" but not from "+t);
+          {
+            // we do both, box and then tag:
+            return findAssignableChoiceGeneric(frmlT, t);
           }
         else
           {
             return null;
           }
       }
+  }
+
+
+  /**
+   * In a potentially nested choice find the choice generic
+   * that t is assignable to
+   *
+   * @param ct
+   * @param t
+   * @return
+   */
+  private AbstractType findAssignableChoiceGeneric(AbstractType ct, AbstractType t)
+  {
+    for (var cg : ct.choiceGenerics())
+      {
+        if (cg.isChoice() && cg.isAssignableFrom(t).yes())
+          {
+            return findAssignableChoiceGeneric(cg, t);
+          }
+        if (cg.isAssignableFromWithoutTagging(t).yes())
+          {
+            return cg;
+          }
+      }
+    throw new Error("Expr.needsBoxing confused for choice type "+ct+" which is assignable from "+t.asRef()+" but not from "+t);
   }
 
 

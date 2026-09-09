@@ -202,8 +202,7 @@ is
   #
   public redef items Sequence (tuple HK V) =>
     contents
-      .filter (.ok)
-      .map (.or_else (panic "filter failed"))
+      .flat_map id
 
 
   #
