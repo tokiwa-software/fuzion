@@ -2013,6 +2013,7 @@ should be avoided as much as possible.
     if (!_fuir.clazzIsRef(rt) &&
         (f == NO_CLAZZ || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
         !_fuir.isScalar(rt) &&
+        !_fuir.clazzIsUnitType(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
         var vti = _types.resultType(rt).vti();
