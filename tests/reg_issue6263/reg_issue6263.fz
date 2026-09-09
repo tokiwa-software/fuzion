@@ -43,8 +43,8 @@ reg_issue6263 =>
 
   part1 =>
     lm.instate_self i64 ()->
-      cell(n lm.new String) ref is
-      area := array2 1000 1000 _,_->(cell (lm.env.new $"."))
+      cell(n lm.var String) ref is
+      area := array2 1000 1000 _,_->(cell (lm.env.var $"."))
       say "start: "
       for px := 500, nx
           py := 500, ny
@@ -79,7 +79,7 @@ reg_issue6263 =>
         fill min_x min_y
         say "filled: "
         show
-        res := lm.env.new 0 # (max_x-min_x+1)*(max_y-min_y+1)
+        res := lm.env.var 0 # (max_x-min_x+1)*(max_y-min_y+1)
         for y in min_y..max_y do
           for x in min_x..max_x do
             c := area[_,x,y].n.get

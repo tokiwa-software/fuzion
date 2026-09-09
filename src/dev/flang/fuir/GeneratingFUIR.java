@@ -1886,12 +1886,12 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For a clazz inheriting from {@code mutate.new}, lookup the inner clazz of
+   * For a clazz inheriting from {@code mutate.var}, lookup the inner clazz of
    * the {@code mutable_value} field.
    *
    * @param cl index of a clazz representing cl's {@code mutable_value} field
    *
-   * @return the index of the requested {@code mutate.new.mutable_value} field's clazz.
+   * @return the index of the requested {@code mutate.var.mutable_value} field's clazz.
    */
   public int lookupMutableValue(int cl)
   {
@@ -1899,7 +1899,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_mutate_new_mutable_value)._id;
+    return id2clazz(cl).lookupNeeded(Types.resolved.f_mutate_var_mutable_value)._id;
   }
 
 

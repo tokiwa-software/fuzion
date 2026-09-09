@@ -56,7 +56,7 @@ public try(ERROR type, F type : flow.fallible ERROR, T type, code_try ()->T) is
   # an `invalid mutate` error.
   #
   catch0(code_catch ERROR->T) T ! lm =>
-    m := lm.env.new (option ERROR nil)
+    m := lm.env.var (option ERROR nil)
     v := F.new e->
               m <- e
               F.abort

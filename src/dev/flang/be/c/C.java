@@ -956,10 +956,10 @@ public class C extends ANY
     return Stream.of("fuzion.sys.thread.spawn0",
                      "fuzion.sys.thread.join0",
                      "mutate.atomic_access_supported",
-                     "mutate.new.compare_and_swap0",
-                     "mutate.new.compare_and_set0",
-                     "mutate.new.atomic_read0",
-                     "mutate.new.atomic_write0")
+                     "mutate.var.compare_and_swap0",
+                     "mutate.var.compare_and_set0",
+                     "mutate.var.atomic_read0",
+                     "mutate.var.atomic_write0")
       .anyMatch(_intrinsics._usedIntrinsics::contains);
   }
 

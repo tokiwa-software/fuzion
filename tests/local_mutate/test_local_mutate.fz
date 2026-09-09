@@ -47,7 +47,7 @@ test_local_mutate is
       count =>
 
         # create mutable variable s:
-        s := m.env.new 0
+        s := m.env.var 0
 
         for e in l do
 
@@ -60,7 +60,7 @@ test_local_mutate is
       # run code within an instance of m
       #
       m ! ()->
-        s := m.env.new 0
+        s := m.env.var 0
 
         for e in l do
           _ := s.update a->a+e
@@ -71,7 +71,7 @@ test_local_mutate is
       say "using m.instate_self and count: $(m ! ()->count)"
 
       count2 =>
-        s := m.env.new 0
+        s := m.env.var 0
         for e in l do
           _ := s.update a->a+e
         option s
@@ -178,8 +178,8 @@ test_local_mutate is
   test_ring1 =>
 
     Cell(T type, LM type : mutate, data T) ref is
-      n := LM.env.new (Cell T LM) Cell.this
-      p := LM.env.new (Cell T LM) Cell.this
+      n := LM.env.var (Cell T LM) Cell.this
+      p := LM.env.var (Cell T LM) Cell.this
       link(ne, pr Cell T LM) =>
         n <- ne
         p <- pr
@@ -274,8 +274,8 @@ test_local_mutate is
       # mutable references to next and previous. Initializes to refer to
       # Mut_Ring.this to form a minimal ring
       #
-      private n := LM.env.new (Mut_Ring LM T) Mut_Ring.this
-      private p := LM.env.new (Mut_Ring LM T) Mut_Ring.this
+      private n := LM.env.var (Mut_Ring LM T) Mut_Ring.this
+      private p := LM.env.var (Mut_Ring LM T) Mut_Ring.this
 
 
       # shorthand features to get the mutable references from `n` and `p`

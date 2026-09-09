@@ -40,11 +40,11 @@ module:public Fixed_Capacity_Array(
 
   # contents of the array
   #
-  data LM.new (LM.array T),
+  data LM.var (LM.array T),
 
   # length -- number of elements in data that are in use,
   #           i.e. store actual elements
-  len LM.new i64
+  len LM.var i64
 
 ) ref : Dynamic_Array LM T data len
 is
@@ -79,7 +79,7 @@ is
   public redef type.from_sequence(s Sequence T) container.Dynamic_Array LM T =>
     arr := s.as_array_backed
 
-    d := container.Fixed_Capacity_Array LM T (LM.env.new (LM.array T .empty arr.count.as_i64)) (LM.env.new i64 0)
+    d := container.Fixed_Capacity_Array LM T (LM.env.var (LM.array T .empty arr.count.as_i64)) (LM.env.var i64 0)
 
     for e in arr do d.add e
 
@@ -89,10 +89,10 @@ is
   # initialize an empty Fixed_Capacity_Array of type T with default capacity of `min_length`
   #
   public redef type.empty container.Dynamic_Array LM T =>
-    container.Fixed_Capacity_Array LM T (LM.env.new (LM.array T .empty min_length)) (LM.env.new i64 0)
+    container.Fixed_Capacity_Array LM T (LM.env.var (LM.array T .empty min_length)) (LM.env.var i64 0)
 
 
   # initialize an empty Fixed_Capacity_Array of type T with the given capacity
   #
   public redef type.empty(capacity i64) container.Dynamic_Array LM T =>
-    container.Fixed_Capacity_Array LM T (LM.env.new (LM.array T .empty capacity)) (LM.env.new i64 0)
+    container.Fixed_Capacity_Array LM T (LM.env.var (LM.array T .empty capacity)) (LM.env.var i64 0)

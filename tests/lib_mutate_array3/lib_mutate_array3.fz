@@ -23,7 +23,7 @@
 
 lib_mutate_array3 =>
 
-  a := mutate.new_array3 i32 2 3 4 0
+  a := mutate.var_array3 i32 2 3 4 0
 
   a[0,1,1] := 7
   a[1,0,0] := 3

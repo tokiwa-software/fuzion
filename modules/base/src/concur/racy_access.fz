@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 # racy_access -- an effect that permits reading and writing values in instances
-# of `concur.atomic_mutate.new` using the racy access functions `get_racy` and
+# of `concur.atomic_mutate.var` using the racy access functions `get_racy` and
 # `put_racy`.
 #
 private:module racy_access(M type : mutate) : effect is

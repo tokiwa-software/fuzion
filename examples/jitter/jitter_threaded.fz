@@ -292,7 +292,7 @@ jitter_threaded =>
         error_cell := concur.atomic (option String) .new nil
 
         # Mutable cell for expected release time
-        cell := bm.env.new start
+        cell := bm.env.var start
 
         # Sleep until the first release time to align the scheduler's start.
         now := time.Nano.env.read

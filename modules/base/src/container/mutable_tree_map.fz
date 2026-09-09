@@ -37,7 +37,7 @@ is
   #
   # if this map is empty, this is nil
   #
-  root := LM.env.new (option Entry) nil
+  root := LM.env.var (option Entry) nil
 
 
   # returns the size of the map, i.e. the number of elements it contains

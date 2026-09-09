@@ -70,11 +70,11 @@ private:public LRU_Cache(
 
   # the most recently used element
   #
-  mru  := LM.env.new i64 -1
+  mru  := LM.env.var i64 -1
 
   # the least recently used element
   #
-  lru  := LM.env.new i64 -1
+  lru  := LM.env.var i64 -1
 
   # the number of elements currently in the cache
   #
@@ -82,13 +82,13 @@ private:public LRU_Cache(
   # * increased iff a free index is obtained without evicting an element
   # * decreased iff an element is explicitly removed (by the user)
   #
-  _size := LM.env.new i64  0
+  _size := LM.env.var i64  0
 
   # the head of the list of free elements
   #
   # free elements are stored using the elements next pointers
   #
-  free := LM.env.new i64  0
+  free := LM.env.var i64  0
 
 
   # the capacity of the cache,

@@ -38,8 +38,8 @@ blocking_mutate_timeout =>
 
   test_relative(BM type : concur.blocking_mutate_using_clock C, C type : time.Clock, name String)
   =>
-    running := BM.env.new "init"
-    counter := BM.env.new u64 0
+    running := BM.env.var "init"
+    counter := BM.env.var u64 0
 
     t_start := C.env.read
 
@@ -76,8 +76,8 @@ blocking_mutate_timeout =>
 
   test_absolute(BM type : concur.blocking_mutate_using_clock C, C type : time.Clock, name String)
   =>
-    running := BM.env.new "init"
-    counter := BM.env.new u64 0
+    running := BM.env.var "init"
+    counter := BM.env.var u64 0
 
     t1 := concur.Threads.env.spawn ()->
       BM.env.exclusive_when ()->running="start" ()->

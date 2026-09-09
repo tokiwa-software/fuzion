@@ -39,7 +39,7 @@ is
 
   # the underlying mutable value
   #
-  value := (AAA_builtin_atomic_mutate atomic.this).env.new initial_value
+  value := (AAA_builtin_atomic_mutate atomic.this).env.var initial_value
 
 
   # Does the current system permit racy accesses to the value of type T
