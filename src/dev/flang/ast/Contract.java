@@ -60,7 +60,7 @@ public class Contract extends ANY
    */
   public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND, null, null,
                                                              NO_COND, null, null,
-                                                             null);
+                                                             ()->AbstractFeature._NO_FEATURES_);
 
 
 
@@ -99,7 +99,7 @@ public class Contract extends ANY
    * of the declared formal arguments to be used in pre feature, pre bool
    * feature. pre_and_call feature and post feature.
    */
-  java.util.function.Supplier<List<AbstractFeature>> _argsSupplier;
+  private final java.util.function.Supplier<List<AbstractFeature>> _argsSupplier;
 
 
   /**
@@ -591,7 +591,7 @@ public class Contract extends ANY
                                 .filter(inh -> !hasPreConditionsFeature(inh))
                                 .findFirst();
 
-    var args = fc._argsSupplier == null ? null : fc._argsSupplier.get();
+    var args = fc._argsSupplier.get();
     var pos = fc._hasPre != null ? fc._hasPre : f.pos();
 
     var l = new List<Expr>();  // code for preconditions we are collecting (for !preBool)
