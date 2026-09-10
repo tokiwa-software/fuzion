@@ -42,11 +42,6 @@ is
   public size_option option i64 => nil
 
 
-  # does this set contain the given value?
-  #
-  public redef contains (e E) bool => abstract
-
-
   # return a new Set containing all elements of this Set plus element k
   #
   public add (k E) container.Set E =>
