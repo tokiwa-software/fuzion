@@ -873,7 +873,7 @@ should be avoided as much as possible.
                                       LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
                                       PATH="$PATH:$SCRIPT_PATH" \
                                       DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
-                                      java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
+                                      java --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
                                       """,
                                       FUZION_COMMAND_PROPERTY,
                                       args));
