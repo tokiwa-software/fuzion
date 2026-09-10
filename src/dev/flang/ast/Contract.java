@@ -343,12 +343,14 @@ public class Contract extends ANY
                                     AbstractFeature pf,
                                     Context context)
   {
-    return pf.generics().sizeMatches(typepars) ? new Call(pos,
-                                                          target,
-                                                          typepars,
-                                                          args,
-                                                          pf).resolveTypes(res, context)
-                                               : Call.ERROR;
+    return
+      pf.generics().sizeMatches(typepars)  // check generics match to avoid fz crash in case of broken input as in #7747
+      ? new Call(pos,
+                 target,
+                 typepars,
+                 args,
+                 pf).resolveTypes(res, context)
+      : Call.ERROR;
   }
 
 
