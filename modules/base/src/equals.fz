@@ -44,7 +44,7 @@ public infix =(T type : property.equatable, a, b T) bool => equals a b
 public infix !=(T type : property.equatable, a, b T) bool => !equals a b
 
 
-# is `a` contained in `Set` `s`?
+# is `a` contained in Sequence `s`?
 #
 # This should usually be called using type inference as in
 #
@@ -54,12 +54,12 @@ public infix !=(T type : property.equatable, a, b T) bool => !equals a b
 #
 public infix ∈ (T type : property.equatable,
                 a T,
-                s container.Set T) bool
+                s Sequence T) bool
 =>
   s.contains a
 
 
-# is `a` not contained in `Set` `s`?
+# is `a` not contained in Sequence `s`?
 #
 # This should usually be called using type inference as in
 #
@@ -69,7 +69,7 @@ public infix ∈ (T type : property.equatable,
 #
 public infix ∉ (T type : property.equatable,
                 a T,
-                s container.Set T) bool
+                s Sequence T) bool
 =>
   !(s.contains a)
 
