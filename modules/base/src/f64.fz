@@ -82,9 +82,9 @@ public f64(public val f64) : float, java_primitive is
     else
       shift := exponent - f64.mantissa_bits
       if shift ≥ 0
-        mantissa.as_u128 << shift.as_u128
+        mantissa.as_u128 << shift.abs.as_u128
       else
-        mantissa.as_u128 >> (-shift).as_u128
+        mantissa.as_u128 >> shift.abs.as_u128
 
 
   public as_f32 f32 => intrinsic
