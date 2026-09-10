@@ -67,6 +67,26 @@ public f64(public val f64) : float, java_primitive is
   public redef as_i64 i64 => as_i64_lax
 
 
+  # does this `f64` value fit into an `u128`?  Used in inherited
+  # precondition of `as_u128`.
+  #
+  public redef fits_in_u128 bool =>
+    u128.min.as_f64 ≤ val < u128.max.as_f64
+
+
+  # converts f64 to u128 by shifting mantissa bits based on the exponent
+  #
+  public redef as_u128 u128 =>
+    if val < 1.0
+      u128.zero
+    else
+      shift := exponent - f64.mantissa_bits
+      if shift ≥ 0
+        mantissa.as_u128 << shift.as_u128
+      else
+        mantissa.as_u128 >> (-shift).as_u128
+
+
   public as_f32 f32 => intrinsic
 
 

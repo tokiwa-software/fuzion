@@ -52,6 +52,20 @@ public float : numeric is
   => abstract
 
 
+  # does this float value fit into an `u128`?  Used in
+  # precondition of `as_u128`.
+  #
+  public fits_in_u128 bool => abstract
+
+
+  # converts a float value to u128 dropping any fraction.
+  # the value must be in the range of u128
+  #
+  public as_u128 u128
+  pre debug: fits_in_u128
+  => abstract
+
+
   # convert a float value to i32 dropping any fraction.
   # the value must be in the range of i32
   #
