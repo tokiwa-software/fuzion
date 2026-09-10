@@ -318,6 +318,61 @@ public class Contract extends ANY
 
 
   /**
+   * Helper for call*Condition to create the actual call, unless the type
+   * parameters do not match (see #7747 for an example).
+   *
+   * @param res resolution instance
+   *
+   * @param pos the source position of the call
+   *
+   * @param target the target of the call
+   *
+   * @param typepars the type parameters
+   *
+   * @param args the actual arguments
+   *
+   * @param pf the called feature (pre/preBool/postFeature)
+   *
+   * @param context the environment we are creating the call in
+   */
+  private static Call callCondition(Resolution res,
+                                    SourcePosition pos,
+                                    Expr target,
+                                    List<AbstractType> typepars,
+                                    List<Expr> args,
+                                    AbstractFeature pf,
+                                    Context context)
+  {
+    return pf.generics().sizeMatches(typepars) ? new Call(pos,
+                                                          target,
+                                                          typepars,
+                                                          args,
+                                                          pf).resolveTypes(res, context)
+                                               : Call.ERROR;
+  }
+
+
+  /**
+   * Helper for call*Condition to create the actual args from the args of feature `f`.
+   *
+   * @param res resolution instance
+   *
+   * @param pos the source position of the call
+   *
+   * @param f the feature to copy arguments from
+   */
+  private static List<Expr> argsAsActuals(Resolution res,
+                                          SourcePosition pos,
+                                          AbstractFeature f)
+  {
+    return f.valueArguments().map2(a -> new Call(pos,
+                                                 new Current(pos, f),
+                                                 a
+                                                ).resolveTypes(res, f.context()));
+  }
+
+
+  /**
    * Create call to outer's precondition feature
    *
    * @param res resolution instance
@@ -337,15 +392,7 @@ public class Contract extends ANY
     if (PRECONDITIONS) require(outer == context.outerFeature());
     var oc = f.contract();
     var p = oc._hasPre != null ? oc._hasPre : f.pos();
-    List<Expr> args = new List<>();
-    for (var a : outer.valueArguments())
-      {
-        var ca = new Call(p,
-                          new Current(p, outer),
-                          a);
-        ca = ca.resolveTypes(res, context);
-        args.add(ca);
-      }
+    var args = argsAsActuals(res, p, outer);
     return callPreCondition(res, f, outer, context, args);
   }
 
@@ -387,41 +434,6 @@ public class Contract extends ANY
 
 
   /**
-   * Helper for call*Condition to create the actual call, unless the type
-   * parameters do not match (see #7747 for an example).
-   *
-   * @param res resolution instance
-   *
-   * @param pos the source position of the call
-   *
-   * @param target the target of the call
-   *
-   * @param typepars the type parameters
-   *
-   * @param args the actual arguments
-   *
-   * @param pf the called feature (pre/preBool/postFeature)
-   *
-   * @param context the environment we are creating the call in
-   */
-  static Call callCondition(Resolution res,
-                            SourcePosition pos,
-                            Expr target,
-                            List<AbstractType> typepars,
-                            List<Expr> args,
-                            AbstractFeature pf,
-                            Context context)
-  {
-    return pf.generics().sizeMatches(typepars) ? new Call(pos,
-                                                          target,
-                                                          typepars,
-                                                          args,
-                                                          pf).resolveTypes(res, context)
-                                               : Call.ERROR;
-  }
-
-
-  /**
    * Create call to f's pre bool feature
    *
    * @param res resolution instance
@@ -437,16 +449,8 @@ public class Contract extends ANY
     var outer = context.outerFeature();
     var oc = f.contract();
     var p = oc._hasPre != null ? oc._hasPre : f.pos();
-    List<Expr> args = new List<>();
-    for (var a : outer.valueArguments())
-      {
-        var ca = new Call(p,
-                          new Current(p, outer),
-                          a);
-        ca = ca.resolveTypes(res, context);
-        args.add(ca);
-      }
 
+    var args = argsAsActuals(res, p, outer);
     var t = outer.outerRef() != null ? This.thiz(res, p, context, outer.outer())
                                      : Universe.instance;
     addContractFeatures(res, f, context);  // if f is currently being compiled, make sure its contract features are created first
@@ -474,15 +478,7 @@ public class Contract extends ANY
     var preAndCallOuter = f.preAndCallFeature();
     var oc = f.contract();
     var p = oc._hasPre != null ? oc._hasPre : f.pos();
-    List<Expr> args = new List<>();
-    for (var a : preAndCallOuter.valueArguments())
-      {
-        var ca = new Call(p,
-                          new Current(p, preAndCallOuter),
-                          a);
-        ca = ca.resolveTypes(res, preAndCallOuter.context());
-        args.add(ca);
-      }
+    var args = argsAsActuals(res, p, preAndCallOuter);
     var t = This.thiz(res, p, preAndCallOuter.context(), preAndCallOuter.outer());
     return new Call(p,
                     t,
@@ -518,14 +514,7 @@ public class Contract extends ANY
       }
     else
       {
-        for (var a : outer.valueArguments())
-          {
-            var ca = new Call(p,
-                              new Current(p, outer),
-                              a);
-            ca = ca.resolveTypes(res, context);
-            args.add(ca);
-          }
+        args = argsAsActuals(res, p, outer);
         if (outer.hasResultField())
           {
             var c2 = new Call(p,
@@ -756,7 +745,7 @@ public class Contract extends ANY
    *
    * @param res Resolution instance
    *
-   * @param f the feature that requires a pre or pre bool feature
+   * @param of the feature that requires a pre or pre bool or post feature
    */
   static void addContractFeatures(Resolution res, AbstractFeature of, Context context)
   {
@@ -1115,18 +1104,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
           {
             if (hasPostConditionsFeature(inh))
               {
-                List<Expr> args2 = new List<>();
-                for (var a : args)
-                  {
-                    var ca = new Call(pos,
-                                      new Current(pos, pF),
-                                      a);
-                    ca = ca.resolveTypes(res, pF.context());
-                    if (!ca.calledFeature().isTypeParameter())
-                      {
-                        args2.add(ca);
-                      }
-                  }
+                var args2 = argsAsActuals(res, pos, pF);
                 var inhpost = callPostCondition(res, inh, pF.context(), args2);
                 if (inhpost != Call.ERROR)
                   {
