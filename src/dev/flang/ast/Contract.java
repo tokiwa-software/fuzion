@@ -373,7 +373,7 @@ public class Contract extends ANY
 
 
   /**
-   * Create call to outer's precondition feature
+   * Create call to context.outerFeature()'s precondition feature
    *
    * @param res resolution instance
    *
@@ -385,41 +385,14 @@ public class Contract extends ANY
    */
   static Call callPreCondition(Resolution res, AbstractFeature f, Context context)
   {
-    return callPreCondition(res, f, (Feature) context.outerFeature(), context);
-  }
-  static Call callPreCondition(Resolution res, AbstractFeature f, Feature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
-    var oc = f.contract();
-    var p = oc._hasPre != null ? oc._hasPre : f.pos();
+    if (PRECONDITIONS)
+      require(context.outerFeature() instanceof Feature /* used on newly compiled code only */);
+
+    var outer = (Feature) context.outerFeature();
+    var fc = f.contract();
+    var p = fc._hasPre != null ? fc._hasPre  // use `pre` position if `outer` is of the form `f pre cc is ...`
+                               : f.pos();    // `outer` does not have `pre` clause, only inherits preconditions. So use the feature position instead
     var args = argsAsActuals(res, p, outer);
-    return callPreCondition(res, f, outer, context, args);
-  }
-
-
-  /**
-   * Create call to outer's precondition feature to be added to code of feature {@code outer}.
-   *
-   * @param res resolution instance
-   *
-   * @param f a feature with a precondition that should be called.
-   *
-   * @param outer The call to f's precondition is to be added to outer's code.
-   *
-   * @param args actual arguments to be passed to the call
-   *
-   * @return a call to f.preFeature() to be added to code of outer.
-   */
-  private static Call callPreCondition(Resolution res,
-                                       AbstractFeature f,
-                                       Feature outer,
-                                       Context context,
-                                       List<Expr> args)
-  {
-    var p = outer.contract()._hasPre != null
-          ? outer.contract()._hasPre    // use `pre` position if `outer` is of the form `f pre cc is ...`
-          : outer.pos();                // `outer` does not have `pre` clause, only inherits preconditions. So use the feature position instead
-
     var t = outer.outerRef() != null ? This.thiz(res, p, context, outer.outer())
                                      : Universe.instance;
     addContractFeatures(res, f, context);  // if f is currently being compiled, make sure its contract features are created first
