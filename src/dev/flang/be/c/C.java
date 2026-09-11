@@ -779,7 +779,7 @@ public class C extends ANY
     // NYI: UNDER DEVELOPMENT: enable this once we have gotten rid of implicit conversions
     // command.add("-Wconversion");
 
-    if(_options._cFlags != null)
+    if (_options._cFlags != null)
       {
         command.addAll(_options._cFlags.split(" "));
       }
@@ -841,7 +841,7 @@ public class C extends ANY
         command.addAll("-Wno-unused-but-set-variable");
       }
 
-    if(_options._useBoehmGC)
+    if (_options._useBoehmGC)
       {
         command.add("-DGC_THREADS");
         if (isWindows())
@@ -930,7 +930,7 @@ public class C extends ANY
           }
       }
 
-    if(_options._useBoehmGC)
+    if (_options._useBoehmGC)
       {
         command.addAll("-lgc");
       }

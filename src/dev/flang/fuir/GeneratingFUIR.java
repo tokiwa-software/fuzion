@@ -3008,7 +3008,7 @@ public class GeneratingFUIR extends FUIR
         result[i] = resultL.get(i);
       }
 
-    if(POSTCONDITIONS) ensure
+    if (POSTCONDITIONS) ensure
       (result.length > 0);
 
     return result;

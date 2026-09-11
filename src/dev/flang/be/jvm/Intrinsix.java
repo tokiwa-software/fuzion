@@ -1310,23 +1310,23 @@ public class Intrinsix extends ANY implements ClassFileConstants
    */
   private static String descriptor(Class<?> c)
   {
-    if(c==byte.class)
+    if (c==byte.class)
         return "B";
-    if(c==char.class)
+    if (c==char.class)
         return "C";
-    if(c==double.class)
+    if (c==double.class)
         return "D";
-    if(c==float.class)
+    if (c==float.class)
         return "F";
-    if(c==int.class)
+    if (c==int.class)
         return "I";
-    if(c==long.class)
+    if (c==long.class)
         return "J";
-    if(c==short.class)
+    if (c==short.class)
         return "S";
-    if(c==boolean.class)
+    if (c==boolean.class)
         return "Z";
-    if(c==void.class)
+    if (c==void.class)
         return "V";
 
     var n = c.getName().replace('.', '/');
