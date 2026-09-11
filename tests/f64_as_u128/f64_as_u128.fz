@@ -1,0 +1,73 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test f64_as_u128
+#
+# -----------------------------------------------------------------------
+
+f64_as_u128 =>
+
+  # 2^n exactly, built from integers (no float literal rounding)
+  p2(n i64) u128 => u128.one << n.as_u128
+
+  # format: "ok <bc-expr> <as_u128>"  or  "no <bc-expr>"
+  chk(e String, x f64) unit =>
+    if x.fits_in_u128
+      say "ok $e $(x.as_u128)"
+    else
+      say "no $e"
+
+  chk32(e String, x f32) unit =>
+    if x.fits_in_u128
+      say "ok $e $(x.as_u128)"
+    else
+      say "no $e"
+
+  # --- near zero / fraction truncation
+  chk "0"                   0.0
+  chk "-0"                  (-0.0)
+  chk "0.5"                 0.5
+  chk "0.9999999999999999"  0.9999999999999999
+  chk "1"                   1.0
+  chk "1.5"                 1.5
+
+  # --- mantissa boundary (shift direction switches here)
+  chk "2^52"                (p2 52).as_f64
+  chk "2^53"                (p2 53).as_f64
+  chk "2^53+2"              (p2 53 + (u128 0 2)).as_f64
+
+  # --- beyond i64: the old as_i64 hack failed here
+  chk "2^63"                (p2 63).as_f64
+  chk "2^64"                (p2 64).as_f64
+  chk "2^100"               (p2 100).as_f64
+
+  # --- upper edge: largest f64 < 2^128
+  chk "(2^53-1)*2^75"       ((p2 53 - u128.one) << (u128 0 75)).as_f64
+  chk "2^128"               u128.max.as_f64      # rounds up to 2^128 -> must NOT fit
+
+  # --- invalid inputs
+  chk "-0.5"                (-0.5)
+  chk "-1"                  (-1.0)
+  chk "inf"                 f64.infinity
+  chk "nan"                 f64.NaN
+
+  # --- f32 delegates to f64
+  chk32 "1.5"               1.5.as_f32
+  chk32 "2^127"             (p2 127).as_f64.as_f32
+  chk32 "(2^24-1)*2^104"    f32.max              # f32.max < 2^128 -> fits!
