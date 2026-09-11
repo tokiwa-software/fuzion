@@ -27,8 +27,15 @@
 #
 public String ref : property.hashable, property.orderable is
 
+  # any concrete string must implement utf8
+  #
+  public utf8 Sequence u8 => abstract
+
+
   # converting a string to a string is just returning string.this
+  #
   public redef as_string String => String.this
+
 
   # this String but limited to max_codepoints
   #
@@ -43,31 +50,40 @@ public String ref : property.hashable, property.orderable is
     else
       substring_codepoint 0 max_codepoints-1 + "…"
 
-  # any concrete string must implement utf8
-  public utf8 Sequence u8 => abstract
 
   # is this string empty?
+  #
   public is_empty bool => utf8.is_empty
 
+
   # returns true if string is empty or contains whitespace only
+  #
   public is_blank bool => utf8 ∀ .is_ascii_white_space
 
+
   # returns true if string contains whitespace
+  #
   public contains_whitespace bool => utf8 ∃ .is_ascii_white_space
 
+
   # length of this string in bytes
+  #
   public byte_count i64 => utf8.count
 
+
   # length of this string in codepoints
+  #
   public codepoint_count i64 => codepoints.count
 
+
   # concatenate string with string representation of another object
+  #
   public infix + (other Any) String =>
     String.concat String.this $other
 
 
-
   # repeat string given number of times
+  #
   public infix * (n i64) ref : String
   pre
     n ≥ 0
@@ -476,12 +492,14 @@ public String ref : property.hashable, property.orderable is
 
   # find (utf8-byte-) index of last occurrence of 'substring'
   # within this string.
+  #
   public find_last(substring String) option i64 =>
     find_last substring nil
 
 
   # find (utf8-byte-) index of last occurrence of 'substring'
   # within this string.
+  #
   find_last(substring String, found option i64) option i64 =>
     match find substring
       nil => found >>= (pos -> pos - substring.byte_count)
@@ -498,6 +516,7 @@ public String ref : property.hashable, property.orderable is
 
 
   # replace the first n occurrences of old by new
+  #
   public replace(old, new String, n u64) String => String.from_bytes (utf8.replace old.utf8 new.utf8 n)
 
 
@@ -870,11 +889,13 @@ public String ref : property.hashable, property.orderable is
 
 
   # convert this string to upper case
+  #
   public upper_case String =>
     String.from_codepoints (codepoints.map (c -> encodings.unicode.mappings.upper_case[c.val].or_else c))
 
 
   # convert this string to lower case
+  #
   public lower_case String =>
     String.from_codepoints (codepoints.map (c -> encodings.unicode.mappings.lower_case[c.val].or_else c))
 
