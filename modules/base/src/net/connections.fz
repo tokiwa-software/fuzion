@@ -28,7 +28,7 @@ module:public connections(active container.Set i32) : effect is
   # add to active connections
   #
   module add(desc i32) =>
-    connections (active.union (container.set_of_ordered [desc]))
+    connections (active.union ((container.ps_set i32).new [desc]))
       .replace
 
 
@@ -37,7 +37,7 @@ module:public connections(active container.Set i32) : effect is
   # when effect is uninstalled, i.e. on abort or when thread is finished.
   #
   module close(desc i32) =>
-    connections (active.difference (container.set_of_ordered [desc]))
+    connections (active.difference ((container.ps_set i32).new [desc]))
       .replace
     fuzion.sys.net.close desc # NYI: handle errors
 
@@ -62,4 +62,4 @@ module:public connections(active container.Set i32) : effect is
   #
   public redef fixed type.default_value option net.connections
   =>
-    net.connections (container.set_of_ordered i32 [])
+    net.connections ((container.ps_set i32).new [])

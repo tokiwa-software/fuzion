@@ -126,7 +126,7 @@ to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i64) outcome 
 
 # via `java --class-path=build/classes dev.flang.parser.Lexer -keywords` # FIXME:
 #
-keywords := container.set_of_ordered ["abstract", "check", "const", "do", "else", "env", "fixed", "for", "if", "in", "index", "infix", "infix_right", "intrinsic", "invariant", "is", "leaf", "loop", "match", "module", "native", "post", "postfix", "pre", "prefix", "private", "public", "redef", "ref", "set", "ternary", "then", "this", "type", "universe", "until", "var", "variant", "while",
+keywords := (container.ps_set String).new ["abstract", "check", "const", "do", "else", "env", "fixed", "for", "if", "in", "index", "infix", "infix_right", "intrinsic", "invariant", "is", "leaf", "loop", "match", "module", "native", "post", "postfix", "pre", "prefix", "private", "public", "redef", "ref", "set", "ternary", "then", "this", "type", "universe", "until", "var", "variant", "while",
     # manually added:
     "result"]
 
@@ -207,7 +207,7 @@ match {
       $(" function declarations ".pad_center "#" 80)
       """
 
-    say <| (container.set_of_ordered function_declarations.get).sort.as_string "\n"
+    say <| ((container.ps_set String).new function_declarations.get).sort.as_string "\n"
 
   e error =>
     say e
