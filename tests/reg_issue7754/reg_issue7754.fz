@@ -1,0 +1,6 @@
+reg_issue7754 =>
+  a is
+    f (a, b, c i32) =>
+
+  b : a is
+    redef f(x, y i32) =>   # should flag an error, but without a 'could be made public' hint
