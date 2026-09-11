@@ -60,7 +60,7 @@ is
 
   # create a new Set from a sequence of elements
   #
-  public type.new (s Sequence E) container.Set E => abstract
+  public type.new (s Sequence E) container.Set E /*NYI: Set.this? */ => abstract
 
 
   # create a union of these two Sets

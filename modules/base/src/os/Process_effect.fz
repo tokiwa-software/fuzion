@@ -88,7 +88,7 @@ public Process ref : effect is
         else
           res := os.process res_data[0] res_data[1] res_data[2] res_data[3] n args
           _ := running_processes.update (container.Set os.process)->(container.Set os.process) rp->
-            rp ∪ (container.set_of_ordered [res])
+            rp ∪ ((container.ps_set os.process).new [res])
           res
 
 
@@ -119,7 +119,7 @@ public Process ref : effect is
             if r >= 0
               # NYI: UNDER DEVELOPMENT: it is kind of arbitrary to remove process from running processes in this case...
               _ := running_processes.update (container.Set os.process)->(container.Set os.process) rp->
-                rp ∖ (container.set_of_ordered [p])
+                rp ∖ ((container.ps_set os.process).new [p])
               outcome r.as_u32
             else
               if r = -1 && elapsed_time > timeout

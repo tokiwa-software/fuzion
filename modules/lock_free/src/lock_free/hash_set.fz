@@ -17,21 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion feature container.set_of_hashable
+#  Source code of Fuzion feature container.hash_set
 #
 # -----------------------------------------------------------------------
 
 
-# set_of_hashable -- routine to initialize a set from a Sequence of hashable elements
+# hash_set -- a Set implementation based on lock_free.Map
 #
-# This feature creates an instance of a Set.
-#
-public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K unit) | (Sequence K)) : container.Set K is
-
-  map lock_free.Map K unit :=
-    match vs
-      vss Sequence => (lock_free.Map K unit).from_entries (vss.map (k -> tuple k unit))
-      vsc lock_free.Map => vsc
+public hash_set(K type : property.hashable, map lock_free.Map K unit) : container.Set K is
 
 
   # does this set contain the given value?
@@ -53,7 +46,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K
   public fixed redef add (k K) container.Set K =>
     ss := map.snapshot false
     ss.put k unit
-    set_of_hashable ss
+    hash_set ss
 
 
   # remove an element k from the set if it exists.
@@ -62,4 +55,11 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K
   public remove (k K) container.Set K =>
     ss := map.snapshot false
     _ := ss.remove k
-    set_of_hashable ss
+    hash_set ss
+
+
+  # create a new Set from a sequence of elements
+  #
+  public fixed redef type.new (s Sequence K) container.Set K =>
+    lock_free.hash_set ((lock_free.Map K unit).from_entries (s.map (k -> tuple k unit)))
+
