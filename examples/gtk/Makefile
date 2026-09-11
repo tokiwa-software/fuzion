@@ -34,6 +34,7 @@ test:
 
 jvm: test
 	../../bin/fz -jvm \
+		-sourceDirs=. \
 		-JLibraries="$(shell pkg-config --libs gtk4 | sed 's/-l//g')" \
 		./gtk.fz
 
@@ -42,6 +43,7 @@ c: compile
 
 compile: test
 	../../bin/fz -c \
+		-sourceDirs=. \
 		-CFlags="$(shell pkg-config --cflags gtk4) -Wno-incompatible-function-pointer-types" \
 		-CInclude=gtk/gtk.h \
 		-CLink="$(shell pkg-config --libs gtk4 | sed 's/-l//g')" \
