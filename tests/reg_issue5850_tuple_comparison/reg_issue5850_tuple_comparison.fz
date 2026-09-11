@@ -52,8 +52,6 @@ reg_issue5850_tuple_comparison =>
                      (124, "abc", unit, "true ") ]
   tuples := twelve_tuples.unique.as_array
 
-  c => container
-
   say ""
   say "more complex example: "
 
@@ -68,7 +66,7 @@ reg_issue5850_tuple_comparison =>
 
   say ""
   say "creating map from tuples to their indices:"
-  map1 := c.ordered_map tuples tuples.indices
+  map1 := container.ordered_map (tuple i64 String unit String) i64 .of tuples tuples.indices
   say map1
   say "map1 sorted (expecting `true`): $(map1.sorted_entries.map (.key) .is_sorted)"
 
@@ -86,7 +84,7 @@ reg_issue5850_tuple_comparison =>
 
   say ""
   say "now, creating a map inverting values and keys, i.e., sorted by the original indices"
-  map2 := c.ordered_map map1.values map1.keys
+  map2 := container.ordered_map i64 (tuple i64 String unit String) .of map1.values map1.keys
   say map2
 
   say ""
@@ -97,7 +95,7 @@ reg_issue5850_tuple_comparison =>
 
   say ""
   say "hash table: from tuples to their indices"
-  hm := container.hash_map tuples (tuples.indices.map (.bin))
+  hm := container.hash_map (tuple i64 String unit String) String .of tuples (tuples.indices.map (.bin))
   say hm
   for t in tuples
       i in 0..

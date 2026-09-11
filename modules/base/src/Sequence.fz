@@ -1105,36 +1105,38 @@ is
     r.or_panic
 
 
-  # convert this Sequence to an ordered map
+  # convert this Sequence to a Map
   # via mapping all elements to key value pairs
   #
-  public as_ordered_map(KEY type : property.orderable,
-                        VALUE type,
-                        mapper T -> (KEY,VALUE)
-                        ) container.ordered_map KEY VALUE
-  =>
-
-    keys, values :=
-      reduce ((Sequence KEY).empty,(Sequence VALUE).empty) (r,t)->
-        mapper t ||> k,v->(r.0++[k],r.1++[v])
-
-    container.ordered_map keys values
+  public as_map(KEY type : property.equatable,
+                VALUE type,
+                mapper T -> (KEY,VALUE)) container.Map KEY VALUE =>
+    if KEY : property.orderable
+      as_map KEY VALUE (container.ps_map KEY VALUE) mapper
+    else if KEY : property.hashable
+      as_map KEY VALUE (container.hash_map KEY VALUE) mapper
+    else
+      compile_time_panic
 
 
-  # convert this Sequence to a hash map
+  # convert this Sequence to a Map of type M
   # via mapping all elements to key value pairs
   #
-  public as_hash_map(KEY type : property.hashable,
-                     VALUE type,
-                     mapper T -> (KEY,VALUE)
-                     ) container.hash_map KEY VALUE
+  # example, creating a map of squares:
+  #
+  #     say <| (1..10).as_map _ _ (container.ps_map i64 i64) (x -> (x, x*x))
+  #
+  public as_map(KEY type : property.equatable,
+                VALUE type,
+                M type : container.Map KEY VALUE,
+                mapper T -> (KEY,VALUE)) M
   =>
 
-    keys, values :=
-      reduce ((Sequence KEY).empty,(Sequence VALUE).empty) (r,t)->
-        mapper t ||> k,v->(r.0++[k],r.1++[v])
+    kvs :=
+      reduce (Sequence (KEY, VALUE)).empty (r,t)->
+        mapper t ||> k,v->(r++[(k,v)])
 
-    container.hash_map keys.as_array values.as_array
+    M.of kvs
 
 
   # sliding window with step size one
@@ -1179,13 +1181,16 @@ is
     # type of the keys
     K type : property.orderable,
 
+    # the type of the map to create
+    M type : container.Map K T,
+
     # function to generate the key
     key_f T->K,
 
     # function to reduce the elements
-    reduce_f (T,T)->T) container.Map K T
+    reduce_f (T,T)->T) M
   =>
-    group_map_reduce K T key_f id reduce_f
+    group_map_reduce K T M key_f id reduce_f
 
 
   # group elements using key_f and
@@ -1208,6 +1213,9 @@ is
     # type of the values in the result
     B type,
 
+    # the type of the map to create
+    M type : container.Map K B,
+
     # function to generate the keys
     key_f T->K,
 
@@ -1215,7 +1223,7 @@ is
     f T->B,
 
     # function to reduce elements
-    reduce_f (B,B)->B) container.Map K B
+    reduce_f (B,B)->B) M
   =>
     lm : mutate is
     lm ! ()->
@@ -1227,7 +1235,7 @@ is
           nil => res.put key (f x)
           y B => res.put key (reduce_f y (f x))
 
-      res.as_map
+      res.as_map M
 
 
   # group the elements of this sequence by a key of type and applies function f to all elements
@@ -1249,11 +1257,14 @@ is
     # type of the values in the result
     B type,
 
+    # the type of the map to create
+    M type : container.Map K (Sequence B),
+
     # function to generate the keys
     key_f T->K,
 
     # function applied to each element
-    f T->B) container.Map K (Sequence B)
+    f T->B) M
   =>
     lm : mutate is
     lm ! ()->
@@ -1265,7 +1276,7 @@ is
           nil => res.put key [(f x)]
           y Sequence => res.put key (y ++  [(f x)])
 
-      res.as_map
+      res.as_map M
 
 
   # group the elements of this sequence by a key of type K
@@ -1273,9 +1284,9 @@ is
   #
   # f determines the key of an element
   #
-  public group_by_mutable_map(K type : property.equatable, M type : container.Mutable_Map K (Sequence T), f T -> K) container.Map K (Sequence T)
+  public group_by_mutable_map(K type : property.equatable, MM type : container.Mutable_Map K (Sequence T), M type : container.Map K (Sequence T), f T -> K) M
   =>
-    res := M.empty
+    res := MM.empty
 
     for_each x->
       key := f x
@@ -1283,7 +1294,7 @@ is
         nil => res.put key [x]
         s Sequence => res.put key s++[x]
 
-    res.as_map
+    res.as_map M
 
 
   # group the elements of this sequence by a key of type K
@@ -1291,22 +1302,15 @@ is
   #
   # f determines the key of an element
   #
-  public group_by(K type : property.orderable, f T -> K) container.Map K (Sequence T) =>
+  public group_by(K type : property.equatable, f T -> K) container.Map K (Sequence T) =>
     lm : mutate is
-    lm ! ()->
-      group_by_mutable_map K (container.mutable_tree_map lm K (Sequence T)) f
-
-
-  /* NYI: UNDER DEVELOPMENT: impl. restriction: Incompatible type parameter
-  # group the elements of this sequence
-  #
-  public group(M type : container.Mutable_Map T (Sequence T)) container.Map T (Sequence T)
-    pre T : property.equatable
-  =>
-    group_by T M id
-  */
-
-
+    lm.instate_self (container.Map K (Sequence T)) ()->
+      if K : property.orderable
+        group_by_mutable_map K (container.mutable_tree_map lm K (Sequence T)) (container.ps_map K (Sequence T)) f
+      else if K : property.hashable
+        group_by_mutable_map K (container.Mutable_Hash_Map lm K (Sequence T)) (container.hash_map K (Sequence T)) f
+      else
+        compile_time_panic
 
 
   # create an empty Sequence

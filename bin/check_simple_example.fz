@@ -77,14 +77,8 @@ envir_var_kv := [
 # envir vars as map
 #
 envir_vars :=
-  (container.ordered_map
-    (envir_var_kv
-      .map (.0)
-      .as_array)
-    (envir_var_kv
-      .map (.1)
-      .as_array))
-  .add "FUZION_DISABLE_ANSI_ESCAPES" "true"
+  container.ordered_map String String .of envir_var_kv
+    .add "FUZION_DISABLE_ANSI_ESCAPES" "true"
 
 
 

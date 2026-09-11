@@ -38,7 +38,7 @@ module as_header_map(kvs Sequence (String,String)) =>
     fields := (container.mutable_tree_map lm String String) .empty
     for kv in kvs do
       fields.put kv.0.lower_case kv.1
-    fields.as_map
+    fields.as_map (container.ps_map String String)
 
 
 # line separator in the HTTP header
