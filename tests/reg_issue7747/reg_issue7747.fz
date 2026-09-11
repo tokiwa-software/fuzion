@@ -1,0 +1,53 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7747
+#
+# -----------------------------------------------------------------------
+
+# regression test for issue #7747: redefinition with non-matching arg count results in fz crash
+#
+# The problem here is that `a.f` and `b.f` have different argument counts, so `b.f` does
+# not redefine `a.f`, but the code for checking the inherited pre- and post-conditions expected
+# these to be the same.
+#
+reg_issue7747 =>
+
+case_pre is
+
+  a is
+    f (p Q)
+      pre
+        0=1
+    =>
+
+  b : a is
+    redef f(p i64) =>  # *** error ***: Wrong number of arguments in redefined feature
+
+
+case_post is
+
+  a is
+    f (p Q)
+      post
+        0=1
+    =>
+
+  b : a is
+    redef f(p i64) =>  # *** error ***: Wrong number of arguments in redefined feature

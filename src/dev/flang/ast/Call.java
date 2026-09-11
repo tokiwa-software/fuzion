@@ -2247,9 +2247,11 @@ public class Call extends AbstractCall
     else if (formalType.isParametricType())
       {
         var g = formalType.typeParameter();
-        if (g.outer() == _calledFeature)
+        var i = g.typeParameterIndex();
+        if (g.outer() == _calledFeature &&
+            i < _generics.size() // the index may be out-of-range if the input is fully broken, see #7747 for an example
+           )
           { // we found a use of a generic type, so record it:
-            var i = g.typeParameterIndex();
             var gt = _generics.get(i);
             if (!conflict[i] && gt != Types.t_ERROR && changingGenericAllowed(i))
               {
