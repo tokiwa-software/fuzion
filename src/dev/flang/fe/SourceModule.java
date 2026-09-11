@@ -957,8 +957,8 @@ A feature that does not redefine an inherited feature must not use the `redef` m
             List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.baseName(), null, true, true)
               .stream()
               .filter(fo -> fo._feature != f // excluding the feature itself
-                          && !visibleFor(fo._feature, f)) //only truly invisible features
-                          && fo._feature.featureName().equals(f.featureName())
+                          && !visibleFor(fo._feature, f) //only truly invisible features
+                          && fo._feature.featureName().equals(f.featureName()))
               .collect(List.collector());
             AstErrors.redefineModifierDoesNotRedefine(f, hiddenFeaturesSameSignature);
           }
