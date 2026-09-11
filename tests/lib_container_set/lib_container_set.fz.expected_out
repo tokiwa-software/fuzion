@@ -9,3 +9,12 @@
 {1;2}	is superset	of {1;2;3}:	false
 {1;2;3}	is subset	of {1;2}:	false
 {1;2}	is subset	of {1;2;3}:	true
+true
+false
+false
+false
+true
+true
+false
+true
+true

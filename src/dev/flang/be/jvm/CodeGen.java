@@ -959,7 +959,7 @@ class CodeGen
     var n = _names.javaClass(rc);
     var res = Expr
       .comment("box from " + clazzInQuotes(vc) + " to " + clazzInQuotes(rc))
-      .andThen(val)
+      .andThen(_jvm.cloneValue(s, val, vc, NO_CLAZZ))
       .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
                                   _types.boxSignature(rc),
                                   _types.javaType(rc)));

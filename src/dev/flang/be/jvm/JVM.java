@@ -873,7 +873,7 @@ should be avoided as much as possible.
                                       LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
                                       PATH="$PATH:$SCRIPT_PATH" \
                                       DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
-                                      java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
+                                      java --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
                                       """,
                                       FUZION_COMMAND_PROPERTY,
                                       args));
@@ -2013,6 +2013,7 @@ should be avoided as much as possible.
     if (!_fuir.clazzIsRef(rt) &&
         (f == NO_CLAZZ || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
         !_fuir.isScalar(rt) &&
+        !_fuir.clazzIsUnitType(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
         var vti = _types.resultType(rt).vti();

@@ -17,10 +17,17 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test reg_issue7720_1
 #
 # -----------------------------------------------------------------------
 
-fz_cmd is
-  fuzion.jvm.use _ ["--enable-native-access=ALL-UNNAMED", "-Djava.class.path=../../classes/"] ()->
-    Java.dev.flang.tools.Fuzion.main []
+e := FAIL
+e.n <- OK
+s OK := e      # box `e`, so s.n is OK
+e.n <- FAIL    # but e.n is FAIL
+say s.n        # should print OK
+
+OK ref is
+  n := mut OK OK.this
+
+FAIL : OK is

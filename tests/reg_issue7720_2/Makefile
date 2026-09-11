@@ -17,10 +17,10 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-fz_cmd is
-  fuzion.jvm.use _ ["--enable-native-access=ALL-UNNAMED", "-Djava.class.path=../../classes/"] ()->
-    Java.dev.flang.tools.Fuzion.main []
+override NAME = reg_issue7720_2
+FUZION_OPTIONS = -XenableSetKeyword
+include ../simple.mk

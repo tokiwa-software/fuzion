@@ -17,10 +17,22 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test reg_issue7712
 #
 # -----------------------------------------------------------------------
 
-fz_cmd is
-  fuzion.jvm.use _ ["--enable-native-access=ALL-UNNAMED", "-Djava.class.path=../../classes/"] ()->
-    Java.dev.flang.tools.Fuzion.main []
+a is
+  ok => true
+  val i32
+  pre
+    ok
+  =>
+    -1
+
+b(redef val i32) : a is
+say <| b 42 .val
+
+c : a is
+  redef val i32 := 67
+
+say <| c.val
