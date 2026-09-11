@@ -267,8 +267,7 @@ public class TailCall extends ANY
       };
 
     if (POSTCONDITIONS)
-      // NYI: BUG: does not work yet.
-      ensure(true || isTC  || !_fuir.clazzBaseName(cl).startsWith(FuzionConstants.REC_LOOP_PREFIX)); 
+      ensure(isTC  || !_fuir.clazzBaseName(cl).matches("^#loop\\d+$"));
 
     return isTC;
   }
