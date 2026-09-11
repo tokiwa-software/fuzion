@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue7754.fz:6:11: error 1: Feature declared using modifier 'redef' does not redefine another feature
+    redef f(x, y i32) =>   # should flag an error, but without a 'could be made public' hint
+----------^
+Redefining feature: 'reg_issue7754.b.f'
+To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'reg_issue7754.b.f'.
+
+one error.
