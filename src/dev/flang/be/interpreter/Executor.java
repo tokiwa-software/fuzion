@@ -293,7 +293,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
     var cl = _fuir.clazzAt(s);
     if (cc == cl // calling myself
-        && _tailCall.callIsTailCall(cl, s))
+        && _tailCall.callIsTailCall(s))
       {
         throw new TailCallException(tvalue, args);
       }
