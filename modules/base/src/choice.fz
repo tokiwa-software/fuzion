@@ -118,6 +118,10 @@ is
     "choice $(choice.this.type).$(tag) $(T) $(val)"
 
 
+  # The tag to identify this value
+  #
+  # NYI: UNDER DEVELOPMENT: Chose a better name, mabe `ordinal`?
+  #
   public tag i32
   =>
     intrinsic
