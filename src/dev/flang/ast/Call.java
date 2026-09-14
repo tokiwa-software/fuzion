@@ -944,7 +944,7 @@ public class Call extends AbstractCall
    * the same context.  Moving the call into a lambda or a lazy value will
    * change its context and resolution of actuals will have to be repeated.
    */
-  protected Context _actualsResolvedFor;
+  private Context _actualsResolvedFor;
 
 
   /**
