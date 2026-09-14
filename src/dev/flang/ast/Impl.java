@@ -523,15 +523,16 @@ public class Impl extends ANY
   private AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean urgent)
   {
     var exprs = new List<Expr>();
-    for (var i = 0; i < _initialCalls.size(); i++)
-      {
-        var iv = initialValueFromCall(i, res);
-        exprs.add(iv);
-      }
-    var result = Expr.union(exprs, Context.NONE, urgent);
+    AbstractType result = null;
 
     if (urgent)
       {
+        for (var i = 0; i < _initialCalls.size(); i++)
+          {
+            var iv = initialValueFromCall(i, res);
+            exprs.add(iv);
+          }
+        result = Expr.union(exprs, Context.NONE, urgent);
         if (result == Types.t_FORWARD_CYCLIC)
           {
             result = Types.resolved.t_void;
