@@ -1,0 +1,148 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5793
+#
+# -----------------------------------------------------------------------
+
+# This tests reflective functionilty of `choice` based on intrinsics
+#
+# This includes features like `as_string`, `property.equatable`, `property.orderable`,
+# conversion to ordinal numbers, etc.
+#
+reg_issue5793 =>
+
+  say ""
+  say "--- testing tag of simple choice type: ---"
+  say ""
+
+  say (id (choice bool i64 u8 String) true             ).tag
+  say (id (choice bool i64 u8 String) 42               ).tag
+  say (id (choice bool i64 u8 String) "bla".utf8.first!).tag
+  say (id (choice bool i64 u8 String) "hi"             ).tag
+
+  f(a choice bool i64 u8 String) =>
+    say "tag is "+a.tag+" for $a"
+
+  f true
+  f 42
+  f "bla".utf8.first!
+  f "hi"
+
+  say ""
+  say "--- testing tags of some common choice types: ---"
+  say ""
+
+  # bool is mapped to Java type `boolean` by the JVM backend:
+  say "true .tag: $(true .tag) $(true ) expecting 1"
+  say "false.tag: $(false.tag) $(false) expecting 0"
+
+  # `option String` uses `null` to represent the `nil` case in the JVM backend:
+  say "option String 'bla' .tag: $(option String "bla" .tag) $(option String "bla" ) expecting 0"
+  say "option String nil   .tag: $(option String nil   .tag) $(option String nil   ) expecting 1"
+
+  # `option i64` uses a `tag` field
+  say "option i64 42  .tag: $(option i64 42  .tag) $(option i64 42  ) expecting 0"
+  say "option i64 nil .tag: $(option i64 nil .tag) $(option i64 nil ) expecting 1"
+
+  say ""
+  say "--- testing tags choice with several `void` entries: ---"
+  say ""
+
+  # note that `void` entries will be removed from the tag numbering by the JVM backend, so we must make sure they are put back in correctly:
+
+  say "id (choice unit void void) unit .tag $(id (choice unit void void) unit .tag) expecting 0"
+  say "id (choice void unit void) unit .tag $(id (choice void unit void) unit .tag) expecting 1"
+  say "id (choice void void unit) unit .tag $(id (choice void void unit) unit .tag) expecting 2"
+
+  say "id (choice void void void i32 void void unit nil void void) 42   .tag: $(id (choice void void void i32 void void unit nil void void) 42   .tag) $(id (choice void void void i32 void void unit nil void void) 42  ) expecting 3"
+  say "id (choice void void void i32 void void unit nil void void) unit .tag: $(id (choice void void void i32 void void unit nil void void) unit .tag) $(id (choice void void void i32 void void unit nil void void) unit) expecting 6"
+  say "id (choice void void void i32 void void unit nil void void) nil  .tag: $(id (choice void void void i32 void void unit nil void void) nil  .tag) $(id (choice void void void i32 void void unit nil void void) nil ) expecting 7"
+
+  say ""
+  say "--- testing `option nil`, which is effectively `choice nil nil`, but it can have tags 0 and 1: ---"
+  say ""
+
+  say "id (Sequence nil) [nil] .first.tag: $(id (Sequence nil) [nil] .first.tag) expecting 0"
+  say "id (Sequence nil) []    .first.tag: $(id (Sequence nil) []    .first.tag) expecting 1"
+
+  say ""
+  say "--- choice of unit types and ref types only are encoded using not tag field but special ref values by the C backend: ---"
+  say ""
+
+  say "id (choice unit String nil (Sequence i64) concur) unit    .tag $(id (choice unit String nil (Sequence i64) concur) unit    .tag) expecting 0"
+  say "id (choice unit String nil (Sequence i64) concur) 'str'   .tag $(id (choice unit String nil (Sequence i64) concur) "str"   .tag) expecting 1"
+  say "id (choice unit String nil (Sequence i64) concur) nil     .tag $(id (choice unit String nil (Sequence i64) concur) nil     .tag) expecting 2"
+  say "id (choice unit String nil (Sequence i64) concur) [1,2,4] .tag $(id (choice unit String nil (Sequence i64) concur) [1,2,4] .tag) expecting 3"
+  say "id (choice unit String nil (Sequence i64) concur) concur  .tag $(id (choice unit String nil (Sequence i64) concur) concur  .tag) expecting 4"
+
+  say ""
+  say "--- choice of only unit types are treated like an int type by the JVM backend: ---"
+  say ""
+
+  say "id (choice unit nil concur) unit   .tag $(id (choice unit nil concur) unit   .tag) expecting 0"
+  say "id (choice unit nil concur) nil    .tag $(id (choice unit nil concur) nil    .tag) expecting 1"
+  say "id (choice unit nil concur) concur .tag $(id (choice unit nil concur) concur .tag) expecting 2"
+
+  say ""
+  say "--- testing with void alternatives ---"
+  say ""
+
+  q(o option (choice void)) =>
+    o ? c choice void => say c.tag
+      | nil           => say "nil: $(o.tag) expecting 1"
+  q nil
+
+  say ""
+  say "--- mix of void, several ref and several unit types ---"
+  say ""
+
+  blub(x choice void String nil (Sequence i64) unit) =>
+    yap "$(x.tag): "
+    match x
+      String => say "StringYeahYeah!"
+      nil => say "nil"
+      s Sequence => say "Sequence $s"
+      unit => say "unit"
+      void =>
+
+  say "----blub----"
+  blub "hi"
+  blub nil
+  blub [1,2,3,4]
+  blub unit
+
+  say ""
+  say "--- mix of void, one ref type, choice type and several unit types ---"
+  say ""
+
+  blob(x choice void String nil (option (Sequence i64)) unit) =>
+    yap "$(x.tag): "
+    match x
+      String => say "StringYeahYeah!"
+      nil => say "nil"
+      s option => say "option Sequence $s"
+      unit => say "unit"
+      void =>
+
+  say "----blob----"
+  blob "hi"
+  blob nil
+  blob [1,2,3,4]
+  blob unit
