@@ -517,6 +517,17 @@ is
   # if finite), you may use `as_string_all`.
   #
   public redef as_string String =>
+    sequence_as_string
+
+
+  # Implementation of `Sequence.as_string` but under a different name such that
+  # we can use it if multiple inheritance results in clashing `as_string`
+  # implementations.
+  #
+  # NYI: UNDER DEVELOPMENT: #5801 this could be done if renaming was possible
+  # during inheritance.
+  #
+  module sequence_as_string =>
     if finite.is_yes
       as_string_all
     else

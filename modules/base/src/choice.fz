@@ -103,4 +103,21 @@
 # A choice type with no actual generic arguments is isomorphic to 'void', i.e, it
 # is a type that has an empty set of possible values.
 #
-public choice(CHOICE_ELEMENT_TYPE type...) is
+public choice(CHOICE_ELEMENT_TYPE type...)
+is
+
+  # create a String from this choice.  Unless redefined, `a.as_string` will
+  # create `choice $(choice.this.type).$(tag) $T $val' where tag is the tag
+  # of this choice, $T is the type of the value stored in this choice and
+  # $val is the value stored in this choice
+  #
+  public redef as_string String
+  =>
+    T := "NYI"
+    val := "NYI"
+    "choice $(choice.this.type).$(tag) $(T) $(val)"
+
+
+  public tag i32
+  =>
+    intrinsic
