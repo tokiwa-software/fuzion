@@ -2679,9 +2679,13 @@ public class AstErrors extends ANY
 
   public static void loopResultsInTwoIncompatibleTypes(SourcePosition pos, Match m)
   {
-    error(pos, "Loop results in two incompatible types." ,
-      "The incompatible types are: " + m.cases().map2(c -> s(c.code().type())).stream().collect(Collectors.joining(","))
-    );
+    var types = m.cases().map2(c -> c.code().type());
+    if (!any() || types.stream().noneMatch(t -> t == Types.t_ERROR))
+      {
+        error(pos, "Loop results in two incompatible types." ,
+          "The incompatible types are: " + types.stream().map(t-> s(t)).collect(Collectors.joining(","))
+        );
+      }
   }
 
   public static void anonymousFeatureMustNotInheritFromMultiple(SourcePosition range, List<AbstractCall> i)
