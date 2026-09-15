@@ -637,7 +637,6 @@ public class Call extends AbstractCall
 
     if (_calledFeature == null)
       { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
-        resolveTypesOfActuals(res, context);
         findChainedBooleans(res, context);
       }
 
@@ -648,8 +647,6 @@ public class Call extends AbstractCall
       }
 
     addPendingError(res, targetFeature);
-
-    resolveTypesOfActuals(res, context);
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
@@ -947,7 +944,7 @@ public class Call extends AbstractCall
    * the same context.  Moving the call into a lambda or a lazy value will
    * change its context and resolution of actuals will have to be repeated.
    */
-  protected Context _actualsResolvedFor;
+  private Context _actualsResolvedFor;
 
 
   /**
