@@ -1,0 +1,68 @@
+
+--- testing tag of simple choice type: ---
+
+0
+1
+2
+3
+tag is 0 for choice choice bool i64 u8 String.0 NYI NYI
+tag is 1 for choice choice bool i64 u8 String.1 NYI NYI
+tag is 2 for choice choice bool i64 u8 String.2 NYI NYI
+tag is 3 for choice choice bool i64 u8 String.3 NYI NYI
+
+--- testing tags of some common choice types: ---
+
+true .tag: 1 true expecting 1
+false.tag: 0 false expecting 0
+option String 'bla' .tag: 0 bla expecting 0
+option String nil   .tag: 1 --nil-- expecting 1
+option i64 42  .tag: 0 42 expecting 0
+option i64 nil .tag: 1 --nil-- expecting 1
+
+--- testing tags choice with several `void` entries: ---
+
+id (choice unit void void) unit .tag 0 expecting 0
+id (choice void unit void) unit .tag 1 expecting 1
+id (choice void void unit) unit .tag 2 expecting 2
+id (choice void void void i32 void void unit nil void void) 42   .tag: 3 choice choice void void void i32 void void unit nil void void.3 NYI NYI expecting 3
+id (choice void void void i32 void void unit nil void void) unit .tag: 6 choice choice void void void i32 void void unit nil void void.6 NYI NYI expecting 6
+id (choice void void void i32 void void unit nil void void) nil  .tag: 7 choice choice void void void i32 void void unit nil void void.7 NYI NYI expecting 7
+
+--- testing `option nil`, which is effectively `choice nil nil`, but it can have tags 0 and 1: ---
+
+id (Sequence nil) [nil] .first.tag: 0 expecting 0
+id (Sequence nil) []    .first.tag: 1 expecting 1
+
+--- choice of unit types and ref types only are encoded using not tag field but special ref values by the C backend: ---
+
+id (choice unit String nil (Sequence i64) concur) unit    .tag 0 expecting 0
+id (choice unit String nil (Sequence i64) concur) 'str'   .tag 1 expecting 1
+id (choice unit String nil (Sequence i64) concur) nil     .tag 2 expecting 2
+id (choice unit String nil (Sequence i64) concur) [1,2,4] .tag 3 expecting 3
+id (choice unit String nil (Sequence i64) concur) concur  .tag 4 expecting 4
+
+--- choice of only unit types are treated like an int type by the JVM backend: ---
+
+id (choice unit nil concur) unit   .tag 0 expecting 0
+id (choice unit nil concur) nil    .tag 1 expecting 1
+id (choice unit nil concur) concur .tag 2 expecting 2
+
+--- testing with void alternatives ---
+
+nil: 1 expecting 1
+
+--- mix of void, several ref and several unit types ---
+
+----blub----
+1: StringYeahYeah!
+2: nil
+3: Sequence [1, 2, 3, 4]
+4: unit
+
+--- mix of void, one ref type, choice type and several unit types ---
+
+----blob----
+1: StringYeahYeah!
+2: nil
+3: option Sequence [1, 2, 3, 4]
+4: unit

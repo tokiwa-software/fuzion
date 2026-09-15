@@ -556,12 +556,10 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Pair<Value, Object> match(int s, AbstractInterpreter<Value, Object> ai, Value subv)
   {
-    var staticSubjectClazz = subv instanceof boolValue ? fuir().clazz(SpecialClazzes.c_bool) : ((ValueWithClazz)subv)._clazz;
+    if (PRECONDITIONS) check
+      (subv instanceof boolValue || fuir().clazzIsChoice(((ValueWithClazz)subv)._clazz));
 
-    if (CHECKS) check
-      (fuir().clazzIsChoice(staticSubjectClazz));
-
-    var tagAndChoiceElement = tagAndVal(staticSubjectClazz, subv);
+    var tagAndChoiceElement = tagAndVal(subv);
 
     var cix = _fuir.matchCaseIndex(s, tagAndChoiceElement.v0());
 
@@ -579,36 +577,37 @@ public class Executor extends ProcessExpression<Value, Object>
 
 
   /**
-   * @param staticSubjectClazz the clazz of the subject, a choice
+   * From a tagged value, extract the tag and value parts.
    *
    * @param sub the subjects current value
    *
    * @return pair where first value is the tag, the second value the extracted value.
    */
-  private Pair<Integer, Value> tagAndVal(int staticSubjectClazz, Value sub)
+  Pair<Integer, Value> tagAndVal(Value sub)
   {
     if (PRECONDITIONS) require
-      (fuir().clazzIsChoice(staticSubjectClazz));
+      (sub instanceof boolValue || fuir().clazzIsChoice(((ValueWithClazz)sub)._clazz));
 
-    var tag = -1;
-    Value val = null;
-    if (fuir().clazzIsChoiceOfOnlyRefs(staticSubjectClazz))
-      {
-        val = Interpreter.getChoiceRefVal(staticSubjectClazz, staticSubjectClazz, sub);
-        tag = ChoiceIdAsRef.tag(staticSubjectClazz, val);
-      }
-    else if (staticSubjectClazz == fuir().clazz(SpecialClazzes.c_bool))
+    int tag;
+    Value val;
+    if (sub instanceof boolValue)
       {
         tag = sub.boolValue() ? 1 : 0;
         val = sub;
       }
     else
       {
-        tag = sub.tag();
-      }
-    if (val == null)
-      {
-        val = Interpreter.getChoiceVal(staticSubjectClazz, staticSubjectClazz, sub, tag);
+        var staticSubjectClazz = ((ValueWithClazz)sub)._clazz;
+        if (fuir().clazzIsChoiceOfOnlyRefs(staticSubjectClazz))
+          {
+            val = Interpreter.getChoiceRefVal(staticSubjectClazz, staticSubjectClazz, sub);
+            tag = ChoiceIdAsRef.tag(staticSubjectClazz, val);
+          }
+        else
+          {
+            tag = sub.tag();
+            val = Interpreter.getChoiceVal(staticSubjectClazz, staticSubjectClazz, sub, tag);
+          }
       }
 
     if (POSTCONDITIONS) ensure
@@ -616,6 +615,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
     return new Pair<Integer, Value>(tag, val);
   }
+
 
   @Override
   public Pair<Value, Object> tag(int s, Value value, int newcl, int tagNum)
