@@ -52,14 +52,13 @@ is
   #
   public redef is_ascii bool => codepoint.ascii.contains val
 
+
   # is this an ASCII digit i.e. 0-9
   #
   public is_ascii_digit bool => codepoint.ascii_digit.contains val
 
+
   # is this an ASCII letter i.e. A-Z or a-z
-  #
-  # NYI: PERFORMANCE: this is way slower, should investigate how/if to cache this Set union.
-  # public is_ascii_letter bool => codepoint.latin_alphabet.contains val
   #
   public is_ascii_letter bool => is_lowercase_ascii_letter || is_uppercase_ascii_letter
 
@@ -67,21 +66,26 @@ is
   #
   public is_uppercase_ascii_letter bool => codepoint.A_to_Z.contains val
 
+
   # is this a lowercase ASCII letter i.e. a-z
   #
   public is_lowercase_ascii_letter bool => codepoint.a_to_z.contains val
+
 
   # is this an ASCII letter or digit i.e. A-Z, a-z or 0-9
   #
   public is_ascii_alpha_num bool => is_ascii_letter || is_ascii_digit
 
+
   # is this a codepoint reserved for utf16 surrogate pairs
   #
   public is_utf16_surrogate bool => codepoint.utf16_surrogate.contains val
 
+
   # is this codepoint guaranteed to never be a valid unicode character
   #
   public is_not_a_character bool => codepoint.not_a_character.contains val
+
 
   # shortcut to get this codepoint as a u8
   #
@@ -99,18 +103,30 @@ is
   #
   public type.ascii interval u32 => u32 0 .. 0x7f
 
+
   # 0 to 9
+  #
   public type.ascii_digit interval u32 => u32 0x30 .. 0x39
 
+
   # A to Z (uppercase only)
+  #
   public type.A_to_Z interval u32 => u32 0x41 .. 0x5A
 
+
   # a to z (lowercase only)
+  #
   public type.a_to_z interval u32 => u32 0x61 .. 0x7A
+
 
   # a-z and A-Z
   # https://en.wikipedia.org/wiki/ISO_basic_Latin_alphabet
-  public type.latin_alphabet container.Set u32 => A_to_Z ∪ a_to_z
+  #
+  public type.latin_alphabet container.Set u32 =>
+    universe.latin_alphabet_cache_key(val container.Set u32) is
+    (cache ()->
+      latin_alphabet_cache_key (A_to_Z ∪ a_to_z)).val
+
 
   # range of values encoded in one byte
   #
