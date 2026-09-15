@@ -1699,7 +1699,7 @@ public class C extends ANY
               var cl = _fuir.clazzAt(s);
 
               if (cc == cl &&  // calling myself
-                  _tailCall.callIsTailCall(cl, s)
+                  _tailCall.callIsTailCall(s)
                 )
                 { // then we can do tail recursion optimization!
                   var tc = _fuir.clazzOuterClazz(cc);

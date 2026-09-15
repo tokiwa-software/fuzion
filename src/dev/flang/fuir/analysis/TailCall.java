@@ -95,23 +95,24 @@ public class TailCall extends ANY
    * current clazz' arguments and performing a goto to the beginning of the
    * current clazz's code.
    *
-   * @param cl index of clazz containing the call
-   *
    * @param s site of the call
    *
    * @return true if this is a tail call, false if this is no tail call or this
    * it is unknown whether this is a tail call.
    */
-  public boolean callIsTailCall(int cl, int s)
+  public boolean callIsTailCall(int s)
   {
     if (PRECONDITIONS) require
       (_fuir.withinCode(s),
        _fuir.codeAt(s) == IR.ExprKind.Call);
 
+    // NYI: UNDER DEVELOPMENT: check that loops always result in true
+
+    var cl = _fuir.clazzAt(s);
     var c2 = _fuir.clazzCode(cl);
     return _fuir.codeSize(c2) > 0 &&
       (_fuir.alwaysResultsInVoid(s) ||
-       isTailCall(cl, _fuir.codeBlockEnd(c2), s, _fuir.clazzResultField(cl)));
+       isTailCall(_fuir.codeBlockEnd(c2), s, _fuir.clazzResultField(cl)));
   }
 
 
@@ -194,8 +195,6 @@ public class TailCall extends ANY
   /**
    * Helper to check from the last expr in cl's code if we find a tail call at c,ix.
    *
-   * @param cl index of clazz containing the call
-   *
    * @param cls the site of the last Expr of a code block that is to be checked if it results in the tail call at s
    *
    * @param s site of the call
@@ -204,7 +203,7 @@ public class TailCall extends ANY
    * block, otherwise the clazz of a field in Current the result should be
    * assigned to.
    */
-  private boolean isTailCall(int cl, int cls, int s, int mustAssignTo)
+  private boolean isTailCall(int cls, int s, int mustAssignTo)
   {
     var isTC = _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
       {
@@ -220,7 +219,7 @@ public class TailCall extends ANY
              _fuir.clazzKind(cc) == IR.FeatureKind.Field &&
              cls > _fuir.codeBlockStart(cls)+1 &&
              _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
-             isTailCall(cl, _fuir.codeIndex(cls, -2), s, cc));
+             isTailCall(_fuir.codeIndex(cls, -2), s, cc));
         }
 
       case Assign ->
@@ -237,7 +236,8 @@ public class TailCall extends ANY
             sameField(cc, mustAssignTo) &&
             cls > _fuir.codeBlockStart(cls)+1 &&
             _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
-            isTailCall(cl, _fuir.codeIndex(cls, -2), s, NO_CLAZZ);
+            cc != NO_CLAZZ &&
+            isTailCall(_fuir.codeIndex(cls, -2), s, NO_CLAZZ);
         }
 
       case Match ->
@@ -246,7 +246,7 @@ public class TailCall extends ANY
           for (var mc = 0; mc < _fuir.matchCaseCount(cls); mc++)
             {
               var mcc = _fuir.matchCaseCode(cls, mc);
-              if (_fuir.codeSize(mcc) > 0 && isTailCall(cl, _fuir.codeBlockEnd(mcc), s, mustAssignTo))
+              if (_fuir.codeSize(mcc) > 0 && isTailCall(_fuir.codeBlockEnd(mcc), s, mustAssignTo))
                 {
                   yield true;
                 }
@@ -259,16 +259,12 @@ public class TailCall extends ANY
       case Box ->
         {
           // true if isTailCall=true for what we are boxing
-          yield isTailCall(cl, _fuir.codeIndex(cls, -1), s, mustAssignTo);
+          yield isTailCall(_fuir.codeIndex(cls, -1), s, mustAssignTo);
         }
 
       // any other code results in failure to detect a tail call:
       default -> false;
       };
-
-    if (POSTCONDITIONS)
-      // NYI: BUG: does not work yet.
-      ensure(true || isTC  || !_fuir.clazzBaseName(cl).startsWith(FuzionConstants.REC_LOOP_PREFIX)); 
 
     return isTC;
   }
