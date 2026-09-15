@@ -2197,9 +2197,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return
       outer() != null &&
       outer().inheritsFrom(Types.resolved.f_effect) &&
-      outer() != Types.resolved.f_effect &&
-      !isArgument() &&
-      !isField();
+      outer() != Types.resolved.f_effect;
   }
 
 
