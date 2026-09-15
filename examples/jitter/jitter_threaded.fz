@@ -123,7 +123,8 @@ jitter_threaded =>
             sample_ch <- (period, actual_release, expected_rel, false)
 
             # advance expected release time
-            next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
+            _            := state_modify next_release (x -> next_release x.t+period)
+            next_rel     := state_get next_release .t
             if actual_release >= next_rel
               (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
 
