@@ -1571,10 +1571,10 @@ oneTypeList : onetype ( COMMA oneTypeList
    */
   boolean skipOneTypeList()
   {
-    boolean result = skipSimpletype();
+    boolean result = skipOneType(true, true);
     while (skipComma())
       {
-        result = result && skipSimpletype();
+        result = result && skipOneType(true, true);
       }
     return result;
   }
