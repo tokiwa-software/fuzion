@@ -27,7 +27,7 @@ public task_pool (
   # effect used to mutate the list of threads started by this runner
   #
   M type : mutate
-) : realtime.Scheduler
+) ! M : realtime.Scheduler
 is
 
   thrds := M.env.var (list concur.Thread) nil
@@ -35,7 +35,7 @@ is
 
   # submit a task to the thread pool
   #
-  public redef submit(P type : time.period, t realtime.task P) unit ! atomic_access =>
+  public redef submit(P type : time.period, t realtime.task P) unit ! M =>
 
     nt := concur.Threads.env.spawn ()->
       actual_last := t.last_start.or_default (time.instant u64.max)
@@ -48,7 +48,7 @@ is
 
   # stop accepting tasks and wait for remaining tasks to finish
   #
-  public redef finally unit ! atomic_access =>
+  public redef finally unit ! M =>
 
     # wait for all threads to finish
     M.env.exclusive ()->
