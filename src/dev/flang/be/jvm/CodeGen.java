@@ -577,7 +577,7 @@ class CodeGen
           if (CHECKS) check
             (_fuir.clazzNeedsCode(cc),
              !(cc == _fuir.clazzAt(si) && // calling myself
-             _jvm._tailCall.callIsTailCall(_fuir.clazzAt(si), si)));
+             _jvm._tailCall.callIsTailCall(si)));
 
           res = makePair(callNative(si, args, cc, rt), rt);
           break;
@@ -594,7 +594,7 @@ class CodeGen
                                      : _fuir.clazzAt(si);
 
               if (cc == cl && // calling myself
-                  _jvm._tailCall.callIsTailCall(cl, si))
+                  _jvm._tailCall.callIsTailCall(si))
                 { // then we can do tail recursion optimization!
 
                   // if present, store target to local #0
