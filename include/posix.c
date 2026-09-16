@@ -1066,7 +1066,9 @@ void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
   // #else
   //     pthread_cond_timedwait(cond, mutex, &absolute_monotonic);
   // #endif
-  ASSERT_SUCCESS(pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime));
+  int res = pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime);
+
+  assert(res == 0 || res == ETIMEDOUT);
 }
 
 void fzE_cnd_destroy(void * cnd) {
