@@ -802,7 +802,7 @@ public class C extends ANY
 
         if (!_options._debugBuild && !_options.fuzionDebug())
           {
-            command.addAll("-O3");
+            command.addAll("-O3", "-DNDEBUG");
           }
       }
 
