@@ -633,7 +633,8 @@ int fzE_thread_join(void * thrd)
       case ESRCH:
         return 3;
       default:
-        assert(false);
+        fprintf(stderr,"*** unexpected case in fzE_thread_join: %d", ret);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -652,7 +653,8 @@ int fzE_thread_setschedparam_convert_policy(int policy)
       case 2:
         return SCHED_RR;
       default:
-        assert(false);
+        fprintf(stderr,"*** unexpected case in fzE_thread_setschedparam_convert_policy: %d", policy);
+        exit(EXIT_FAILURE);
     }
 }
 
