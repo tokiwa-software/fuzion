@@ -157,6 +157,31 @@ public memoize is
     (memoized_effect memoize.this K V).env.keep k f
 
 
+  # For memoization of constant values that do not depend on any input, this
+  # uses the global constant memoization effect to keep that value
+  #
+  # Use this as follows
+  #
+  #     pi : memoize
+  #     =>
+  #       keep ()->
+  #         calculate_pi
+  #
+  # Then, repeated calls to `pi` will result in only a single call to `calculate_pi`.
+  #
+  #
+  public keep(# the value type, i.e., result type of memoized function
+              #
+              V type,
+
+              # the function to calculate the result
+              #
+              f ()->V
+              ) V
+  =>
+    (memoized_constant_effect memoize.this V).env.keep f
+
+
 # effect to memoize values calculated from given keys.
 #
 module:public memoized_effect(# type to identify this memoized instance
@@ -210,3 +235,41 @@ is
   # this will get instated automatically at startup
   #
   public redef fixed type.default_value option (memoized_effect M K V) => memoized_effect M K V
+
+
+# effect to memoize constant values calculated only once
+#
+module:public memoized_constant_effect(# type to identify this memoized instance
+                                       #
+                                       M type,
+
+                                       # the value type, i.e., result type of memoized function
+                                       #
+                                       V type,
+
+                                       # the stored value
+                                       store option V
+                                       )
+  : effect
+is
+
+  # use this memoized effect to retrieve the value or,
+  # if that value was not calculated yet, to calculate it
+  #
+  public keep(# the function to calculate the result
+              #
+              f ()->V
+              ) V
+  =>
+    memoized_constant_effect.this.env.store.or_else ()->
+      v := f()
+      (memoized_constant_effect M V v).replace
+      v
+
+  # default implementation of memoized_constant_effect
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option (memoized_constant_effect M V)
+  =>
+    memoized_constant_effect M V nil
