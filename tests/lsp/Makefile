@@ -23,4 +23,4 @@
 
 override NAME = lsp
 FUZION_OPTIONS = -modules=tokiwa
-include ../simple.mk
+include ../compile.mk # NYI: BUG: LSP process does not seem to be deterministic
