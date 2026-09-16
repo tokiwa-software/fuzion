@@ -160,15 +160,27 @@ public memoize is
   # For memoization of constant values that do not depend on any input, this
   # uses the global constant memoization effect to keep that value
   #
-  # Use this as follows
+  # Use this as follows: Say you have an expensive function like this that
+  # approximates pi:
   #
-  #     pi : memoize
-  #     =>
+  #     pi =>
+  #       (4.0 :: (-)).zip (1.0 :: +2) (/)   # 4/1, -4/3, 4/5, -4/7, ...
+  #                   .take 10000
+  #                   .sum
+  #
+  # You can memoize the result as follows
+  #
+  #     pi : memoize =>
   #       keep ()->
-  #         calculate_pi
+  #         (4.0 :: (-)).zip (1.0 :: +2) (/)   # 4/1, -4/3, 4/5, -4/7, ...
+  #                     .take 10000
+  #                     .sum
   #
-  # Then, repeated calls to `pi` will result in only a single call to `calculate_pi`.
+  # Then, repeated calls to `pi` will result in returning the pre-calculated value.
   #
+  # Effects analysis of this code will show that it uses
+  #
+  #   memoized_constant_effect pi f64
   #
   public keep(# the value type, i.e., result type of memoized function
               #
