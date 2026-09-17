@@ -10,7 +10,7 @@
 # License for more details.
 #
 # You should have received a copy of the GNU General Public License along with The
-# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/\>.
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 
 # -----------------------------------------------------------------------
@@ -99,9 +99,16 @@ jobs:
     steps:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
-          distribution: temurin
-          java-version: '25'
-          architecture: ${{ matrix.arch == 'arm64' && 'aarch64' || 'x64' }}
+          # needs jmods/ for fzjava; Temurin 25 omits them (JEP 493)
+         distribution: microsoft
+         java-version: '25'
+         architecture: ${{ matrix.arch == 'arm64' && 'aarch64' || 'x64' }}
+
+      - name: Check JDK contains jmods (required by fzjava)
+        shell: bash
+        run: |
+          ls "$JAVA_HOME/jmods/java.base.jmod" \
+            || { echo "::error::JDK at $JAVA_HOME has no jmods/ (JEP 493), fzjava cannot build Java modules"; exit 1; }
 
       - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
         if: runner.os == 'Windows'
