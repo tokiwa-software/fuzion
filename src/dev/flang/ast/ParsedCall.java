@@ -468,8 +468,9 @@ public class ParsedCall extends Call
       (expectedType.isLambdaTargetButNotLazy(res));
 
     var paa = partiallyApplicableAlternative(res, context, expectedType);
-    Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
-                         : this;
+    Expr l = paa != null && !paa._feature.isTypeFeature() // would
+      ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
+      : this;
     if (l == this  /* resolution did not replace this call by sth different */ &&
         _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
