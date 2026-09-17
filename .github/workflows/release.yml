@@ -10,7 +10,7 @@
 # License for more details.
 #
 # You should have received a copy of the GNU General Public License along with The
-# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/\>.
 
 
 # -----------------------------------------------------------------------
@@ -55,7 +55,7 @@ jobs:
           V: ${{ steps.getversion.outputs.version }}
         run: git archive --format=tar.gz --prefix="fuzion_${V}_src/" -o "fuzion_${V}_src.tar.gz" HEAD
 
-      - uses: actions/upload-artifact@<SHA> # v4.x  TODO: pin
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: src
           path: fuzion_*_src.tar.gz
@@ -74,10 +74,6 @@ jobs:
       run:
         shell: ${{ matrix.shell }}
     steps:
-      - name: rename archive
-        run: |
-          V="$(cat version.txt)"
-          mv "fuzion_${V}.tar.gz" "fuzion_${V}_${{ matrix.target }}.tar.gz"
 
       # ---------------- Windows: before checkout ----------------
 
@@ -131,7 +127,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           CLANG_MAJOR_VERSION=$(clang --version | head -n 1 | awk '{print $4}' | cut -d. -f1)
-          test -f /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so && sudo ln -sf /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so /usr/lib/
+          test -f "/usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so" && sudo ln -sf "/usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so" /usr/lib/
 
       # ---------------- macOS ----------------
 
@@ -141,7 +137,7 @@ jobs:
           brew install openjdk@25 bdw-gc gnu-sed make coreutils sqlite llvm wolfssl libsodium gnu-tar
           BREW="$(brew --prefix)"
 
-          # GNU tools vor BSD tools; GITHUB_PATH: ein Verzeichnis pro Zeile
+          # GNU tools before BSD tools; GITHUB_PATH expects one directory per line
           for p in gnu-sed make coreutils gnu-tar; do
             echo "$BREW/opt/$p/libexec/gnubin" >> "$GITHUB_PATH"
           done
@@ -162,9 +158,9 @@ jobs:
       - name: create dll links (Windows)
         if: runner.os == 'Windows'
         run: |
-          ln -sf /ucrt64/bin/libclang.dll     /ucrt64/bin/clang.dll
-          ln -sf /ucrt64/bin/libsqlite3-0.dll /ucrt64/bin/sqlite3.dll
-          ln -sf /ucrt64/bin/libsodium-26.dll /ucrt64/bin/sodium.dll
+          ln -sf /ucrt64/bin/libclang.dll      /ucrt64/bin/clang.dll
+          ln -sf /ucrt64/bin/libsqlite3-0.dll  /ucrt64/bin/sqlite3.dll
+          ln -sf /ucrt64/bin/libsodium-26.dll  /ucrt64/bin/sodium.dll
           ln -sf /ucrt64/bin/libwolfssl-45.dll /ucrt64/bin/wolfssl.dll
 
       - name: build libgc (Windows)
@@ -172,7 +168,7 @@ jobs:
         run: |
           export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25"
           export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
-          export FUZION_CLANG_INSTALLED_DIR="$(cygpath -m /ucrt64/bin)"
+          export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           ./bin/windows_install_boehm_gc.sh
 
       # ---------------- all platforms ----------------
@@ -192,14 +188,19 @@ jobs:
           if [ "$RUNNER_OS" = "Windows" ]; then
             export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25"
             export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
-            export FUZION_CLANG_INSTALLED_DIR="$(cygpath -m /ucrt64/bin)"
+            export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           fi
-          make release   # KEIN -j: `release: clean all` würde clean und all parallel starten
+          # no -j: `release: clean all` would run clean and all in parallel
+          make release
 
       - name: rename archive
-        run: mv "fuzion_${cat version.txt}.tar.gz" "fuzion_${cat version.txt}_${{ matrix.target }}.tar.gz"
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          V="$(cat version.txt)"
+          mv "fuzion_${V}.tar.gz" "fuzion_${V}_${TARGET}.tar.gz"
 
-      - uses: actions/upload-artifact@<SHA> # v4.x  TODO: pin
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ matrix.target }}
           path: fuzion_*_${{ matrix.target }}.tar.gz
@@ -213,13 +214,16 @@ jobs:
     env:
       V: ${{ needs.src.outputs.version }}
     steps:
-      - uses: actions/download-artifact@<SHA> # v4.x  TODO: pin
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: dist
           merge-multiple: true
 
-      - name: checksums
-        run: cd dist && sha256sum ./* > SHA256SUMS && cat SHA256SUMS
+      - name: check archives and create checksums
+        run: |
+          ls -l dist
+          test "$(find dist -name "fuzion_${V}_*.tar.gz" | wc -l)" -eq 4   # src + 3 platforms
+          cd dist && sha256sum ./*.tar.gz > SHA256SUMS && cat SHA256SUMS
 
       - uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
         with:
