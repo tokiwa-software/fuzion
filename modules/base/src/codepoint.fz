@@ -124,7 +124,7 @@ is
   #
   public type.latin_alphabet container.Set u32 : memoize
   =>
-    keep (A_to_Z ∪ a_to_z)
+    const (A_to_Z ∪ a_to_z)
 
 
   # range of values encoded in one byte

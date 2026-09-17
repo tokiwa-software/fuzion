@@ -171,7 +171,7 @@ public memoize is
   # You can memoize the result as follows
   #
   #     pi : memoize =>
-  #       keep ()->
+  #       const ()->
   #         (4.0 :: (-)).zip (1.0 :: +2) (/)   # 4/1, -4/3, 4/5, -4/7, ...
   #                     .take 10000
   #                     .sum
@@ -182,7 +182,7 @@ public memoize is
   #
   #   memoized_constant_effect pi f64
   #
-  public keep(# the value type, i.e., result type of memoized function
+  public const(# the value type, i.e., result type of memoized function
               #
               V type,
 
@@ -191,7 +191,7 @@ public memoize is
               f ()->V
               ) V
   =>
-    (memoized_constant_effect memoize.this V).env.keep f
+    (memoized_constant_effect memoize.this V).env.const f
 
 
 # effect to memoize values calculated from given keys.
@@ -220,7 +220,7 @@ is
 
 
   # use this memoized effect to retrieve the value for a given key or,
-  # if that value was not calculated yet, to calculate it
+  # if that value was not calculated yet, do calculate it
   #
   public keep(# the function input
               #
@@ -266,12 +266,12 @@ module:public memoized_constant_effect(# type to identify this memoized instance
 is
 
   # use this memoized effect to retrieve the value or,
-  # if that value was not calculated yet, to calculate it
+  # if it was not calculated yet, do calculate it
   #
-  public keep(# the function to calculate the result
-              #
-              f ()->V
-              ) V
+  public const(# the function to calculate the result
+               #
+               f ()->V
+               ) V
   =>
     memoized_constant_effect.this.env.store.or_else ()->
       v := f()
