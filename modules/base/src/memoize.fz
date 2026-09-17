@@ -220,7 +220,7 @@ is
 
 
   # use this memoized effect to retrieve the value for a given key or,
-  # if that value was not calculated yet, do calculate it
+  # if that value was not calculated yet, calculate it
   #
   public keep(# the function input
               #
@@ -266,7 +266,7 @@ module:public memoized_constant_effect(# type to identify this memoized instance
 is
 
   # use this memoized effect to retrieve the value or,
-  # if it was not calculated yet, do calculate it
+  # if it was not calculated yet, calculate it
   #
   public const(# the function to calculate the result
                #
