@@ -17,15 +17,20 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  GitHub Actions workflow to build a release build of Fuzion
+#  GitHub Actions workflow to build a release build of Fuzion:
+#  source archive plus binary archives for Linux, macOS and Windows.
 #
 # -----------------------------------------------------------------------
-
 
 name: github release
 
 on:
   workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create release as draft'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -34,37 +39,195 @@ env:
   FUZION_REPRODUCIBLE_BUILD: true
 
 jobs:
-  build:
+  src:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.getversion.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Read VERSION file
+        id: getversion
+        run: echo "version=$(cat version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: create source archive
+        env:
+          V: ${{ steps.getversion.outputs.version }}
+        run: git archive --format=tar.gz --prefix="fuzion_${V}_src/" -o "fuzion_${V}_src.tar.gz" HEAD
+
+      - uses: actions/upload-artifact@<SHA> # v4.x  TODO: pin
+        with:
+          name: src
+          path: fuzion_*_src.tar.gz
+          if-no-files-found: error
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest,  target: linux_x86_64,   shell: bash }
+          - { os: macos-latest,   target: macos_aarch64,  shell: bash }
+          - { os: windows-latest, target: windows_x86_64, shell: 'msys2 {0}' }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - name: rename archive
+        run: |
+          V="$(cat version.txt)"
+          mv "fuzion_${V}.tar.gz" "fuzion_${V}_${{ matrix.target }}.tar.gz"
+
+      # ---------------- Windows: before checkout ----------------
+
+      - name: keep LF line endings (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: git config --global core.autocrlf false
+
+      - uses: msys2/setup-msys2@5beef6d11f48bba68b9eb503e3adc60b23c0cc36 # v2
+        if: runner.os == 'Windows'
+        with:
+          update: true
+          path-type: minimal
+          # "If you are unsure, go with UCRT64." https://www.msys2.org/docs/environments/
+          msystem: UCRT64
+          # git is used in Makefile: JAVA_FILE_TOOLS_VERSION
+          install: >-
+            make
+            git
+            diffutils
+            patch
+            tar
+            gzip
+            mingw-w64-ucrt-x86_64-clang
+            mingw-w64-ucrt-x86_64-libsodium
+            mingw-w64-ucrt-x86_64-sqlite3
+            mingw-w64-ucrt-x86_64-wolfssl
+
+      - name: install choco packages (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: choco install openjdk --version 25.0.0.1
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # ---------------- Linux ----------------
+
+      - name: install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-25-jdk-headless sqlite3 libgc1 libgc-dev libclang1 libclang-dev libwolfssl-dev libsodium23 libsodium-dev ruby-asciidoctor-pdf antlr4 asciidoc-base
+          # for DTRACE_PROBE
+          sudo apt-get install -y systemtap-sdt-dev
+
+          JH="/usr/lib/jvm/java-25-openjdk-$(dpkg --print-architecture)"
+          echo "JAVA_HOME=$JH" >> "$GITHUB_ENV"
+          echo "$JH/bin"       >> "$GITHUB_PATH"
+
+      - name: link libclang (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          CLANG_MAJOR_VERSION=$(clang --version | head -n 1 | awk '{print $4}' | cut -d. -f1)
+          test -f /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so && sudo ln -sf /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so /usr/lib/
+
+      # ---------------- macOS ----------------
+
+      - name: install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install openjdk@25 bdw-gc gnu-sed make coreutils sqlite llvm wolfssl libsodium gnu-tar
+          BREW="$(brew --prefix)"
+
+          # GNU tools vor BSD tools; GITHUB_PATH: ein Verzeichnis pro Zeile
+          for p in gnu-sed make coreutils gnu-tar; do
+            echo "$BREW/opt/$p/libexec/gnubin" >> "$GITHUB_PATH"
+          done
+
+          JH="$(brew --prefix openjdk@25)/libexec/openjdk.jdk/Contents/Home"
+          echo "JAVA_HOME=$JH" >> "$GITHUB_ENV"
+          echo "$JH/bin"       >> "$GITHUB_PATH"
+
+          echo "CPATH=$BREW/include" >> "$GITHUB_ENV"
+          echo "LIBRARY_PATH=/usr/lib:$BREW/lib/:/Library/Developer/CommandLineTools/usr/lib/" >> "$GITHUB_ENV"
+
+      - name: xcode-select (macOS) # to have libclang available
+        if: runner.os == 'macOS'
+        run: sudo xcode-select -s /Library/Developer/CommandLineTools
+
+      # ---------------- Windows: after checkout ----------------
+
+      - name: create dll links (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          ln -sf /ucrt64/bin/libclang.dll     /ucrt64/bin/clang.dll
+          ln -sf /ucrt64/bin/libsqlite3-0.dll /ucrt64/bin/sqlite3.dll
+          ln -sf /ucrt64/bin/libsodium-26.dll /ucrt64/bin/sodium.dll
+          ln -sf /ucrt64/bin/libwolfssl-45.dll /ucrt64/bin/wolfssl.dll
+
+      - name: build libgc (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="$(cygpath -m /ucrt64/bin)"
+          ./bin/windows_install_boehm_gc.sh
+
+      # ---------------- all platforms ----------------
+
+      - name: tool versions
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25"
+            export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          fi
+          tar --version | head -n 1
+          make --version | head -n 1
+          javac --version
+
+      - name: build release
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25"
+            export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+            export FUZION_CLANG_INSTALLED_DIR="$(cygpath -m /ucrt64/bin)"
+          fi
+          make release   # KEIN -j: `release: clean all` würde clean und all parallel starten
+
+      - name: rename archive
+        run: mv "fuzion_${cat version.txt}.tar.gz" "fuzion_${cat version.txt}_${{ matrix.target }}.tar.gz"
+
+      - uses: actions/upload-artifact@<SHA> # v4.x  TODO: pin
+        with:
+          name: ${{ matrix.target }}
+          path: fuzion_*_${{ matrix.target }}.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: [src, build]
+    runs-on: ubuntu-latest
     permissions:
       contents: write  # for ncipollo/release-action to create a release
-    runs-on: ubuntu-latest
+    env:
+      V: ${{ needs.src.outputs.version }}
     steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@<SHA> # v4.x  TODO: pin
+        with:
+          path: dist
+          merge-multiple: true
 
-    - name: install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev ruby-asciidoctor-pdf antlr4 asciidoc-base
+      - name: checksums
+        run: cd dist && sha256sum ./* > SHA256SUMS && cat SHA256SUMS
 
-        # for DTRACE_PROBE
-        sudo apt-get install systemtap-sdt-dev
-
-        echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
-        echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
-
-    - name: build release
-      run: make release
-
-    - name: Read VERSION file
-      id: getversion
-      run: echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
-
-    - uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
-      with:
-        artifacts: "fuzion_${{ steps.getversion.outputs.version }}.tar.gz"
-        tag: "v${{ steps.getversion.outputs.version }}"
-        prerelease: false
-        generateReleaseNotes: false
-        immutableCreate: true
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
+        with:
+          artifacts: "dist/*"
+          tag: "v${{ env.V }}"
+          commit: ${{ github.sha }}
+          draft: ${{ inputs.draft }}
+          prerelease: false
+          generateReleaseNotes: false
+          immutableCreate: true
+          token: ${{ secrets.GITHUB_TOKEN }}
