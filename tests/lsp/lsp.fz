@@ -74,7 +74,6 @@ lsp =>
     lm ! ()->
       for stdin in feed_stdin do
         x := p.with_in unit lm ()->
-          say stdin.0
           check (io.buffered lm).Writer.env.write stdin.0 .ok
         check x.ok
 
@@ -83,8 +82,14 @@ lsp =>
             match (io.buffered lm).read_line
               io.end_of_file => panic "eof"
               out String =>
-                len := out.substring "Content-Length:".byte_count .trim .parse_i64.or_panic
-                fout <- fout.add (String.from <| (io.buffered lm).read_bytes len+2 /* +2 because \r\n */ .or_panic)
+                match out.substring "Content-Length:".byte_count .trim .parse_i64
+                  len i64 =>
+                    o := (String.from <| (io.buffered lm).read_bytes len+2 /* +2 because \r\n */ .or_panic).replace fuzion_home "\$FUZION_HOME"
+                    fout <- fout.add o
+                  e error =>
+                    say "-- unexpected response --"
+                    say out
+                    say e
           check y.ok
 
 
@@ -221,6 +226,8 @@ lsp =>
     "Content-Length: $(b.byte_count)\r\n\r\n$(b)"
 
   fuzion_home := os.cwd.or_panic.resolve "../../" .as_string
+
+  check io.file.exists (io.path.of "$(fuzion_home)/fuzion.jar")
 
   test_def := [(init_req, 2), (open_file_req, 4), (hover_req, 3), (open_file_req2, 4), (completion_req, 3), (shutdown_req, 1)]
     .map_to_array t->
