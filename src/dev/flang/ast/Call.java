@@ -417,7 +417,7 @@ public class Call extends AbstractCall
    */
   private boolean targetErroneous()
   {
-    return _target != null && _target.type() == Types.t_ERROR;
+    return _target != null && _target.asParsedType() == null && _target.type() == Types.t_ERROR;
   }
 
 
@@ -877,9 +877,11 @@ public class Call extends AbstractCall
     var traverseOuter = _originalTarget == null;
     var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(res, context);
     var a = expectedType.arity(res);
-    if (targetFeature != null && a >= 0)
+    if (a >= 0)
       {
-        var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
+        var fos = targetFeature == null // could still find type applicable type feature
+          ? new List<FeatureAndOuter>()
+          : res._module.lookup(targetFeature, _name, this, traverseOuter, false);
         if (_target != null && _target.asParsedType() != null)
           {
             var tt = _target.asParsedType().resolve(res, context, true);
