@@ -101,23 +101,33 @@ is
   # Result is true iff ring buffer had space for one more element and `v` was
   # added to it, false iff the ring buffer is full and was not changed.
   #
-  public add(v T) bool ! M
+  public add(v T | Sequence T) bool ! M
   =>
     M.env.exclusive ()->
-      if !is_full0 then
-        put1 v
-        true
-      else
-        false
+      match v
+        t T =>
+          if !is_full0 then
+            put1 t
+            true
+          else
+            false
+        s Sequence =>
+          if unused >= s.count then
+            s.for_each put1
+            true
+          else
+            false
 
 
   # put -- blocking version of add: add an element to this ring buffer,
   # wait in case the buffer is full
   #
-  public put(v T) unit ! M
+  public put(v T | Sequence T) unit ! M
   =>
     M.env.exclusive_when (()-> !is_full0) ()->
-      put1 v
+      match v
+        t T => put1 t
+        s Sequence => s.for_each put1
 
 
   # put1 is a helper for `add` and `put`: add an element to this non-full ring buffer
@@ -143,6 +153,29 @@ is
         option T nil
       else
         take1
+
+
+  # poll -- remove (up to n) oldest elements from this ring buffer
+  #
+  # Result is an option containing the removed elements iff the ring buffer was
+  # not empty. Otherwise, result is nil.
+  #
+  public poll(n i64) option (Sequence T) ! M
+    pre debug: n > 0
+  =>
+    M.env.exclusive ()->
+      if is_empty0 then
+        option (Sequence T) nil
+      else
+        indices := (first..(first + used-1)).map (%size) .take n
+        returned_elements := min used.get n
+        first <- (first+returned_elements) % size
+        used <- used-returned_elements
+        array T .new indices.count i->
+          idx := indices[i]
+          res := data[idx].or_panic
+          data[idx] := nil
+          res
 
 
   # peek -- return the oldest element from this ring buffer without changing the buffer
