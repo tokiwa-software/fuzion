@@ -34,6 +34,10 @@ wget "https://www.hboehm.info/gc/gc_source/gc-$VERSION.tar.gz"
 echo "$TAR_BALL_HASH gc-$VERSION.tar.gz" | sha256sum --check --status
 tar xf "gc-$VERSION.tar.gz"
 cd "gc-$VERSION"
-./configure --prefix=/ucrt64/ --enable-threads=win32
+# MINGW_PREFIX/MINGW_CHOST are set by the MSYS2 shell (/ucrt64, /clangarm64, ...)
+./configure --prefix="${MINGW_PREFIX:-/ucrt64}/" \
+            --host="${MINGW_CHOST:-x86_64-w64-mingw32}" \
+            CC="${CC:-clang}" \
+            --enable-threads=win32
 make
 make install

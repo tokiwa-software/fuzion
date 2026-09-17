@@ -696,6 +696,9 @@ $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAG
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop,java.net.http -saveModule=$@
 
+# target triple for the Windows runtime; the MSYS2 clang of the active
+# environment (UCRT64, CLANGARM64) knows its native triple
+WINDOWS_CLANG_TARGET ?= $(shell clang -dumpmachine)
 
 $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
@@ -703,7 +706,7 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
-	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
+	clang --target=$(WINDOWS_CLANG_TARGET) -Wall -Werror -O3 -shared \
 	-DPTW32_STATIC_LIB \
 	-DGC_THREADS -DGC_WIN32_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
