@@ -75,7 +75,7 @@ lib_memoize is
 
       fast_set.for_each (n->say "$n $(fib2 n) (local memoization, $(calls_to_fib2) calls, should become stable for each iteration)")
 
-    terms => 100  # number of terms for pi calculation, too small to be accurate to keep interpreted runtime low
+    terms => 100  # number of terms for pi calculation, too small to be accurate, just to keep interpreted runtime low
 
     # pi without memoization:
     #
