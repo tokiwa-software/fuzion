@@ -83,7 +83,7 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
 #
 #     > ./build//bin/fz -effects fib.fz
 #      ...
-#     memoized_effect fib#1 i32 i32
+#     memoized fib#1 i32 i32
 #      ...
 #
 # It might be desired not to keep memoized results forever. To do so, we have
@@ -130,7 +130,7 @@ public memoize is
                   # the value type, i.e., result type of memoized function
                   #
                   V type)
-    : memoized_effect memoized.this K V
+    : memoized memoized.this K V
   is
 
 
@@ -154,7 +154,7 @@ public memoize is
               f K->V
               ) V
   =>
-    (memoized_effect memoize.this K V).env.keep k f
+    (memoized memoize.this K V).env.keep k f
 
 
   # For memoization of constant values that do not depend on any input, this
@@ -180,7 +180,7 @@ public memoize is
   #
   # Effects analysis of this code will show that it uses
   #
-  #   memoized_constant_effect pi f64
+  #   memoized_constant pi f64
   #
   public const(# the value type, i.e., result type of memoized function
               #
@@ -191,22 +191,23 @@ public memoize is
               f ()->V
               ) V
   =>
-    (memoized_constant_effect memoize.this V).env.const f
+    (memoized_constant memoize.this V).env.const f
 
 
 # effect to memoize values calculated from given keys.
 #
-module:public memoized_effect(# type to identify this memoized instance
-                              #
-                              M type,
+module:public memoized(# type to identify this memoized instance
+                       #
+                       M type,
 
-                              # the key type, i.e, input type of memoized function
-                              #
-                              K type : property.orderable,
+                       # the key type, i.e, input type of memoized function
+                       #
+                       K type : property.orderable,
 
-                              # the value type, i.e., result type of memoized function
-                              #
-                              V type)
+                       # the value type, i.e., result type of memoized function
+                       #
+                       V type
+                       )
   : effect
 is
 
@@ -230,38 +231,38 @@ is
               #
               f K->V) V
   =>
-    memoized_effect.this.env.store[k].or_else ()->
+    memoized.this.env.store[k].or_else ()->
       v := f k
-      memoized_effect.this.env.update k v
+      memoized.this.env.update k v
       v
 
   # update the memoized value stored for key k to hold value v.
   #
   update(k,v) =>
     set store := store.put k v
-    memoized_effect.this.replace memoized_effect.this
+    memoized.this.replace memoized.this
 
 
-  # default implementation of memoized_effect
+  # default implementation of memoized
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option (memoized_effect M K V) => memoized_effect M K V
+  public redef fixed type.default_value option (memoized M K V) => memoized M K V
 
 
 # effect to memoize constant values calculated only once
 #
-module:public memoized_constant_effect(# type to identify this memoized instance
-                                       #
-                                       M type,
+module:public memoized_constant(# type to identify this memoized instance
+                                #
+                                M type,
 
-                                       # the value type, i.e., result type of memoized function
-                                       #
-                                       V type,
+                                # the value type, i.e., result type of memoized function
+                                #
+                                V type,
 
-                                       # the stored value
-                                       store option V
-                                       )
+                                # the stored value
+                                store option V
+                                )
   : effect
 is
 
@@ -273,15 +274,15 @@ is
                f ()->V
                ) V
   =>
-    memoized_constant_effect.this.env.store.or_else ()->
+    memoized_constant.this.env.store.or_else ()->
       v := f()
-      (memoized_constant_effect M V v).replace
+      (memoized_constant M V v).replace
       v
 
-  # default implementation of memoized_constant_effect
+  # default implementation of memoized_constant
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option (memoized_constant_effect M V)
+  public redef fixed type.default_value option (memoized_constant M V)
   =>
-    memoized_constant_effect M V nil
+    memoized_constant M V nil
