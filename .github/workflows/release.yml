@@ -19,7 +19,7 @@
 #
 #  GitHub Actions workflow to build a release of Fuzion:
 #  source archive plus binary archives for
-#  linux/amd64, linux/arm64, macos/amd64, macos/arm64 and windows/amd64
+#  linux, macos and windows on amd64 and arm64
 #
 # -----------------------------------------------------------------------
 
@@ -41,41 +41,28 @@ env:
 
 jobs:
 
-  facts:
-    name: Facts
-    runs-on: ubuntu-24.04
-    outputs:
-      version: ${{ steps.f.outputs.version }}
-      prerelease: ${{ steps.f.outputs.prerelease }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Determine version and release kind
-        id: f
-        run: |
-          set -eu
-          # If this is a tag launch, the version is taken from the tag name,
-          # otherwise from version.txt.
-          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
-            version="${GITHUB_REF_NAME#v}"
-          else
-            version="$(cat version.txt)"
-          fi
-          echo "version=$version" >>"$GITHUB_OUTPUT"
-          case "$version" in
-            *dev*) echo "prerelease=true"  >>"$GITHUB_OUTPUT" ;;
-            *)     echo "prerelease=false" >>"$GITHUB_OUTPUT" ;;
-          esac
-
   src:
     name: Source archive
-    needs: [facts]
     runs-on: ubuntu-24.04
-    env:
-      VERSION: ${{ needs.facts.outputs.version }}
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Read VERSION file
+        id: v
+        run: |
+          version="$(cat version.txt)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          case "$version" in
+            *dev*) echo "prerelease=true"  >> "$GITHUB_OUTPUT" ;;
+            *)     echo "prerelease=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - name: Create source archive
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
         run: git archive --format=tar.gz --prefix="fuzion_${VERSION}_src/" -o "fuzion_${VERSION}_src.tar.gz" HEAD
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -92,33 +79,29 @@ jobs:
   # ---------------------------------------------------------------------------
   package:
     name: Package for ${{ matrix.os }} (${{ matrix.arch }})
-    needs: [facts]
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { os: linux,   arch: amd64, runner: ubuntu-24.04,     shell: bash,        file_arch: x86-64,  msystem: '' }
-          - { os: linux,   arch: arm64, runner: ubuntu-24.04-arm, shell: bash,        file_arch: aarch64, msystem: '' }
-          - { os: macos,   arch: amd64, runner: macos-15-intel,   shell: bash,        file_arch: x86_64,  msystem: '' }
-          - { os: macos,   arch: arm64, runner: macos-15,         shell: bash,        file_arch: arm64,   msystem: '' }
-          - { os: windows, arch: amd64, runner: windows-2025,     shell: 'msys2 {0}', file_arch: x86-64,  msystem: UCRT64 }
-          - { os: windows, arch: arm64, runner: windows-11-arm,   shell: 'msys2 {0}', file_arch: arm64,   msystem: CLANGARM64 }
+          - { os: linux,   arch: amd64, runner: ubuntu-24.04,     file_arch: x86-64  }
+          - { os: linux,   arch: arm64, runner: ubuntu-24.04-arm, file_arch: aarch64 }
+          - { os: macos,   arch: amd64, runner: macos-15-intel,   file_arch: x86_64  }
+          - { os: macos,   arch: arm64, runner: macos-15,         file_arch: arm64   }
+          - { os: windows, arch: amd64, runner: windows-2025,     file_arch: x86-64,  msystem: UCRT64 }
+          - { os: windows, arch: arm64, runner: windows-11-arm,   file_arch: arm64,  msystem: CLANGARM64 }
     defaults:
       run:
-        shell: ${{ matrix.shell }}
+        shell: ${{ matrix.os == 'windows' && 'msys2 {0}' || 'bash' }}
     env:
-      VERSION: ${{ needs.facts.outputs.version }}
       TARGET: ${{ matrix.os }}-${{ matrix.arch }}
       FILE_ARCH: ${{ matrix.file_arch }}
     steps:
-
-      # ---------------- Windows: before checkout ----------------
-
-      - name: keep LF line endings (Windows)
-        if: runner.os == 'Windows'
-        shell: powershell
-        run: git config --global core.autocrlf false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: '25'
+          architecture: ${{ matrix.arch == 'arm64' && 'aarch64' || 'x64' }}
 
       - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
         if: runner.os == 'Windows'
@@ -132,176 +115,80 @@ jobs:
           install: >-
             make
             git
-            diffutils
             patch
             tar
             gzip
             file
-          # pacboy adds the package prefix of the selected msystem
-          pacboy: >-
-            clang:p
-            libsodium:p
-            sqlite3:p
-            wolfssl:p
-
-      - name: install choco packages (Windows amd64)
-        if: runner.os == 'Windows' && matrix.arch == 'amd64'
-        shell: powershell
-        run: choco install openjdk --version 25.0.0.1
-
-      - name: install JDK (Windows arm64)
-        if: runner.os == 'Windows' && matrix.arch == 'arm64'
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
-        with:
-          distribution: microsoft
-          java-version: '25'
-          architecture: aarch64
+          pacboy: clang:p
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      # ---------------- Linux ----------------
 
       - name: install dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
-          set -eu
           sudo apt-get update
-          sudo apt-get install -y openjdk-25-jdk-headless sqlite3 libgc1 libgc-dev libclang1 libclang-dev libwolfssl-dev libsodium23 libsodium-dev ruby-asciidoctor-pdf antlr4 asciidoc-base
-          # for DTRACE_PROBE
-          sudo apt-get install -y systemtap-sdt-dev
-
-          # amd64 / arm64
-          JH="/usr/lib/jvm/java-25-openjdk-$(dpkg --print-architecture)"
-          echo "JAVA_HOME=$JH" >> "$GITHUB_ENV"
-          echo "$JH/bin"       >> "$GITHUB_PATH"
-
-      - name: link libclang (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          CLANG_MAJOR_VERSION=$(clang --version | head -n 1 | awk '{print $4}' | cut -d. -f1)
-          test -f "/usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so" && sudo ln -sf "/usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so" /usr/lib/
-
-      # ---------------- macOS ----------------
+          # systemtap-sdt-dev: DTRACE_PROBE support in libfuzion_rt (include/posix.c)
+          sudo apt-get install -y libgc-dev systemtap-sdt-dev
 
       - name: install dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          set -eu
-          brew install openjdk@25 bdw-gc gnu-sed make coreutils sqlite llvm wolfssl libsodium gnu-tar
-          # /opt/homebrew (arm64) or /usr/local (amd64)
+          brew install bdw-gc gnu-sed make coreutils gnu-tar
           BREW="$(brew --prefix)"
-
           # GNU tools before BSD tools; GITHUB_PATH expects one directory per line
           for p in gnu-sed make coreutils gnu-tar; do
             echo "$BREW/opt/$p/libexec/gnubin" >> "$GITHUB_PATH"
           done
-
-          JH="$(brew --prefix openjdk@25)/libexec/openjdk.jdk/Contents/Home"
-          echo "JAVA_HOME=$JH" >> "$GITHUB_ENV"
-          echo "$JH/bin"       >> "$GITHUB_PATH"
-
           echo "CPATH=$BREW/include" >> "$GITHUB_ENV"
-          echo "LIBRARY_PATH=/usr/lib:$BREW/lib/:/Library/Developer/CommandLineTools/usr/lib/" >> "$GITHUB_ENV"
+          echo "LIBRARY_PATH=$BREW/lib" >> "$GITHUB_ENV"
 
-      - name: xcode-select (macOS) # to have libclang available
-        if: runner.os == 'macOS'
-        run: sudo xcode-select -s /Library/Developer/CommandLineTools
+      - name: Build release (Linux, macOS)
+        if: runner.os != 'Windows'
+        # no -j: `release: clean all` would run clean and all in parallel
+        run: make release
 
-      # ---------------- Windows: after checkout ----------------
-
-      - name: configure environment (Windows)
+      - name: Build release (Windows)
         if: runner.os == 'Windows'
         run: |
           set -eu
-          # path-type: minimal resets PATH in every step, but GITHUB_ENV variables survive.
-          # FZ_JAVA_HOME instead of JAVA_HOME: the runner image presets its own JAVA_HOME.
-          if [ "$RUNNER_ARCH" = "ARM64" ]; then
-            echo "FZ_JAVA_HOME=$(cygpath -u "$JAVA_HOME")" >> "$GITHUB_ENV"
-          else
-            echo "FZ_JAVA_HOME=/c/Program Files/OpenJDK/jdk-25" >> "$GITHUB_ENV"
-          fi
-          # e.g. D:/a/_temp/msys64/ucrt64/bin
-          echo "FUZION_CLANG_INSTALLED_DIR=$(cygpath -m "$MINGW_PREFIX/bin")" >> "$GITHUB_ENV"
-
-      - name: create dll links (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          set -eu
-          cd "$MINGW_PREFIX/bin"
-          # globs instead of fixed so-versions (libsodium-26, libwolfssl-45, ...)
-          ln -sf libclang.dll                              clang.dll
-          ln -sf "$(ls libsqlite3-*.dll | head -n 1)"      sqlite3.dll
-          ln -sf "$(ls libsodium-*.dll  | head -n 1)"      sodium.dll
-          ln -sf "$(ls libwolfssl*.dll  | head -n 1)"      wolfssl.dll
-
-      - name: build libgc (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          export JAVA_HOME="$FZ_JAVA_HOME"
+          # path-type: minimal resets PATH in every msys2 step, so set up everything here
+          export JAVA_HOME="$(cygpath -u "$JAVA_HOME")"
           export PATH="$MINGW_PREFIX/bin:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="$(cygpath -m "$MINGW_PREFIX/bin")"
+          clang -dumpmachine
           ./bin/windows_install_boehm_gc.sh
-
-      # ---------------- all platforms ----------------
-
-      - name: tool versions
-        run: |
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            export JAVA_HOME="$FZ_JAVA_HOME"
-            export PATH="$MINGW_PREFIX/bin:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
-            clang -dumpmachine
-          fi
-          tar --version | head -n 1
-          make --version | head -n 1
-          javac --version
-
-      - name: Build release
-        run: |
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            export JAVA_HOME="$FZ_JAVA_HOME"
-            export PATH="$MINGW_PREFIX/bin:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
-          fi
-          # no -j: `release: clean all` would run clean and all in parallel
           make release
 
       - name: Check architecture of native runtime
         run: |
-          set -eu
           file build/lib/*fuzion_rt.*
           file build/lib/*fuzion_rt.* | grep -qi -- "$FILE_ARCH" \
             || { echo "::error::fuzion_rt is not built for $FILE_ARCH"; exit 1; }
 
       - name: Rename archive
-        run: mv "fuzion_${VERSION}.tar.gz" "fuzion_${VERSION}_${TARGET}.tar.gz"
+        run: |
+          VERSION="$(cat version.txt)"
+          mv "fuzion_${VERSION}.tar.gz" "fuzion_${VERSION}_${TARGET}.tar.gz"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: packages-${{ matrix.os }}-${{ matrix.arch }}
-          path: fuzion_*_${{ matrix.os }}-${{ matrix.arch }}.tar.gz
+          name: packages-${{ env.TARGET }}
+          path: fuzion_*_${{ env.TARGET }}.tar.gz
           if-no-files-found: error
           retention-days: 5
 
   release:
     name: Publish release
-    needs: [facts, src, package]
+    needs: [src, package]
     runs-on: ubuntu-24.04
     permissions:
       contents: write  # for ncipollo/release-action to create a release
-    env:
-      VERSION: ${{ needs.facts.outputs.version }}
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: packages-*
           merge-multiple: true
           path: artifacts
-
-      - name: Refuse to publish a partial set
-        run: |
-          set -eu
-          for t in src linux-amd64 linux-arm64 macos-amd64 macos-arm64 windows-amd64 windows-arm64; do
-            ls "artifacts/fuzion_${VERSION}_${t}.tar.gz" >/dev/null 2>&1 \
-              || { echo "::error::missing artifact fuzion_${VERSION}_${t}.tar.gz"; exit 1; }
-          done
 
       - name: Create checksums
         run: |
@@ -312,12 +199,12 @@ jobs:
       - name: Publish release
         uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
         with:
-          tag: "v${{ env.VERSION }}"
-          name: "fuzion_${{ env.VERSION }}"
+          tag: "v${{ needs.src.outputs.version }}"
+          name: "fuzion_${{ needs.src.outputs.version }}"
           commit: ${{ github.sha }}
           artifacts: artifacts/*
           draft: ${{ inputs.draft }}
-          prerelease: ${{ needs.facts.outputs.prerelease }}
+          prerelease: ${{ needs.src.outputs.prerelease }}
           generateReleaseNotes: false
           immutableCreate: true
           token: ${{ secrets.GITHUB_TOKEN }}
