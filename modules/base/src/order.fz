@@ -44,7 +44,7 @@ public order : choice less greater equal, property.equatable is
   # greater => +1
   # equal => 0
   #
-  public sign i32 =>
+  public sign i64 =>
     match order.this
       less => -1
       greater => +1

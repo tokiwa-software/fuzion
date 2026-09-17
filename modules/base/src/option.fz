@@ -171,11 +171,11 @@ public option(T type) : switch T nil is
   # sign function resulting in `-1`/`0`/`+1` depending on whether `numeric.this`
   # is less than, equal or larger than zero
   #
-  public sign option i32
+  public sign option i64
   pre
     T : numeric
   =>
-    bind i32 v->v.sign
+    bind i64 v->v.sign
 
 
   # absolute value
