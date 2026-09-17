@@ -39,6 +39,10 @@ lib_memoize is
   slow_set := (i64  8 .. 11) ++ [11, 11,  8]
   fast_set := (i64 88 .. 91) ++ [91, 91, 88]    # `fib 92` will cause i64 to overflow
 
+  calls_to_pi0 := mut 0
+  calls_to_pi1 := mut 0
+  calls_to_pi2 := mut 0
+
   for it in 1..3 do
 
     say "iteration $it:"
@@ -70,3 +74,33 @@ lib_memoize is
         if n <= 1 then 1 else fib2 n-1 + fib2 n-2
 
       fast_set.for_each (n->say "$n $(fib2 n) (local memoization, $(calls_to_fib2) calls, should become stable for each iteration)")
+
+    terms => 100  # number of terms for pi calculation, too small to be accurate, just to keep interpreted runtime low
+
+    # pi without memoization:
+    #
+    pi0 f64 =>
+      _ := calls_to_pi0.update +1
+      (1.0 :: +2).as_tuples.map (||> a,b -> 8.0/(a*b)) .take terms .sum
+
+    (1..10).for_each (n->say "$n $pi0 (no memoization, $calls_to_pi0 calls, should always increase)")
+
+    # pi with global (but thread local) memoization
+    #
+    pi1 f64 : memoize => const ()->
+      _ := calls_to_pi1.update +1
+      (1.0 :: +2).as_tuples.map (||> a,b -> 8.0/(a*b)) .take terms .sum
+
+    (1..10).for_each (n->say "$n $pi1 (global memoization, $calls_to_pi1 calls, should always be 1)")
+
+    # pi with local memoization
+    #
+    local_pi_memo : memoize.memoized unit f64 is
+    local_pi_memo ! ()->
+
+      pi2 => local_pi_memo.env.keep unit _->
+        _ := calls_to_pi2.update +1
+        (1.0 :: +2).as_tuples.map (||> a,b -> 8.0/(a*b)) .take terms .sum
+
+      (1..10).for_each (n->
+        say "$n $pi2 (local memoization, $calls_to_pi2 calls after, should increase for each iteration)")

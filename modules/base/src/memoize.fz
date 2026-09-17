@@ -157,6 +157,43 @@ public memoize is
     (memoized_effect memoize.this K V).env.keep k f
 
 
+  # For memoization of constant values that do not depend on any input, this
+  # uses the global constant memoization effect to keep that value
+  #
+  # Use this as follows: Say you have an expensive function like this that
+  # approximates pi:
+  #
+  #     pi =>
+  #       (4.0 :: (-)).zip (1.0 :: +2) (/)   # 4/1, -4/3, 4/5, -4/7, ...
+  #                   .take 10000
+  #                   .sum
+  #
+  # You can memoize the result as follows
+  #
+  #     pi : memoize =>
+  #       const ()->
+  #         (4.0 :: (-)).zip (1.0 :: +2) (/)   # 4/1, -4/3, 4/5, -4/7, ...
+  #                     .take 10000
+  #                     .sum
+  #
+  # Then, repeated calls to `pi` will result in returning the pre-calculated value.
+  #
+  # Effects analysis of this code will show that it uses
+  #
+  #   memoized_constant_effect pi f64
+  #
+  public const(# the value type, i.e., result type of memoized function
+              #
+              V type,
+
+              # the function to calculate the result
+              #
+              f ()->V
+              ) V
+  =>
+    (memoized_constant_effect memoize.this V).env.const f
+
+
 # effect to memoize values calculated from given keys.
 #
 module:public memoized_effect(# type to identify this memoized instance
@@ -183,7 +220,7 @@ is
 
 
   # use this memoized effect to retrieve the value for a given key or,
-  # if that value was not calculated yet, to calculate it
+  # if that value was not calculated yet, calculate it
   #
   public keep(# the function input
               #
@@ -210,3 +247,41 @@ is
   # this will get instated automatically at startup
   #
   public redef fixed type.default_value option (memoized_effect M K V) => memoized_effect M K V
+
+
+# effect to memoize constant values calculated only once
+#
+module:public memoized_constant_effect(# type to identify this memoized instance
+                                       #
+                                       M type,
+
+                                       # the value type, i.e., result type of memoized function
+                                       #
+                                       V type,
+
+                                       # the stored value
+                                       store option V
+                                       )
+  : effect
+is
+
+  # use this memoized effect to retrieve the value or,
+  # if it was not calculated yet, calculate it
+  #
+  public const(# the function to calculate the result
+               #
+               f ()->V
+               ) V
+  =>
+    memoized_constant_effect.this.env.store.or_else ()->
+      v := f()
+      (memoized_constant_effect M V v).replace
+      v
+
+  # default implementation of memoized_constant_effect
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option (memoized_constant_effect M V)
+  =>
+    memoized_constant_effect M V nil
