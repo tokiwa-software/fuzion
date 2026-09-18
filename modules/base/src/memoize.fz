@@ -249,19 +249,51 @@ is
   public redef fixed type.default_value option (memoized_effect M K V) => memoized_effect M K V
 
 
+# a blocking mutate that is used to memoize values globally, i.e., for all threads
+#
+memoize_mutate : concur.blocking_mutate is
+
+  public redef fixed type.default_value option memoize_mutate
+  =>
+    memoize_mutate
+
+
+
+calculating is
+
+global_value(V type) : choice nil         # no value available yet
+                              calculating # some thread is calculating the value
+                              V           # the value
+is
+  busy =>
+    match global_value.this
+      calculating => true
+      *           => false
+
+# ref type wrapped around mutable `global_value`
+#
+Ref(V type, v V) ref is
+
+
 # effect to memoize constant values calculated only once
 #
-module:public memoized_constant_effect(# type to identify this memoized instance
-                                       #
-                                       M type,
+memoized_constant_effect(# type to identify this memoized instance
+                         #
+                         M type,
 
-                                       # the value type, i.e., result type of memoized function
-                                       #
-                                       V type,
+                         # the value type, i.e., result type of memoized function
+                         #
+                         V type,
 
-                                       # the stored value
-                                       store option V
-                                       )
+                         # the stored value, accessed by current thread only, so no
+                         # need for exclusivity
+                         store option V,
+
+                         # ref containing the mutatble global value, accessed while
+                         # `mmemoize_mutate.env.exclusive`.
+                         #
+                         global Ref (memoize_mutate.var (global_value V))
+                         )
   : effect
 is
 
@@ -274,8 +306,16 @@ is
                ) V
   =>
     memoized_constant_effect.this.env.store.or_else ()->
-      v := f()
-      (memoized_constant_effect M V v).replace
+      v := memoize_mutate.env.exclusive_when (() -> !global.v.busy) ()->
+                               match global.v.get
+                                 v1 V => option v1
+                                 *    => global.v <- calculating
+                                         nil
+                             .or_else ()->
+                                 v2 := f()            # note that we call `f()` while not exclusive
+                                 _ := global.v.update _->v2  # use `global.update` since it is exclusive, unlike `global <-`
+                                 v2
+      (memoized_constant_effect M V v global).replace
       v
 
   # default implementation of memoized_constant_effect
@@ -284,4 +324,4 @@ is
   #
   public redef fixed type.default_value option (memoized_constant_effect M V)
   =>
-    memoized_constant_effect M V nil
+    memoized_constant_effect M V nil (Ref (memoize_mutate.env.var (global_value V) nil))
