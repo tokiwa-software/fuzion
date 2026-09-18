@@ -127,7 +127,7 @@ empty(T type) : container.Finger_Tree T is
 #
 single(T type, data Sequence T) : container.Finger_Tree T
   pre
-    debug 2 : data.as_finger_tree.is_nil
+    debug 2 : data.as_finger_tree = nil
 is
   public redef length i64 => data.count
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
