@@ -3120,15 +3120,47 @@ public class Call extends AbstractCall
             _calledFeature = cf.preAndCallFeature();
           }
       }
+
     if (_calledFeature != null && _calledFeature.isNative() && !res._module.isBaseModule())
       {
-        var nativeAccessFromEnv = new ParsedCall(
-          Call.typeAsValue(SourcePosition.notAvailable, new ParsedType(SourcePosition.notAvailable, "native_access")),
-          new ParsedName(SourcePosition.notAvailable, "from_env"));
-        var replace = new ParsedCall(nativeAccessFromEnv, new ParsedName(SourcePosition.notAvailable, "replace"));
-        result = new Block(new List<>(replace.resolveTypes(res, context), result));
+        result = indicateNativeAccessOutsideOfBaseModule(res, context, result);
       }
-    if (_calledFeature != null &&
+
+    if (isDirectEffectFeatureCall(res, context))
+      {
+        AstErrors.effectFeaturesMustBeCalledViaEnv(this);
+      }
+
+    return result;
+  }
+
+
+  /**
+   * If this is a call to a native feature we
+   * we call `native_access.from_env` to have `native_access` appear in
+   * effect analysis.
+   */
+  private Expr indicateNativeAccessOutsideOfBaseModule(Resolution res, Context context, Expr result)
+  {
+    var nativeAccessFromEnv = new ParsedCall(
+      Call.typeAsValue(SourcePosition.notAvailable, new ParsedType(SourcePosition.notAvailable, "native_access")),
+      new ParsedName(SourcePosition.notAvailable, "from_env"));
+    var replace = new ParsedCall(nativeAccessFromEnv, new ParsedName(SourcePosition.notAvailable, "replace"));
+    return new Block(new List<>(replace.resolveTypes(res, context), result));
+  }
+
+
+  /**
+   * Is this a call of an effect feature from outside an effect feature
+   * and not via `env`?
+   *
+   * @param res
+   * @param context
+   * @return
+   */
+  private boolean isDirectEffectFeatureCall(Resolution res, Context context)
+  {
+    return _calledFeature != null &&
         _calledFeature.isEffectFeature() &&
         // NYI: UNDER DEVELOPMENT: this should better just allow calls from inherited contracts
         !_calledFeature.featureName().isInternal() &&
@@ -3138,12 +3170,7 @@ public class Call extends AbstractCall
         // calling from somewhere within the effect is okay
         !inSameEffect(calledFeature().outer(), context.outerFeature()) &&
         // NYI: UNDER DEVELOPMENT: should not be necessary
-        !res._module.isBaseModule()
-       )
-      {
-        AstErrors.effectFeaturesMustBeCalledViaEnv(this);
-      }
-    return result;
+        !res._module.isBaseModule();
   }
 
 
@@ -3154,7 +3181,8 @@ public class Call extends AbstractCall
    * @param context
    * @return
    */
-  private boolean inSameEffect(AbstractFeature effect, AbstractFeature context) {
+  private boolean inSameEffect(AbstractFeature effect, AbstractFeature context)
+  {
     return context == effect
       ? true
       : context.outer() != null
