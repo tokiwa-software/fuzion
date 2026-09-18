@@ -93,3 +93,16 @@ public Any ref is
                        ) R
   =>
     f.call Any.this Any.this
+
+
+  # alternative to using `id` to force an
+  # expression into a desired type
+  #
+  # i.e. `option i32 .of 42` instead of `id (option i32) 42`
+  #
+  # usage example:
+  #
+  #     Unary u64 i32 .of (.as_u64)
+  #
+  public type.of(a Any.this) Any.this => a
+

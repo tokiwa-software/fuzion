@@ -23,7 +23,7 @@
 
 reg_issue7111 =>
 
-  mymap := (container.ps_map String String .of
+  mymap := (container.ps_map String String .from
     [ "un",   "une",  "deux", "trois", "quatre" , "cinq" ]
     [ "ichi", "ichi", "ni",   "san"  , "shi/yon", "go"   ] )
 

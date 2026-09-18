@@ -53,7 +53,7 @@ public Vars ref : effect is
         match Vars.this[k].bind v->(k, v)
           t tuple => [t]
           nil => []
-    container.ps_map String String .of kvs
+    container.ps_map String String .from kvs
 
 
   # default implementation of envir.vars

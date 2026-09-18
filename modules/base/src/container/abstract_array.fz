@@ -223,7 +223,7 @@ public abstract_array
     pre
       debug: 0 ≤ i.as_i64 < to.as_i64 ≤ a.length
   =>
-    (list T).of_finite a[i] (a.slice i+1 to).as_list
+    (list T).from_finite a[i] (a.slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements

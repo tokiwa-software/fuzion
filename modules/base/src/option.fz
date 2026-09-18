@@ -198,4 +198,5 @@ public option(T type) : switch T nil is
 #
 #     o option TypeOfX := x
 #
+# NYI: CLEANUP: remove, use type.of instead
 public option(T type, o option T) option T => o

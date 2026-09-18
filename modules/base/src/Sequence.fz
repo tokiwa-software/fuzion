@@ -1136,7 +1136,7 @@ is
       reduce (Sequence (KEY, VALUE)).empty (r,t)->
         mapper t ||> k,v->(r++[(k,v)])
 
-    M.of kvs
+    M.from kvs
 
 
   # sliding window with step size one

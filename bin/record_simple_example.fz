@@ -26,7 +26,7 @@
 
 # envir vars as map
 #
-envir_vars := container.ps_map String String .of ((envir.Vars.env.map_of [
+envir_vars := container.ps_map String String .from ((envir.Vars.env.map_of [
     "PATH",
     "LANG",
     "JAVA_HOME",
@@ -67,7 +67,7 @@ if envir.Args.env.count != 4
 type_    := envir.Args.env[1]
 fz_run   := envir.Args.env[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
 file     := envir.Args.env[3]
-input    := io.path.of "$file.stdin"
+input    := io.path.from "$file.stdin"
 
 res tokiwa.process_result :=
   if type_ = "jvm" || type_ = "any"
@@ -76,7 +76,7 @@ res tokiwa.process_result :=
     c := "$fz_run -XmaxErrors=-1 -c $(envir.Vars.env["FUZION_C_BACKEND_OPTIONS"].or_default "") -o=testbin $file".execute envir_vars input nil .or_panic
     if (c.exit_code = 0)
       e := "./testbin".execute envir_vars nil nil .or_panic
-      _ := io.file.delete (io.path.of "testbin")
+      _ := io.file.delete (io.path.from "testbin")
       tokiwa.process_result c.out+e.out c.err+e.err e.exit_code
     else
       c
@@ -94,10 +94,10 @@ if type_ != "effect"
     else
       "_$type_"
 
-  io.write (io.path.of "$file.expected_out$sfx") res.out .or_panic
+  io.write (io.path.from "$file.expected_out$sfx") res.out .or_panic
   cur_dir := os.cwd.or_panic.as_string
-  io.write (io.path.of "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--") .or_panic
+  io.write (io.path.from "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--") .or_panic
 else
-  io.write (io.path.of "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
+  io.write (io.path.from "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
 
 say "RECORDED $file"

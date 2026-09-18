@@ -103,7 +103,7 @@ is
               else
                 (from+?step ? next T => (interval next through step).as_list
                             | nil    => nil)
-      list T .of from tail finite
+      list T .from from tail finite
 
 
   # get the number of elements in this interval

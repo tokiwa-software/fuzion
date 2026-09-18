@@ -40,10 +40,15 @@ public Sending_Channel(T type) ref is
     abstract
 
 
+  # close this Channel which has the
+  #
   public close unit
   post
     debug: is_closed
   =>
     abstract
 
+
+  #
+  #
   public is_closed bool => abstract

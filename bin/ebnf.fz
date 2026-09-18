@@ -51,7 +51,7 @@ main =>
     ebnf_header := "grammar Fuzion;$new_line$new_line"
 
     ebnf := envir.Args.env.drop 1
-      .map (s->io.path.of s)
+      .map (s->io.path.from s)
       .map src->
         if !io.file.exists src
           panic "file not found '$src'."
@@ -128,7 +128,7 @@ main =>
     # test grammar with antlr4
     tmp := "mktemp --directory".execute.or_panic.out_or_panic.trim_end (id (Unary bool codepoint) (="\n"))
     "mkdir $tmp/fuzion_grammar".execute.or_panic.panic_on_error
-    _ := io.write (io.path.of "$tmp/fuzion_grammar/Fuzion.g4") ebnf
+    _ := io.write (io.path.from "$tmp/fuzion_grammar/Fuzion.g4") ebnf
     antlr := if (os.process.start "antlr4").bind u32 p->p.wait = 0 then "antlr4" else "antlr"
     # NYI: UNDER DEVELOPMENT: add option -Werror
     "$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4".execute.or_panic.panic_on_error

@@ -23,8 +23,8 @@
 
 path_test =>
 
-  abs := io.path.of "/first/second/third/fourth/"
-  rel := io.path.of "alpha/beta/gamma"
+  abs := io.path.from "/first/second/third/fourth/"
+  rel := io.path.from "alpha/beta/gamma"
 
 
   check abs.is_absolute
@@ -44,13 +44,13 @@ path_test =>
 
   rel_abs := rel.resolve abs
   check rel_abs = abs
-  tmp_abs := io.path.of "/tmp/foo" .resolve abs
+  tmp_abs := io.path.from "/tmp/foo" .resolve abs
   check tmp_abs = abs
 
   say "\nResolve:"
-  say <| io.path.of ".." .resolve (io.path.of "../ex.fz")
+  say <| io.path.from ".." .resolve (io.path.from "../ex.fz")
   check (rel.resolve abs = abs)
-  say <| io.path.root.resolve (io.path.of "ex.fz")
+  say <| io.path.root.resolve (io.path.from "ex.fz")
 
 
   say abs_rel.parent.or_panic
@@ -71,19 +71,19 @@ path_test =>
   split_file_name rel_file
   split_file_name rel
 
-  hidden_file := io.path.of ".config"
+  hidden_file := io.path.from ".config"
   split_file_name hidden_file
 
-  no_ext := io.path.of "/tmp/no_ext."
+  no_ext := io.path.from "/tmp/no_ext."
   split_file_name no_ext
 
-  no_ext2 := io.path.of "../foo.."
+  no_ext2 := io.path.from "../foo.."
   split_file_name no_ext2
 
-  dots := io.path.of "./..."
+  dots := io.path.from "./..."
   split_file_name dots
 
-  dots_ext := io.path.of "...txt"
+  dots_ext := io.path.from "...txt"
   split_file_name dots_ext
 
   subp := abs_rel_foo.subpath 4 7
@@ -91,18 +91,18 @@ path_test =>
   check subp = rel
 
 
-  check !(io.path.of "/tmp"  .starts_with (io.path.of "./ex.fz"))
-  check !(io.path.of "./tmp" .starts_with (io.path.of "./ex.fz"))
-  check !(io.path.of "./tmp" .starts_with (io.path.of "ex.fz"))
-  check !(io.path.of "./tmp" .starts_with (io.path.of "/ex.fz"))
-  check !(io.path.of "/tmp"  .starts_with (io.path.of "/ex.fz"))
-  check !(io.path.of "/tmp"  .starts_with (io.path.of "/tmp/ex.fz"))
+  check !(io.path.from "/tmp"  .starts_with (io.path.from "./ex.fz"))
+  check !(io.path.from "./tmp" .starts_with (io.path.from "./ex.fz"))
+  check !(io.path.from "./tmp" .starts_with (io.path.from "ex.fz"))
+  check !(io.path.from "./tmp" .starts_with (io.path.from "/ex.fz"))
+  check !(io.path.from "/tmp"  .starts_with (io.path.from "/ex.fz"))
+  check !(io.path.from "/tmp"  .starts_with (io.path.from "/tmp/ex.fz"))
   check !(rel.starts_with abs)
 
-  check (io.path.of "/./tmp/ex.fz" .starts_with (io.path.of "/tmp"))
+  check (io.path.from "/./tmp/ex.fz" .starts_with (io.path.from "/tmp"))
   check (rel_file.starts_with rel)
   check (abs_file.starts_with abs)
-  check (io.path.of ".././ex.fz" .starts_with (io.path.of "../ex.fz"))
+  check (io.path.from ".././ex.fz" .starts_with (io.path.from "../ex.fz"))
 
 
   say "\nParents:"
@@ -131,19 +131,19 @@ path_test =>
   say <| rel.parent 1 .or_panic.relativize rel_file
   say <| rel.parent 2 .or_panic.relativize rel_file
   say <| rel.parent 3 .or_panic.relativize rel_file
-  check (io.path.current_dir.relativize (io.path.of "ex.fz") = io.path.of "ex.fz")
-  check (io.path.parent_dir.relativize (io.path.of "../ex.fz") = io.path.of "ex.fz")
+  check (io.path.current_dir.relativize (io.path.from "ex.fz") = io.path.from "ex.fz")
+  check (io.path.parent_dir.relativize (io.path.from "../ex.fz") = io.path.from "ex.fz")
 
 
   create(s String) =>
     say "\nIN:  '$s'"
-    say "OUT: '$(io.path.of s)'"
+    say "OUT: '$(io.path.from s)'"
 
   create(s Sequence String, is_abs bool) =>
     say "\nIN:  '$s' $(is_abs ? "absolute" : "relative")"
-    say "OUT: '$(io.path.of s is_abs)'"
+    say "OUT: '$(io.path.from s is_abs)'"
 
-  check (io.path.of "/./././foo/./././../././bar/././././.." = io.path.root)
+  check (io.path.from "/./././foo/./././../././bar/././././.." = io.path.root)
   create "/./././foo/./././../././bar/././././.."
 
   create "..."
@@ -161,12 +161,12 @@ path_test =>
   # expect failure to create a path
   #
   fail_create(s String) =>
-    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated path '$(io.path.of s)' from '$s'") .catch (x->say x)
+    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated path '$(io.path.from s)' from '$s'") .catch (x->say x)
 
   # expect failure to create a path
   #
   fail_create(seg Sequence String, is_abs bool) =>
-    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated $(is_abs ? "absolute" : "relative") path '$(io.path.of seg is_abs)' from '$seg'") .catch (x->say x)
+    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated $(is_abs ? "absolute" : "relative") path '$(io.path.from seg is_abs)' from '$seg'") .catch (x->say x)
 
   # uproot a path
   fail_create "/.."                         # 1. should flag an error: path uprooted
@@ -185,9 +185,9 @@ path_test =>
   fail(f Function Any) =>
     fuzion.runtime.contract_fault.try ()->(say "FAILED: got $(f.call) but expected failure") .catch (x->say x)
 
-  fail ()->(io.path.of "/tmp" .resolve (io.path.of "../.."))
+  fail ()->(io.path.from "/tmp" .resolve (io.path.from "../.."))
 
-  fail ()->(io.path.of "foo"  .relativize (io.path.of "/ex.fz"))
-  fail ()->(io.path.of ".."   .relativize (io.path.of "/ex.fz"))
-  fail ()->(io.path.of "."    .relativize (io.path.of "/ex.fz"))
-  fail ()->(io.path.of "/tmp" .relativize (io.path.of "ex.fz"))
+  fail ()->(io.path.from "foo"  .relativize (io.path.from "/ex.fz"))
+  fail ()->(io.path.from ".."   .relativize (io.path.from "/ex.fz"))
+  fail ()->(io.path.from "."    .relativize (io.path.from "/ex.fz"))
+  fail ()->(io.path.from "/tmp" .relativize (io.path.from "ex.fz"))

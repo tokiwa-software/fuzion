@@ -92,7 +92,7 @@ main =>
     say "run_tests.fz <build_dir> <target>"
     Exit.env.exit 1
 
-  build_dir := io.path.of envir.Args.env[1]
+  build_dir := io.path.from envir.Args.env[1]
   target := envir.Args.env[2]
 
   say ""

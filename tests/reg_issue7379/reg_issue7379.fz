@@ -177,7 +177,7 @@ public tokiwa is
 
 reg_issue7379 =>
   for res in ["cat".execute (container.ps_map String String).empty nil (time.duration.s 3) .or_panic,
-              "cat".execute (container.ps_map String String).empty (io.path.of "reg_issue7379.fz.stdin") (time.duration.s 3) .or_panic] do
+              "cat".execute (container.ps_map String String).empty (io.path.from "reg_issue7379.fz.stdin") (time.duration.s 3) .or_panic] do
     say <| res.err.substring 0 25
 
 reg_issue7379

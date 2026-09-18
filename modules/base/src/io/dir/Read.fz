@@ -48,5 +48,5 @@ public Read ref : effect is
         else if len < 0
           error "error reading dir"
         else
-          io.path.of (String.from_bytes (internal_array.as_array.take len))
+          io.path.from (String.from_bytes (internal_array.as_array.take len))
 

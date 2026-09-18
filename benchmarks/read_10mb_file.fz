@@ -26,7 +26,7 @@ read_10mb_file =>
     io.file.use file io.file.mode.read ()->
       (io.buffered io.file.file_mutate).read_fully
 
-  f := io.path.of "/tmp/file"
+  f := io.path.from "/tmp/file"
 
   a := array u8 _ 1E7 _->65
   s := _ : String is
@@ -42,7 +42,7 @@ read_10mb_file =>
       (time.duration.s 1)
       (time.duration.s 10)
       (()->
-       check read_file (io.path.of "$arg") .or_panic.count=1E7
+       check read_file (io.path.from "$arg") .or_panic.count=1E7
         )
     say "stdlib: $arg iterations/s"
     say <| bench
