@@ -273,12 +273,11 @@ public class FrontEnd extends ANY
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
         result = libModule(data, universe);
-        // NYI: BUG: does not work anymore
-        // if (!m.equals(result.name()))
-        //   {
-        //     Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
-        //                  m + "' but found '" + result.name() + "'");
-        //   }
+        if (!m.equals(result.name()) && !"main".equals(result.name()))
+          {
+            Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
+                         m + "' but found '" + result.name() + "'");
+          }
         _modules.put(result.name(), result);
       }
     catch (NoSuchFileException io)
