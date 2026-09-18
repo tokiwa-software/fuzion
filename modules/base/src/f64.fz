@@ -310,31 +310,36 @@ public f64(public val f64) : float, java_primitive is
         q
 
 
-  # equality
-  #
-  # This provides an equivalence relation in the mathematical
-  # sense and therefore breaks the IEEE semantics. infix = should
-  # be used for IEEE semantics.
-  #
-  # The equivalence relation is provided by the usual comparison
-  # of floating-point numbers, with the definition of NaN = NaN.
+  # total order equality as defined by IEEE 754, with the exception of treating -0.0 and +0.0 as equal
   #
   public fixed redef type.equality(a, b f64) bool =>
-    (f64.equal a b) || (a.is_NaN && b.is_NaN)
+    a.is_zero && b.is_zero || a.cast_to_u64 = b.cast_to_u64
 
 
-  # total order
-  #
-  # This provides a total order in the mathematical sense and
-  # therefore breaks the IEEE semantics. infix <= should be
-  # used for IEEE semantics.
-  #
-  # The total order is provided by the usual comparison of
-  # floating-point numbers, with the definition that NaN <= x,
-  # for any x (including x = NaN).
+  # total order as specified by IEEE, with exception of treating -0.0 and 0.0 as equal
   #
   public fixed redef type.lteq(a, b f64) bool =>
-    (f64.lower_than_or_equal a b) || a.is_NaN
+    # NYI: OPTIMIZATION: avoid `if` to make this branchless
+    a_ := if a.is_zero
+            0x8000000000000000
+          else if a.is_sign_bit_set
+            # flip all bits
+            ~a.cast_to_u64
+          else
+            # flip the first bit
+            a.cast_to_u64 ^ 0x8000000000000000
+
+    b_ := if b.is_zero
+            0x8000000000000000
+          else if b.is_sign_bit_set
+            # flip all bits
+            ~b.cast_to_u64
+          else
+            # flip the first bit
+            b.cast_to_u64 ^ 0x8000000000000000
+
+    a_ <= b_
+
 
 
 log(v f64) f64 => native
