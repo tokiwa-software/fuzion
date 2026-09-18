@@ -120,4 +120,5 @@ public outcome(T type) : switch T error is
 #
 #     o outcome TypeOfX := x
 #
+# NYI: CLEANUP: remove, use type.of instead
 public outcome(T type, o outcome T) outcome T => o

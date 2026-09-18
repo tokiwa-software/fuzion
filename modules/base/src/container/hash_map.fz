@@ -206,5 +206,5 @@ is
 
 
   #
-  public fixed redef type.of(kvs Sequence (tuple HK V)) container.hash_map HK V =>
+  public fixed redef type.from(kvs Sequence (tuple HK V)) container.hash_map HK V =>
     container.hash_map HK V (kvs.map (.0)) (kvs.map (.1))

@@ -339,7 +339,7 @@ O(n log n).
   #
   # This feature creates a pre-initialized instance of ps_map.
   #
-  public fixed redef type.of(kvs Sequence (tuple PK V)) container.ps_map PK V =>
+  public fixed redef type.from(kvs Sequence (tuple PK V)) container.ps_map PK V =>
     for
       r := container.ps_map ((container.expanding_array (PK,V)).empty 0) 0 0, r.put kv.0 kv.1
       kv in kvs

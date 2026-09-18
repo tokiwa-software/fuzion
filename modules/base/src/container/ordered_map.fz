@@ -101,5 +101,5 @@ is
         ordered_map ks va
 
 
-  public fixed redef type.of(kvs Sequence (tuple OK V)) container.ordered_map OK V =>
+  public fixed redef type.from(kvs Sequence (tuple OK V)) container.ordered_map OK V =>
     container.ordered_map OK V (kvs.map (.0)) (kvs.map (.1))

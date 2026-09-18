@@ -29,7 +29,7 @@
 # Call stack:
 
 # java.lang.NullPointerException: Cannot invoke "java.lang.Integer.intValue()" because "<local3>" is null
-#   at dev.flang.be.interpreter.Layout.offset0(Layout.java:239)
+#   at dev.flang.be.interpreter.Layout.fromfset0(Layout.java:239)
 #   at dev.flang.be.interpreter.Interpreter.fieldSlot(Interpreter.java:1152)
 #   at dev.flang.be.interpreter.Interpreter.getField(Interpreter.java:1288)
 #   at dev.flang.be.interpreter.Interpreter.execute(Interpreter.java:526)

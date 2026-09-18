@@ -97,19 +97,19 @@ public Map(K type : property.equatable, V type) ref is
   # an empty Map
   #
   public type.empty Map.this =>
-    of []
+    from []
 
 
   # initializer for this map
   #
   # every map implementation needs to implement this
   #
-  public type.of(kvs Sequence (tuple K V)) Map.this => abstract
+  public type.from(kvs Sequence (tuple K V)) Map.this => abstract
 
 
   # initializer for this map
   #
-  public type.of(keys Sequence K, values Sequence V) Map.this
+  public type.from(keys Sequence K, values Sequence V) Map.this
     pre debug: keys.count = values.count
   =>
-    of (keys.zip values x,y->(x,y))
+    from (keys.zip values x,y->(x,y))

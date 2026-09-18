@@ -92,7 +92,7 @@ public tokiwa is
       net.family.ipv4
       "https://influxdb.tokiwa.software:8086/api/v2/write?org=$(org)&bucket=$(bucket)&precision=s"
       str.utf8
-      (container.ps_map String String .of [("Authorization", "Token $(token)"),
+      (container.ps_map String String .from [("Authorization", "Token $(token)"),
                                            ("Content-Type", "text/plain")])
 
 

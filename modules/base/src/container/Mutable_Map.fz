@@ -114,7 +114,7 @@ public Mutable_Map(K type : property.equatable, V type) ref is
   # M is the map implementation that is used for creating the map
   #
   public as_map(M type : container.Map K V) M =>
-    M.of items
+    M.from items
 
 
   # initializer for this mutable map
