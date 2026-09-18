@@ -1,5 +1,5 @@
 unit
 an error occurred while creating the following directory: "test_path_😀"
---error: no more directory entries--
 file1_😀
 file2_😀
+no more directory entries
