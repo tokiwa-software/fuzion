@@ -196,12 +196,14 @@ public numeric : property.hashable, property.orderable is
   # reduce complexity to O(log(v)).
   #
   public type.from_u32(v u32) numeric.this =>
-    if      v = 0 then zero
-    else if v = 1 then one
-    else
-      h := from_u32 v/2
-      l := from_u32 v%2
-      h+h+l
+    from_u32_rec v zero one
+
+
+  type.from_u32_rec(v u32, partial numeric.this, bit numeric.this) numeric.this =>
+    p2 := if v%2 = 0 then partial else partial+bit
+    h := v / 2
+    if h = 0 then p2
+             else from_u32_rec h p2 bit+bit
 
 
   # the constant '2' in whatever integer implementation we have
