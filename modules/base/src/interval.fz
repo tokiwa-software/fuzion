@@ -188,8 +188,13 @@ is
   #
   public redef size_option option i64
   =>
-    # NYI: for `T` wider than `i64` the result may overflow.
-    through.ok ? size.as_i64 : nil
+    if through.ok
+      if size.fits_in_i64
+        size.as_i64
+      else
+        panic "size_option: interval size does not fit into an i64: $size"
+    else
+      nil
 
 
   # index of `e` in this interval, `nil` if not contained
