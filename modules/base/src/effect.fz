@@ -188,7 +188,7 @@ public effect is
                       code () -> R
                       ) R
   =>
-    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+    instate R e code (_ -> compile_time_panic)
 
 
   # convenience version of `instate` for effect values whose type is
