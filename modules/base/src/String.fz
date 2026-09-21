@@ -839,12 +839,14 @@ public String ref : property.hashable, property.orderable is
 
 
   # Splits this string at codepoints where p is true and returns the result as a
-  # list of strings. In case multiple, neighboring codepoints in the string are
-  # evaluated to be true by p, this does not cause empty strings to be added to
-  # the result list, rather this case is being treated as being one big separator.
+  # list of strings. No empty strings are produced: a run of adjacent matches
+  # acts as a single separator, and leading or trailing matches are skipped.
   #
   public split_if(p codepoint -> bool) Sequence String =>
-    i := split_if_state (Sequence String).empty false 0 0
+
+    split_if_state(l Sequence String, in_run bool, start_pos, current_pos i64) is
+
+    i := split_if_state (Sequence String).empty true 0 0
     last_state := codepoints.reduce split_if_state i (r,c)->
       if p c
         if r.in_run
@@ -1049,12 +1051,3 @@ public String ref : property.hashable, property.orderable is
   #
   public type.is_continuation_byte(byte u8) bool =>
     0x80 <= byte <= 0xBF
-
-
-# state used by `String.split_if`.
-#
-# Due to #4619, this currently cannot be declared local to `String.split_if`
-# since it would then define a type whose outer type is `String.this` which is
-# a ref type that currently cannot be used a result type.
-#
-split_if_state(l Sequence String, in_run bool, start_pos, current_pos i64) is
