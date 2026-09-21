@@ -1,0 +1,42 @@
+
+<built-in>: error 1: Used abstract feature 'compile_time_panic' is not implemented by 'universe'
+Feature 'universe' instantiated at <source position not available>:
+
+inherits or declares abstract feature 'compile_time_panic' declared at {base.fum}/panic.fz:60:8:
+public compile_time_panic void => abstract
+-------^^^^^^^^^^^^^^^^^^
+which is called at {base.fum}/effect.fz:191:28:
+    instate R e code (_ -> compile_time_panic)
+---------------------------^^^^^^^^^^^^^^^^^^
+without providing an implementation
+
+Callchain that lead to this point:
+
+call '(reg_issue2231.type.ef.type.instate#3 void).(λ(_ -> compile_time_panic)).call#1' at {base.fum}/effect.fz:410:18:
+      set res := def cur_e
+-----------------^^^
+call '(instate_helper void reg_issue2231.ef).call_def.call#1'
+call 'reg_issue2231.type.ef.type.instate0#5 (instate_helper void reg_issue2231.ef).call_code (instate_helper void reg_issue2231.ef).call_def' at {base.fum}/effect.fz:400:3:
+  ET.instate0 e call_code call_def
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'instate_helper void reg_issue2231.ef' at {base.fum}/effect.fz:170:10:
+    x := instate_helper R effect.this e code def
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'reg_issue2231.type.ef.type.instate#4 void' at {base.fum}/effect.fz:191:5:
+    instate R e code (_ -> compile_time_panic)
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'reg_issue2231.type.ef.type.instate#3 void' at {base.fum}/effect.fz:212:5:
+    effect.this.instate R effect.this code
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'reg_issue2231.ef.instate_self#2 void' at {base.fum}/effect.fz:229:5:
+    instate_self code
+----^^^^^^^^^^^^^^^^^
+call 'reg_issue2231.ef.infix !#2 void' at --CURDIR--/reg_issue2231.fz:33:3:
+  ef ! ()->
+--^^^^^^^^^
+    reg_issue2231.ef.env.something
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'reg_issue2231'
+program entry point
+
+one error.
