@@ -130,7 +130,7 @@ public memoize is
                   # the value type, i.e., result type of memoized function
                   #
                   V type)
-    : memoized_effect memoized.this K V
+    : memoized_effect_single_thread memoized.this K V
   is
 
 
@@ -196,17 +196,17 @@ public memoize is
 
 # effect to memoize values calculated from given keys.
 #
-module:public memoized_effect(# type to identify this memoized instance
-                              #
-                              M type,
+module:public memoized_effect_single_thread(# type to identify this memoized instance
+                                            #
+                                            M type,
 
-                              # the key type, i.e, input type of memoized function
-                              #
-                              K type : property.orderable,
+                                            # the key type, i.e, input type of memoized function
+                                            #
+                                            K type : property.orderable,
 
-                              # the value type, i.e., result type of memoized function
-                              #
-                              V type)
+                                            # the value type, i.e., result type of memoized function
+                                            #
+                                            V type)
   : effect
 is
 
@@ -230,23 +230,86 @@ is
               #
               f K->V) V
   =>
-    memoized_effect.this.env.store[k].or_else ()->
+    memoized_effect_single_thread.this.env.store[k].or_else ()->
       v := f k
-      memoized_effect.this.env.update k v
+      memoized_effect_single_thread.this.env.update k v
       v
 
   # update the memoized value stored for key k to hold value v.
   #
   update(k,v) =>
     set store := store.put k v
-    memoized_effect.this.replace memoized_effect.this
+    memoized_effect_single_thread.this.replace memoized_effect_single_thread.this
+
+
+# effect to memoize values calculated from given keys.
+#
+private:public memoized_effect(# type to identify this memoized instance
+                              #
+                              M type,
+
+                              # the key type, i.e, input type of memoized function
+                              #
+                              K type : property.orderable,
+
+                              # the value type, i.e., result type of memoized function
+                              #
+                              V type,
+
+                              # the store used for memoization
+                              #
+                              # NYI: ENHANCEMENT: would be nice to also support property.hashable keys
+                              # using a tree map here
+                              #
+                              store container.ps_map K V,
+
+                              # ref containing the mutatble global value, accessed while
+                              # `mmemoize_mutate.env.exclusive`.
+                              #
+                              global Ref (memoize_mutate.var (container.ps_map K unit),
+                                          memoize_mutate.var (container.ps_map K V   ))
+                              )
+  : effect
+is
+
+  # use this memoized effect to retrieve the value for a given key or,
+  # if that value was not calculated yet, calculate it
+  #
+  public keep(# the function input
+              #
+              k K,
+
+              # the function to calculate the result
+              #
+              f K->V) V
+  =>
+    memoized_effect.this.env.store[k].or_else ()->
+      m := memoize_mutate.env.exclusive_when (() -> (global.v.0[k]?? = (global.v.1[k]??))) ()->
+                                 gm := global.v.1.get
+                                 if gm[k]?? then
+                                   option gm
+                                 else
+                                   global.v.0 <- global.v.0.put k unit
+                                   nil
+                             .or_else ()->
+                               v2 := f k                     # note that we call `f()` while not exclusive
+                               global.v.1.update (.put k v2) # use `global.v.update` since it is exclusive, unlike `global <-`
+                                         .1                  # return updated map
+      (memoized_effect M K V m global).replace
+      m[k]!
+
 
 
   # default implementation of memoized_effect
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option (memoized_effect M K V) => memoized_effect M K V
+  public redef fixed type.default_value option (memoized_effect M K V)
+  =>
+    m1 := container.ps_map K unit .empty
+    m2 := container.ps_map K V    .empty
+    memoized_effect M K V m2 (Ref (memoize_mutate.env.var m1,
+                                   memoize_mutate.env.var m2))
 
 
 # a blocking mutate that is used to memoize values globally, i.e., for all threads
@@ -277,23 +340,23 @@ Ref(V type, v V) ref is
 
 # effect to memoize constant values calculated only once
 #
-memoized_constant_effect(# type to identify this memoized instance
-                         #
-                         M type,
+private:public memoized_constant_effect(# type to identify this memoized instance
+                                        #
+                                        M type,
 
-                         # the value type, i.e., result type of memoized function
-                         #
-                         V type,
+                                        # the value type, i.e., result type of memoized function
+                                        #
+                                        V type,
 
-                         # the stored value, accessed by current thread only, so no
-                         # need for exclusivity
-                         store option V,
+                                        # the stored value, accessed by current thread only, so no
+                                        # need for exclusivity
+                                        store option V,
 
-                         # ref containing the mutatble global value, accessed while
-                         # `mmemoize_mutate.env.exclusive`.
-                         #
-                         global Ref (memoize_mutate.var (global_value V))
-                         )
+                                        # ref containing the mutatble global value, accessed while
+                                        # `mmemoize_mutate.env.exclusive`.
+                                        #
+                                        global Ref (memoize_mutate.var (global_value V))
+                                        )
   : effect
 is
 
@@ -312,9 +375,9 @@ is
                                  *    => global.v <- calculating
                                          nil
                              .or_else ()->
-                                 v2 := f()            # note that we call `f()` while not exclusive
-                                 _ := global.v.update _->v2  # use `global.update` since it is exclusive, unlike `global <-`
-                                 v2
+                               v2 := f()                   # note that we call `f()` while not exclusive
+                               _ := global.v.update _->v2  # use `global.v.update` since it is exclusive, unlike `global <-`
+                               v2
       (memoized_constant_effect M V v global).replace
       v
 
