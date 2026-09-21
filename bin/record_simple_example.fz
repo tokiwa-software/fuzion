@@ -53,6 +53,12 @@ envir_vars := container.ps_map String String .of ((envir.Vars.env.map_of [
   ]).items ++ [("FUZION_DISABLE_ANSI_ESCAPES", "true")])
 
 
+# Run this String as a command using `envir_vars, cpu_time_limit` and panic in case we could
+# not execute the command, but do not panic in case the command results in an error.
+#
+String.run(input0 option io.path) => String.this.execute envir_vars input0 nil .or_panic
+
+
 ####### record_simple_example ########
 
 
@@ -71,19 +77,19 @@ input    := io.path.of "$file.stdin"
 
 res tokiwa.process_result :=
   if type_ = "jvm" || type_ = "any"
-    "$fz_run -XmaxErrors=-1 -jvm $(envir.Vars.env["FUZION_JVM_BACKEND_OPTIONS"].or_default "") $file".execute envir_vars input nil .or_panic
+    "$fz_run -XmaxErrors=-1 -jvm $(envir.Vars.env["FUZION_JVM_BACKEND_OPTIONS"].or_default "") $file".run input
   else if type_ = "c"
-    c := "$fz_run -XmaxErrors=-1 -c $(envir.Vars.env["FUZION_C_BACKEND_OPTIONS"].or_default "") -o=testbin $file".execute envir_vars input nil .or_panic
+    c := "$fz_run -XmaxErrors=-1 -c $(envir.Vars.env["FUZION_C_BACKEND_OPTIONS"].or_default "") -o=testbin $file".run input
     if (c.exit_code = 0)
-      e := "./testbin".execute envir_vars nil nil .or_panic
+      e := "./testbin".run nil
       _ := io.file.delete (io.path.of "testbin")
       tokiwa.process_result c.out+e.out c.err+e.err e.exit_code
     else
       c
   else if type_ = "int"
-    "$fz_run -XmaxErrors=-1 -interpreter $file".execute envir_vars input nil .or_panic
+    "$fz_run -XmaxErrors=-1 -interpreter $file".run input
   else if type_ = "effect"
-    "$fz_run -XmaxErrors=-1 -effects $file".execute envir_vars nil nil .or_panic
+    "$fz_run -XmaxErrors=-1 -effects $file".run nil
   else
     panic "not supported"
 
