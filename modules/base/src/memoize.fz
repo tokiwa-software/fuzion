@@ -246,7 +246,7 @@ memoized_effect(# type to identify this memoized instance
                 store container.ps_map K V,
 
                 # ref containing the mutatble global value, accessed while
-                # `mmemoize_mutate.env.exclusive`.
+                # `memoize_mutate.env.exclusive`.
                 #
                 global Ref (memoize_mutate.var (container.ps_map K unit),  # map that is set for key k if a thread started calculating k's value.
                             memoize_mutate.var (container.ps_map K V   )   # map of all calculated values
@@ -334,7 +334,7 @@ private:public memoized_constant_effect(# type to identify this memoized instanc
                                         store option V,
 
                                         # ref containing the mutatble global value, accessed while
-                                        # `mmemoize_mutate.env.exclusive`.
+                                        # `memoize_mutate.env.exclusive`.
                                         #
                                         global Ref (memoize_mutate.var (global_value V))
                                         )
