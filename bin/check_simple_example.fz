@@ -81,6 +81,23 @@ envir_vars :=
     .add "FUZION_DISABLE_ANSI_ESCAPES" "true"
 
 
+# Run this String as a command using `envir_vars, cpu_time_limit` and panic in case we could
+# not execute the command, but do not panic in case the command results in an error.
+#
+String.run(input0 option io.path) => String.this.execute envir_vars input0 cpu_time_limit .or_panic
+
+
+# Run this String as a command using `envir_vars, cpu_time_limit` and panic in case we could
+# not execute the command, but do not panic in case the command results in an error.
+#
+String.run => String.this.run nil
+
+
+# Run this String as a command using `envir_vars, cpu_time_limit` and panic in case it
+# returns with an error.
+#
+String.run_and_check => run.panic_on_error
+
 
 ############################################################################
 
@@ -113,18 +130,19 @@ check_exit_code(run tokiwa.process_result) =>
 clean_err(f io.path) =>
 
   if is_windows
-    "sed -i s|/|#|g $f".execute envir_vars nil cpu_time_limit .or_panic.panic_on_error
+    "sed -i s|/|#|g $f".run_and_check
     # 8 slashes here intentional, unclear why so many are needed though...
-    "sed -i s|\\\\\\\\|#|g $f".execute envir_vars nil cpu_time_limit .or_panic.panic_on_error
-    "sed -i s|$(os.cwd.or_panic.as_string.replace "\\" "#" .replace "/" "#")|--CURDIR--| $f".execute envir_vars nil cpu_time_limit .or_panic.panic_on_error
-    "sed -i s|$(("$(os.cwd.or_panic.as_string.substring 1 2):$(os.cwd.or_panic.as_string.substring 2)").replace "\\" "#" .replace "/" "#")|--CURDIR--| $f".execute envir_vars nil cpu_time_limit .or_panic.panic_on_error
-  _ := "sed -i s#$(os.cwd.or_panic.as_string)#--CURDIR--# $f".execute .or_panic
+    "sed -i s|\\\\\\\\|#|g $f".run_and_check
+    "sed -i s|$(os.cwd.or_panic.as_string.replace "\\" "#" .replace "/" "#")|--CURDIR--| $f".run_and_check
+    "sed -i s|$(("$(os.cwd.or_panic.as_string.substring 1 2):$(os.cwd.or_panic.as_string.substring 2)").replace "\\" "#" .replace "/" "#")|--CURDIR--| $f".run_and_check
+  "sed -i s#$(os.cwd.or_panic.as_string)#--CURDIR--# $f".run_and_check
   # line numbers
-  "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute envir_vars nil cpu_time_limit .or_panic.panic_on_error
-  "sed -E -i s/\\.(fz|java):[0-9]+/\\.\\1:n/g $f".execute envir_vars nil cpu_time_limit .or_panic.panic_on_error
+  "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".run_and_check
+  "sed -E -i s/\\.(fz|java):[0-9]+/\\.\\1:n/g $f".run_and_check
   # replace CLASS_PREFIX_WITH_ID
-  "sed -E -i s/fzC__L[0-9]+/fzC_LXXX/g $f".execute envir_vars nil cpu_time_limit .or_panic.panic_on_error
-
+  "sed -E -i s/fzC__L[0-9]+/fzC_LXXX/g $f".run_and_check
+  # replace lambda function names in Java stack traces
+  "sed -E -i s/__INTERN_fun[0-9]+_/__fun_/g $f".run_and_check
 
 # delete temporary files
 #
@@ -183,9 +201,9 @@ else
       String.join s " "
 
     if be = "c"
-      compile := "$fz_run -XmaxErrors=-1 -c $(backend_options "FUZION_C_BACKEND_OPTIONS") $file -o=testbin".execute envir_vars nil cpu_time_limit .or_panic
+      compile := "$fz_run -XmaxErrors=-1 -c $(backend_options "FUZION_C_BACKEND_OPTIONS") $file -o=testbin".run
       if compile.ok
-        run := "./testbin".execute envir_vars input cpu_time_limit .or_panic
+        run := "./testbin".run input
 
         check_exit_code run
 
@@ -195,21 +213,21 @@ else
         io.write (io.path.of "tmp_out.txt") compile.out .or_panic
         io.write (io.path.of "tmp_err.txt") compile.err .or_panic
     else if be = "jvm"
-      run := "$fz_run -XmaxErrors=-1 -jvm $(backend_options "FUZION_JVM_BACKEND_OPTIONS") $file".execute envir_vars input cpu_time_limit .or_panic
+      run := "$fz_run -XmaxErrors=-1 -jvm $(backend_options "FUZION_JVM_BACKEND_OPTIONS") $file".run input
 
       check_exit_code run
 
       io.write (io.path.of "tmp_out.txt") run.out .or_panic
       io.write (io.path.of "tmp_err.txt") run.err .or_panic
     else if be = "int"
-      run := "$fz_run -XmaxErrors=-1 -interpreter $file".execute envir_vars input cpu_time_limit .or_panic
+      run := "$fz_run -XmaxErrors=-1 -interpreter $file".run input
 
       check_exit_code run
 
       io.write (io.path.of "tmp_out.txt") run.out .or_panic
       io.write (io.path.of "tmp_err.txt") run.err .or_panic
     else if be = "effect"
-      run := "$fz_run -XmaxErrors=-1 -effects $file".execute envir_vars nil cpu_time_limit .or_panic
+      run := "$fz_run -XmaxErrors=-1 -effects $file".run
 
       check_exit_code run
 
@@ -217,14 +235,14 @@ else
     else
       panic "backend unknown: $be"
 
-    out := "diff --strip-trailing-cr $(exp_out) tmp_out.txt".execute envir_vars nil cpu_time_limit .or_panic
+    out := "diff --strip-trailing-cr $(exp_out) tmp_out.txt".run
 
     err :=
       if be != "effect"
         io.copy exp_err exp_err_cleaned .or_panic
         clean_err (io.path.of "tmp_err.txt")
         clean_err exp_err_cleaned
-        "diff --strip-trailing-cr $(exp_err_cleaned) tmp_err.txt".execute envir_vars nil cpu_time_limit .or_panic
+        "diff --strip-trailing-cr $(exp_err_cleaned) tmp_err.txt".run
       else
         tokiwa.process_result.empty_success
 
