@@ -40,7 +40,8 @@ public Sending_Channel(T type) ref is
     abstract
 
 
-  # close this Channel which has the
+  # close this Channel, this potentially unblocks a Receiving_Channel
+  # Also this Channel must subsequently not be used anymore to send any values
   #
   public close unit
   post
@@ -49,6 +50,6 @@ public Sending_Channel(T type) ref is
     abstract
 
 
-  #
+  # has this Channel already been closed?
   #
   public is_closed bool => abstract
