@@ -48,7 +48,9 @@ public stack(T type) : container.Stack T is
 
     for o := top.read
         n := next o
-    while !o.is_nil && !top.compare_and_set o n
+    # NYI: BUG: we can not currently do `o != nil` here since
+    # T is not necessarily equatable
+    while (o ? nil => false | Item => true) && !top.compare_and_set o n
     else
       o.bind node->node.data
 

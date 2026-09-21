@@ -57,7 +57,7 @@ is
       debug: !(a.finite.is_no && b.finite.is_no)
 
     if T : property.equatable
-      (a.zip b (=) ∀ id) && count_order a b .is_equal
+      (a.zip b (=) ∀ id) && count_order a b = equal
     else
       compile_time_panic  # Sequence is not equatable since element type is not
 
@@ -80,10 +80,9 @@ is
 
     if T : property.orderable
       a.zip b (<>)
-       .filter (.is_unequal)
+       .filter (!=equal)
        .first
-       .or_else (count_order a b)
-       .is_less_than_or_equal
+       .or_else (count_order a b) != greater
     else
       compile_time_panic  # Sequence is not orderable since element type is not
 
