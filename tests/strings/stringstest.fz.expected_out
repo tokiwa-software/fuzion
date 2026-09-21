@@ -15,3 +15,10 @@ true
 [0, 1, 2]
 hell😀
 "abcd"
+[foo, bar]
+[foo, bar]
+[foo, bar, baz]
+[]
+[]
+[a, b]
+[hello]
