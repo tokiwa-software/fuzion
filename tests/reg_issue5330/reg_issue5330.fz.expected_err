@@ -7,14 +7,14 @@ Feature 'test.x.type' instantiated at <source position not available>:
 inherits or declares abstract feature 'property.partially_orderable.type.lteq' declared at {base.fum}/property/partially_orderable.fz:48:15:
   public type.lteq(a, b partially_orderable.this) bool => abstract
 --------------^^^^
-which is called at {base.fum}/equals.fz:80:68:
+which is called at {base.fum}/operators_order.fz:29:68:
 public lteq(T type : property.partially_orderable, a, b T) bool => T.lteq a b
 -------------------------------------------------------------------^^^^^^^^^^
 without providing an implementation
 
 Callchain that lead to this point:
 
-call 'lteq#3 test.x' at {base.fum}/equals.fz:118:72:
+call 'lteq#3 test.x' at {base.fum}/operators_order.fz:67:72:
 public infix <=(T type : property.partially_orderable, a, b T) bool => lteq a b
 -----------------------------------------------------------------------^^^^^^^^
 call 'infix <=#3 test.x' at --CURDIR--/reg_issue5330.fz:27:25:
