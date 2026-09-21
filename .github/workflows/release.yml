@@ -47,6 +47,7 @@ jobs:
     outputs:
       version: ${{ steps.v.outputs.version }}
       prerelease: ${{ steps.v.outputs.prerelease }}
+      sha256: ${{ steps.sum.outputs.sha256 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -65,6 +66,12 @@ jobs:
           VERSION: ${{ steps.v.outputs.version }}
         run: git archive --format=tar.gz --prefix="fuzion_${VERSION}_src/" -o "fuzion_${VERSION}_src.tar.gz" HEAD
 
+      - name: Create checksum
+        id: sum
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: echo "sha256=$(sha256sum "fuzion_${VERSION}_src.tar.gz")" >> "$GITHUB_OUTPUT"
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: packages-src
@@ -80,6 +87,13 @@ jobs:
   package:
     name: Package for ${{ matrix.os }} (${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
+    outputs:
+      linux-amd64:   ${{ steps.sum.outputs.linux-amd64 }}
+      linux-arm64:   ${{ steps.sum.outputs.linux-arm64 }}
+      macos-amd64:   ${{ steps.sum.outputs.macos-amd64 }}
+      macos-arm64:   ${{ steps.sum.outputs.macos-arm64 }}
+      windows-amd64: ${{ steps.sum.outputs.windows-amd64 }}
+      windows-arm64: ${{ steps.sum.outputs.windows-arm64 }}
     strategy:
       fail-fast: false
       matrix:
@@ -172,10 +186,12 @@ jobs:
           file build/lib/*fuzion_rt.* | grep -qi -- "$FILE_ARCH" \
             || { echo "::error::fuzion_rt is not built for $FILE_ARCH"; exit 1; }
 
-      - name: Rename archive
+      - name: Rename archive and create checksum
+        id: sum
         run: |
           VERSION="$(cat version.txt)"
           mv "fuzion_${VERSION}.tar.gz" "fuzion_${VERSION}_${TARGET}.tar.gz"
+          echo "${TARGET}=$(sha256sum "fuzion_${VERSION}_${TARGET}.tar.gz")" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -197,11 +213,14 @@ jobs:
           merge-multiple: true
           path: artifacts
 
-      - name: Create checksums
+      - name: Create checksums and verify artifacts
+        env:
+          SRC: ${{ needs.src.outputs.sha256 }}
+          PACKAGES: ${{ toJSON(needs.package.outputs) }}
         run: |
-          cd artifacts
-          sha256sum ./*.tar.gz > SHA256SUMS
-          cat SHA256SUMS
+          { echo "$SRC"; echo "$PACKAGES" | jq -r '.[]'; } > artifacts/SHA256SUMS
+          cat artifacts/SHA256SUMS
+          cd artifacts && sha256sum -c SHA256SUMS
 
       - name: Publish release
         uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
