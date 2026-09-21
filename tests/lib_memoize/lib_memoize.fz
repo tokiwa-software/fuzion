@@ -39,6 +39,7 @@ lib_memoize is
     calls_to_fib0 := mut 0
     calls_to_fib1 := mut 0
     calls_to_fib2 := mut 0
+    calls_to_fib3 := bm.env.var 0
 
     slow_set := (i64  8 .. 11) ++ [11, 11,  8]
     fast_set := (i64 88 .. 91) ++ [91, 91, 88]    # `fib 92` will cause i64 to overflow
@@ -61,7 +62,7 @@ lib_memoize is
       # use only smaller input values since this is very slow
       slow_set.for_each (n->say "$n $(fib0 n) (no memoization, $(calls_to_fib0) calls, should always increase)")
 
-      # fibonacci with global (but thread local) memoization
+      # fibonacci with global memoization
       #
       fib1(n) i64 : memoize => keep n _->
         calls_to_fib1 <- 1 + calls_to_fib1
@@ -79,6 +80,24 @@ lib_memoize is
           if n <= 1 then 1 else fib2 n-1 + fib2 n-2
 
         fast_set.for_each (n->say "$n $(fib2 n) (local memoization, $(calls_to_fib2) calls, should become stable for each iteration)")
+
+      # fibonacci with global memoization that is used by several threads
+      #
+      fib3(n i64) i64 : memoize => keep n _->
+        _ := calls_to_fib3.update +1
+        if n <= 1 then 1 else fib3 n-1 + fib3 n-2
+
+      ch := concur.channel unit
+      threads := (1..10).map i->
+                          concur.Threads.env.spawn ()->
+                            _ := <-ch
+                            (1..100).for_each _->
+                              fast_set.map      fib3
+                                      .for_each ignore
+                        .as_array
+      (1..10).for_each (_ -> ch<-unit)
+      threads .for_each t->t.join!
+      say "threads called fib3 a total of $(bm.env.exclusive ()->calls_to_fib3.get) times, should be stable at $(1+fast_set.max!)"
 
       terms => 100  # number of terms for pi calculation, too small to be accurate, just to keep interpreted runtime low
 

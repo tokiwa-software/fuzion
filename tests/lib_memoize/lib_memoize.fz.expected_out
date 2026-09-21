@@ -27,6 +27,7 @@ iteration 1:
 91 7540113804746346429 (local memoization, 92 calls, should become stable for each iteration)
 91 7540113804746346429 (local memoization, 92 calls, should become stable for each iteration)
 88 1779979416004714189 (local memoization, 92 calls, should become stable for each iteration)
+threads called fib3 a total of 92 times, should be stable at 92
 1 3.1365926848388144 (no memoization, 1 calls, should always increase)
 2 3.1365926848388144 (no memoization, 2 calls, should always increase)
 3 3.1365926848388144 (no memoization, 3 calls, should always increase)
@@ -88,6 +89,7 @@ iteration 2:
 91 7540113804746346429 (local memoization, 184 calls, should become stable for each iteration)
 91 7540113804746346429 (local memoization, 184 calls, should become stable for each iteration)
 88 1779979416004714189 (local memoization, 184 calls, should become stable for each iteration)
+threads called fib3 a total of 92 times, should be stable at 92
 1 3.1365926848388144 (no memoization, 11 calls, should always increase)
 2 3.1365926848388144 (no memoization, 12 calls, should always increase)
 3 3.1365926848388144 (no memoization, 13 calls, should always increase)
@@ -149,6 +151,7 @@ iteration 3:
 91 7540113804746346429 (local memoization, 276 calls, should become stable for each iteration)
 91 7540113804746346429 (local memoization, 276 calls, should become stable for each iteration)
 88 1779979416004714189 (local memoization, 276 calls, should become stable for each iteration)
+threads called fib3 a total of 92 times, should be stable at 92
 1 3.1365926848388144 (no memoization, 21 calls, should always increase)
 2 3.1365926848388144 (no memoization, 22 calls, should always increase)
 3 3.1365926848388144 (no memoization, 23 calls, should always increase)
