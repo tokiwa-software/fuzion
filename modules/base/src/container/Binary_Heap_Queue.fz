@@ -279,7 +279,7 @@ module:public Binary_Heap_Queue(
           prfx := is_last ? "└── " : "├── "
           new_ind := indent + (is_last ? "    " : "│   ")
           c := children i
-          indent + prfx + $elements[i] + (lvl new_ind c.0 (c.1.is_nil)) + (lvl new_ind c.1 true)
+          indent + prfx + $elements[i] + (lvl new_ind c.0 (c.1 = nil)) + (lvl new_ind c.1 true)
 
     chd := children 0
     elements.is_empty ? "" : $elements[0] + (lvl "\n" chd.0 !chd.1.ok) + (lvl "\n" chd.1 true)
@@ -322,7 +322,7 @@ module:public Binary_Heap_Queue(
       sub_l := c.0.bind lvl
       sub_r := c.1.bind lvl
 
-      if sub_l.is_nil # leaf - no more subtrees
+      if sub_l = nil # leaf - no more subtrees
         [str.pad_center str_len]
       else
         # width of current node, left and right subtree

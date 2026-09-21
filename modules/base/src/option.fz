@@ -30,11 +30,6 @@
 public option(T type) : switch T nil is
 
 
-  # Does this option contain no value of type T?
-  #
-  public is_nil bool => !ok
-
-
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
@@ -97,7 +92,7 @@ public option(T type) : switch T nil is
   public infix /? (other option T) option T
     pre
       T : numeric
-      safety: !other.is_zero
+      safety: other != T.zero
   =>
     option.this >>= v -> other >>= w -> v / w
 
@@ -107,7 +102,7 @@ public option(T type) : switch T nil is
   public infix %? (other option T) option T
     pre
       T : numeric
-      safety: !other.is_zero
+      safety: other != T.zero
   =>
     option.this >>= v -> other >>= w -> v % w
 
