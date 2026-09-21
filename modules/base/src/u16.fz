@@ -30,7 +30,7 @@ public u16(public val u16) : num.wrap_around, property.interval, java_primitive 
   # overflow checking
 
   # would negation cause an overflow?
-  public redef wrapped_on_neg bool => !is_zero
+  public redef wrapped_on_neg bool => val != 0
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other u16) bool => u16.max -° val < other

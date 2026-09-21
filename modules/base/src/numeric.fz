@@ -27,8 +27,6 @@
 #
 public numeric : property.hashable, property.orderable is
 
-  public is_zero bool => numeric.this = numeric.this.zero
-
   # basic operations: 'prefix +' (identity)
   public prefix + numeric.this
     pre

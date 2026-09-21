@@ -102,7 +102,7 @@ public option(T type) : switch T nil is
   public infix %? (other option T) option T
     pre
       T : numeric
-      safety: !other.is_zero
+      safety: other != T.zero
   =>
     option.this >>= v -> other >>= w -> v % w
 
