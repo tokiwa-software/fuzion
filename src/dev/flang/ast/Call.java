@@ -2041,7 +2041,14 @@ public class Call extends AbstractCall
                                     actual = actual.propagateExpectedType(res, context, ac,
                                                                           () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
                                   }
-                                _actuals = _actuals.setOrClone(argnum, actual);
+
+                                if (CHECKS) check
+                                  (_actuals.size() > argnum || Errors.any());
+
+                                if (_actuals.size() > argnum)
+                                  {
+                                    _actuals = _actuals.setOrClone(argnum, actual);
+                                  }
                                 actualType = typeFromActual(res, context, actual, false);
                               }
                           }
