@@ -28,7 +28,6 @@ package dev.flang.be.jvm;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;

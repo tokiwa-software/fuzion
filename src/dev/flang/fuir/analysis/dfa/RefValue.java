@@ -33,7 +33,7 @@ package dev.flang.fuir.analysis.dfa;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class RefValue extends Value
+class RefValue extends Value
 {
 
 

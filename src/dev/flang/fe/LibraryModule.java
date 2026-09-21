@@ -30,21 +30,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.ByteBuffer;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Map.Entry;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractFeature.Kind;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;

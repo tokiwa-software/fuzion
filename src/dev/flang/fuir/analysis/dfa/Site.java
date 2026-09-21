@@ -37,7 +37,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Site extends ANY implements Comparable<Site>
+class Site extends ANY implements Comparable<Site>
 {
 
 

@@ -38,7 +38,7 @@ import dev.flang.util.HasSourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class DfaErrors extends ANY
+class DfaErrors extends ANY
 {
 
 
