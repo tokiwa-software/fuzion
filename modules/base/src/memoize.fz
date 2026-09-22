@@ -224,7 +224,7 @@ public memoize is
 # This effect uses a global lock to ensure consistency. However, this global
 # lock is used at most once for each key/value pair used by each thread.  On
 # the first access to a key, a local copy of the global store is made such that
-# future accesses usign the same key will fin the value on the local store.
+# future accesses using the same key will find the value on the local store.
 #
 memoized_effect(# type to identify this memoized instance
                 #
