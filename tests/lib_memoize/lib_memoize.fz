@@ -23,84 +23,124 @@
 
 lib_memoize is
 
-  mem := memoize (lock_free.Map i32 String) i32 String x->
-    say "computing $x"
-    x.as_string
+  bm : concur.blocking_mutate is
 
-  say (mem 1)
-  say (mem 2)
-  say (mem 1)
-  say (mem 3)
+  bm ! ()->
 
-  calls_to_fib0 := mut 0
-  calls_to_fib1 := mut 0
-  calls_to_fib2 := mut 0
+    mem := memoize (lock_free.Map i32 String) i32 String x->
+      say "computing $x"
+      x.as_string
 
-  slow_set := (i64  8 .. 11) ++ [11, 11,  8]
-  fast_set := (i64 88 .. 91) ++ [91, 91, 88]    # `fib 92` will cause i64 to overflow
+    say (mem 1)
+    say (mem 2)
+    say (mem 1)
+    say (mem 3)
 
-  calls_to_pi0 := mut 0
-  calls_to_pi1 := mut 0
-  calls_to_pi2 := mut 0
+    calls_to_fib0 := mut 0
+    calls_to_fib1 := mut 0
+    calls_to_fib2 := mut 0
+    calls_to_fib3 := bm.env.var 0
 
-  for it in 1..3 do
+    slow_set := (i64  8 .. 11) ++ [11, 11,  8]
+    fast_set := (i64 88 .. 91) ++ [91, 91, 88]    # `fib 92` will cause i64 to overflow
 
-    say "iteration $it:"
+    calls_to_pi0 := mut 0
+    calls_to_pi1 := mut 0
+    calls_to_pi2 := mut 0
+    calls_to_pi3 := bm.env.var 0
 
-    # fibonacci without memoization:
-    #
-    fib0(n) i64 =>
-      calls_to_fib0 <- 1 + calls_to_fib0
-      if n <= 1 then 1 else fib0 n-1 + fib0 n-2
+    for it in 1..3 do
 
-    # use only smaller input values since this is very slow
-    slow_set.for_each (n->say "$n $(fib0 n) (no memoization, $(calls_to_fib0) calls, should always increase)")
+      say "iteration $it:"
 
-    # fibonacci with global (but thread local) memoization
-    #
-    fib1(n) i64 : memoize => keep n _->
-      calls_to_fib1 <- 1 + calls_to_fib1
-      if n <= 1 then 1 else fib1 n-1 + fib1 n-2
+      # fibonacci without memoization:
+      #
+      fib0(n) i64 =>
+        calls_to_fib0 <- 1 + calls_to_fib0
+        if n <= 1 then 1 else fib0 n-1 + fib0 n-2
 
-    fast_set.for_each (n->say "$n $(fib1 n) (global memoization, $(calls_to_fib1) calls, should become stable)")
+      # use only smaller input values since this is very slow
+      slow_set.for_each (n->say "$n $(fib0 n) (no memoization, $(calls_to_fib0) calls, should always increase)")
 
-    # fibonacci with local memoization
-    #
-    local_fib_memo : memoize.memoized i64 i64 is
-    local_fib_memo ! ()->
+      # fibonacci with global memoization
+      #
+      fib1(n) i64 : memoize => keep n _->
+        calls_to_fib1 <- 1 + calls_to_fib1
+        if n <= 1 then 1 else fib1 n-1 + fib1 n-2
 
-      fib2(n) => local_fib_memo.env.keep n _->
-        calls_to_fib2 <- 1 + calls_to_fib2
-        if n <= 1 then 1 else fib2 n-1 + fib2 n-2
+      fast_set.for_each (n->say "$n $(fib1 n) (global memoization, $(calls_to_fib1) calls, should become stable)")
 
-      fast_set.for_each (n->say "$n $(fib2 n) (local memoization, $(calls_to_fib2) calls, should become stable for each iteration)")
+      # fibonacci with local memoization
+      #
+      local_fib_memo : memoize.memoized i64 i64 is
+      local_fib_memo ! ()->
 
-    terms => 100  # number of terms for pi calculation, too small to be accurate, just to keep interpreted runtime low
+        fib2(n) => local_fib_memo.env.keep n _->
+          calls_to_fib2 <- 1 + calls_to_fib2
+          if n <= 1 then 1 else fib2 n-1 + fib2 n-2
 
-    # pi without memoization:
-    #
-    pi0 f64 =>
-      _ := calls_to_pi0.update +1
-      (1.0 :: +2).as_tuples.map (||> a,b -> 8.0/(a*b)) .take terms .sum
+        fast_set.for_each (n->say "$n $(fib2 n) (local memoization, $(calls_to_fib2) calls, should become stable for each iteration)")
 
-    (1..10).for_each (n->say "$n $pi0 (no memoization, $calls_to_pi0 calls, should always increase)")
+      # fibonacci with global memoization that is used by several threads
+      #
+      fib3(n i64) i64 : memoize => keep n _->
+        _ := calls_to_fib3.update +1
+        if n <= 1 then 1 else fib3 n-1 + fib3 n-2
 
-    # pi with global (but thread local) memoization
-    #
-    pi1 f64 : memoize => const ()->
-      _ := calls_to_pi1.update +1
-      (1.0 :: +2).as_tuples.map (||> a,b -> 8.0/(a*b)) .take terms .sum
+      ch := concur.channel unit
+      threads := (1..10).map i->
+                          concur.Threads.env.spawn ()->
+                            _ := <-ch
+                            (1..100).for_each _->
+                              fast_set.map      fib3
+                                      .for_each ignore
+                        .as_array
+      (1..10).for_each (_ -> ch<-unit)
+      threads .for_each t->t.join!
+      say "threads called fib3 a total of $(bm.env.exclusive ()->calls_to_fib3.get) times, should be stable at $(1+fast_set.max!)"
 
-    (1..10).for_each (n->say "$n $pi1 (global memoization, $calls_to_pi1 calls, should always be 1)")
+      terms => 100  # number of terms for pi calculation, too small to be accurate, just to keep interpreted runtime low
 
-    # pi with local memoization
-    #
-    local_pi_memo : memoize.memoized unit f64 is
-    local_pi_memo ! ()->
-
-      pi2 => local_pi_memo.env.keep unit _->
-        _ := calls_to_pi2.update +1
+      # pi without memoization:
+      #
+      pi0 f64 =>
+        _ := calls_to_pi0.update +1
         (1.0 :: +2).as_tuples.map (||> a,b -> 8.0/(a*b)) .take terms .sum
 
-      (1..10).for_each (n->
-        say "$n $pi2 (local memoization, $calls_to_pi2 calls after, should increase for each iteration)")
+      (1..10).for_each (n->say "$n $pi0 (no memoization, $calls_to_pi0 calls, should always increase)")
+
+      # pi with global (but thread local) memoization
+      #
+      pi1 f64 : memoize => const ()->
+        _ := calls_to_pi1.update +1
+        (1.0 :: +2).as_tuples.map (||> a,b -> 8.0/(a*b)) .take terms .sum
+
+      (1..10).for_each (n->say "$n $pi1 (global memoization, $calls_to_pi1 calls, should always be 1)")
+
+      # pi with local memoization
+      #
+      local_pi_memo : memoize.memoized unit f64 is
+      local_pi_memo ! ()->
+
+        pi2 => local_pi_memo.env.keep unit _->
+          _ := calls_to_pi2.update +1
+          (1.0 :: +2).as_tuples.map (||> a,b -> 8.0/(a*b)) .take terms .sum
+
+        (1..10).for_each (n->
+          say "$n $pi2 (local memoization, $calls_to_pi2 calls after, should increase for each iteration)")
+
+      # pi with first call by another thread
+      #
+      pi3 f64 : memoize => const ()->
+        _ := calls_to_pi3.update +1
+        (1.0 :: +2).as_tuples.map (||> a,b -> 8.0/(a*b)) .take terms .sum
+
+      concur.Threads.env.spawn ()->
+          (1..3).for_each (n->say "Spawned thread 1 $n $pi3 (new thread memoization, $(bm.env.exclusive ()->calls_to_pi3.get) calls, should always be 1)")
+        .join!
+
+      (1..3).for_each (n->say "Main Thread $n $pi3 (new thread memoization, $(bm.env.exclusive ()->calls_to_pi3.get) calls, should always be 1)")
+
+      concur.Threads.env.spawn ()->
+          (1..3).for_each (n->say "Spawned thread 2 $n $pi3 (new thread memoization, $(bm.env.exclusive ()->calls_to_pi3.get) calls, should always be 1)")
+        .join!

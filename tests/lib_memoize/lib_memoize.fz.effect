@@ -1,13 +1,19 @@
+AAA_builtin_atomic_mutate (concur.atomic (concur.bqstate unit))
 AAA_builtin_atomic_mutate (concur.atomic (lock_free.Main_Node i32 String))
 AAA_builtin_atomic_mutate (concur.atomic (lock_free.prev_node i32 String))
 AAA_builtin_atomic_mutate (concur.atomic (lock_free.root_node i32 String))
+AAA_builtin_atomic_mutate (concur.atomic bool)
 AAA_builtin_atomic_mutate (concur.atomic trit)
+Ignored_Failure
 Unique_Id
 cached_item (num.ryū f64).step_3#7.pow5_inv_split_cache_key
 cached_item (num.ryū f64).step_3#7.pow5_split_cache_key
+channel_mutate unit
 concur.A0_park_mutex
+concur.A1_park_condition time.Monotonic
 concur.Threads
 concur.atomic_access
+fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
 fuzion.runtime.post_fault
@@ -15,7 +21,10 @@ fuzion.runtime.pre_fault
 fuzion.runtime.stackoverflow
 io.Err
 io.Out
-memoized_constant_effect lib_memoize.#loop0.pi1 f64
-memoized_effect lib_memoize.#loop0.fib1#1 i64 i64
+memoize_mutate
+memoized_constant_effect lib_memoize.#fun0.call.#loop0.pi1 f64
+memoized_constant_effect lib_memoize.#fun0.call.#loop0.pi3 f64
+memoized_effect lib_memoize.#fun0.call.#loop0.fib1#1 i64 i64
+memoized_effect lib_memoize.#fun0.call.#loop0.fib3#1 i64 i64
 mutate
 panic
