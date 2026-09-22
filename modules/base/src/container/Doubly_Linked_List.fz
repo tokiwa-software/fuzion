@@ -43,7 +43,10 @@ L_Node(
 
   # the element stored in this list node
   #
-  payload T =>
+  payload T
+  pre
+    debug: !is_sentinel
+  =>
     panic "L_Node.payload called on sentinel"
 
   # is this node the special node marking start/end of the list
@@ -69,10 +72,18 @@ V_Node(# mutate effect to be used manipulate pointers and stored element
 
        # the element stored in this list node
        #
-       redef payload T
+       # NYI: BUG: #7712: Should be possible to `redef payload` right here
+       #
+       payload0 T
        ) ref
        : L_Node LM T
 is
+
+  # the element stored in this list node
+  #
+  # NYI: BUG: #7712: Should be possible to `redef payload` in the argument list
+  #
+  redef payload => payload0
 
 
   # is this node the special node marking start/end of the list
