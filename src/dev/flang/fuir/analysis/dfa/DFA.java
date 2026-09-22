@@ -332,8 +332,7 @@ public class DFA extends ANY
       else
         {
           var instantiatedAt = _calls.keySet().stream()
-            .filter(c -> (c.calledClazz() == _fuir.clazzAsValue(t_cl) ||  // NYI: CLEANUP would be nice if c.calledClazz() would be a ref already, should have been boxed at some point
-                          c.calledClazz() == t_cl                       ) && c.site() != NO_SITE)
+            .filter(c -> c.calledClazz() == t_cl && c.site() != NO_SITE)
             .map(c -> c.site())
             .findAny()
             .orElse(NO_SITE);
