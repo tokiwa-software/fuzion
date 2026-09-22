@@ -54,6 +54,7 @@ import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
+import dev.flang.ast.AbstractFeature.Kind;
 
 import dev.flang.fe.FeatureLookup;
 import dev.flang.fe.LibraryFeature;
@@ -2063,16 +2064,12 @@ public class GeneratingFUIR extends FUIR
     if (ac._isConst == YesNo.dontKnow)
       {
         var result =
-          // these are handled via other means anyway
-          !ac.calledFeature().isUnitType() &&
-          ac.calledFeature().isConstructor() &&
+          ac.calledFeature().kind() == Kind.Constructor &&
           // contains no fields
           ac.calledFeature().code().containsOnlyDeclarations() &&
-          // we are calling a value type feature
-          ac.calledFeature().selfType().isValue() &&
           // only features without args and no fields may be inherited
           // NYI: UNDER DEVELOPMENT: we could relax this more
-          ac.calledFeature().inherits().stream().allMatch(c -> isConst(c)) &&
+          ac.calledFeature().inherits().stream().allMatch(c -> isConst(c) || c.calledFeature().isRef() && c.calledFeature().isUnitType(true)) &&
           // NYI: UNDER DEVELOPMENT: support consts with contracts
           ac.calledFeature().contract().isEmpty() &&
           ac.actuals().stream().allMatch(x -> isConst(x));

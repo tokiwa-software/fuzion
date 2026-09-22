@@ -2176,7 +2176,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  private boolean isUnitType(boolean isInheritedFeature)
+  public boolean isUnitType(boolean isInheritedFeature)
   {
     return
       isConstructor() &&
