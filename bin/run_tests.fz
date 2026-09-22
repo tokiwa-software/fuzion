@@ -101,6 +101,10 @@ main =>
   # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
   # first, try third arg then try a few executables, if everything fails use default value
   thread_count :=
+    if os.platform.or_panic ? os.windows => true | os.posix => false
+      # NYI: BUG: windows runtime currently buggy
+      1
+    else
       envir.Vars.env["FUZION_RUN_TESTS_PARALLELISM"]  .flat_map (    .trim.parse_i64) .first
         .or_else (    "nproc --all"              .execute.flat_map (.out.trim.parse_i64) .first
           .or_else (  "getconf _NPROCESSORS_ONLN".execute.flat_map (.out.trim.parse_i64) .first
