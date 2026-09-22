@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class CallGroup extends ANY implements Comparable<CallGroup>
+class CallGroup extends ANY implements Comparable<CallGroup>
 {
 
 

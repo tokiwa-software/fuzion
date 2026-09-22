@@ -35,7 +35,7 @@ import dev.flang.fuir.FUIR;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class SysArray extends Value
+class SysArray extends Value
 {
 
 
