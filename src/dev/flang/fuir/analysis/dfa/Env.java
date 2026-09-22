@@ -38,7 +38,7 @@ import java.util.Set;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Env extends ANY implements Comparable<Env>
+class Env extends ANY implements Comparable<Env>
 {
 
 

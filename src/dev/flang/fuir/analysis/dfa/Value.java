@@ -44,7 +44,7 @@ import java.util.function.Function;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Value extends Val
+class Value extends Val
 {
 
 

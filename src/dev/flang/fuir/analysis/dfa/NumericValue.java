@@ -35,7 +35,7 @@ import dev.flang.util.LongMap;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NumericValue extends Value
+class NumericValue extends Value
 {
 
 
