@@ -116,8 +116,7 @@ public class TailCall extends ANY
        isTailCall(_fuir.codeBlockEnd(c2), s, _fuir.clazzResultField(cl)));
 
     if (POSTCONDITIONS)
-      // NYI: CLEANUP: regex
-      ensure(result  || !_fuir.clazzBaseName(cl).matches("^#loop\\d+$"));
+      ensure(result  || !_fuir.clazzBaseName(cl).contains(FuzionConstants.INTERNAL_NAME_SYMBOL));
 
     return result;
   }
