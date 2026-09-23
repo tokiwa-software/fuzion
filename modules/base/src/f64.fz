@@ -61,19 +61,9 @@ public f64(public val f64) : float, java_primitive is
   # precondition of `as_i64`.
   #
   public redef fits_in_i64 bool =>
-    i64.min.as_f64 ≤ val ≤ i64.max.as_f64
-
-
-  public f64.fits_in_i64a bool =>
     sh := min 63 (val.exponent-f64.significand_bits+1)
     max_abs := i64.max.as_u64 + (val < 0 ? u64 1 : 0)
-    sh < 0 || val.mantissa <= (max_abs >> sh.as_u64)
-
-
-  public f64.fits_in_u128a bool =>
-    sh := min 127 (exponent - f64.significand_bits + 1)
-    max_abs := u128.max
-    (sh < 0 || mantissa.as_u128 ≤ (max_abs >> sh.as_u128)) && val ≥ 0.0
+    sh < 0 || val.mantissa ≤ (max_abs >> sh.as_u64)
 
   public redef as_i64 i64 => as_i64_lax
 
