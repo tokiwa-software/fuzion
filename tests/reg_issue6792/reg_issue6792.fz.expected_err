@@ -6,11 +6,4 @@ Feature not found: 'e' (no arguments)
 Target feature: 'universe'
 In call: 'e'
 
-
---CURDIR--/reg_issue6792.fz:24:3: error 2: Illegal forward or cyclic type inference
-: := e
---^^
-The definition of a field using ':=', or of a feature or function
-using '=>' must not create cyclic type dependencies.
-
-2 errors.
+one error.
