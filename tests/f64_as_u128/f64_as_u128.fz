@@ -26,18 +26,18 @@ f64_as_u128 =>
   # 2^n exactly, built from integers (no float literal rounding)
   p2(n i64) u128 => u128.one << n.as_u128
 
-  # format: "ok <bc-expr> <as_u128>"  or  "no <bc-expr>"
-  chk(e String, x f64) unit =>
+  # Check conversion of `x` to u128. Prints
+  #
+  #   `ok <label> <x.as_u128>`   if `x` fits in u128,
+  #   `no <label>`               otherwise.
+  #
+  # `label` is a human-readable form of the input value, e.g. `2^53+2`.
+  #
+  chk(F type : float, label String, x F) unit =>
     if x.fits_in_u128
-      say "ok $e $(x.as_u128)"
+      say "ok $label $(x.as_u128)"
     else
-      say "no $e"
-
-  chk32(e String, x f32) unit =>
-    if x.fits_in_u128
-      say "ok $e $(x.as_u128)"
-    else
-      say "no $e"
+      say "no $label"
 
   # --- near zero / fraction truncation
   chk "0"                   0.0
@@ -68,6 +68,6 @@ f64_as_u128 =>
   chk "nan"                 f64.NaN
 
   # --- f32 delegates to f64
-  chk32 "1.5"               1.5.as_f32
-  chk32 "2^127"             (p2 127).as_f64.as_f32
-  chk32 "(2^24-1)*2^104"    f32.max              # f32.max < 2^128 -> fits!
+  chk "1.5"               1.5.as_f32
+  chk "2^127"             (p2 127).as_f64.as_f32
+  chk "(2^24-1)*2^104"    f32.max              # f32.max < 2^128 -> fits!
