@@ -948,21 +948,30 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 //   -2  : an error occurred when calling waitpid, check errno
 int64_t fzE_process_poll(int64_t p){
 
-    assert(p != 0);
+  assert(p != 0);
 
-    DWORD status;
+  HANDLE h = (HANDLE)p;
 
-    if (!GetExitCodeProcess((HANDLE)p, &status)) {
-        // Error calling GetExitCodeProcess()
-        return -2;
+  DWORD result = WaitForSingleObject(h, 0);
+
+  if (result == WAIT_TIMEOUT)
+    {
+      return -1; // still running
     }
 
-    if (status == STILL_ACTIVE) {
-        // Process is still running.
-        return -1;
+  if (result == WAIT_FAILED)
+    {
+      return -2;
     }
 
-    return (int64_t)status;
+  DWORD status;
+
+  if (!GetExitCodeProcess(h, &status))
+    {
+      return -2;
+    }
+
+  return (int64_t)status;
 }
 
 /**
