@@ -198,12 +198,14 @@ jobs:
           set -eu
           unset FUZION_HOME   # a global FUZION_HOME would point fz at another installation
           VERSION="$(cat version.txt)"
+          T="$RUNNER_TEMP"
           if [ "$RUNNER_OS" = "Windows" ]; then
             export JAVA_HOME="$(cygpath -u "$JAVA_HOME")"
             export PATH="$MINGW_PREFIX/bin:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+            T="$(cygpath -u "$RUNNER_TEMP")"     # D:\a\_temp -> /d/a/_temp for msys2 tools
           fi
-          tar xzf "fuzion_${VERSION}_${TARGET}.tar.gz" -C "$RUNNER_TEMP"
-          cd "$RUNNER_TEMP"   # outside the checkout: must not pick up build/
+          tar xzf "fuzion_${VERSION}_${TARGET}.tar.gz" -C "$T"
+          cd "$T"   # outside the checkout: must not pick up build/
           printf 'say "Hello World!"\n' > hello.fz
           "fuzion_${VERSION}/bin/fz" -version
           "fuzion_${VERSION}/bin/fz" hello.fz | tr -d '\r' | grep -qx "Hello World!"
