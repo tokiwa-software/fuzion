@@ -17,15 +17,21 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  GitHub Actions workflow to build a release build of Fuzion
+#  GitHub Actions workflow to build a release of Fuzion:
+#  source archive plus binary archives for
+#  linux, macos and windows on amd64 and arm64
 #
 # -----------------------------------------------------------------------
-
 
 name: github release
 
 on:
   workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create release as draft'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -34,37 +40,197 @@ env:
   FUZION_REPRODUCIBLE_BUILD: true
 
 jobs:
-  build:
 
+  src:
+    name: Source archive
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
+      sha256: ${{ steps.sum.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read VERSION file
+        id: v
+        run: |
+          version="$(cat version.txt)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          case "$version" in
+            *dev*) echo "prerelease=true"  >> "$GITHUB_OUTPUT" ;;
+            *)     echo "prerelease=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Create source archive
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: git archive --format=tar.gz --prefix="fuzion_${VERSION}_src/" -o "fuzion_${VERSION}_src.tar.gz" HEAD
+
+      - name: Create checksum
+        id: sum
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: echo "sha256=$(sha256sum "fuzion_${VERSION}_src.tar.gz")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: packages-src
+          path: fuzion_*_src.tar.gz
+          if-no-files-found: error
+          retention-days: 5
+
+  # ---------------------------------------------------------------------------
+  # One native runner per OS/architecture.
+  # All packaging logic lives in the Makefile (`make release`);
+  # this job only provides the toolchain and calls make.
+  # ---------------------------------------------------------------------------
+  package:
+    name: Package for ${{ matrix.os }} (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    outputs:
+      linux-amd64:   ${{ steps.sum.outputs.linux-amd64 }}
+      linux-arm64:   ${{ steps.sum.outputs.linux-arm64 }}
+      macos-amd64:   ${{ steps.sum.outputs.macos-amd64 }}
+      macos-arm64:   ${{ steps.sum.outputs.macos-arm64 }}
+      windows-amd64: ${{ steps.sum.outputs.windows-amd64 }}
+      windows-arm64: ${{ steps.sum.outputs.windows-arm64 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: linux,   arch: amd64, runner: ubuntu-24.04,     file_arch: x86-64  }
+          - { os: linux,   arch: arm64, runner: ubuntu-24.04-arm, file_arch: aarch64 }
+          - { os: macos,   arch: amd64, runner: macos-15-intel,   file_arch: x86_64  }
+          - { os: macos,   arch: arm64, runner: macos-15,         file_arch: arm64   }
+          - { os: windows, arch: amd64, runner: windows-2025,     file_arch: x86-64,  msystem: UCRT64 }
+          - { os: windows, arch: arm64, runner: windows-11-arm,   file_arch: arm64,  msystem: CLANGARM64 }
+    defaults:
+      run:
+        shell: ${{ matrix.os == 'windows' && 'msys2 {0}' || 'bash' }}
+    env:
+      TARGET: ${{ matrix.os }}-${{ matrix.arch }}
+      FILE_ARCH: ${{ matrix.file_arch }}
+    steps:
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          # needs jmods/ for fzjava; Temurin 25 omits them (JEP 493)
+         distribution: microsoft
+         java-version: '25'
+         architecture: ${{ matrix.arch == 'arm64' && 'aarch64' || 'x64' }}
+
+      - name: Check JDK contains jmods (required by fzjava)
+        shell: bash
+        run: |
+          ls "$JAVA_HOME/jmods/java.base.jmod" \
+            || { echo "::error::JDK at $JAVA_HOME has no jmods/ (JEP 493), fzjava cannot build Java modules"; exit 1; }
+
+      - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
+        if: runner.os == 'Windows'
+        with:
+          update: true
+          path-type: minimal
+          # UCRT64 on amd64, CLANGARM64 on arm64 (there is no UCRT64 for arm64)
+          # https://www.msys2.org/docs/environments/
+          msystem: ${{ matrix.msystem }}
+          # git is used in Makefile: JAVA_FILE_TOOLS_VERSION
+          install: >-
+            make
+            git
+            patch
+            tar
+            gzip
+            file
+          pacboy: clang:p
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          # systemtap-sdt-dev: DTRACE_PROBE support in libfuzion_rt (include/posix.c)
+          sudo apt-get install -y libgc-dev systemtap-sdt-dev
+
+      - name: install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install bdw-gc gnu-sed make coreutils gnu-tar
+          BREW="$(brew --prefix)"
+          # GNU tools before BSD tools; GITHUB_PATH expects one directory per line
+          for p in gnu-sed make coreutils gnu-tar; do
+            echo "$BREW/opt/$p/libexec/gnubin" >> "$GITHUB_PATH"
+          done
+          echo "CPATH=$BREW/include" >> "$GITHUB_ENV"
+          echo "LIBRARY_PATH=$BREW/lib" >> "$GITHUB_ENV"
+
+      - name: Build release (Linux, macOS)
+        if: runner.os != 'Windows'
+        # no -j: `release: clean all` would run clean and all in parallel
+        run: make release
+
+      - name: Build release (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          set -eu
+          # path-type: minimal resets PATH in every msys2 step, so set up everything here
+          export JAVA_HOME="$(cygpath -u "$JAVA_HOME")"
+          export PATH="$MINGW_PREFIX/bin:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="$(cygpath -m "$MINGW_PREFIX/bin")"
+          clang -dumpmachine
+          ./bin/windows_install_boehm_gc.sh
+          make release
+
+      - name: Check architecture of native runtime
+        run: |
+          file build/lib/*fuzion_rt.*
+          file build/lib/*fuzion_rt.* | grep -qi -- "$FILE_ARCH" \
+            || { echo "::error::fuzion_rt is not built for $FILE_ARCH"; exit 1; }
+
+      - name: Rename archive and create checksum
+        id: sum
+        run: |
+          VERSION="$(cat version.txt)"
+          mv "fuzion_${VERSION}.tar.gz" "fuzion_${VERSION}_${TARGET}.tar.gz"
+          echo "${TARGET}=$(sha256sum "fuzion_${VERSION}_${TARGET}.tar.gz")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: packages-${{ env.TARGET }}
+          path: fuzion_*_${{ env.TARGET }}.tar.gz
+          if-no-files-found: error
+          retention-days: 5
+
+  release:
+    name: Publish release
+    needs: [src, package]
+    runs-on: ubuntu-24.04
     permissions:
       contents: write  # for ncipollo/release-action to create a release
-    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: packages-*
+          merge-multiple: true
+          path: artifacts
 
-    - name: install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev ruby-asciidoctor-pdf antlr4 asciidoc-base
+      - name: Create checksums and verify artifacts
+        env:
+          SRC: ${{ needs.src.outputs.sha256 }}
+          PACKAGES: ${{ toJSON(needs.package.outputs) }}
+        run: |
+          { echo "$SRC"; echo "$PACKAGES" | jq -r '.[]'; } > artifacts/SHA256SUMS
+          cat artifacts/SHA256SUMS
+          cd artifacts && sha256sum -c SHA256SUMS
 
-        # for DTRACE_PROBE
-        sudo apt-get install systemtap-sdt-dev
-
-        echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
-        echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
-
-    - name: build release
-      run: make release
-
-    - name: Read VERSION file
-      id: getversion
-      run: echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
-
-    - uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
-      with:
-        artifacts: "fuzion_${{ steps.getversion.outputs.version }}.tar.gz"
-        tag: "v${{ steps.getversion.outputs.version }}"
-        prerelease: false
-        generateReleaseNotes: false
-        immutableCreate: true
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish release
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
+        with:
+          tag: "v${{ needs.src.outputs.version }}"
+          name: "fuzion_${{ needs.src.outputs.version }}"
+          commit: ${{ github.sha }}
+          artifacts: artifacts/*
+          draft: ${{ inputs.draft }}
+          prerelease: ${{ needs.src.outputs.prerelease }}
+          generateReleaseNotes: false
+          immutableCreate: true
+          token: ${{ secrets.GITHUB_TOKEN }}
