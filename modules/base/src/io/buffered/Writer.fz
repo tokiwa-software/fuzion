@@ -55,7 +55,7 @@ is
   public redef finally unit =>
     match flush
       e error =>
-        fuzion.runtime.fault.env.cause ("$(Writer.this.type.name).finally", e.msg)
+        fuzion.runtime.fault.env.cause ("$(Writer.this.type.name).finally", $e)
       unit =>
 
 
