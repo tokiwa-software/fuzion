@@ -45,7 +45,7 @@ env:
 jobs:
   run_tests:
     name: windows run tests
-    if: ${{ github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'extra tests') }}
+    if: ${{ github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'windows tests') }}
     runs-on: windows-latest
     defaults:
       run:
