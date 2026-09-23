@@ -630,6 +630,8 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
     metadata[7] = 0; /* NYI: UNDER DEVELOPMENT: uid  */
     metadata[8] = 0; /* NYI: UNDER DEVELOPMENT: gid  */
 
+    CloseHandle(hFile);
+
     result = 0;
   }
   else {
@@ -640,7 +642,6 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
     result = -1;
   }
 
-  CloseHandle(hFile);
 
   return result;
 }
