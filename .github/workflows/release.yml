@@ -193,6 +193,23 @@ jobs:
           mv "fuzion_${VERSION}.tar.gz" "fuzion_${VERSION}_${TARGET}.tar.gz"
           echo "${TARGET}=$(sha256sum "fuzion_${VERSION}_${TARGET}.tar.gz")" >> "$GITHUB_OUTPUT"
 
+      - name: Smoke test release archive
+        run: |
+          set -eu
+          unset FUZION_HOME   # a global FUZION_HOME would point fz at another installation
+          VERSION="$(cat version.txt)"
+          T="$RUNNER_TEMP"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            export JAVA_HOME="$(cygpath -u "$JAVA_HOME")"
+            export PATH="$MINGW_PREFIX/bin:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+            T="$(cygpath -u "$RUNNER_TEMP")"     # D:\a\_temp -> /d/a/_temp for msys2 tools
+          fi
+          tar xzf "fuzion_${VERSION}_${TARGET}.tar.gz" -C "$T"
+          cd "$T"   # outside the checkout: must not pick up build/
+          printf 'say "Hello World!"\n' > hello.fz
+          "fuzion_${VERSION}/bin/fz" -version
+          "fuzion_${VERSION}/bin/fz" hello.fz | tr -d '\r' | grep -qx "Hello World!"
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: packages-${{ env.TARGET }}
