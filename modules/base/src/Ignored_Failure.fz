@@ -68,5 +68,5 @@ public Ignored_Failure ref : effect is
   public type.fault Ignored_Failure =>
     _ : Ignored_Failure is
       public redef register_failure(e error) unit =>
-        fuzion.runtime.fault.env.cause ("Ignored_Failure", e.msg)
+        fuzion.runtime.fault.env.cause ("Ignored_Failure", $e)
 
