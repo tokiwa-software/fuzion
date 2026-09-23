@@ -90,15 +90,15 @@ public class Html extends ANY
         <div class="position-relative">
           <form id="##ID##">
             <label for="##ID##.code" class="visually-hidden">Code input</label>
-            <textarea class="codeinput" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
-            <div class="position-absolute runbuttons">
-              <input type="button" onclick="runit('##ID##')" class="runbutton" name="run" value="Run!" />
-              <input type="button" onclick="runiteff('##ID##')" class="runbutton" name="run" value="Effects!" />
+            <textarea class="code-input" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
+            <div class="position-absolute run-buttons">
+              <input type="button" onclick="runit('##ID##')" class="run-button" name="run" value="Run!" />
+              <input type="button" onclick="runiteff('##ID##')" class="run-button" name="run" value="Effects!" />
               <a href="/tutorial/effects.html"><i>What are effects?</i></a>
             </div>
           </form>
         </div>
-        <div class="computeroutput" id="##ID##.result"></div>
+        <div class="computer-output" id="##ID##.result"></div>
       </div>
     </div>""";
 
@@ -613,7 +613,7 @@ public class Html extends ANY
   private String headingSection(AbstractFeature f)
   {
     return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div><div class='fd-contract'>$4</div>$5"
-      .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for navtitle
+      .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for nav-title
       .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : anchorTags(f))
       .replace("$2", f.isUniverse() ? "": summary(f))
       .replace("$3", commentOf(f))
