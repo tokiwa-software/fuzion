@@ -462,6 +462,7 @@ uint64_t fzE_posix_time(int clockid)
       exit(EXIT_FAILURE);
   }
 
+  // assert that this division will not be rounded to zero
   assert( 1000000000ULL / frequency.QuadPart != 0ULL );
 
   return (uint64_t)(counter.QuadPart * (1000000000ULL / frequency.QuadPart));
