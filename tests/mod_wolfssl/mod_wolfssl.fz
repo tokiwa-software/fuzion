@@ -27,10 +27,6 @@ mod_wolfssl =>
   #
   net_lm : mutate is
 
-  # this lm is used for reader/writer of the ssl connection
-  #
-  ssl_lm: mutate is
-
   net_lm ! ()->
 
     host := "fuzion-lang.dev"
@@ -39,10 +35,9 @@ mod_wolfssl =>
       error => Exit.env.exit 1
       c net.connection =>
         c.with _ net_lm ()->
-          ssl_lm ! ()->
-            wolfssl _ net_lm ssl_lm host ()->
-              check ("GET / HTTP/1.1\r\nHost: $(host)\r\n\r\n".write_to ssl_lm).ok
-              check (io.buffered ssl_lm).Writer.env.flush.ok
-              match (io.buffered ssl_lm).read_line
-                str String => say <| str.substring 0 8
-                * =>
+          wolfssl _ net_lm host ()->
+            check ("GET / HTTP/1.1\r\nHost: $(host)\r\n\r\n".write_to wolfssl_lm).ok
+            check (io.buffered wolfssl_lm).Writer.env.flush.ok
+            match (io.buffered wolfssl_lm).read_line
+              str String => say <| str.substring 0 8
+              * =>
