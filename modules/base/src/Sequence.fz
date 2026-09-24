@@ -1226,7 +1226,7 @@ is
   =>
     lm : mutate is
     lm ! ()->
-      res := (container.mutable_tree_map lm K B).empty
+      res := (container.Mutable_Tree_Map lm K B).empty
 
       for_each x->
         key := key_f x
@@ -1267,7 +1267,7 @@ is
   =>
     lm : mutate is
     lm ! ()->
-      res := (container.mutable_tree_map lm K (Sequence B)).empty
+      res := (container.Mutable_Tree_Map lm K (Sequence B)).empty
 
       for_each x->
         key := key_f x
@@ -1297,7 +1297,7 @@ is
 
 
   # group the elements of this sequence by a key of type K
-  # using a mutable_tree_map
+  # using a Mutable_Tree_Map
   #
   # f determines the key of an element
   #
@@ -1305,7 +1305,7 @@ is
     lm : mutate is
     lm.instate_self (container.Map K (Sequence T)) ()->
       if K : property.orderable
-        group_by_mutable_map K (container.mutable_tree_map lm K (Sequence T)) (container.ps_map K (Sequence T)) f
+        group_by_mutable_map K (container.Mutable_Tree_Map lm K (Sequence T)) (container.ps_map K (Sequence T)) f
       else if K : property.hashable
         group_by_mutable_map K (container.Mutable_Hash_Map lm K (Sequence T)) (container.hash_map K (Sequence T)) f
       else
