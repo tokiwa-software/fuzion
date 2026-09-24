@@ -238,7 +238,7 @@ is
   #
   public scale_approx(f f64) data_size
   pre
-    safety: (bytes.as_f64 * f).fits_in_u128
+    debug: (bytes.as_f64 * f).fits_in_u128
   =>
     data_size (bytes.as_f64 * f).as_u128
 
