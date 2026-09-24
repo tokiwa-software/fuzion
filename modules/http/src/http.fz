@@ -35,7 +35,7 @@ public http is
 module as_header_map(kvs Sequence (String,String)) =>
   lm : mutate is
   lm ! ()->
-    fields := (container.mutable_tree_map lm String String) .empty
+    fields := (container.Mutable_Tree_Map lm String String) .empty
     for kv in kvs do
       fields.put kv.0.lower_case kv.1
     fields.as_map (container.ps_map String String)
@@ -58,4 +58,3 @@ module parse_http_version(ver String) =>
     nil => (v.parse_i64.or_cause unit err, 0)
     i i64 =>
       (v.substring 0 i .parse_i64.or_cause unit err, v.substring i+1 .parse_i64.or_cause unit err)
-
