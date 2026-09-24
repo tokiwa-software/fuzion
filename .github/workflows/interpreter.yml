@@ -47,7 +47,9 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install openjdk-25-jdk-headless sqlite3 libgc1 libgc-dev libclang-dev libwolfssl-dev libsodium23 libsodium-dev
+          export CLANG_MAJOR_VERSION=$(clang --version | sed -n -E 's/.*clang version ([0-9]+).*/\1/p' | head -n 1)
+          echo "CLANG_MAJOR_VERSION=$CLANG_MAJOR_VERSION" >> $GITHUB_ENV
+          sudo apt-get install openjdk-25-jdk-headless sqlite3 libgc1 libgc-dev libclang-$CLANG_MAJOR_VERSION-dev libwolfssl-dev libsodium23 libsodium-dev
 
           # for DTRACE_PROBE
           sudo apt-get install systemtap-sdt-dev
@@ -57,7 +59,6 @@ jobs:
 
       - name: link libclang
         run: |
-          export CLANG_MAJOR_VERSION=$(clang --version | head -n 1 | awk '{print $4}' | cut -d. -f1)
           test -f /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so && sudo ln -s /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so /usr/lib/
 
       - name: run tests
