@@ -289,17 +289,7 @@ public abstract class Module extends ANY implements FeatureLookup
         var existing = it.next();
         if (f != existing)
           {
-            var fInherited = f.outer() != outer;
-            var existingInherited = existing.outer() != outer;
-            if (
-                fInherited && existingInherited &&
-                ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0) ==
-                ((existing.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
-               )
-              {
-                // will trigger: Repeated inheritance, see #7062
-              }
-            else if (f.redefinesFull().contains(existing))
+            if (f.redefinesFull().contains(existing))
               {
                 it.remove();
               }
