@@ -30,7 +30,7 @@ TAR_BALL_HASH=3d0d3cdbe077403d3106bb40f0cbb563413d6efdbb2a7e1cd6886595dec48fc2
 
 mkdir -p build
 cd build
-for attempt in {1..5}; do
+for attempt in 1 2 3 4 5; do
     wget -O "gc-$VERSION.tar.gz" \
         "https://www.hboehm.info/gc/gc_source/gc-$VERSION.tar.gz"
 
