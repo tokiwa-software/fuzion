@@ -57,12 +57,27 @@ public f64(public val f64) : float, java_primitive is
   public as_i64_lax i64 => intrinsic
 
 
-  # does this `f64` value fit into an `i64`?  Used in inherited
+  # does this `f64` value fit into an `i64`? Used in inherited
   # precondition of `as_i64`.
   #
+  # NOTE: We cannot compare with `i64.max.as_f64` since it rounds up to 2^63,
+  # which does not fit.
+  #
+  # `val` is `mantissa << sh`,
+  # where sh is the number of bits to shift the mantissa left.
+  #
+  # sh(shift) is capped at 63, larger values do not fit.
+  #
+  # Then we set dynamic upper bound: 2^63 for negative numbers, 2^63-1 for positive.
+  #
+  # if sh < 0, then |val| < 2^53, which always fits.
+  # Otherwise we check `mantissa << sh <= max_abs` via right-shift to prevent overflow.
+  #
+  #
   public redef fits_in_i64 bool =>
-    i64.min.as_f64 ≤ val ≤ i64.max.as_f64
-
+    sh := min 63 (val.exponent-f64.significand_bits+1)
+    max_abs := i64.max.as_u64 + (val < 0 ? u64 1 : 0)
+    sh < 0 || val.mantissa ≤ (max_abs >> sh.as_u64)
 
   public redef as_i64 i64 => as_i64_lax
 
