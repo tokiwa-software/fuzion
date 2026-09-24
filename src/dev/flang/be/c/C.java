@@ -461,28 +461,28 @@ public class C extends ANY
       CStmnt tdefault = null;
       for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
         {
-          var ctagNums = new List<Integer>();
-          var rtags = new List<CExpr>();
           var tags = _fuir.matchCaseTags(s, mc);
-          for (var tagNum : tags)
-            {
-              var tc = _fuir.clazzChoice(subjClazz, tagNum);
-              if (!hasTag && _fuir.clazzIsRef(tc))  // NYI: CLEANUP: do we need to check the clazzId of a ref?
-                {
-                  for (var h : _fuir.clazzInstantiatedHeirs(tc))
-                    {
-                      rtags.add(_names.clazzId(h).comment(_fuir.clazzName(h)));
-                    }
-                }
-              else if (!_fuir.clazzIsVoidType(tc))
-                {
-                   ctagNums.add(tagNum);
-                  if (CHECKS) check
-                    (hasTag || !_fuir.hasData(tc));
-                }
-            }
           if (tags.length > 0)
             {
+              var ctagNums = new List<Integer>();
+              var rtags = new List<CExpr>();
+              for (var tagNum : tags)
+                {
+                  var tc = _fuir.clazzChoice(subjClazz, tagNum);
+                  if (!hasTag && _fuir.clazzIsRef(tc))  // NYI: CLEANUP: do we need to check the clazzId of a ref?
+                    {
+                      for (var h : _fuir.clazzInstantiatedHeirs(tc))
+                        {
+                          rtags.add(_names.clazzId(h).comment(_fuir.clazzName(h)));
+                        }
+                    }
+                  else if (!_fuir.clazzIsVoidType(tc))
+                    {
+                      ctagNums.add(tagNum);
+                      if (CHECKS) check
+                                    (hasTag || !_fuir.hasData(tc));
+                    }
+                }
               var sl = new List<CStmnt>();
               var field = _fuir.matchCaseField(s, mc);
               if (field != NO_CLAZZ)
@@ -1612,6 +1612,74 @@ public class C extends ANY
 
     return heapClone(res, _fuir.clazz(SpecialClazzes.c_String));
   }
+
+
+  /**
+   * From a value of choice type, obtain the tag.  The tag corresponds to the
+   * source position, i.e, `id (choice void void void unit nil void) unit .tag`
+   * is `3` even though this choice would never contain `void`.
+   *
+   * @param sub the choice value
+   *
+   * @param cl the clazz we are creating code for, mut be the `choice.tag` intrinsic
+   *
+   * @return the code to obtain the tag integer
+   */
+  public CStmnt getTag(CExpr sub, int cl)
+  {
+    var subjClazz = _fuir.clazzOuterClazz(cl);
+    var uniyon    = sub.field(CNames.CHOICE_UNION_NAME);
+    var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
+    var refEntry  = uniyon.field(CNames.CHOICE_REF_ENTRY_NAME);
+    var tag       = hasTag ? sub.field(CNames.TAG_NAME) : uniyon.field(CNames.CHOICE_REF_ENTRY_NAME).castTo("int64_t");
+    var nonRefTags = new List<CExpr>();
+    var rcases    = new List<CStmnt>(); // cases depending on clazzId of ref type
+    var singleRefTag = -1;
+    var res    = _names.newTemp();
+    var tag_cnt = _fuir.clazzChoiceCount(subjClazz);
+    for (var tagNum = 0; tagNum < tag_cnt; tagNum++)
+      {
+        var tc = _fuir.clazzChoice(subjClazz, tagNum);
+        if (!hasTag && _fuir.clazzIsRef(tc))
+          {
+            var rtags = new List<CExpr>();
+            for (var h : _fuir.clazzInstantiatedHeirs(tc))
+              {
+                rtags.add(_names.clazzId(h).comment(_fuir.clazzName(h)));
+              }
+            if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
+              {
+                singleRefTag = singleRefTag < 0 ? tagNum : Integer.MAX_VALUE;
+                rcases.add(CStmnt.caze(rtags, CStmnt.seq(res.assign(CExpr.int32const(tagNum)),
+                                                         CStmnt.BREAK)));
+              }
+          }
+        else if (!_fuir.clazzIsVoidType(tc))
+          {
+            nonRefTags.add(CExpr.int32const(tagNum));
+            if (CHECKS) check
+              (hasTag || !_fuir.hasData(tc));
+          }
+      }
+    if (rcases.size() > 0)
+      {
+        var id = refEntry.deref().field(CNames.CLAZZ_ID);
+        var notFound = reportErrorInCode0("unexpected reference type %d found in match", id);
+        var tdefault = rcases.size() > 1
+          ? CStmnt.suitch(id, rcases, notFound) // more than two reference cases: we have to create separate switch of clazzIds for refs
+          : CStmnt.seq(res.assign(CExpr.int32const(singleRefTag)));          // all refs have the same tag
+        return CStmnt.seq(CStmnt.decl(CTypes.scalar(SpecialClazzes.c_i32), res, tag),
+                          CStmnt.suitch(res,
+                                        new List<>(CStmnt.caze(nonRefTags, CStmnt.seq(CStmnt.BREAK))),
+                                        tdefault),
+                                        res.ret());
+      }
+    else
+      {
+        return tag.ret();
+      }
+    }
+
 
 
   /**

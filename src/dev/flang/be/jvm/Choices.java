@@ -418,6 +418,72 @@ public class Choices extends ANY implements ClassFileConstants
 
 
   /**
+   * From a value of choice type, obtain the tag.  The tag corresponds to the
+   * source position, i.e, `id (choice void void void unit nil void) unit .tag`
+   * is `3` even though this choice would never contain `void`.
+   *
+   * @param jvm the JVM instance
+   *
+   * @param s site of the call to intrinsic `choice.tag`.
+   *
+   * @param subjClazz code to produce the target of the call to `.tag`
+   *
+   * @return the code to obtain the tag integer
+   */
+  public Expr getTag(JVM jvm, int s, int subjClazz, Expr sub)
+  {
+    return switch (kind(subjClazz))
+      {
+      case voidlike     ->
+        {
+          Errors.fatal("JVM backend match called .tag for void-like choice type " + _fuir.clazzName(subjClazz) + " when compiling " + _fuir.siteAsString(s));
+          throw new Error(); // never executed, just to keep javac from complaining.
+        }
+      case unitlike     ->
+        {
+          var tagNum = 0;
+          while (_fuir.clazzIsVoidType(_fuir.clazzChoice(subjClazz, tagNum)))
+            {
+              tagNum++;
+            }
+          yield sub.drop().andThen(Expr.iconst(tagNum));
+        }
+      case boollike     -> sub.andThen(Expr.branch(O_ifeq,
+                                                   Expr.iconst(0),
+                                                   Expr.iconst(1)));
+      case intlike      -> sub;  // == tag!
+      case nullable     ->
+        {
+          var pos = 0;
+          while (!_fuir.clazzIsRef(_fuir.clazzChoice(subjClazz, pos)))
+            {
+              pos++;
+            }
+          var neg = 0;
+          while (!_fuir.clazzIsUnitType(_fuir.clazzChoice(subjClazz, neg)))
+            {
+              neg++;
+            }
+          yield sub.andThen(Expr.branch(O_ifnull,
+                                        Expr.iconst(neg),
+                                        Expr.iconst(pos)));
+        }
+      case refsAndUnits -> sub.andThen(Expr.invokeInterface(_types.interfaceFile(subjClazz)._name,
+                                                            _names.getTag(subjClazz),
+                                                            "()I",
+                                                            PrimitiveType.type_int,
+                                                            _fuir.sitePos(s).line()));
+      case general      -> sub.andThen(Expr.getfield(_names.javaClass(subjClazz),
+                                                     Names.TAG_NAME,
+                                                     ClassFileConstants.PrimitiveType.type_int));
+      default ->
+        throw new Error("Unexpected choice kind in match of JVM backend: " + kind(subjClazz));
+      };
+  }
+
+
+
+  /**
    * Perform a match on value sub.
    *
    * @param jvm the JVM instance

@@ -1919,6 +1919,8 @@ public class DFA extends ANY
     put("debug"                          , cl -> cl._dfa.boolAsVal(cl._dfa._options.fuzionDebug()));
     put("debug_level"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz()), cl._dfa._options.fuzionDebugLevel()) );
 
+    put("choice.tag"                     , cl -> genericNumResult(cl) ); // NYI: Could be more precise and list the actuall possible tags of the target
+
     put("fuzion.sys.args.count"          , cl -> genericNumResult(cl) );
     put("fuzion.sys.args.get"            , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.std.exit"                , cl -> null );

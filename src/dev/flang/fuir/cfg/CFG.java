@@ -219,6 +219,9 @@ public class CFG extends ANY
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );
     put("debug_level"                    , (cfg, cl) -> { } );
+
+    put("choice.tag"                     , (cfg, cl) -> { } );
+
     put("fuzion.sys.args.count"          , (cfg, cl) -> { } );
     put("fuzion.sys.args.get"            , (cfg, cl) -> { } );
     put("fuzion.std.exit"                , (cfg, cl) -> { } );
