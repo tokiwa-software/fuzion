@@ -30,8 +30,22 @@ TAR_BALL_HASH=3d0d3cdbe077403d3106bb40f0cbb563413d6efdbb2a7e1cd6886595dec48fc2
 
 mkdir -p build
 cd build
-wget "https://www.hboehm.info/gc/gc_source/gc-$VERSION.tar.gz"
-echo "$TAR_BALL_HASH gc-$VERSION.tar.gz" | sha256sum --check --status
+for attempt in {1..5}; do
+    wget -O "gc-$VERSION.tar.gz" \
+        "https://www.hboehm.info/gc/gc_source/gc-$VERSION.tar.gz"
+
+    if echo "$TAR_BALL_HASH  gc-$VERSION.tar.gz" | sha256sum --check --status; then
+        break
+    fi
+
+    echo "SHA-256 verification failed; retrying download..." >&2
+    rm -f "gc-$VERSION.tar.gz"
+
+    if [ "$attempt" -eq 5 ]; then
+        echo "Failed to download a valid archive after 5 attempts." >&2
+        exit 1
+    fi
+done
 tar xf "gc-$VERSION.tar.gz"
 cd "gc-$VERSION"
 # MINGW_PREFIX/MINGW_CHOST are set by the MSYS2 shell (/ucrt64, /clangarm64, ...)
