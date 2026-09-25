@@ -122,9 +122,11 @@ public class FuzionThread extends Thread
 
 
   /**
-   * Create a main FuzionThread and run code.
+   * Create a FuzionThread and run code.
    *
-   * @oaran loader class loader used to load resources related to compiled
+   * @param r the code to execute in this thread.
+   *
+   * @param l class loader used to load resources related to compiled
    * fuzion code.
    */
   private FuzionThread(Runnable r, ClassLoader l)
