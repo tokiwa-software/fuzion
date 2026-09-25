@@ -6,12 +6,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
   git \
   make \
   patch \
-  libgc1 \
   libgc-dev \
-  shellcheck \
-  asciidoc \
-  asciidoctor \
-  ruby-asciidoctor-pdf \
   antlr4 \
   clang-18 \
   wget \
@@ -24,27 +19,14 @@ FROM ubuntu:26.04@sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e57
 # NYI: HACK: chmod is a workaround for Jenkins permission issue
 COPY --from=builder --chmod=o=g /fuzion/build /fuzion
 RUN apt-get update && apt-get -y --no-install-recommends install \
-  antlr4 \
-  asciidoc \
-  asciidoctor \
   clang-18 \
-  ditaa \
   git \
-  inkscape \
   libgc-dev \
-  libgc1 \
   libsodium-dev \
-  libsodium23 \
   libwolfssl-dev \
-  libwolfssl44 \
   locales \
   make \
-  openjdk-25-jdk-headless \
-  patch \
-  ruby-asciidoctor-pdf \
-  shellcheck \
-  unzip \
-  wget
+  openjdk-25-jre-headless
 RUN ln -s /usr/bin/clang-18 /usr/bin/clang
 RUN locale-gen en_US.UTF-8 && \
     update-locale LANG=en_US.UTF-8
