@@ -45,7 +45,7 @@ public Exit ref : effect is
   => abstract
 
 
-  # default implementation of exit
+  # default implementation of Exit
   #
   # this will get instated automatically at startup
   #
@@ -84,4 +84,3 @@ public Exit ref : effect is
   #
   public redef finally unit =>
     exit
-

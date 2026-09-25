@@ -144,14 +144,14 @@ public blocking_mutate_using_clock(C type : time.Clock) : blocking_mutate_using_
   #       then
   #         # condition was met before timeout
   #       else
-  #         # timeout occured before condition became true
+  #         # timeout occurred before condition became true
   #
   # or
   #
   #       match mutate_type.env.timeout t
   #                            .exclusive_when condition ()->
   #                              # condition was met before timeout
-  #         nil => # timeout occured before condition became true
+  #         nil => # timeout occurred before condition became true
   #         r T => # r was returned by code passed ot `exclusive_when`.
   #
   public timeout(deadline time.duration | time.instant)

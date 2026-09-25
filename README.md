@@ -284,7 +284,7 @@ Full example:
 
 ### Record a test
 
-This works the same as running a test but specifing a different make target.
+This works the same as running a test but specifying a different make target.
 
 - record
 - record_jvm
