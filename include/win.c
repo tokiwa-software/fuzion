@@ -848,30 +848,29 @@ wchar_t *build_unicode_environment_block(char *env[], size_t envLen) {
 }
 
 
+static void fzE_close_pipe(HANDLE h)
+{
+  if (h != NULL)
+    {
+      CloseHandle(h);
+    }
+}
+
+
 int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
 
   // Programmatically controlling which handles are inherited by new processes in Win32
   // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
 
-  HANDLE hStdinRead, hStdinWrite;
-  HANDLE hStdoutRead, hStdoutWrite;
-  HANDLE hStderrRead, hStderrWrite;
+  HANDLE hStdinRead = NULL, hStdinWrite = NULL;
+  HANDLE hStdoutRead = NULL, hStdoutWrite = NULL;
+  HANDLE hStderrRead = NULL, hStderrWrite = NULL;
 
   SECURITY_ATTRIBUTES saAttr = {
       .nLength = sizeof(SECURITY_ATTRIBUTES),
-      .bInheritHandle = TRUE,
+      .bInheritHandle = FALSE,
       .lpSecurityDescriptor = NULL
   };
-
-  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0) ||
-      !CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0) ||
-      !CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
-      return -1;
-  }
-
-  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
 
   // we resolve app path manually, because we
   // want to pass empty env where PATH is not set
@@ -894,20 +893,68 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   }
 
   wchar_t *args_w = build_unicode_args(args, argsLen);
-  wchar_t *envBlock = build_unicode_environment_block(env, envLen);
-
   if (!args_w) {
     SetLastError(ERROR_INVALID_NAME);
     return -1;
   }
+  wchar_t *envBlock = build_unicode_environment_block(env, envLen);
+  if (!envBlock) {
+    SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+    free(args_w);
+    return -1;
+  }
+
+  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0) ||
+      !CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0) ||
+      !CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
+    free(args_w);
+    free(envBlock);
+    fzE_close_pipe(hStdinRead); fzE_close_pipe(hStdinWrite);
+    fzE_close_pipe(hStdoutRead); fzE_close_pipe(hStdoutWrite);
+    fzE_close_pipe(hStderrRead); fzE_close_pipe(hStderrWrite);
+    return -1;
+  }
+
+  SetHandleInformation(hStdinRead, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+  SetHandleInformation(hStdoutWrite, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+  SetHandleInformation(hStderrWrite, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+
+  HANDLE inheritList[] = {hStdinRead, hStdoutWrite, hStderrWrite};
+  SIZE_T listSize = 0;
+  InitializeProcThreadAttributeList(NULL, 1, 0, &listSize);
+  BYTE *listBuffer = (BYTE *)malloc(listSize);
+  if (!listBuffer) {
+    SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+    free(args_w);
+    free(envBlock);
+    fzE_close_pipe(hStdinRead); fzE_close_pipe(hStdinWrite);
+    fzE_close_pipe(hStdoutRead); fzE_close_pipe(hStdoutWrite);
+    fzE_close_pipe(hStderrRead); fzE_close_pipe(hStderrWrite);
+    return -1;
+  }
+  LPPROC_THREAD_ATTRIBUTE_LIST attrList = (LPPROC_THREAD_ATTRIBUTE_LIST)listBuffer;
+  if (!InitializeProcThreadAttributeList(attrList, 1, 0, &listSize) ||
+      !UpdateProcThreadAttribute(attrList, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+                                 inheritList, sizeof(inheritList), NULL, NULL)) {
+    SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+    DeleteProcThreadAttributeList(attrList);
+    free(listBuffer);
+    free(args_w);
+    free(envBlock);
+    fzE_close_pipe(hStdinRead); fzE_close_pipe(hStdinWrite);
+    fzE_close_pipe(hStdoutRead); fzE_close_pipe(hStdoutWrite);
+    fzE_close_pipe(hStderrRead); fzE_close_pipe(hStderrWrite);
+    return -1;
+  }
 
   PROCESS_INFORMATION pi;
-  STARTUPINFOW si = {0};
-  si.cb = sizeof(STARTUPINFOW);
-  si.dwFlags |= STARTF_USESTDHANDLES;
-  si.hStdInput = hStdinRead;
-  si.hStdOutput = hStdoutWrite;
-  si.hStdError = hStderrWrite;
+  STARTUPINFOEXW siEx = {0};
+  siEx.StartupInfo.cb = sizeof(siEx);
+  siEx.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+  siEx.StartupInfo.hStdInput = hStdinRead;
+  siEx.StartupInfo.hStdOutput = hStdoutWrite;
+  siEx.StartupInfo.hStdError = hStderrWrite;
+  siEx.lpAttributeList = attrList;
 
   BOOL success = CreateProcessW(
     resolvedPath,
@@ -915,21 +962,27 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
     NULL,
     NULL,
     TRUE,
-    CREATE_UNICODE_ENVIRONMENT,
+    CREATE_UNICODE_ENVIRONMENT | EXTENDED_STARTUPINFO_PRESENT,
     envBlock,
     NULL,
-    &si,
+    &siEx.StartupInfo,
     &pi
   );
 
-  CloseHandle(hStdinRead);
-  CloseHandle(hStdoutWrite);
-  CloseHandle(hStderrWrite);
+  DeleteProcThreadAttributeList(attrList);
+  free(listBuffer);
+
+  fzE_close_pipe(hStdinRead);
+  fzE_close_pipe(hStdoutWrite);
+  fzE_close_pipe(hStderrWrite);
 
   free(args_w);
   free(envBlock);
 
   if (!success) {
+    fzE_close_pipe(hStdinWrite);
+    fzE_close_pipe(hStdoutRead);
+    fzE_close_pipe(hStderrRead);
     return -1;
   }
 
