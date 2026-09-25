@@ -448,12 +448,14 @@ int fzE_munmap(void * mapped_address, const int file_size){
 uint64_t fzE_posix_time(int clockid)
 {
   // NYI: BUG: clockid currently ignored
-  static LARGE_INTEGER frequency = {0};
-  if (frequency.QuadPart == 0) {
-      if (!QueryPerformanceFrequency(&frequency)) {
+  static uint64_t frequency = 0;
+  if (frequency == 0) {
+      LARGE_INTEGER f;
+      if (!QueryPerformanceFrequency(&f)) {
           fprintf(stderr, "*** QueryPerformanceFrequency failed\n");
           exit(EXIT_FAILURE);
       }
+      frequency = (uint64_t)f.QuadPart;
   }
 
   LARGE_INTEGER counter;
@@ -462,10 +464,22 @@ uint64_t fzE_posix_time(int clockid)
       exit(EXIT_FAILURE);
   }
 
-  // assert that this division will not be rounded to zero
-  assert( 1000000000ULL / frequency.QuadPart != 0ULL );
-
-  return (uint64_t)(counter.QuadPart * (1000000000ULL / frequency.QuadPart));
+  // Convert the QPC counter value (measured in units of `frequency` ticks per
+  // second) to nanoseconds. Avoid two pitfalls of the naive
+  // `counter * (1000000000 / frequency)` scaling:
+  //
+  //   - on systems where `frequency` exceeds 1 GHz, `1000000000 / frequency`
+  //     is truncated to zero, so the function would always return 0 and the
+  //     clock would appear to be frozen
+  //
+  //   - the multiplication `counter * (1000000000 / frequency)` may overflow a
+  //     64-bit integer for `frequency` smaller than 1 GHz
+  //
+  // Instead, split `counter` into whole seconds and remaining ticks and scale
+  // each part separately to nanoseconds.
+  uint64_t ticks = (uint64_t)counter.QuadPart;
+  return ((ticks / frequency) * 1000000000ULL)
+       + (((ticks % frequency) * 1000000000ULL) / frequency);
 }
 
 
@@ -1147,6 +1161,11 @@ void fzE_mtx_destroy(void *mtx) {
   fzE_free(mtx);
 }
 
+typedef struct {
+  CONDITION_VARIABLE cnd;
+  int clock; // 0 = CLOCK_REALTIME, 1 = CLOCK_MONOTONIC
+} fzE_cond_struct;
+
 /**
  * initialize a condition
  *
@@ -1162,23 +1181,23 @@ void fzE_mtx_destroy(void *mtx) {
  *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
  */
 void * fzE_cnd_init(int clock) {
-  // NYI: UNDER DEVELOPMENT: clock is ignored for condition variable
-  CONDITION_VARIABLE *cnd = (CONDITION_VARIABLE *)fzE_malloc_safe(sizeof(CONDITION_VARIABLE));
-  InitializeConditionVariable(cnd);
+  fzE_cond_struct *cnd = (fzE_cond_struct *)fzE_malloc_safe(sizeof(fzE_cond_struct));
+  InitializeConditionVariable(&cnd->cnd);
+  cnd->clock = clock;
   return (void *)cnd;
 }
 
 void fzE_cnd_signal(void *cnd) {
-  WakeConditionVariable((CONDITION_VARIABLE *)cnd);
+  WakeConditionVariable(&((fzE_cond_struct *)cnd)->cnd);
 }
 
 void fzE_cnd_broadcast(void *cnd) {
-  WakeAllConditionVariable((CONDITION_VARIABLE *)cnd);
+  WakeAllConditionVariable(&((fzE_cond_struct *)cnd)->cnd);
 }
 
 void fzE_cnd_wait(void *cnd, void *mtx) {
   BOOL ok = SleepConditionVariableCS(
-      (CONDITION_VARIABLE *)cnd,
+      &((fzE_cond_struct *)cnd)->cnd,
       (CRITICAL_SECTION *)mtx,
       INFINITE);
   if (!ok)
@@ -1189,9 +1208,32 @@ void fzE_cnd_wait(void *cnd, void *mtx) {
 }
 
 void fzE_cnd_timedwait(void *cnd, void *mtx, int64_t time_ns) {
-  DWORD ms = (DWORD)(time_ns / 1000000);
+  fzE_cond_struct *c = (fzE_cond_struct *)cnd;
+
+  // `time_ns` is an absolute time measured by the clock this condition was
+  // initialized with, whereas `SleepConditionVariableCS` expects a relative
+  // timeout in milliseconds.  Compute the remaining relative timeout from the
+  // current reading of that clock.
+  int64_t remaining_ns = time_ns - (int64_t)fzE_posix_time(c->clock);
+
+  DWORD ms;
+  if (remaining_ns <= 0)
+    {
+      // The timeout already elapsed.
+      ms = 0;
+    }
+  else
+    {
+      ms = (DWORD)(remaining_ns / 1000000);
+      if (ms == 0)
+        {
+          // ensure we do not spin in a busy loop for sub-millisecond timeouts
+          ms = 1;
+        }
+    }
+
   BOOL ok = SleepConditionVariableCS(
-      (CONDITION_VARIABLE *)cnd,
+      &c->cnd,
       (CRITICAL_SECTION *)mtx,
       ms);
   if (!ok && GetLastError() != ERROR_TIMEOUT)
