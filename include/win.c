@@ -667,7 +667,11 @@ void fzE_init()
   }
   // NYI: UNDER DEVELOPMENT: WSACleanup
 
-  InitializeCriticalSection(&fzE_global_mutex);
+  if (!InitializeCriticalSectionEx(&fzE_global_mutex, 0, 0))
+  {
+    fprintf(stderr, "*** InitializeCriticalSectionEx failed\n");
+    exit(EXIT_FAILURE);
+  }
   // NYI: UNDER DEVELOPMENT: DeleteCriticalSection(&fzE_global_mutex);
 
   GC_INIT();
@@ -1123,7 +1127,8 @@ void * fzE_mtx_init() {
   if (!InitializeCriticalSectionEx(mtx, 0, 0))
   {
     fzE_free(mtx);
-    return NULL;
+    fprintf(stderr, "*** InitializeCriticalSectionEx failed\n");
+    exit(EXIT_FAILURE);
   }
   return (void *)mtx;
 }
