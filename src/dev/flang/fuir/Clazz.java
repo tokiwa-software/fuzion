@@ -995,7 +995,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       (f != null,
        !isVoidType());
 
-    return lookup(new FeatureAndActuals(f), FuzionConstants.NO_SELECT, false);
+    return lookup(new FeatureAndActuals((LibraryFeature)f), FuzionConstants.NO_SELECT, false);
   }
 
 
@@ -1026,7 +1026,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     return isVoidType()
       ? this
-      : lookup(new FeatureAndActuals(c.calledFeature(),
+      : lookup(new FeatureAndActuals((LibraryFeature)c.calledFeature(),
                                      typePars),
                c.select(),
                c.isInheritanceCall());
@@ -1109,7 +1109,7 @@ class Clazz extends ANY implements Comparable<Clazz>
             if (CHECKS)
               check(Errors.any() || fa._tp.isEmpty());  // there should not be an actual type parameters to a type parameter
           }
-        else if (f != Types.f_ERROR)
+        else
           {
             var af = findRedefinition(f);
             if (CHECKS) check
@@ -2057,7 +2057,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                 var n = replaceOpenCount(field);
                 for (var i = 0; i < n; i++)
                   {
-                    fields.add(lookup(new FeatureAndActuals(field), i, false));
+                    fields.add(lookup(new FeatureAndActuals((LibraryFeature)field), i, false));
                   }
               }
             else
