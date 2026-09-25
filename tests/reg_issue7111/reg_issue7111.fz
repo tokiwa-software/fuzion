@@ -23,7 +23,7 @@
 
 reg_issue7111 =>
 
-  mymap := (container.ordered_map
+  mymap := (container.ps_map String String .of
     [ "un",   "une",  "deux", "trois", "quatre" , "cinq" ]
     [ "ichi", "ichi", "ni",   "san"  , "shi/yon", "go"   ] )
 

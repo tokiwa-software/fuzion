@@ -116,10 +116,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @return code to perform the side effects of v and ignoring the produced value.
      */
-    public RESULT drop(VALUE v, int type)
-    {
-      return nop(); // NYI: UNDER DEVELOPMENT: should be implemented by BEs.
-    }
+    public abstract RESULT drop(VALUE v, int type);
 
     /**
      * Perform an assignment val to field f in instance rt

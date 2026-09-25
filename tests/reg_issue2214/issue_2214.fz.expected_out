@@ -1,2 +1,2 @@
-T is Type of 'i32'
-B is Type of 'unit'
+T is i32
+B is unit

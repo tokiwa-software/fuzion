@@ -163,7 +163,7 @@ Expected 'x' but found 'd' in hex floating point number. Base prefixes in intege
   _ f64 := -0xabba_affee.cafe   # 15. should flag an error: prefix missing
 -------------------------^^^^
 Feature not found: 'cafe' (no arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: '0xabba_affee.cafe'
 
 
@@ -171,7 +171,7 @@ In call: '0xabba_affee.cafe'
   _ f64 := 0xabba_affee.cafe    # 10. should flag an error: prefix missing
 ------------------------^^^^
 Feature not found: 'cafe' (no arguments)
-Target feature: 'i32'
+Target feature: 'i64'
 In call: '0xabba_affee.cafe'
 
 29 errors.

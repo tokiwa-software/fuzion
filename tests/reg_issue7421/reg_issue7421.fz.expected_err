@@ -4,5 +4,6 @@
 ----^
 formal type parameter 'E : e.this'
 actual type parameter 'E'
+assignable to constraint: 'E'
 
 one error.

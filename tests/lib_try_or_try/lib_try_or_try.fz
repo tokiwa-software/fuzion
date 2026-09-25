@@ -32,7 +32,7 @@
 # ```
 # catch(code_catch ERROR->T) T =>
 #     lm ! ()->
-#           m := lm.env.new (option ERROR nil)
+#           m := lm.env.var (option ERROR nil)
 #           v := F.new e->
 #               m <- e
 #               F.abort

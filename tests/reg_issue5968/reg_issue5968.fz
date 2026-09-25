@@ -27,7 +27,7 @@ reg_issue5968 =>
 
   a : effect is
 
-    b := lm.env.new 3
+    b := lm.env.var 3
 
 
     incr =>

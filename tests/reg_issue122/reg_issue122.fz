@@ -54,7 +54,7 @@
 reg_issue122 is
   a := 3
   b := 44
-  x(v i32) => 100+v
+  x(v i64) => 100+v
   c, d := ((x a),(x b))
   say "c is $c"  # should print '103'
   say "d is $d"  # should print '144'

@@ -1,0 +1,18 @@
+
+--CURDIR--/reg_issue7634.fz:25:19: error 1: Inconsistent indentation
+                  ? 1 : 2
+------------------^
+Indentation reference point is --CURDIR--/reg_issue7634.fz:24:1:
+_ := false ? val1 : true
+^
+While parsing: exprs, parse stack: exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue7634.fz:24:14: error 2: Could not find called feature
+_ := false ? val1 : true
+-------------^^^^
+Feature not found: 'val1' (no arguments)
+Target feature: 'universe'
+In call: 'val1'
+
+2 errors.

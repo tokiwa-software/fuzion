@@ -21,13 +21,12 @@
 #
 # -----------------------------------------------------------------------
 
-for b0 Sequence i32 := [], b
+for b0 Sequence i64 := [], b
     e in [ 3, 1, 4 ]
-    b Sequence i32 := [], c
+    b Sequence i64 := [], c
 do
-  c Sequence i32 :=  if      e = 4         then b.filter _->false
+  c Sequence i64 :=  if      e = 4         then b.filter _->false
                      else if (b ∃ x->true) then b.map    _->e
                      else                       [e]
 else
   say b0.first
-

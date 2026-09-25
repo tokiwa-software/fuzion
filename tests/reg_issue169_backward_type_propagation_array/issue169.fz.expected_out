@@ -1,6 +1,6 @@
-Type of 'array i32'
-Type of 'Sequence i32'
-Type of 'Sequence u8'
-Type of 'Sequence f32'
-Type of 'Sequence (Sequence i16)'
-Type of 'array u8'
+array i32
+Sequence i32
+Sequence u8
+Sequence f32
+Sequence (Sequence i16)
+array u8

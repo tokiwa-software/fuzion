@@ -25,117 +25,56 @@
 #
 module:public process(public pid i64, module std_in, std_out, std_err i64, name String, args Sequence String) : property.orderable is
 
-  # how many bytes are read at a time
-  pipe_buffer_size := io.buffer_size.as_i32
-
-  # POSIX.1 requires PIPE_BUF to be at least 512 bytes
-  # NYI: UNDER DEVELOPMENT: post conditions for fields not supported yet
-  check pipe_buffer_size >= 512
-
 
   # predefined read handler for reading from
   # standard out of the process
   #
-  std_out_read_handler => read_handler std_out
+  std_out_reader(LM type : mutate) => pipe_reader LM std_out "reading from stdout(desc=$std_out) of process $(description)"
 
 
   # predefined read handler for reading from
   # standard err of the process
   #
-  std_err_read_handler => read_handler std_err
+  std_err_reader(LM type : mutate) => pipe_reader LM std_err "reading from stderr(desc=$std_err) of process $(description)"
 
 
   # predefined write handler for writing to
   # standard in of the process
   #
-  std_in_writer(LM type : mutate) => writer LM std_in
-
-
-  # get a name for the given descriptor
-  #
-  desc_name(desc i64) =>
-    if      desc = std_in  then "stdin"
-    else if desc = std_out then "stdout"
-    else if desc = std_err then "stderr"
-    else "file_descriptor#$desc"
+  std_in_writer(LM type : mutate) => pipe_writer LM std_in "writing to stdin(desc=$std_in) of process $(description)"
 
 
   # read bytes from standard out
+  # NYI: CLEANUP: remove this
   #
-  read_handler(desc i64) : io.Read_Handler is
-    public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
-      arr := array u8 _ pipe_buffer_size _->0
-      res := fzE_pipe_read desc arr.internal_array.data arr.count
+  read_handler(desc i64) is
+    public read(max_count i64) choice (Sequence u8) io.end_of_file error =>
+      arr := array u8 _ io.buffer_size _->0
+      res := fzE_pipe_read desc arr.internal_array.data arr.count.as_i32
       if res = -1
-        # NYI: UNDER DEVELOPMENT: register failures
-        _ := fzE_pipe_close desc
-        error "reading from $(desc_name desc) of process $(pid)" fzE_last_error
+        error "reading from stdout of process $(description)" fzE_last_error
       else if res = 0
-        # NYI: UNDER DEVELOPMENT: register failures
-        _ := fzE_pipe_close desc
         io.end_of_file
       else
         arr
           .slice 0 res
 
 
-  # write bytes to standard in
-  #
-  writer (LM type: mutate, desc i64) : (io.buffered LM).Writer is
-    public redef writer (bytes Sequence u8) outcome unit =>
-      for tbw := bytes.as_array, tbw.drop res .as_array
-          res := fzE_pipe_write desc tbw.internal_array.data tbw.count .as_i64
-      while res >= 0 && res != tbw.length
-      else
-        if res < 0
-          error "writing to $(desc_name desc) of process $(pid). Tried writing $(tbw.count) bytes." fzE_last_error
-        else
-          unit
-
-
-  # write bytes to stdin of child process
-  #
-  public write_bytes (bytes Sequence u8) outcome i32
-  =>
-    write_bytes std_in bytes
-
-
-  # helper function
-  #
-  write_bytes (desc i64, bytes Sequence u8) outcome i32
-  pre debug: bytes.count > 0
-  =>
-    bytes
-      .chunk pipe_buffer_size
-      .reduce_or_error 0 (r, t)->
-        arr := t.as_array
-        bw := fzE_pipe_write desc arr.internal_array.data arr.count
-        if bw = -1
-          abort (outcome i32) (error "writing to $(desc_name desc) of process $(pid). Wrote $r bytes already." fzE_last_error)
-        else
-          r+bw
-
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered LM).reader (std_out_read_handler) ! f
+    (io.buffered LM).Reader.instate (std_out_reader LM) f
 
 
-  # install buffered reader for reading from stdout of process
+  # install buffered reader for reading from stderr of process
   # and run `f`.
   public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered LM).reader (std_err_read_handler) ! f
+    (io.buffered LM).Reader.instate (std_err_reader LM) f
 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
-    (io.buffered LM).Writer.instate _ (std_in_writer LM) f
-
-
-  # write string to stdin of child process
-  #
-  public write_string (s String) outcome i32 =>
-    write_bytes s.utf8
+    (io.buffered LM).Writer.instate (std_in_writer LM) f
 
 
   # pipe this processes output to new process
@@ -152,11 +91,18 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
       _ := concur.Threads.env.spawn ()->
-        for p1rb := std_out_read_handler.read pipe_buffer_size
+        for p1rb := (read_handler std_out).read io.buffer_size
         while
           match p1rb
-            s Sequence => (write_bytes p.std_in s).ok
-            * => false
+            s Sequence =>
+              lm : mutate is
+              lm ! ()->
+                _ := p.with_in unit lm ()->
+                  (io.buffered lm).Writer.env.write s
+                    .otherwise Ignored_Failure.env.register_failure
+                true
+            io.end_of_file => false
+            e error => panic e
 
         # NYI: UNDER DEVELOPMENT: error handling
         _ := fzE_pipe_close p.std_in
@@ -170,21 +116,25 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   public close_in outcome unit =>
     if fzE_pipe_close std_in != 0
-      error "closing $(desc_name std_in) of process $(pid)" fzE_last_error
+      error "closing stdin of process $(description)" fzE_last_error
 
 
   # close standard output of this process
   #
+  # NYI: CLEANUP: should this better be done automatically by runtime?
+  #
   public close_out outcome unit =>
     if fzE_pipe_close std_out != 0
-      error "closing $(desc_name std_out) of process $(pid)" fzE_last_error
+      error "closing stdout of process $(description)" fzE_last_error
 
 
   # close standard error of this process
   #
+  # NYI: CLEANUP: should this better be done automatically by runtime?
+  #
   public close_err outcome unit =>
     if fzE_pipe_close std_err != 0
-      error "closing $(desc_name std_err) of process $(pid)" fzE_last_error
+      error "closing stderr of process $(description)" fzE_last_error
 
 
   # wait for this process
@@ -252,6 +202,12 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   public fixed redef type.lteq(a, b process.this) bool =>
     a.pid <= b.pid
+
+
+  # used in error messages
+  #
+  description =>
+    "$name $(String.join args " ") (PID: $pid)"
 
 
   # this process as a human readable String

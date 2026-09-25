@@ -14,13 +14,13 @@ Actual type is 'String'
 --CURDIR--/iftest_negative.fz:43:8: error 3: If condition must be assignable to type 'bool'
     if 42             # 3. should flag an error: must be of type bool
 -------^^
-Actual type is 'i32'
+Actual type is 'i64'
 
 
 --CURDIR--/iftest_negative.fz:44:13: error 4: If condition must be assignable to type 'bool'
     else if 42        # 4. should flag an error: must be of type bool
 ------------^^
-Actual type is 'i32'
+Actual type is 'i64'
 
 
 --CURDIR--/iftest_negative.fz:58:5: error 5: Incompatible types in assignment

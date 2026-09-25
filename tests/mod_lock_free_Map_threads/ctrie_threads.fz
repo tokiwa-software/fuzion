@@ -29,7 +29,7 @@ ctrie_threads is
   keys := 1..999
 
 
-  in_threads(code i32->unit) =>
+  in_threads(code i64->unit) =>
     (array num_threads t->
       concur.Threads.env.spawn ()->
         code t
@@ -39,7 +39,7 @@ ctrie_threads is
   test1 =>
     say "test1: in $($num_threads) threads, adding 999 keys, removing every third key and taking a snapshot at key=500."
 
-    ctrie := (lock_free.Map i32 i32).empty
+    ctrie := (lock_free.Map i64 i64).empty
 
     empty := ctrie.snapshot true
 
@@ -68,7 +68,7 @@ ctrie_threads is
   test2(take_snapshots bool) =>
     say "test2: in $($num_threads) threads, $(if take_snapshots then "adding keys while taking snapshots, removing keys while taking snapshots." else "add keys, remove keys.")"
 
-    ctrie := (lock_free.Map i32 i32).empty
+    ctrie := (lock_free.Map i64 i64).empty
 
     in_threads t->
       for k in keys do
@@ -106,14 +106,14 @@ ctrie_threads is
   test3 =>
     say "test3: in $($num_threads) threads, add non-overlapping keys, then remove key, test if added/removed."
 
-    ctrie := (lock_free.Map i32 i32).empty
+    ctrie := (lock_free.Map i64 i64).empty
 
     in_threads t->
       for k in keys do
         kt := (1000*t)+k
 
         ctrie.put kt kt
-        if ctrie[kt].is_nil
+        if ctrie[kt] = nil
           panic "added key $kt not present"
 
         if ctrie[kt].or_panic != kt
@@ -123,7 +123,7 @@ ctrie_threads is
           _ := ctrie.snapshot true
 
         _ := ctrie.remove kt
-        if ctrie[kt].exists
+        if ctrie[kt].ok
           panic "removed key $kt still present"
 
         if k%100 = 0
@@ -135,7 +135,7 @@ ctrie_threads is
   test4 =>
     say "test4: in $($num_threads) threads, add non-overlapping keys, then remove key, test if added/removed."
 
-    ctrie := (lock_free.Map i32 i32).empty
+    ctrie := (lock_free.Map i64 i64).empty
 
     in_threads t->
       for k in keys do
@@ -143,18 +143,18 @@ ctrie_threads is
 
         s := if k%5=0 then ctrie.snapshot true else ctrie
         ctrie.put kt kt
-        if ctrie[kt].is_nil
+        if ctrie[kt] = nil
           panic "added key $kt not present"
-        if k%5=0 && s[kt].exists
+        if k%5=0 && s[kt].ok
           panic "added key $kt to snapshot"
 
         s2 := if k%5=0 then ctrie.snapshot true else ctrie
         match ctrie.remove kt
           nil => panic "$kt not found"
-          i32 =>
-        if ctrie[kt].exists
+          i64 =>
+        if ctrie[kt].ok
           panic "removed key $kt still present"
-        if k%5=0 && s2[kt].is_nil
+        if k%5=0 && s2[kt] = nil
           panic "removed key $kt from snapshot"
 
 

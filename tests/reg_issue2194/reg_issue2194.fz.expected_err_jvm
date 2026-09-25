@@ -7,7 +7,7 @@ fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
 pre x at --CURDIR--/reg_issue2194.fz:25
 y#1 at --CURDIR--/reg_issue2194.fz:25
 loop at --CURDIR--/reg_issue2194.fz:32
-universe at --builtin--:31
+universe
 
 *** fatal errors encountered, stopping.
 one error.

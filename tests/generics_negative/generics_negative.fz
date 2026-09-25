@@ -89,20 +89,20 @@ generics_negative is
   _ := f2 true false          # 14. should flag an error, wrong number of arguments
 
   r1 Function unit := opengenerics17
-  _ := r1.call()
-  _ := r1.call 7              # 15. should flag an error, wrong number of arguments
-  _ := r1()
-  _ := r1 7                   # 16. should flag an error, wrong number of arguments
+  r1.call()
+  r1.call 7              # 15. should flag an error, wrong number of arguments
+  r1()
+  r1 7                   # 16. should flag an error, wrong number of arguments
 
   r2 Function unit i32 bool := (i, b) ->
-  _ := r2.call()              # 17. should flag an error, wrong number of arguments
-  _ := r2.call 3              # 18. should flag an error, wrong number of arguments
-  _ := r2.call 3 false
-  _ := r2.call 3 false 7      # 19. should flag an error, wrong number of arguments
-  _ := r2()                   # 20. should flag an error, wrong number of arguments
-  _ := r2 3                   # 21. should flag an error, wrong number of arguments
-  _ := r2 3 false
-  _ := r2 3 false 7           # 22. should flag an error, wrong number of arguments
+  r2.call()              # 17. should flag an error, wrong number of arguments
+  r2.call 3              # 18. should flag an error, wrong number of arguments
+  r2.call 3 false
+  r2.call 3 false 7      # 19. should flag an error, wrong number of arguments
+  r2()                   # 20. should flag an error, wrong number of arguments
+  r2 3                   # 21. should flag an error, wrong number of arguments
+  r2 3 false
+  r2 3 false 7           # 22. should flag an error, wrong number of arguments
 
   opengenerics23(A, B, C type) is
     f(a A.i32) i32 => 3          # 23. should flag an error: generic used as outer type
@@ -175,7 +175,7 @@ generics_negative is
       redef f(a0 i32, a1 bool, a2 i32) =>
 
     x G := G
-    _ := x.f 3 true 5
+    x.f 3 true 5
     x.f "String" false 7  # 47. should flag an error: incompatible argument #1
     x.f 4 3 7             # 48. should flag an error: incompatible argument #2
     x.f 4 false "false"   # 49.a should flag an error: incompatible argument #3
@@ -195,7 +195,7 @@ generics_negative is
         _  := option Y2 nil
         _  := option Z  nil      # 53. should flag an error: ambiguous type parameter
 
-  _ := ambiguousTypeParameterName
+  ambiguousTypeParameterName
 
   inheriting_type_parameter =>
 

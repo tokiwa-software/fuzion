@@ -49,4 +49,4 @@ public now (p () -> time.date_time) : effect is
     time.now ()->
       a := fuzion.sys.internal_array_init i32 7
       fzE_date_time a.data
-      time.date_time a[0] a[1] a[2] a[3] a[4] a[5] a[6]
+      time.date_time a[0].as_i64 a[1].as_i64 a[2].as_i64 a[3].as_i64 a[4].as_i64 a[5].as_i64 a[6].as_i64

@@ -25,15 +25,15 @@
 
 # Set -- an abstract set of values
 #
-public Set(public E type : property.equatable) ref : Sequence E,
-                                                     property.equatable
+public Set(E type : property.equatable) ref : Sequence E,
+                                              property.equatable
 is
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  public redef finite trit => if size_option?? then trit.yes else trit.unknown
+  public redef finite trit => if size_option.ok then trit.yes else trit.unknown
 
 
   # number of entries in this set.  May be undefined, i.e., a range of
@@ -60,7 +60,7 @@ is
 
   # create a new Set from a sequence of elements
   #
-  public type.new (s Sequence E) container.Set E => abstract
+  public type.new (s Sequence E) container.Set E /*NYI: Set.this? */ => abstract
 
 
   # create a union of these two Sets
@@ -181,8 +181,11 @@ is
   #
   public fixed redef type.equality(a, b Set.this) bool
   =>
-    # NYI: a bit expensive
-    (a ∪ b).size_option.or_panic = a.size_option.or_panic
+    if !a.finite.is_yes || !b.finite.is_yes
+      panic "Set.equality called on Set not known to be finite"
+
+    a.size_option = b.size_option &&
+      a.is_superset_of b
 
 
   # monoid of Set with infix ∪ operation.

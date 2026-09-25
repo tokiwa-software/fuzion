@@ -1,3 +1,5 @@
+AAA_builtin_atomic_mutate (concur.atomic trit)
+Ignored_Failure
 concur.A0_park_mutex
 concur.Threads
 fuzion.runtime.check_fault
@@ -10,4 +12,5 @@ io.Buffer_Size
 io.Err
 io.Out
 io.file.Delete
+once_mutate
 panic

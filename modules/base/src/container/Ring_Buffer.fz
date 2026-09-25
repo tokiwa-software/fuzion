@@ -30,7 +30,7 @@
 #
 public Ring_Buffer(
   # the type of elements stored in this buffer
-  public T type,
+  T type,
 
   # effect used to modify this buffer
   #
@@ -58,15 +58,15 @@ is
   #
   # This may be in the range `0..(size-1)`.
   #
-  first := M.env.new (i64 0)
+  first := M.env.var (i64 0)
 
   # number of elements that are currently stored in this `Ring_Buffer`.
   #
   # This may be any value in the range `0..size`. `data` at indices
-  # `first..(first + used).map (%size)` contains the elements stored in
+  # `(first..(first + used - 1)).map (%size)` contains the elements stored in
   # this buffer.
   #
-  used  := M.env.new (i64 0)
+  used  := M.env.var (i64 0)
 
 
   # is this buffer full?
@@ -196,3 +196,39 @@ is
   #
   public unused i64 =>
     size - count
+
+
+  # clear -- drops all elements in this Buffer
+  #
+  public clear unit =>
+    M.env.exclusive ()->
+      for i in indices do
+        data[i] := nil
+      first <- 0
+      used  <- 0
+
+
+  # the indices of data that are in use
+  #
+  indices
+    pre  debug: M.env.is_exclusive
+    post debug: result.count = used.get
+  =>
+    (first..(first + used - 1))
+      .map (%size)
+
+
+  # returns this Ring_Buffer as an immutable array
+  #
+  public as_array array T =>
+    M.env.exclusive ()->
+      indices
+        .map (i -> data[i].or_panic)
+        .as_array
+
+
+  # string representation of this Ring_Buffer
+  #
+  public redef as_string String =>
+    as_array
+      .as_string

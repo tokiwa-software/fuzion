@@ -59,11 +59,11 @@ is
   public fixed redef infix >> (other uint) uint
   =>
     check
-      other ≤ uint i32.max.as_u64
+      other ≤ uint i64.max.as_u64
     if other = uint.zero
       uint.this
     else if other ≥ uint 32
-      discard := other.as_i32 / 32
+      discard := other.as_i64 / 32
       (uint (data.take data.count-discard) unit) >> (other % (uint 32))
     else
       shift := other.as_u32
@@ -79,11 +79,11 @@ is
   public fixed redef infix << (other uint) uint
   =>
     check
-      other ≤ uint i32.max.as_u64
+      other ≤ uint i64.max.as_u64
     if other = uint.zero
       uint.this
     else if other ≥ uint 32
-      uint (data ++ zeros (other.as_i32 / 32)) unit << other % (uint 32)
+      uint (data ++ zeros (other.as_i64 / 32)) unit << other % (uint 32)
     else
       shift := other.as_u32
       l, carry_over := data
@@ -179,7 +179,7 @@ is
 
   # return an array of length n
   # initialized with u32 zeros.
-  zeros(n i32) =>
+  zeros(n i64) =>
     array n (_ -> u32 0)
 
 

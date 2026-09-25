@@ -33,18 +33,18 @@ public Read ref : effect is
   #
   # NOTES: current directory `.` and parent directory `..` are omitted.
   #
-  public next outcome io.path => abstract
+  public next io.dir.entry => abstract
 
 
   # the default directory reading operation reading the next entry via fuzion.sys.fileio.read_dir
   #
   public redef fixed type.default_value option io.dir.Read ! io.dir.open =>
     _ : io.dir.Read is
-      public redef next outcome io.path =>
+      public redef next io.dir.entry =>
         internal_array := fuzion.sys.internal_array_init u8 os.max_path_length
         len := fzE_dir_read io.dir.open.env.dd internal_array.data
         if len = 0
-          error "no more directory entries"
+          io.dir.no_more_entries
         else if len < 0
           error "error reading dir"
         else

@@ -68,7 +68,7 @@ is
     true
 
 
-  # get element at given index i
+  # get element at given indices i0, i1, i2
   #
   public index [ ] (I type : integer, i0, i1, i2 I) T ! E
     pre
@@ -80,7 +80,7 @@ is
     abstract
 
 
-  # set element at given index i to given value o
+  # set element at given indices i0, i1, i2 to given value o
   #
   public set [ ] (I type : integer, i0, i1, i2 I, o T) unit ! E
     pre

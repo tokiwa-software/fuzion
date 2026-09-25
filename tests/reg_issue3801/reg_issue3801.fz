@@ -63,6 +63,7 @@ reg_issue3801 is
     limit (ok ()->bool,
            code ()->unit     # code is executed with this effect installed
         ) : effect is
+      public redef abortable bool => true
       yield(o Any) =>
         say o
         if !ok()

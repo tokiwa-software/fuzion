@@ -45,4 +45,4 @@ public b : a is
   public get_any Any =>
     priv
 
-  public field i32 := 1
+  public field i64 := 1

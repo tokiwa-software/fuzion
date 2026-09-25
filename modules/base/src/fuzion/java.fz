@@ -44,7 +44,7 @@ public java is
 
   # A Java array
   #
-  public Array(public T type,
+  public Array(T type,
                public redef java_ref Java_Ref) ref : Sequence T, fuzion.java.Java_Object java_ref
   is
     public length i32 ! fuzion.jvm =>

@@ -1,0 +1,80 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test choice_nested
+#
+# -----------------------------------------------------------------------
+
+# testing choice type containing another choice, using syntax sugar `|`
+# in some or all cases
+#
+choice_nested =>
+
+  a1 is
+  a2 is
+  a3 is
+
+  b1 is
+  b2 is
+
+  c1 is
+  c2 is
+
+  d1 is
+
+  x1 choice (choice a1 a2 a3) (choice b1 b2) (choice c1 c2) d1 := a3
+  x2 (a1 | a2 | a3) | (b1 | b2) | (c1 | c2) | d1 := b1
+  x3 choice (choice a1 a2 a3) (b1 | b2) (choice c1 c2) d1 := c2
+  x4 (a1 | a2 | a3) | (choice b1 b2) | (c1 | c2) | d1 := d1
+
+  match x1
+    a choice a1 a2 a3 => say "its an A=$a"
+    (choice b1 b2), (choice c1 c2) => say "its a A or a B"
+    d1 => say "its d1"
+
+  x1 ? a choice a1 a2 a3 => say "its an A=$a"
+     | (choice b1 b2), (choice c1 c2) => say "its a A or a B"
+     | d1 => say "its d1"
+
+  match x2
+    a a1 | a2 | a3 => say "its an A=$a"
+    (b1 | b2), (c1 | c2) => say "its a A or a B"
+    d1 => say "its d1"
+
+  x2 ? a (a1 | a2 | a3) => say "its an A=$a"
+     | (b1 | b2), (c1 | c2) => say "its a A or a B"
+     | d1 => say "its d1"
+
+  match x3
+    a a1 | a2 | a3 => say "its an A=$a"
+    (b1 | b2), (choice c1 c2) => say "its a A or a B"
+    d1 => say "its d1"
+
+  x3 ? a (a1 | a2 | a3) => say "its an A=$a"
+     | (b1 | b2), (choice c1 c2) => say "its a A or a B"
+     | d1 => say "its d1"
+
+  match x4
+    a choice a1 a2 a3 => say "its an A=$a"
+    (choice b1 b2), (c1 | c2) => say "its a A or a B"
+    d1 => say "its d1"
+
+  x4 ? a choice a1 a2 a3 => say "its an A=$a"
+     | (choice b1 b2), (c1 | c2) => say "its a A or a B"
+     | d1 => say "its d1"

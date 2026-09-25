@@ -257,7 +257,7 @@ $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 
 $(FUZION_EBNF): $(FUZION_BASE) $(FZ_SRC)/bin/ebnf.fz
 	mkdir -p $(@D)
-	$(FZ) $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
+	$(FZ) -modules=tokiwa $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
 
 ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
 SED_DATE_AND_BUILTBY = "s^@@DATE@@^^g;s^@@BUILTBY@@^^g"
@@ -599,35 +599,30 @@ run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_j
 TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/fuzion.jar
 
 # phony target to run Fuzion tests using effects and report number of failures
-.PHONY .SILENT: run_tests_effect
+.PHONY: run_tests_effect
 run_tests_effect: $(FZ) $(TEST_DEPENDENCIES)
-	printf "testing effects: "
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
-.PHONY .SILENT: run_tests_int
+.PHONY: run_tests_int
 run_tests_int: $(FZ_INT) $(TEST_DEPENDENCIES)
-	printf "testing interpreter: "
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
-.PHONY .SILENT: run_tests_c
+.PHONY: run_tests_c
 run_tests_c: $(FZ_C) $(TEST_DEPENDENCIES)
-	printf "testing C backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
-.PHONY .SILENT: run_tests_jvm
+.PHONY: run_tests_jvm
 run_tests_jvm: $(FZ_JVM) $(TEST_DEPENDENCIES)
-	printf "testing JVM backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm
 
-.PHONY .SILENT: run_tests_fuir
+.PHONY: run_tests_fuir
 run_tests_fuir: $(TEST_DEPENDENCIES)
-	printf "testing FUIR backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) fuir
 
-.PHONY .SILENT: run_tests_jar_build
+.PHONY: run_tests_jar_build
 run_tests_jar_build: $(FZ_JVM) $(BUILD_DIR)/tests
 	$(FZ) -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
 	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(BUILD_DIR)/lib" \
@@ -635,7 +630,7 @@ run_tests_jar_build: $(FZ_JVM) $(BUILD_DIR)/tests
 	DYLD_FALLBACK_LIBRARY_PATH="$(DYLD_FALLBACK_LIBRARY_PATH):$(BUILD_DIR)/lib" \
 		$(JAVA) -jar HelloWorld.jar > /dev/null
 
-.PHONY .SILENT: run_tests_jar
+.PHONY: run_tests_jar
 run_tests_jar: run_tests_jar_build
 	output1="Hello World!"; \
 	output2=$$(./HelloWorld); \
@@ -701,6 +696,9 @@ $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAG
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop,java.net.http -saveModule=$@
 
+# target triple for the Windows runtime; the MSYS2 clang of the active
+# environment (UCRT64, CLANGARM64) knows its native triple
+WINDOWS_CLANG_TARGET ?= $(shell clang -dumpmachine)
 
 $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
@@ -708,7 +706,7 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
-	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
+	clang --target=$(WINDOWS_CLANG_TARGET) -Wall -Werror -O3 -shared \
 	-DPTW32_STATIC_LIB \
 	-DGC_THREADS -DGC_WIN32_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \

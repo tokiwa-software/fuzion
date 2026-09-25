@@ -25,7 +25,7 @@
 
 # Map -- an abstract map from keys K to values V
 #
-public Map(public K type : property.equatable, public V type) ref is
+public Map(K type : property.equatable, V type) ref is
 
   # number of entries in this map
   #
@@ -53,7 +53,7 @@ public Map(public K type : property.equatable, public V type) ref is
 
   # check if key k exists in this map
   #
-  public has (k K) bool => Map.this[k]??
+  public has (k K) bool => Map.this[k].ok
 
 
   # get a sequence of all values in this map
@@ -85,7 +85,7 @@ public Map(public K type : property.equatable, public V type) ref is
     pre (K : property.orderable) || (K : property.hashable)
   =>
     if K : property.orderable
-      (container.mutable_tree_map LM K V).from items
+      (container.Mutable_Tree_Map LM K V).from items
     else if K : property.hashable
       mhm := container.Mutable_Hash_Map LM K V .empty
       mhm.put_all items
@@ -94,8 +94,22 @@ public Map(public K type : property.equatable, public V type) ref is
       compile_time_panic
 
 
+  # an empty Map
+  #
+  public type.empty Map.this =>
+    of []
+
+
   # initializer for this map
   #
   # every map implementation needs to implement this
   #
-  public type.empty Map.this => abstract
+  public type.of(kvs Sequence (tuple K V)) Map.this => abstract
+
+
+  # initializer for this map
+  #
+  public type.of(keys Sequence K, values Sequence V) Map.this
+    pre debug: keys.count = values.count
+  =>
+    of (keys.zip values x,y->(x,y))

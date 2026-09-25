@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue7599.fz:33:9: error 1: Syntax error: expected identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name, found right parenthesis ')'
+        ) ref : abstract_a T
+--------^
+While parsing: name, parse stack: name (twice), argNames, formArgs, formArgsOpt, routOrField, feature, expr, exprs, block (twice), implRout, routOrField, feature, expr, exprs, block (twice), unit
+
+one error.

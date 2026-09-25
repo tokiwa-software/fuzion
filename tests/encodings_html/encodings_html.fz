@@ -43,3 +43,13 @@ encodings_html =>
       say "PASSED: $(test_case)"
     else
       say "FAILED: $(test_case) got $(encoded)"
+
+    decoded := encodings.html.decode encoded
+    if decoded = test_case.0
+      say "PASSED decode: $(decoded)"
+    else
+      say "FAILED decode: $(encoded) got $(decoded)"
+
+
+  say <| encodings.html.decode "&#9881;&#65039; \n&#9881;&#65038; \n&#128104;&#8205;&#128187; \n&#1114111;"
+  say <| encodings.html.decode "&#1114112;"

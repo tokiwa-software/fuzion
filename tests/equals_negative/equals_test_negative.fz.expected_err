@@ -4,6 +4,8 @@
 -------------------------^^^^^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'equals_test_a'
+assignable to constraint: 'equals_test_a',
+                          'Any'
 
 
 --CURDIR--/equals_test_negative.fz:45:27: error 2: Incompatible type parameter
@@ -11,6 +13,8 @@ actual type parameter 'equals_test_a'
 --------------------------^^^^^^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'equals_test_b'
+assignable to constraint: 'equals_test_b',
+                          'Any'
 
 
 --CURDIR--/equals_test_negative.fz:50:21: error 3: Incompatible type parameter
@@ -18,5 +22,7 @@ actual type parameter 'equals_test_b'
 --------------------^^^^^^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'equals_test_c'
+assignable to constraint: 'equals_test_c',
+                          'Any'
 
 3 errors.

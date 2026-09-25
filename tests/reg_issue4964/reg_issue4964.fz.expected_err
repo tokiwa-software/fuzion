@@ -31,7 +31,6 @@ While parsing: exprs, parse stack: exprs, block (twice), unit
 -------------------^^^^
 Redefining feature: 'reg_issue4964.ex.utf8'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'reg_issue4964.ex.utf8'.
-Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'reg_issue4964.ex.utf8' that could be made public to allow redefinition in 'reg_issue4964.ex'.
 
 
 --CURDIR--/reg_issue4964.fz:42:9: error 5: Could not find called feature

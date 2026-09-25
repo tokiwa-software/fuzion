@@ -82,7 +82,7 @@ choicetest is
     yap "summing array using loop: "
     sum := { for i := -1, i+1
                  s := 0, s + value_in_cents a[i]
-             until i ≥ a.length.as_i32-1
+             until i ≥ a.length-1
                s
            }
     say sum
@@ -101,7 +101,7 @@ choicetest is
 
   sum_monoid =>
     say "summing array using monoid: $(a.map (.value_in_cents)
-                                      .fold i32.sum
+                                      .fold i64.sum
                                     )"
 
   sum_loop

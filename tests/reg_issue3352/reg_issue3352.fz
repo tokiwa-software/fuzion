@@ -22,6 +22,6 @@
 # -----------------------------------------------------------------------
 
 m : mutate is
-s := m.instate_self (() -> m.env.new 0)
+s := m.instate_self (() -> m.env.var 0)
 _ := s.get
 say "*** failed, should have panicked ***"

@@ -80,7 +80,7 @@ is
 # This allows to reverse the sorting order, e.g.,
 #     [1,5,3,4,2].sort_by property.reverse_order
 #
-public reverse_order(public O type : property.orderable,
+public reverse_order(O type : property.orderable,
                      public val O
                      ) : property.orderable
 is

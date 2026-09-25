@@ -33,7 +33,7 @@ type_inference_flat_map =>
   say <| type_of res1
 
   res := [1].flat_flat_map x->
-    y Sequence (Sequence i32) := [[x]]
+    y Sequence (Sequence i64) := [[x]]
     y
 
   say res

@@ -42,7 +42,7 @@
 #
 #
 #
-public list(public A type)
+public list(A type)
   : choice nil (Cons A (list A)),
     Sequence A
 is
@@ -129,13 +129,13 @@ is
 
   # count the elements of this list
   #
-  public redef count i32 => count_n 0
+  public redef count i64 => count_n 0
 
 
   # count the elements of this list starting at n.
   # carries n around to make this tail-recursive
   #
-  count_n (n i32) i32 =>
+  count_n (n i64) i64 =>
     list.this ? nil    => n
               | c Cons => c.tail.count_n n+1
 
@@ -376,13 +376,13 @@ is
   #
   public redef take (I type : integer, n I) Sequence A
   =>
-    take_list n.as_i32
+    take_list n.as_i64
 
 
   # Lazily take the first n elements of a list, alternatively the whole list if it
   # is shorter than n, or the empty list if n <= 0
   #
-  take_list (n i32) list A
+  take_list (n i64) list A
   =>
     if n ≤ 0
       nil
@@ -493,13 +493,13 @@ is
   # if the list is shorter than n).
   #
   public redef drop (I type : integer, n I) Sequence A =>
-    drop_list n.as_i32
+    drop_list n.as_i64
 
 
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
-  drop_list (n i32) list A =>
+  drop_list (n i64) list A =>
     if n ≤ 0
       list.this
     else
@@ -710,7 +710,7 @@ is
   # `(0..9).as_list.sliding 3 2`
   # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
   #
-  public redef sliding (size i32, step i32) Sequence (Sequence A) =>
+  public redef sliding (size i64, step i64) Sequence (Sequence A) =>
     window := take size
     if window.count = size
       window : (drop step).sliding size step .as_list

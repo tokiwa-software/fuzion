@@ -254,7 +254,7 @@ There are basically two approaches to pass such value fields
 
       class G extends FuzionInstance
       {
-        int x_mutable_value;   // inlined field mutate.new.mutable_value
+        int x_mutable_value;   // inlined field mutate.var.mutable_value
       }
 
       static Access_F access_G_x = new Access_f() {
@@ -277,7 +277,7 @@ There are basically two approaches to pass such value fields
 +
 This might turn out difficult since if we would not inline the calls made in
 `f.inc` we need to wrap the access wrapper into another access wrapper for
-calling `mutate.new.get` and `mutate.new.infix <-`.
+calling `mutate.var.get` and `mutate.var.infix <-`.
 
 . Since mutating value fields should happen only for the target of a call, we
   could specialize the call for the location of the value in the surrounding
@@ -285,7 +285,7 @@ calling `mutate.new.get` and `mutate.new.infix <-`.
 
       class G extends FuzionInstance
       {
-        int x_mutable_value;   // inlined field mutate.new.mutable_value
+        int x_mutable_value;   // inlined field mutate.var.mutable_value
       }
 
       static void g()
@@ -873,7 +873,7 @@ should be avoided as much as possible.
                                       LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
                                       PATH="$PATH:$SCRIPT_PATH" \
                                       DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
-                                      java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
+                                      java --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
                                       """,
                                       FUZION_COMMAND_PROPERTY,
                                       args));
@@ -2013,6 +2013,7 @@ should be avoided as much as possible.
     if (!_fuir.clazzIsRef(rt) &&
         (f == NO_CLAZZ || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
         !_fuir.isScalar(rt) &&
+        !_fuir.clazzIsUnitType(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
         var vti = _types.resultType(rt).vti();

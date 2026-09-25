@@ -6,7 +6,7 @@ For the formal argument 'f.v' the following incompatible actual arguments where 
 actual is value of type 'codepoint' at --CURDIR--/reg_issue5560.fz:25:3:
 f "a"
 --^^^
-actual is value of type 'i32' at --CURDIR--/reg_issue5560.fz:26:3:
+actual is value of type 'i64' at --CURDIR--/reg_issue5560.fz:26:3:
 f 1
 --^
 

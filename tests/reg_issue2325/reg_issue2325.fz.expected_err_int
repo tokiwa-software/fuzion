@@ -39,12 +39,12 @@ i32.type.sum.anonymous.op#2: {base.fum}/Monoid.fz:60:26:
 (list i32).fold#2: {base.fum}/list.fz:274:39:
               | c Cons => c.tail.fold (m.op s c.head) m
 --------------------------------------^^^^^^^^^^^^^^^
-(interval i32).fold#1: {base.fum}/Sequence.fz:611:33:
+(interval i32).fold#1: {base.fum}/Sequence.fz:614:33:
   public fold (m Monoid T) T => as_list.fold m.e m
 --------------------------------^^^^^^^^^^^^^^^^^^
 reg_issue2325: --CURDIR--/reg_issue2325.fz:25:8:
-  n := (0..100000).fold i32.type.sum
--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  n := ((i32 0)..100000).fold i32.type.sum
+-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

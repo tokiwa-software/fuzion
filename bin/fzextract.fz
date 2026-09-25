@@ -33,7 +33,7 @@
 #
 to_fuzion_type(ct String, is_result_type_or_value_type_arg bool) outcome String =>
   to_fuzion_type ct is_result_type_or_value_type_arg 0
-to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i32) outcome String =>
+to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i64) outcome String =>
 
   # remove any type qualifiers
   c_type := ct
@@ -53,7 +53,7 @@ to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i32) outcome 
     # .replace "_Thread_local"
     # .replace "_Atomic"
 
-  m := container.map_of [
+  m := container.ps_map String String .of [
     ("void", "u8"),
     ("float", "f32"),
     ("double", "f64"),
@@ -124,9 +124,9 @@ to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i32) outcome 
     error c_type
 
 
-# via `java --class-path=build/classes dev.flang.parser.Lexer -keywords`
+# via `java --class-path=build/classes dev.flang.parser.Lexer -keywords` # FIXME:
 #
-keywords := container.set_of_ordered ["abstract", "check", "const", "do", "else", "env", "fixed", "for", "if", "in", "index", "infix", "infix_right", "intrinsic", "invariant", "is", "leaf", "loop", "match", "module", "native", "post", "postfix", "pre", "prefix", "private", "public", "redef", "ref", "set", "ternary", "then", "this", "type", "universe", "until", "var", "variant", "while",
+keywords := (container.ps_set String).new ["abstract", "check", "const", "do", "else", "env", "fixed", "for", "if", "in", "index", "infix", "infix_right", "intrinsic", "invariant", "is", "leaf", "loop", "match", "module", "native", "post", "postfix", "pre", "prefix", "private", "public", "redef", "ref", "set", "ternary", "then", "this", "type", "universe", "until", "var", "variant", "while",
     # manually added:
     "result"]
 
@@ -159,11 +159,11 @@ function_declarations := mut (container.expanding_array String).empty
 
 # store known structs
 #
-known_structs := container.mutable_tree_map mutate String clang.struct_decl .empty
+known_structs := container.Mutable_Tree_Map mutate String clang.struct_decl .empty
 
 # store known enums
 #
-known_enums := container.mutable_tree_map mutate String clang.enum_decl .empty
+known_enums := container.Mutable_Tree_Map mutate String clang.enum_decl .empty
 
 match {
   clang.parse_header envir.Args.env[1] c->
@@ -207,7 +207,7 @@ match {
       $(" function declarations ".pad_center "#" 80)
       """
 
-    say <| (container.set_of_ordered function_declarations.get).sort.as_string "\n"
+    say <| ((container.ps_set String).new function_declarations.get).sort.as_string "\n"
 
   e error =>
     say e

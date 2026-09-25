@@ -207,11 +207,11 @@ public class DataOut extends ANY
   public void writeAt(int at, byte[] a)
   {
     var l = a.length;
-    while (_data.length <= _pos + l)
+    while (_data.length <= at + l)
       {
         _data = Arrays.copyOf(_data, 2*_data.length);
       }
-    var p = _pos;
+    var p = at;
     for (var i = 0; i<l; i++)
       {
         _data[p+i] = a[i];

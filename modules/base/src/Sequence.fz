@@ -33,7 +33,7 @@
 #
 # Heirs of Sequence must implement 'as_list'.
 #
-public Sequence(public T type) ref
+public Sequence(T type) ref
   : property.countable,
     property.orderable,
     property.hashable
@@ -57,7 +57,7 @@ is
       debug: !(a.finite.is_no && b.finite.is_no)
 
     if T : property.equatable
-      (a.zip b (=) ∀ id) && count_order a b .is_equal
+      (a.zip b (=) ∀ id) && count_order a b = equal
     else
       compile_time_panic  # Sequence is not equatable since element type is not
 
@@ -80,10 +80,9 @@ is
 
     if T : property.orderable
       a.zip b (<>)
-       .filter (.is_unequal)
+       .filter (!=equal)
        .first
-       .or_else (count_order a b)
-       .is_less_than_or_equal
+       .or_else (count_order a b) != greater
     else
       compile_time_panic  # Sequence is not orderable since element type is not
 
@@ -172,15 +171,15 @@ is
   #
   # For Sequences that are not array backed, this might require time in O(count).
   #
-  public redef count i32
-  => (map i32 (_ -> 1)).fold i32.sum
+  public redef count i64
+  => (map _->1).fold i64.sum
 
 
   # count the number of elements in this Sequence that match the
   # given predicate. Note that this typically
   # runs forever if executed on an endless Sequence.
   #
-  public count(f T->bool) i32 =>
+  public count(f T->bool) i64 =>
     (filter f).count
 
 
@@ -354,7 +353,7 @@ is
       debug : from <= to
     post
       debug: result.finite.is_yes_or_unknown
-      debug: result.count = (to-from).as_i32
+      debug: result.count = (to-from).as_i64
   =>
     drop from
       .take to-from
@@ -373,9 +372,9 @@ is
   #
   #    at first result of condition function
   #
-  public split_at(c i32 | T->bool) tuple (Sequence T) (Sequence T) =>
+  public split_at(c i64 | T->bool) tuple (Sequence T) (Sequence T) =>
     match c
-      at i32 => ((take at), (drop at))
+      at i64 => ((take at), (drop at))
       cond T->bool =>
         split_at (first_index_of cond)
 
@@ -386,7 +385,7 @@ is
   #
   # NYI: UNDER DEVELOPMENT: do we want this public?
   #
-  first_index_of(F type: T->bool, cond F) i32
+  first_index_of(F type: T->bool, cond F) i64
   =>
     for i:=0, i+1
         el in Sequence.this
@@ -486,12 +485,15 @@ is
 
   # create a Sequence that repeats the current Sequence `n` times.
   #
-  public infix *(n i32) Sequence T
+  public infix *(n i64) Sequence T
     pre
       debug: n >= 0
   =>
-    if n <= 0 || is_empty then (Sequence T).empty
-                          else Sequence.this ++ Sequence.this * (n-1)
+    for i   := n                , i-1
+        res := Sequence T .empty, res ++ Sequence.this
+    while i > 0
+    else
+      res
 
 
   # create a lazy list of all the tails of this Sequence, including the complete Sequence
@@ -811,7 +813,7 @@ is
   #
   # Complexity: if Sequence is array backed O(1) otherwise O(n)
   #
-  public nth(n i32) option T
+  public nth(n i64) option T
     pre
       debug: n ≥ 0
   =>
@@ -827,8 +829,8 @@ is
   # Sequence is_array_backed.
   #
   public is_valid_index(I type : integer, i I) bool =>
-    (0 ≤ i.as_i32 && (if is_array_backed then i.as_i32 ≤ count
-                                         else !(drop i.as_i32).is_empty))
+    (0 ≤ i && (if is_array_backed then i.as_i64 ≤ count
+                                  else !(drop i).is_empty))
 
 
   # the nth element in the sequence, must exist
@@ -837,13 +839,13 @@ is
     pre
       debug: is_valid_index i
   =>
-    (nth i.as_i32).or_panic
+    (nth i.as_i64).or_panic
 
 
   # adds the corresponding index to
   # every element in the sequence
   #
-  public indexed Sequence (tuple i32 T) =>
+  public indexed Sequence (tuple i64 T) =>
     indexed 0
 
 
@@ -857,7 +859,7 @@ is
   # chop this Sequence into chunks of `chunk_size`.
   # the last chunk may be smaller than `chunk_size`.
   #
-  public chunk(chunk_size i32) Sequence (Sequence T)
+  public chunk(chunk_size i64) Sequence (Sequence T)
   pre debug: chunk_size > 0
   =>
     if is_empty
@@ -973,8 +975,8 @@ is
       c1 Cons =>
         match c1.tail
           c2 Cons => (c1.head, c2.head)
-          nil => panic "as_tuple called on single element Sequence"
-      nil => panic "as_tuple called on empty Sequence"
+          nil => panic "as_tuple called on single element $(Sequence.this.type.name)"
+      nil => panic "as_tuple called on empty $(Sequence.this.type.name)"
 
 
   # convert a Sequence's head into a 3-tuple.
@@ -1102,36 +1104,38 @@ is
     r.or_panic
 
 
-  # convert this Sequence to an ordered map
+  # convert this Sequence to a Map
   # via mapping all elements to key value pairs
   #
-  public as_ordered_map(KEY type : property.orderable,
-                        VALUE type,
-                        mapper T -> (KEY,VALUE)
-                        ) container.ordered_map KEY VALUE
-  =>
-
-    keys, values :=
-      reduce ((Sequence KEY).empty,(Sequence VALUE).empty) (r,t)->
-        mapper t ||> k,v->(r.0++[k],r.1++[v])
-
-    container.ordered_map keys values
+  public as_map(KEY type : property.equatable,
+                VALUE type,
+                mapper T -> (KEY,VALUE)) container.Map KEY VALUE =>
+    if KEY : property.orderable
+      as_map KEY VALUE (container.ps_map KEY VALUE) mapper
+    else if KEY : property.hashable
+      as_map KEY VALUE (container.hash_map KEY VALUE) mapper
+    else
+      compile_time_panic
 
 
-  # convert this Sequence to a hash map
+  # convert this Sequence to a Map of type M
   # via mapping all elements to key value pairs
   #
-  public as_hash_map(KEY type : property.hashable,
-                     VALUE type,
-                     mapper T -> (KEY,VALUE)
-                     ) container.hash_map KEY VALUE
+  # example, creating a map of squares:
+  #
+  #     say <| (1..10).as_map _ _ (container.ps_map i64 i64) (x -> (x, x*x))
+  #
+  public as_map(KEY type : property.equatable,
+                VALUE type,
+                M type : container.Map KEY VALUE,
+                mapper T -> (KEY,VALUE)) M
   =>
 
-    keys, values :=
-      reduce ((Sequence KEY).empty,(Sequence VALUE).empty) (r,t)->
-        mapper t ||> k,v->(r.0++[k],r.1++[v])
+    kvs :=
+      reduce (Sequence (KEY, VALUE)).empty (r,t)->
+        mapper t ||> k,v->(r++[(k,v)])
 
-    container.hash_map keys.as_array values.as_array
+    M.of kvs
 
 
   # sliding window with step size one
@@ -1141,7 +1145,7 @@ is
   # `(0..5).sliding 3`
   # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
   #
-  public sliding (size i32) Sequence (Sequence T) =>
+  public sliding (size i64) Sequence (Sequence T) =>
     sliding size 1
 
 
@@ -1155,7 +1159,7 @@ is
   # `(0..9).sliding 3 2`
   # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
   #
-  public sliding (size i32, step i32) Sequence (Sequence T)
+  public sliding (size i64, step i64) Sequence (Sequence T)
     pre
       debug: size > 0
       debug: step > 0
@@ -1176,13 +1180,16 @@ is
     # type of the keys
     K type : property.orderable,
 
+    # the type of the map to create
+    M type : container.Map K T,
+
     # function to generate the key
     key_f T->K,
 
     # function to reduce the elements
-    reduce_f (T,T)->T) container.Map K T
+    reduce_f (T,T)->T) M
   =>
-    group_map_reduce K T key_f id reduce_f
+    group_map_reduce K T M key_f id reduce_f
 
 
   # group elements using key_f and
@@ -1205,6 +1212,9 @@ is
     # type of the values in the result
     B type,
 
+    # the type of the map to create
+    M type : container.Map K B,
+
     # function to generate the keys
     key_f T->K,
 
@@ -1212,11 +1222,11 @@ is
     f T->B,
 
     # function to reduce elements
-    reduce_f (B,B)->B) container.Map K B
+    reduce_f (B,B)->B) M
   =>
     lm : mutate is
     lm ! ()->
-      res := (container.mutable_tree_map lm K B).empty
+      res := (container.Mutable_Tree_Map lm K B).empty
 
       for_each x->
         key := key_f x
@@ -1224,7 +1234,7 @@ is
           nil => res.put key (f x)
           y B => res.put key (reduce_f y (f x))
 
-      res.as_map
+      res.as_map M
 
 
   # group the elements of this sequence by a key of type and applies function f to all elements
@@ -1246,15 +1256,18 @@ is
     # type of the values in the result
     B type,
 
+    # the type of the map to create
+    M type : container.Map K (Sequence B),
+
     # function to generate the keys
     key_f T->K,
 
     # function applied to each element
-    f T->B) container.Map K (Sequence B)
+    f T->B) M
   =>
     lm : mutate is
     lm ! ()->
-      res := (container.mutable_tree_map lm K (Sequence B)).empty
+      res := (container.Mutable_Tree_Map lm K (Sequence B)).empty
 
       for_each x->
         key := key_f x
@@ -1262,7 +1275,7 @@ is
           nil => res.put key [(f x)]
           y Sequence => res.put key (y ++  [(f x)])
 
-      res.as_map
+      res.as_map M
 
 
   # group the elements of this sequence by a key of type K
@@ -1270,9 +1283,9 @@ is
   #
   # f determines the key of an element
   #
-  public group_by_mutable_map(K type : property.equatable, M type : container.Mutable_Map K (Sequence T), f T -> K) container.Map K (Sequence T)
+  public group_by_mutable_map(K type : property.equatable, MM type : container.Mutable_Map K (Sequence T), M type : container.Map K (Sequence T), f T -> K) M
   =>
-    res := M.empty
+    res := MM.empty
 
     for_each x->
       key := f x
@@ -1280,30 +1293,23 @@ is
         nil => res.put key [x]
         s Sequence => res.put key s++[x]
 
-    res.as_map
+    res.as_map M
 
 
   # group the elements of this sequence by a key of type K
-  # using a mutable_tree_map
+  # using a Mutable_Tree_Map
   #
   # f determines the key of an element
   #
-  public group_by(K type : property.orderable, f T -> K) container.Map K (Sequence T) =>
+  public group_by(K type : property.equatable, f T -> K) container.Map K (Sequence T) =>
     lm : mutate is
-    lm ! ()->
-      group_by_mutable_map K (container.mutable_tree_map lm K (Sequence T)) f
-
-
-  /* NYI: UNDER DEVELOPMENT: impl. restriction: Incompatible type parameter
-  # group the elements of this sequence
-  #
-  public group(M type : container.Mutable_Map T (Sequence T)) container.Map T (Sequence T)
-    pre T : property.equatable
-  =>
-    group_by T M id
-  */
-
-
+    lm.instate_self (container.Map K (Sequence T)) ()->
+      if K : property.orderable
+        group_by_mutable_map K (container.Mutable_Tree_Map lm K (Sequence T)) (container.ps_map K (Sequence T)) f
+      else if K : property.hashable
+        group_by_mutable_map K (container.Mutable_Hash_Map lm K (Sequence T)) (container.hash_map K (Sequence T)) f
+      else
+        compile_time_panic
 
 
   # create an empty Sequence
@@ -1335,12 +1341,4 @@ is
   # Maximum number of elements shown for on a call to `as_string` for a non-finite
   # Sequence.
   #
-  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i32 => 10
-
-
-
-# helper features for knuth morris pratt algorithm
-#
-# NYI: UNDER DEVELOPMENT: move to Sequence/equatable once we can do universe.find_lm
-module find_lm : mutate is
-module Node(T type, module top Sequence T, module next once find_lm (option (Node T)), module rest option (Node T)) ref is
+  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i64 => 10

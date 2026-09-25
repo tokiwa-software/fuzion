@@ -7,7 +7,7 @@ Callchain that lead to this point:
 effect environment '--empty--' for call to 'lm.type.from_env' at {base.fum}/mutate/array.fz:97:5:
     mutate.this.env.array T data
 ----^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to '(lm.type.array.type (Sequence (tuple i32 String i32))).new#3 i32' at --CURDIR--/reg_issue6959.fz:25:8:
+effect environment '--empty--' for call to '(lm.type.array.type (Sequence (tuple i32 String i32))).new#3 i64' at --CURDIR--/reg_issue6959.fz:25:8:
   _ := lm.array (Sequence (tuple i32 String i32)) .new 0 _->[]
 -------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'lm'

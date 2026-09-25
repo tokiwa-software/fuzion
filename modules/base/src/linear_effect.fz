@@ -28,7 +28,7 @@ public linear_effect : effect is
   depleted := Depleted_Wrapper
 
   module redef check_depletion =>
-    if !depleted.depleted.compare_and_set0 false true
+    if !depleted.depleted.compare_and_set false true
       fuzion.std.panic "effect $(linear_effect.this.type.name) already depleted. effect may only be instated once."
 
 

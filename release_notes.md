@@ -9146,7 +9146,7 @@ Benchmarks:
 
        f type
 
-    but usng
+    but using
 
        f type = ?
 

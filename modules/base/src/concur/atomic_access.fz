@@ -26,6 +26,8 @@
 # atomic_access -- an effect that permits reading and writing values in instances
 # of atomic
 #
+# NYI: UNDER_DEVELOPMENT: REMOVE, replaced by `concur.atomic_mutate`.
+#
 private:module atomic_access : effect is
 
 

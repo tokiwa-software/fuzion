@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# webserver is a minimalist webserver example using the networking
+# webserver_native is a minimalist webserver example using the networking
 # facilities provided by Fuzion itself.
 #
 # To start this webserver, use:
@@ -46,9 +46,9 @@ webserver_native is
     while (accept_connection n).ok
 
 
-  accept_connection(n i32) =>
+  accept_connection(n i64) =>
     net.server.env.accept.bind c->
-      _ := c.with unit mutate ()->
+      c.with unit mutate ()->
         say "accepted connection:"
 
         match (io.buffered mutate).read_line

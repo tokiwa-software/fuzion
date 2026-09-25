@@ -208,6 +208,12 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
+  public Object drop(Value v, int type)
+  {
+    return null;
+  }
+
+  @Override
   public Object assignStatic(int s, int f, Value tvalue, Value val)
   {
     Interpreter.setField(f, _fuir.clazzAt(s), tvalue, val);
@@ -279,7 +285,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var tt = ttcc.v0();
     var cc = ttcc.v1();
 
-    if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc)))
+    if (_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc)))
       {
         tt = ((Boxed)tvalue)._valueClazz;
         tvalue = ((Boxed)tvalue)._contents;
@@ -287,7 +293,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
     var cl = _fuir.clazzAt(s);
     if (cc == cl // calling myself
-        && _tailCall.callIsTailCall(cl, s))
+        && _tailCall.callIsTailCall(s))
       {
         throw new TailCallException(tvalue, args);
       }
@@ -450,7 +456,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Pair<Value, Object> box(int s, Value v, int vc, int rc)
   {
-    return pair(new Boxed(rc, vc, v /* .cloneValue(vcc) */));
+    return pair(new Boxed(rc, vc, v.cloneValue(vc)));
   }
 
   @Override

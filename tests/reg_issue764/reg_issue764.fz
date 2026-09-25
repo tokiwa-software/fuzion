@@ -27,7 +27,7 @@
 #
 reg_issue764 is
 
-  add_ints(elems Sequence i32) i32 =>
+  add_ints(elems Sequence i64) i64 =>
     for
       elem in elems
       res := elem, res + elem

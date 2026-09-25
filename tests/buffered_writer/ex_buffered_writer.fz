@@ -9,7 +9,7 @@ ex_buffered_writer =>
 
   lm ! ()->
 
-    _ := (io.buffered lm).Writer.instate _ wh ()->
+    (io.buffered lm).Writer.instate _ wh ()->
       x := array u8 _ 1023 i->0x61
       y := array u8 _ 2049 i->0x62
       z := array u8 _ 128  i->0x63

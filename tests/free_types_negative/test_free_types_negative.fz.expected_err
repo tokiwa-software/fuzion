@@ -77,6 +77,12 @@ Type inference failed for 2 type parameters 'A', 'B'
 --^^
 formal type parameter 'T : numeric'
 actual type parameter 'String'
+assignable to constraint: 'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
+                          'Any',
+                          'String'
 
 
 --CURDIR--/test_free_types_negative.fz:76:5: error 9: Incompatible types when passing argument in a call
@@ -96,6 +102,12 @@ To solve this, you could change the type of the target 'v' to 'f64' or convert t
 --^
 formal type parameter 'B : numeric'
 actual type parameter 'String'
+assignable to constraint: 'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
+                          'Any',
+                          'String'
 
 
 --CURDIR--/test_free_types_negative.fz:74:5: error 11: Type inference from actual arguments failed due to incompatible types of actual arguments

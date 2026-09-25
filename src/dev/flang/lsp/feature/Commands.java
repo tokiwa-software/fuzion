@@ -142,7 +142,7 @@ public enum Commands
               .choiceGenerics()
               .stream()
               .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFromDirectly(cg).yes()))
-              .map(t -> indent + CaseConverter.toSnakeCase(TypeTool.baseName(t)) + " " + TypeTool.label(t) + " =>")
+              .map(t -> indent + CaseConverter.toSnakeCase(TypeTool.baseName(t)) + " " + t.toString(true) + " =>")
               .collect(Collectors.joining(System.lineSeparator()));
 
           var endOfSubPos = Bridge.toPosition(ExprTool.endOfExpr(m.subject()));

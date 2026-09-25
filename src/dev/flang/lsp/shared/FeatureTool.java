@@ -283,7 +283,7 @@ public class FeatureTool extends ANY
           + feature.arguments()
             .stream()
             .map(a -> {
-              var type = a.isTypeParameter() ? "type": TypeTool.label(a.resultType());
+              var type = a.isTypeParameter() ? "type": a.resultType().toString(true);
               type = useMarkup ? MarkdownTool.italic(type) : type;
               if (isInternal(a))
                 {
@@ -294,10 +294,10 @@ public class FeatureTool extends ANY
             .collect(Collectors.joining(", "))
           + (feature.arguments().isEmpty() ? "" : ")");
         return feature.baseName() + arguments
-          + (feature.isConstructor() ? "" : " " + (useMarkup ? MarkdownTool.italic(TypeTool.label(feature.resultType())) : TypeTool.label(feature.resultType())))
+          + (feature.isConstructor() ? "" : " " + (useMarkup ? MarkdownTool.italic(feature.resultType().toString(true)) : feature.resultType().toString(true)))
           + labelInherited(feature);
       }
-    return feature.baseName() + " " + TypeTool.label(feature.resultType()) + labelInherited(feature);
+    return feature.baseName() + " " + feature.resultType().toString(true) + labelInherited(feature);
   }
 
 

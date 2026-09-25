@@ -76,10 +76,10 @@ reg_issues4992_5000 =>
   #
   case4 =>
     x is
-      type.i(U type : tuple i32) =>
+      type.i(U type : tuple i64) =>
 
     y(X type : x) =>
-      X.i (tuple i32 bool)  # 2. should flag an error: wrong number of type parameters
+      X.i (tuple i64 bool)  # 2. should flag an error: wrong number of type parameters
 
     z : x is
 
@@ -147,7 +147,7 @@ reg_issues4992_5000 =>
         say c
 
     y(X type : x Any unit f32) =>
-      X.i (tuple i32 i32 i32) (42,43,44)  # 4. should flag an error: wrong type parameter `tuple i32 i32 i32` instead of `tuple Any unit f32`
+      X.i (tuple i64 i64 i64) (42,43,44)  # 4. should flag an error: wrong type parameter `tuple i64 i64 i64` instead of `tuple Any unit f32`
 
     z : x Any unit f32 is
     y z
@@ -159,7 +159,7 @@ reg_issues4992_5000 =>
     box(B type) is
     x(A type) is
       type.i(U type : box A) =>
-    (x f32).i (box i32)  # 5. should flag an error: wrong type parameter `box i32` instead of `box f32`
+    (x f32).i (box i64)  # 5. should flag an error: wrong type parameter `box i64` instead of `box f32`
 
 
   # tests for #4992

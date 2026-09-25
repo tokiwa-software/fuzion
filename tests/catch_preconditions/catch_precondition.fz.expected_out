@@ -1,5 +1,5 @@
 install our own fault handler that prints message and tries again:
-trying Type of 'i32'... trying Type of 'i64'... done: 2251799813685248
+trying i32... trying i64... done: 2251799813685248
 a is 2
 *** This should fail: FAILED: x > y
 c is 1

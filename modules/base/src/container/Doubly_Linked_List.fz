@@ -1,0 +1,258 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Doubly_Linked_List
+#
+# -----------------------------------------------------------------------
+
+# a list node, used as sentinel and as parent of a node containing a value.
+#
+L_Node(
+  # mutate effect to be used manipulate pointers and stored element
+  #
+  LM type : mutate,
+
+  # type of the element stored in the node
+  #
+  T type
+) ref is
+
+  # the previous list node
+  #
+  prev := LM.env.var (L_Node LM T) L_Node.this
+
+  # the next list node
+  #
+  next := LM.env.var (L_Node LM T) L_Node.this
+
+  # the element stored in this list node
+  #
+  payload T
+  pre
+    debug: !is_sentinel
+  =>
+    panic "L_Node.payload called on sentinel"
+
+  # is this node the special node marking start/end of the list
+  #
+  is_sentinel bool => true
+
+  # create a list payload, next.payload, next.next.payload, ... until we reach the sentinel.
+  #
+  as_list list T =>
+    is_sentinel ? nil
+                : (payload : next.as_list)
+
+
+# Variant of a list node that contains a value as its payload
+#
+V_Node(# mutate effect to be used manipulate pointers and stored element
+       #
+       LM type: mutate,
+
+       # type of the element stored in the node
+       #
+       T type,
+
+       # the element stored in this list node
+       #
+       # NYI: BUG: #3092: pre- and postconditions for fields not supported yet
+       #
+       payload0 T
+       ) ref
+       : L_Node LM T
+is
+
+  # the element stored in this list node
+  #
+  # NYI: BUG: #3092: pre- and postconditions for fields not supported yet
+  #
+  redef payload => payload0
+
+
+  # is this node the special node marking start/end of the list
+  #
+  redef is_sentinel bool => false
+
+
+# Doubly_Linked_List - a simple mutable doubly linked list
+#
+# Adding and removing elements at either end takes O(1) time.
+#
+private:public Doubly_Linked_List(
+  # mutate effect to be used to create mutable variables
+  #
+  LM type : mutate,
+
+  # type the elements the list
+  #
+  T type
+
+) ref ! LM is
+
+
+  # list is linked in a circle, sentinel marks start/end
+  #
+  sentinel := L_Node LM T
+
+
+  # number of elements currently in the list (does not include the sentinel)
+  #
+  len := LM.env.var i64 0
+
+
+  # is this list empty?
+  #
+  public is_empty bool ! LM
+    post debug : result = sentinel.prev.is_sentinel
+  =>
+    LM.env.exclusive ()->sentinel.next.is_sentinel
+
+
+  # add an element to the front of the list
+  #
+  public add_first(elem T) unit ! LM
+  =>
+    LM.env.exclusive ()->
+      old_first := sentinel.next
+      e := V_Node LM T elem
+      e.next <- old_first
+      e.prev <- sentinel
+      old_first.prev <- e
+      sentinel.next  <- e
+      len <- len+1
+      check debug : !sentinel.next.is_sentinel
+      check debug : !sentinel.prev.is_sentinel
+
+
+  # add an element at the end of the list
+  #
+  public add_last(elem T) unit ! LM
+  =>
+    LM.env.exclusive ()->
+      old_last := sentinel.prev
+      e := V_Node LM T elem
+      e.prev <- old_last
+      e.next <- sentinel
+      old_last.next <- e
+      sentinel.prev <- e
+      len <- len+1
+      check debug : !sentinel.next.is_sentinel
+      check debug : !sentinel.prev.is_sentinel
+
+
+  # remove the first element, if there is one, and return it
+  #
+  public remove_first option T ! LM
+  =>
+    LM.env.exclusive (option T) _ ()->
+      if is_empty then
+        nil
+      else
+        fst := sentinel.next
+        sentinel.next <- fst.next
+        fst.next.prev <- sentinel
+        len <- len-1
+        fst.payload
+
+
+  # remove the last element, if there is one, and return it
+  #
+  public remove_last option T ! LM
+  =>
+    LM.env.exclusive (option T) _ ()->
+      if is_empty then
+        nil
+      else
+        lst := sentinel.prev
+        sentinel.prev <- lst.prev
+        lst.prev.next <- sentinel
+        len <- len-1
+        lst.payload
+
+
+  # remove the first element that matches the given predicate
+  #
+  public remove_first_match(f T->bool) option T ! LM
+  =>
+    LM.env.exclusive (option T) _ ()->
+      for e := sentinel.next, e.next
+      while !e.is_sentinel
+      until f e.payload
+        remove e
+        e.payload
+      else
+        nil
+
+
+  # remove a node from the list
+  #
+  remove(node L_Node LM T) unit
+    pre debug : !node.is_sentinel
+  =>
+    node.prev.next <- node.next
+    node.next.prev <- node.prev
+    len <- len-1
+
+
+  # this list as an immutable array
+  #
+  public as_array array T ! LM
+  =>
+    LM.env.exclusive ()->
+      sentinel.next.as_list .as_array
+
+
+  # return a string representation of this list
+  #
+  public redef as_string String ! LM
+  =>
+    "[$(LM.env.exclusive ()->
+          sentinel.next.as_list.as_string ", "
+       )]"
+
+
+  # number of elements currently in this list
+  #
+  # O(1) operation, as length is saved separately
+  #
+  public length i64 ! LM
+  =>
+    LM.env.exclusive ()->len
+
+
+  # does this list contain elem?
+  #
+  public contains(elem T) bool ! LM
+    pre T : property.equatable
+  =>
+    LM.env.exclusive ()->
+      for e := sentinel.next, e.next
+      while !e.is_sentinel
+      until e.payload = elem then
+        true
+      else
+        false
+
+
+  # create a new, empty Doubly_Linked_List
+  #
+  public fixed type.empty container.Doubly_Linked_List LM T ! LM =>
+    LM.env.exclusive (container.Doubly_Linked_List LM T) _ ()->
+      container.Doubly_Linked_List LM T

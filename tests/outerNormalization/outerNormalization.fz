@@ -48,7 +48,7 @@ outerNormalization is
   #
   testConstructor =>
 
-    a (i i32) ref is
+    a (i i64) ref is
       f is
         set i := i+1
         s := i
@@ -70,7 +70,7 @@ outerNormalization is
   #
   testConstructor2 =>
 
-    a (i i32) ref is
+    a (i i64) ref is
       f is
         set i := i+1
         s := i
@@ -85,7 +85,7 @@ outerNormalization is
 
   testConstructor2
 
-  # testNormalize maps the problem checked by testZero from i32/numeric to
+  # testNormalize maps the problem checked by testZero from i64/numeric to
   # simpler features j/n
   #
   testNormalize =>
@@ -106,13 +106,13 @@ outerNormalization is
   testNormalize
 
 
-  # testNormalize2 maps the problem checked by testZero from i32/numeric to
+  # testNormalize2 maps the problem checked by testZero from i64/numeric to
   # simpler features j/n that are not even generic
   #
   testNormalize2 =>
     n is
-      a i32 => abstract
-      b i32 => a
+      a i64 => abstract
+      b i64 => a
 
     rj ref : n is
     j : rj is
@@ -127,8 +127,8 @@ outerNormalization is
   testNormalize2
 
 
-  # An (open) interval such as '0..' is of type '(property.interval i32).infix ..', but
-  # that should be converted to 'i32.infix ..' in FUIR:
+  # An (open) interval such as '0..' is of type '(property.interval i64).infix ..', but
+  # that should be converted to 'i64.infix ..' in FUIR:
   #
   testInterval =>
     for i in 0.. do

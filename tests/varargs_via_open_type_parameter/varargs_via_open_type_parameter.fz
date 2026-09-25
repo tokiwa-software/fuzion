@@ -57,9 +57,9 @@ varargs_via_open_type_parameter =>
   #
   printf1(A type ..., s String, a A...) =>
 
-    doit : container.typed_applicator (String, i32) is
+    doit : container.typed_applicator (String, i64) is
 
-      public redef apply(T type, e (String, i32), v T) (String, i32)
+      public redef apply(T type, e (String, i64), v T) (String, i64)
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
@@ -77,7 +77,7 @@ varargs_via_open_type_parameter =>
 
     doit : container.typed_fold (s, 0) a is
 
-      public redef apply(T type, e (String, i32), v T) (String, i32)
+      public redef apply(T type, e (String, i64), v T) (String, i64)
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
@@ -93,7 +93,7 @@ varargs_via_open_type_parameter =>
   #
   printf3(A type ..., s String, a A...) : container.typed_fold (s, 0) a
   =>
-    public redef apply(T type, e (String, i32), v T) (String, i32)
+    public redef apply(T type, e (String, i64), v T) (String, i64)
     =>
       vs := if      T : numeric then "(number: $v)"
             else if T : String  then "\"$v\""
@@ -109,7 +109,7 @@ varargs_via_open_type_parameter =>
   # lambda type parameter
   #
   printf4(A type ..., s String, a A...) =>
-    say <| a.typed_foldf (String, i32) _ (s, 0) T,e,v->
+    say <| a.typed_foldf (String, i64) _ (s, 0) T,e,v->
               vs := if      T : numeric then "(number: $v)"
                     else if T : String  then "\"$v\""
                     else                     "(*** unknown type `$(T.name)` ***)"
@@ -145,7 +145,7 @@ varargs_via_open_type_parameter =>
   #
   printn1(A type ..., a A...) : container.typed_fold 1 a
   =>
-    public redef apply(T type, n i32, v T) i32
+    public redef apply(T type, n i64, v T) i64
     =>
       say "$n: $v"
       n + 1
@@ -156,7 +156,7 @@ varargs_via_open_type_parameter =>
   #
   printn2(A type ..., a A...)
   =>
-    ignore <| a.typed_foldf i32 _ 1 T,n,v->
+    ignore <| a.typed_foldf i64 _ 1 T,n,v->
       say "$n: $v"
       n + 1
 

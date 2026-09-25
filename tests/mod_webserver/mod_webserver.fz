@@ -49,7 +49,7 @@ mod_webserver =>
               [("Server", "FuzionWebServer v0.0.0"),
                ("Content-Length", resp.byte_count.as_string),
                ("Host", "localhost")]
-              (io.Read_Handler.from lm resp)
+              ((io.buffered lm).Reader.type.from resp)
 
 
     match ows

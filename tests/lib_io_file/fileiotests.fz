@@ -49,7 +49,7 @@ fileiotests =>
   say "stat resolve=false: $file size is $((f.stat file false).or_panic.size)"
 
   _ := f.use file f.mode.read ()->
-    f.open.seek ()->
+    f.open.env.seek ()->
       say  f.Seek.env.file_position
       say (f.Seek.env.seek 1)
       say  f.Seek.env.file_position

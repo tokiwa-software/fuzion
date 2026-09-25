@@ -4,5 +4,8 @@ _ := [3].map count |> sum
 ----------------------^^^
 formal type parameter 'T : numeric'
 actual type parameter 'void'
+assignable to constraint: 'choice',
+                          'void',
+                          'Any'
 
 one error.

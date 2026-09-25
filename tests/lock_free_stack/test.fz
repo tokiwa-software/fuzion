@@ -1,9 +1,9 @@
 test =>
 
-  s := lock_free.stack i32
+  s := lock_free.stack i64
 
-  cnt := concur.atomic i32 .new 0
-  count(n i32) =>
+  cnt := concur.atomic i64 .new 0
+  count(n i64) =>
     c := cnt.read
     cnt.compare_and_set c c+n
 
@@ -20,5 +20,3 @@ test =>
   # n*(n+1)/2  * 4
   # 100*101 / 2 * 4 = 20200
   say cnt.read
-
-

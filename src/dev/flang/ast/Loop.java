@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
@@ -257,8 +256,7 @@ public class Loop extends ANY
    *
    * @param iv index vars of this loop
    *
-   * @param nv next values for index variables, may contain null for index
-   * variables that do not get update
+   * @param nv next values for index variables
    *
    * @param variant loop variant or null
    *
@@ -289,8 +287,8 @@ public class Loop extends ANY
               Expr eb2)
   {
     if (PRECONDITIONS) require
-      (iv != null,
-       nv != null,
+      (iv != null && iv.stream().allMatch(x -> x != null),
+       nv != null && nv.stream().allMatch(x -> x != null),
        iv.size() == nv.size(),
        sb == null || untilCond != null,
        eb0 == null || eb0 instanceof Block || eb0 instanceof Match);
@@ -339,7 +337,7 @@ public class Loop extends ANY
       ? new Block(nextItBlock)
       : Match.createIf(untilCond.pos(),
                untilCond,
-               _successBlock == null
+               _successBlock == null || _successBlock._expressions.isEmpty()
                  ? new Block() { public SourcePosition pos() { return new SourceRange(pos._sourceFile, pos.bytePos(), _elsePos.byteEndPos()); }; }
                  : Block.fromExpr(_successBlock),
                new Block(nextItBlock), AbstractMatch.Kind.Until);
@@ -355,7 +353,7 @@ public class Loop extends ANY
       }
     if (variant != null)
       {
-        var i64one = new ParsedCall(new ParsedCall(new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "one"));
+        var i64one = new ParsedCall(new ParsedCall(Universe.instance, new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "one"));
         var i64minusOne = new ParsedOperatorCall(i64one, new ParsedName(SourcePosition.builtIn, FuzionConstants.PREFIX_OPERATOR_PREFIX + "-"), 10);
 
         // wrap variant expression to add type check for later phase
@@ -458,7 +456,7 @@ public class Loop extends ANY
         );
 
         // initial value for previous variant is set to i64.max, therefore variant defined by user is internally decremented by one
-        initialActuals.add(new ParsedCall(new ParsedCall(new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "max")));
+        initialActuals.add(new ParsedCall(new ParsedCall(Universe.instance, new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "max")));
 
         // add current variant value
         nextActuals.add(varCurVal);
@@ -488,8 +486,7 @@ public class Loop extends ANY
         private void propagateResultType(AbstractFeature outer)
         {
           var setExplicitResultType =
-             ((Block)outer.code()).resultExpression() == _impl ||
-             outer.baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX);
+             ((Block)outer.code()).resultExpression() == _impl;
           if (((Feature)outer).returnType() instanceof FunctionReturnType frt && setExplicitResultType)
             {
               if (Loop.this.producesResult())
@@ -536,7 +533,7 @@ public class Loop extends ANY
    */
   private boolean producesResult()
   {
-    return _successBlock != null || _elseBlock != null;
+    return (_successBlock != null && !_successBlock._expressions.isEmpty()) || _elseBlock != null;
   }
 
 
@@ -611,6 +608,39 @@ public class Loop extends ANY
   }
 
 
+   /**
+   * Create an actual argument that passes the value of an index var to the tail
+   * recursive loop feature.
+   *
+   * The source position and range are taken from the expression that defines
+   * the value such that error messages, e.g., for failed type inference, refer
+   * to that expression and not to the index variable's name.
+   *
+   * @param f an index var (for the initial value) or the corresponding feature
+   * from _nextValues (for the value used in the next iteration)
+   *
+   * @param prefix ITER_ARG_PREFIX_INIT or ITER_ARG_PREFIX_NEXT
+   *
+   * @param name the base name of the index var
+   *
+   * @param fallback the position to be used in case the value of f does not
+   * correspond to an expression in the source code, e.g., for an iterating
+   * index var ('for x in s') whose Impl was replaced in addIterators.
+   */
+  private Call iterArgActual(Feature f, String prefix, String name, SourcePosition fallback)
+  {
+    var e = f.impl().expr();
+    var useE = e != null && !e.pos().isBuiltIn();
+    var result = new Call(useE ? e.pos() : fallback, prefix + name);
+    // NYI: CLEANUP: set source range/pos in constructor call
+    if (useE && e.sourceRange() instanceof SourceRange r)
+      {
+        result.setSourceRange(r);
+      }
+    return result;
+  }
+
+
   /**
    * Helper routine to determine the formal and actual arguments to be passed to the tail recursive loop
    *
@@ -624,24 +654,25 @@ public class Loop extends ANY
                                 List<Expr> initialActuals,
                                 List<Expr> nextActuals)
   {
-    int i = -1;
     int iteratorCount = 0;
-    Iterator<Feature> ivi = _indexVars.iterator();
+    var ivi = _indexVars .iterator();
+    var nvi = _nextValues.iterator();
+
     while (ivi.hasNext())
       {
-        i++;
         Feature f = ivi.next();
+        Feature n = nvi.next();
 
         // iterators should have been replaced by FieldDef in `addIterators`
         if (CHECKS) check
           (f.impl()._kind != Impl.Kind.FieldIter);
 
         var p = f.pos();
-        var ia = new Call(p, FuzionConstants.ITER_ARG_PREFIX_INIT + f.baseName());
-        var na = new Call(p, FuzionConstants.ITER_ARG_PREFIX_NEXT + f.baseName());
+        var ia = iterArgActual(f                 , FuzionConstants.ITER_ARG_PREFIX_INIT, f.baseName(), p);
+        var na = iterArgActual(n                 , FuzionConstants.ITER_ARG_PREFIX_NEXT, f.baseName(), p);
         var type = (f.impl()._kind == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
-          : _indexVars.get(i).returnType().functionReturnType();
+          : f.returnType().functionReturnType();
         var arg = new Feature(p,
                               Visi.PRIV,
                               type,

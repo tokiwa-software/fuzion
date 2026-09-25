@@ -23,7 +23,7 @@
 
 container_Finger_Tree =>
 
-  ft0 := container.Finger_Tree i32 .empty
+  ft0 := container.Finger_Tree i64 .empty
   ft1 := ft0.append [4,5]
   ft2 := ft1.prepend [1,2,3]
   ft3 := ft2.append [6,7,8]
@@ -48,4 +48,3 @@ container_Finger_Tree =>
       say f[f.count-1]
     say f.count
     say f.dynamic_type.name
-

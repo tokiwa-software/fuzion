@@ -281,7 +281,7 @@ is
 
   # create duration of n ns
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.ns (n u64) time.duration
   pre
@@ -291,7 +291,7 @@ is
 
   # create duration of n µs
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.µs (n u64) time.duration
   pre
@@ -301,7 +301,7 @@ is
 
   # create duration of n ms
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.ms (n u64) time.duration
   pre
@@ -311,7 +311,7 @@ is
 
   # create duration of n seconds
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.s (n u64) time.duration
   pre
@@ -321,7 +321,7 @@ is
 
   # create duration of n seconds
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.seconds (n u64) time.duration
   pre
@@ -331,7 +331,7 @@ is
 
   # create duration of n min
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.min (n u64) time.duration
   pre
@@ -341,7 +341,7 @@ is
 
   # create duration of n min
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.minutes (n u64) time.duration
   pre
@@ -351,7 +351,7 @@ is
 
   # create duration of n hours
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.h (n u64) time.duration
   pre
@@ -361,7 +361,7 @@ is
 
   # create duration of n hours
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.hours (n u64) time.duration
   pre
@@ -371,7 +371,7 @@ is
 
   # create duration of n days
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.days  (n u64) time.duration
   pre
@@ -381,7 +381,7 @@ is
 
   # create duration of n weeks
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.weeks (n u64) time.duration
   pre
@@ -391,7 +391,7 @@ is
 
   # create duration of n years
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.a (n u64) time.duration
   pre
@@ -401,7 +401,7 @@ is
 
   # create duration of n years
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.years (n u64) time.duration
   pre

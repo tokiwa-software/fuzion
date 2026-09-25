@@ -740,6 +740,10 @@ public class Runtime extends ANY
                   }
                 strs.add("[..]");
               }
+            else if (s.getFileName().equals("--builtin--"))
+              {
+                strs.add(str);
+              }
             else
               {
                 strs.add(str + " at " + Terminal.GREEN + s.getFileName().replace(File.separator, "/") + ":" + s.getLineNumber() + Terminal.REGULAR_COLOR);

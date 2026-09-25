@@ -484,6 +484,20 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 int64_t fzE_process_poll(int64_t p);
 
 /**
+ * close process handle, free memory
+ *
+ * @return -1 error, 0 success
+ */
+int fzE_process_close(int64_t p);
+
+/**
+ * get the hostname
+ *
+ * @return -1 on error, length of hostname on success
+ */
+int fzE_hostname(char *buf, size_t nbytes);
+
+/**
  * open a new pipe, put read and write end into array passed here
  *
  * @param fds array to be filled with pipe's file descriptors
@@ -542,13 +556,15 @@ typedef enum file_open_mode {
 void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode);
 
 /**
+ * NYI: UNDER DEVELOPMENT: for file set to non-blocking this currently blocks until data available
+ *
  * @param file the pointer to the file
  *
  * @param buf pointer to a byte array
  *
  * @param size the size of buf in bytes
  *
- * @return amounts of bytes read, or negative number on error
+ * @return amounts of bytes read, zero on end_of_file, or negative number on error
  */
 int32_t fzE_file_read(void * file, void * buf, int32_t size);
 

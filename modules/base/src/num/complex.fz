@@ -29,7 +29,7 @@
 # A complex number consists of a real and an imaginary part.
 #
 public complex (
-         public C type : numeric,
+         C type : numeric,
          public real,    # real part
                 imag C   # imaginary part
          ) : numeric

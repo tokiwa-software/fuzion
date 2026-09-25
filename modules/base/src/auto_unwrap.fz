@@ -23,7 +23,7 @@
 
 # auto_unwrap adds compiler support for automatic unwrapping.
 #
-# this is used by e.g. concur.atomic, mutate.new
+# this is used by e.g. concur.atomic, mutate.var
 #
 # example:
 #

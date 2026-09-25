@@ -4,5 +4,12 @@ say (a bool (Sequence i32) [42])
 -----^
 formal type parameter 'S : Sequence U' with constraint 'Sequence bool'
 actual type parameter 'Sequence i32'
+assignable to constraint: 'property.countable',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
+                          'Any',
+                          'Sequence i32'
 
 one error.

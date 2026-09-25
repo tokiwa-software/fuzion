@@ -299,11 +299,11 @@ public abstract class Module extends ANY implements FeatureLookup
               {
                 // will trigger: Repeated inheritance, see #7062
               }
-            else if (redefines(f, existing))
+            else if (f.redefinesFull().contains(existing))
               {
                 it.remove();
               }
-            else if (redefines(existing, f))
+            else if (existing.redefinesFull().contains(f))
               {
                 f = null;
               }
@@ -313,16 +313,6 @@ public abstract class Module extends ANY implements FeatureLookup
       {
         add(set, fn, f);
       }
-  }
-
-
-  /**
-   * Does f1 redefine f2?
-   */
-  private boolean redefines(AbstractFeature f1, AbstractFeature f2)
-  {
-    return this instanceof SourceModule  && f1.redefines().contains(f2) ||
-        !(this instanceof SourceModule) && f1.outer().inheritsFrom(f2.outer()); // NYI: CLEANUP: #478: better check f1.redefines(f2)
   }
 
 

@@ -3,9 +3,9 @@
 2: expecting ok,    got ok
 3: expecting error, got --error: r3 fail--
 4: expecting ok,    got ok
-5: expecting error, got *** fail error: r5a fail ***
+5: expecting error, got *** fail --error: r5a fail-- ***
 6: expecting ok,    got ok
-7: expecting error, got *** panic error: r7 fail ***
+7: expecting error, got *** panic --error: r7 fail-- ***
 8: expecting ok,    got ok
 9: expecting error, got panic r9 fail
 10: expecting fault, got fault: expected failure

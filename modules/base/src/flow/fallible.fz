@@ -29,6 +29,11 @@
 public fallible(ERROR type, h ERROR->void) : effect is
 
 
+  # redefine abortable to return true
+  #
+  public redef abortable bool => true
+
+
   # cause fault with the given error
   #
   public cause(e ERROR) void

@@ -1,5 +1,5 @@
 3
-instance[concur.atomic i32]
+instance[concur.atomic i64]
 3
 5
 8

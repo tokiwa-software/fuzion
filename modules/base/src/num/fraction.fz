@@ -36,7 +36,7 @@
 # or the denominator.
 #
 public fraction(
-         public B type : integer,
+         B type : integer,
          public numerator,
                 denominator B
         ) : numeric
@@ -102,7 +102,7 @@ is
   # equality
   #
   public fixed redef type.equality(a, b num.fraction B) bool =>
-    (a - b).numerator.is_zero
+    (a - b).numerator = B.zero
 
 
   # total order

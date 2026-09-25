@@ -184,7 +184,7 @@ public class SourceModule extends Module implements SrcModule
             if (s instanceof Feature f)
               {
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
-                if (expr.size() == 1 && !f.isField())
+                if (expr.size() == 1 && !f.isField() && f._qname.size()==1)
                   {
                     res = f.baseName();
                   }
@@ -955,7 +955,11 @@ A feature that does not redefine an inherited feature must not use the `redef` m
     // end::fuzion_rule_PARS_NO_REDEF[]
             */
             List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.baseName(), null, true, true)
-              .stream().filter(fo->fo._feature.featureName().equals(f.featureName())).collect(List.collector());
+              .stream()
+              .filter(fo -> fo._feature != f // excluding the feature itself
+                          && !visibleFor(fo._feature, f) // only truly invisible features
+                          && fo._feature.featureName().equals(f.featureName()))
+              .collect(List.collector());
             AstErrors.redefineModifierDoesNotRedefine(f, hiddenFeaturesSameSignature);
           }
         else if (c._hasPostThen != null)
@@ -1905,7 +1909,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    * Check that an abstract feature is at least as visible as the outer feature.
    */
   private void checkAbstractVisibility(Feature f) {
-    if(f.isAbstract() &&
+    if (f.isAbstract() &&
        f.visibility().eraseTypeVisibility().ordinal() < f.outer().visibility().eraseTypeVisibility().ordinal())
       {
         AstErrors.abstractFeaturesVisibilityMoreRestrictiveThanOuter(f);
@@ -1975,7 +1979,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         AstErrors.illegalTypeVisibilityModifier(f);
       }
-    else if(f.definesType() && f.outer() != null && f.outer().visibility().typeVisibility().ordinal() < f.visibility().typeVisibility().ordinal())
+    else if (f.definesType() && f.outer() != null && f.outer().visibility().typeVisibility().ordinal() < f.visibility().typeVisibility().ordinal())
       {
         AstErrors.illegalTypeVisibility(f);
       }

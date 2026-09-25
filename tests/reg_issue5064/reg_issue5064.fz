@@ -38,7 +38,7 @@
 
 Stack ref is
 
-  Node(data i32, next option Node) ref is
+  Node(data i64, next option Node) ref is
 
   top option Node := nil
 

@@ -23,28 +23,25 @@
 
 fuzion_runtime_stackoverflow =>
 
+  a =>
+    b
+    panic "unreachable"
+  b =>
+    a
+    panic "unreachable"
+
   # with stackoverflow instated
 
   fuzion.runtime.stackoverflow
     .try ()->
-      say (
-        for res := [0].as_list, res.concat_list res
-            i in 0..30000 do
-        else
-          res
-          )
+      say a
     .catch say
 
   # with runtime.fault instated
 
   fuzion.runtime.fault
     .try ()->
-      say (
-        for res := [0].as_list, res.concat_list res
-            i in 0..30000 do
-        else
-          res
-          )
+      say a
     .catch say
 
   #
@@ -58,12 +55,7 @@ fuzion_runtime_stackoverflow =>
   fuzion.runtime.stackoverflow
     .try ()->
       some_effect ! ()->
-        say (
-          for res := [0].as_list, res.concat_list res
-              i in 0..30000 do
-          else
-            res
-            )
+        say a
     .catch say
 
   # with runtime.fault instated and some inner effect
@@ -72,10 +64,5 @@ fuzion_runtime_stackoverflow =>
   fuzion.runtime.fault
     .try ()->
       some_effect ! ()->
-        say (
-          for res := [0].as_list, res.concat_list res
-              i in 0..30000 do
-          else
-            res
-            )
+        say a
     .catch say

@@ -136,7 +136,7 @@ indentation_negative is
 
   # helper feature used as target for testing indentation of actual args
   #
-  called(a,b,c,d i32) =>
+  called(a,b,c,d i64) =>
     say "called $a $b $c $d"
 
   # helper feature used a actual arg
@@ -153,12 +153,12 @@ indentation_negative is
 
   # helper feature for a call with zero/one/two arguments
   #
-  callWith0Args(a i32)         => {panic "expected no arg!"; false}
+  callWith0Args(a i64)         => {panic "expected no arg!"; false}
   callWith0Args                => {say "ok"; true}
-  callWith1Arg (a i32)         => {say "$a"; true}
+  callWith1Arg (a i64)         => {say "$a"; true}
   callWith1Arg                 => {panic "expected one arg!"; false}
-  callWith2Args(a i32, b unit) => {say "$a $b"; true}
-  callWith2Args(a i32)         => {panic "expected two args!"; false}
+  callWith2Args(a i64, b unit) => {say "$a $b"; true}
+  callWith2Args(a i64)         => {panic "expected two args!"; false}
   callWith2Arg                 => {panic "expected two args!"; false}
 
   if_with_call1 is

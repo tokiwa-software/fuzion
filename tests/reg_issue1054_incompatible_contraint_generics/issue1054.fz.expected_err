@@ -4,5 +4,7 @@
 -------^
 formal type parameter 'T : issue1054.this.floaty f64'
 actual type parameter 'issue1054.this.floaty f32'
+assignable to constraint: 'issue1054.this.floaty f32',
+                          'Any'
 
 one error.

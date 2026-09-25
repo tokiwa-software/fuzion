@@ -32,10 +32,10 @@ i8.precall infix +: {base.fum}/num/wrap_around.fz:86:5:
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       debug: !(underflow_on_add other)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(list i32).count_n_i8#1: --CURDIR--/reg_issue3178.fz:35:43:
+(list i64).count_n_i8#1: --CURDIR--/reg_issue3178.fz:35:43:
             | c Cons => c.tail.count_n_i8 n+1
 ------------------------------------------^^^
-(list i32).count_i8: --CURDIR--/reg_issue3178.fz:27:21:
+(list i64).count_i8: --CURDIR--/reg_issue3178.fz:27:21:
 list.count_i8 i8 => count_n_i8 0
 --------------------^^^^^^^^^^^^
 universe: --CURDIR--/reg_issue3178.fz:39:5:

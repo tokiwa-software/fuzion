@@ -30,7 +30,7 @@ public stack(LM type : mutate, T type) : container.Stack T is
       data : (next.bind (.as_sequence.as_list) .or_else nil)
 
 
-  top := LM.env.new (option Element) nil
+  top := LM.env.var (option Element) nil
 
 
   # push an element to the stack

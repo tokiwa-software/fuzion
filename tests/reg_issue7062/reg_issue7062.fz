@@ -30,4 +30,4 @@ c : a is
 
 d : a, c is
 
-_ := d.b
+d.b

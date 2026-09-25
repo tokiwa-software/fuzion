@@ -34,7 +34,7 @@
 # applied to generic types.
 #
 #
-public monad (public A type) is
+public monad (A type) is
 
 
   # monadic operator within the same monad

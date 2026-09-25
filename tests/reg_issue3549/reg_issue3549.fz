@@ -32,5 +32,5 @@ test.constraint.show => say t.codepoint_count
                         say u.count
 
 test "㋡" [1,2,3]
-  .constraint i32
+  .constraint i64
   .show

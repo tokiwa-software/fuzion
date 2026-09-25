@@ -249,7 +249,7 @@ public class AstErrors extends ANY
           : ", you must provide "
             + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
             + (f.typeArguments().size() > 0
-                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.."
+                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments."
                 : ""));
   }
 
@@ -1500,7 +1500,7 @@ public class AstErrors extends ANY
 
   static void missingResultTypeForField(Feature f)
   {
-    if(PRECONDITIONS) require
+    if (PRECONDITIONS) require
       (f.isField());
 
     if (CHECKS) check
@@ -1930,16 +1930,32 @@ public class AstErrors extends ANY
           "Declared at " + cf.pos().show());
   }
 
-  static void incompatibleActualGeneric(SourcePosition pos, AbstractFeature f, AbstractType constraint, AbstractType g)
+  static void incompatibleActualGeneric(SourcePosition pos,
+                                        AbstractFeature f,
+                                        AbstractType constraint,
+                                        AbstractType g,
+                                        Set<AbstractType> assignableTo)
   {
-    if (g != Types.t_UNDEFINED || !any())
+    var errorOrUndefinedFound = g.containsUndefined();
+    var assignableToSB = new StringBuilder();
+    for (var ts : assignableTo)
+      {
+        errorOrUndefinedFound |= ts.containsUndefined();
+        assignableToSB
+          .append(assignableToSB.length() == 0
+                  ?    "assignable to constraint: "
+                  : ",\n                          ")
+          .append(st(ts.toString(true)));
+      }
+    if (!any() || !errorOrUndefinedFound)
       {
         error(pos,
               "Incompatible type parameter",
               "formal type parameter " + sc(f)
                 + (f.constraint().compareTo(constraint)==0 ? "" : " with constraint " + s(constraint))
                 + "\n" +
-              "actual type parameter " + s(g) + "\n");
+              "actual type parameter " + s(g) + "\n" +
+              assignableToSB + (assignableToSB.length() > 0 ? "\n" : ""));
       }
   }
 
@@ -2412,7 +2428,7 @@ public class AstErrors extends ANY
   public static void illegalTypeVisibility(Feature f)
   {
     error(f.pos(),
-          "Visibility of outer features type is more restrictive than features type.",
+          "Visibility of outer features type is more restrictive than feature's type.",
           "Parent feature is here: " + f.outer().pos().show() + System.lineSeparator() +
           "To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.");
   }
@@ -2663,9 +2679,13 @@ public class AstErrors extends ANY
 
   public static void loopResultsInTwoIncompatibleTypes(SourcePosition pos, Match m)
   {
-    error(pos, "Loop results in two incompatible types." ,
-      "The incompatible types are: " + m.cases().map2(c -> s(c.code().type())).stream().collect(Collectors.joining(","))
-    );
+    var types = m.cases().map2(c -> c.code().type());
+    if (!any() || types.stream().noneMatch(t -> t == Types.t_ERROR))
+      {
+        error(pos, "Loop results in two incompatible types." ,
+          "The incompatible types are: " + types.stream().map(t-> s(t)).collect(Collectors.joining(","))
+        );
+      }
   }
 
   public static void anonymousFeatureMustNotInheritFromMultiple(SourcePosition range, List<AbstractCall> i)
@@ -2673,6 +2693,31 @@ public class AstErrors extends ANY
     error(range, "Anonymous feature must not inherit from multiple features.",
       "Found inheritance calls:\n\n" +
       i.stream().map(ic -> ic.pos().showInSource()).collect(Collectors.joining("\nand\n\n")));
+  }
+
+  public static void unitResultExplicitlyIgnored(SourcePosition range)
+  {
+    error(range, "A result of type " + st("unit") + " must not be ignored explicitly.",
+      "Remove " + ss("_ :=") + " to fix this error.");
+  }
+
+  public static void typeParameterMustNotDefineTypeVisibility(Feature f)
+  {
+    error(
+      f.pos(),
+      "Setting the visibility is not allowed for a type parameter.",
+      "A type parameters visibility is always public. To fix this, remove the visibility modifier."
+    );
+  }
+
+  public static void effectFeaturesMustBeCalledViaEnv(Call call)
+  {
+    error(
+      call.pos(),
+      "Effect features must be called via " + skw("env") + ".",
+      "To solve this, insert " + skw("env")  + " before the call " +
+      "to retrieve the current value of the effect from the environment."
+    );
   }
 
 }

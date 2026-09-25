@@ -11,7 +11,7 @@ A closure cannot be built for a choice type. Forbidden accesses occur at
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         redef datum A => smart.this.datum
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        redef count i32 => (1 + smart.this.left.size + smart.this.right.size)
+        redef count i64 => (1 + smart.this.left.size + smart.this.right.size)
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         redef left tree A => smart.this.left
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

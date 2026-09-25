@@ -311,17 +311,22 @@ public class LibraryFuir extends FUIR {
     return _clazzes[clazzId2num(cl)].lookupStaticFinally();
   }
 
+
   @Override
-  public int lookupAtomicValue(int cl)
+  public int lookupMutableValue(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= firstClazz(),
+       cl <= lastClazz());
+
     for (int index = 0; index < clazzFieldCount(cl); index++)
       {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("v") == 0)
+        if (clazzBaseName(clazzField(cl, index)).compareTo("mutable_value") == 0)
           {
             return clazzField(cl, index);
           }
       }
-    Errors.fatal("v field not found!");
+    Errors.fatal("'val' field not found in '"+clazzNameHuman(cl)+"'!");
     return NO_CLAZZ;
   }
 

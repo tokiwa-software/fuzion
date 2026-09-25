@@ -32,4 +32,4 @@ a is
   t(p T) => p
 
 B ref : a is
-_ := B.q
+B.q

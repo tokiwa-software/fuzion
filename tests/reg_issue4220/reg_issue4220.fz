@@ -28,13 +28,13 @@ reg_issue4220 =>
 
   v := m1.instate_self ()->
     say "start"
-    r := m.env.new 42
+    r := m.env.var 42
     say "r = $r"
     r
 
   # f uses no effects, but mutates `v`
   f ! io.Out =>
-    _ := m1.instate_self ()->
+    m1.instate_self ()->
       v <- 4711 + v
       say "updated v via m1: $v"
 

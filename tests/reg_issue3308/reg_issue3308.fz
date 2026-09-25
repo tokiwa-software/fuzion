@@ -26,7 +26,7 @@
 reg_issue3308 is
 
   f(x ()->unit) =>
-  g(x ()->unit) => _ := x.call
+  g(x ()->unit) => x.call
 
   t is
     a is
@@ -46,7 +46,7 @@ reg_issue3308 is
 
       # fouth, an even simpler version of #3315
       t(_ unit) =>
-      _ := f (t unit)
+      f (t unit)
 
       # fifth: access outer ref in partial application and call `as_string`
       public redef as_string String => "--a--"
@@ -71,7 +71,7 @@ reg_issue3308 is
 
       # fouth, an even simpler version of #3315
       t(_ unit) =>
-      _ := f (t unit)
+      f (t unit)
 
       # fifth: access outer ref in partial application and call `as_string`
       public redef as_string String => "--b--"
@@ -79,4 +79,4 @@ reg_issue3308 is
       say (g (u b.this))
 
   _ := t.a
-  _ := t.b
+  t.b

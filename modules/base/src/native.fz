@@ -261,6 +261,23 @@ module fzE_process_create(
 module fzE_process_poll(process i64) i64 => native
 
 
+#
+# close process handle, free memory
+#
+# return: -1 error, 0 success
+#
+module fzE_process_close(process i64) i32 => native
+
+
+# returns -1 on error or length of the hostname otherwise
+#
+module fzE_hostname(
+  # the internal array data representing the container for the hostname
+  file_array Array u8,
+  # the length of the array
+  length i32) i64 => native
+
+
 # returns error code on error or zero on success
 #
 module fzE_pipe_create(pipefd Array i64) i32 => native

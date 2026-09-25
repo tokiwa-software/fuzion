@@ -38,7 +38,8 @@
 #
 public bool : choice false_ true_, property.equatable, property.hashable, java_primitive is
 
-  # not
+  # not, negates this boolean
+  #
   public prefix ! bool =>
     if bool.this
       false

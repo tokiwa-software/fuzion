@@ -94,7 +94,7 @@ is
     abstract
 
 
-  # does this array contain elem?
+  # does this buffer contain elem?
   #
   public contains(elem T) bool
     pre T : property.equatable

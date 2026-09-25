@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 lib_container_ps_map is
-  a := (container.ps_map i32 String).empty
+  a := (container.ps_map i64 String).empty
   a1 := a.put 3 "3"
   a2 := a1.put 5 "5"
 
@@ -40,4 +40,4 @@ lib_container_ps_map is
   say "items: $(a1.items)"
   say "items: $(a2.items)"
   say "union: $(a1.union a2)"
-  say "union: $(a2.union ((container.ps_map i32 String).new [7] ["7"]))"
+  say "union: $(a2.union ((container.ps_map i64 String).of [7] ["7"]))"

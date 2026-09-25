@@ -33,4 +33,4 @@ issue580 is
       abort0 => say "i"
 
   a 2
-  a i32 (abort0 2)
+  a i64 (abort0 2)

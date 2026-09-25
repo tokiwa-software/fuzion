@@ -1802,6 +1802,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         _genericsAsActuals = typeArguments().map2(x -> x.asParametricType()).freeze();
       }
+
+    if (POSTCONDITIONS) ensure
+      (_genericsAsActuals != null);
+
     return _genericsAsActuals;
   }
 
@@ -2172,7 +2176,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  private boolean isUnitType(boolean isInheritedFeature)
+  public boolean isUnitType(boolean isInheritedFeature)
   {
     return
       isConstructor() &&
@@ -2183,6 +2187,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       // unit inheriting e.g. property.orderable is fine
       (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitType()) &&
       inherits().stream().allMatch(c -> c.calledFeature().isUnitType(true));
+  }
+
+
+  /**
+   * Is this an effect feature that requires to be called via `env`?
+   */
+  public boolean isEffectFeature() {
+    return
+      outer() != null &&
+      outer().inheritsFrom(Types.resolved.f_effect) &&
+      outer() != Types.resolved.f_effect;
   }
 
 

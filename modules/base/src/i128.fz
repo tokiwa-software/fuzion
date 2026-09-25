@@ -227,7 +227,7 @@ public i128(public hi i64, public lo u64) : num.wrap_around, property.interval i
 
   # count the number of trailing zeros in this integer.
   #
-  public trailing_zeros i32 =>
+  public trailing_zeros i64 =>
     if lo = u64 0
       64 + hi.trailing_zeros
     else
@@ -237,7 +237,7 @@ public i128(public hi i64, public lo u64) : num.wrap_around, property.interval i
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public redef ones_count i32 =>
+  public redef ones_count i64 =>
     hi.ones_count + lo.ones_count
 
 

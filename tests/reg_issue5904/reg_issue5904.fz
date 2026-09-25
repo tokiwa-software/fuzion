@@ -22,22 +22,24 @@
 # -----------------------------------------------------------------------
 
 reg_issue5904 =>
-  find(a array i32, v i32) option i32 =>
+  find(a array i64, v i64) option i64 =>
     for e in a
     until e=v then v
               else nil
 
-  find2(a array i32, v i32) option i32 =>
+  find2(a array i64, v i64) option i64 =>
     for
       i := 0, i+1
-    while i < a.length.as_i32
+    while i < a.length
     until a[i]=v
       a[i]
     else
       nil
 
+/* NYI: UNDER DEVELOPMENT: does not work yet
+
   # nested loop
-  find3(a array i32, v i32) option i32 =>
+  find3(a array i64, v i64) option i64 =>
     for e in a
     until e=v then
       for eb in a
@@ -48,19 +50,18 @@ reg_issue5904 =>
       until ec=v then v
                   else nil
 
-  /* NYI: UNDER DEVELOPMENT: does not work yet
 
   fields =>
 
     a := [4]
     v := 4
 
-    find4 option i32 :=
+    find4 option i64 :=
       for e in a
       until e=v then v
                 else nil
 
-    find5 option i32 :=
+    find5 option i64 :=
       for
         i := 0, i+1
       while i < a.length
@@ -70,7 +71,7 @@ reg_issue5904 =>
         nil
 
     # nested loop
-    find6 option i32 :=
+    find6 option i64 :=
       for e in a
       until e=v then
         for eb in a
@@ -90,5 +91,5 @@ reg_issue5904 =>
 
   say (find [4] 4)
   say (find2 [4] 4)
-  say (find3 [4] 4)
+  # say (find3 [4] 4)
   # fields

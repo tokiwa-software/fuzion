@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# an interface for a receive only Channel
+# an interface for a receive-only Channel
 #
 public Receiving_Channel(T type) ref is
 

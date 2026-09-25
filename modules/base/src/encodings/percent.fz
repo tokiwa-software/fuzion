@@ -151,7 +151,7 @@ public percent is
 
     # decode recursively by looking at the next part
     #
-    dec(res Sequence u8, i i32) outcome (Sequence u8) =>
+    dec(res Sequence u8, i i64) outcome (Sequence u8) =>
       if i >= len
         res
 

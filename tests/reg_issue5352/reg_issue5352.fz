@@ -23,6 +23,6 @@
 
 q(a ()->unit) => a.call
 q ({_:=1})
-q ({_:=say "hi1"})
-q ({_:=f})
+q ({say "hi1"})
+q ({f})
 f => say "hi2"

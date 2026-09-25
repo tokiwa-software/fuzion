@@ -38,6 +38,8 @@ resource_cleanunp =>
     : effect
   is
 
+    public redef abortable bool => true
+
     open(s String) =>
       say "open: $s"
       (e ([s] ++ opened) state).replace
@@ -57,7 +59,7 @@ resource_cleanunp =>
   # default operation used to produce result in case of stop
   def(v e) =>
     say "run default"
-    "got interrupted! $(v.status)"
+    "got interrupted!"
 
 
   # -----------------------------------------------------------------------

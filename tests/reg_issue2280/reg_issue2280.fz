@@ -24,7 +24,7 @@
 reg_issue2280 is
 
   lm : mutate is
-  _ := lm ! ()->((io.stdin.reader lm).instate_self u32 ()->
+  _ := lm ! ()->((io.buffered lm).Reader.instate (io.stdin.reader lm) ()->
     for
 
       t := u32 0, s

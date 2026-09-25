@@ -4,9 +4,9 @@ Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
-(interval i32).pre sliding at {base.fum}/Sequence.fz:1160
-(interval i32).precall sliding at {base.fum}/Sequence.fz:1159
-(interval i32).sliding#1 at {base.fum}/Sequence.fz:1145
+(interval i64).pre sliding at {base.fum}/Sequence.fz:1160
+(interval i64).precall sliding at {base.fum}/Sequence.fz:1159
+(interval i64).sliding#1 at {base.fum}/Sequence.fz:1145
 sequence_sliding at --CURDIR--/sequence_sliding.fz:41
 
 *** fatal errors encountered, stopping.

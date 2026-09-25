@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature atomic_mutate
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# atomic_mutate -- a multi-thread variant of mutate using atomic operations
+#
+# This mutate ensures exclusive access to shared memory via lock-free atomic
+# operations like compare-and-swap.
+#
+# In case the type of a mutable field does not permit lock-free atomic accesses,
+# an internal global lock is used instead to ensure these accesses are
+# atomic.
+#
+# Read accesses using `get` are protected from reusing outdated values
+# by a `read_fence` while Write accesses using `put` include a `write_fence`
+# after writing the value to ensure the write is not delayed after any
+# subsequent writes.
+#
+public atomic_mutate : mutate is
+
+
+  # thread that currently has exclusive access to this atomic_mutate.
+  #
+  # This is always `nil`, atomic_mutate does not give exclusive access.
+  #
+  module redef exclusive_thread option concur.Thread
+  =>
+    nil
+
+
+  # perform given code with exclusive access to the mutable values created with
+  # this instance of `mutate`.
+  #
+  public redef exclusive(R type, F type: ()->R, code F) R
+  =>
+    compile_time_panic   # exclusive access not supported by atomic_mutate

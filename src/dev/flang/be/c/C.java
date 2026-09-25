@@ -132,6 +132,27 @@ public class C extends ANY
 
 
     /**
+     * drop a value, but process its side-effect.
+     *
+     * @param v an expression that calculates a value that is not needed, but
+     * where the calculation might have side-effects (like performing a call) that
+     * we do need.
+     *
+     * For backends that do not perform any side-effects in RESULT, this does
+     * not need to be redefined, the default implementation is nop() which is
+     * fine in this case.
+     *
+     * @param type clazz id for the type of the value
+     *
+     * @return code to perform the side effects of v and ignoring the produced value.
+     */
+    @Override public CStmnt drop(CExpr v, int type)
+    {
+      return CStmnt.EMPTY;
+    }
+
+
+    /**
      * Create code to assign value to a given field w/o dynamic binding.
      *
      * @param s site of the expression causing this assignment
@@ -310,15 +331,19 @@ public class C extends ANY
         {
           var arg = _fuir.clazzArg(constCl, i);
           var fr = _fuir.clazzArgClazz(constCl, i);
-          var bytes = _fuir.deserializeConst(fr, bb);
-          sb.append("." + _names.fieldName(arg).code());
-          sb.append(" = ");
-          var cd = constData(_fuir.clazzResultClazz(arg), bytes, false);
-          l.add(cd.v1());
-          sb.append(cd.v0().code());
-          if (i + 1 != argCount)
+          // NYI: CLEANUP: would be better if clazzArg would not return unit type args
+          if (!_fuir.clazzIsUnitType(fr))
             {
-              sb.append(",");
+              var bytes = _fuir.deserializeConst(fr, bb);
+              sb.append("." + _names.fieldName(arg).code());
+              sb.append(" = ");
+              var cd = constData(_fuir.clazzResultClazz(arg), bytes, false);
+              l.add(cd.v1());
+              sb.append(cd.v0().code());
+              if (i + 1 != argCount)
+                {
+                  sb.append(",");
+                }
             }
         }
 
@@ -757,7 +782,7 @@ public class C extends ANY
     // NYI: UNDER DEVELOPMENT: enable this once we have gotten rid of implicit conversions
     // command.add("-Wconversion");
 
-    if(_options._cFlags != null)
+    if (_options._cFlags != null)
       {
         command.addAll(_options._cFlags.split(" "));
       }
@@ -780,7 +805,7 @@ public class C extends ANY
 
         if (!_options._debugBuild && !_options.fuzionDebug())
           {
-            command.addAll("-O3");
+            command.addAll("-O3", "-DNDEBUG");
           }
       }
 
@@ -819,7 +844,7 @@ public class C extends ANY
         command.addAll("-Wno-unused-but-set-variable");
       }
 
-    if(_options._useBoehmGC)
+    if (_options._useBoehmGC)
       {
         command.add("-DGC_THREADS");
         if (isWindows())
@@ -908,7 +933,7 @@ public class C extends ANY
           }
       }
 
-    if(_options._useBoehmGC)
+    if (_options._useBoehmGC)
       {
         command.addAll("-lgc");
       }
@@ -933,11 +958,11 @@ public class C extends ANY
   {
     return Stream.of("fuzion.sys.thread.spawn0",
                      "fuzion.sys.thread.join0",
-                     "concur.atomic.compare_and_swap0",
-                     "concur.atomic.compare_and_set0",
-                     "concur.atomic.racy_accesses_supported",
-                     "concur.atomic.read0",
-                     "concur.atomic.write0")
+                     "mutate.atomic_access_supported",
+                     "mutate.var.compare_and_swap0",
+                     "mutate.var.compare_and_set0",
+                     "mutate.var.atomic_read0",
+                     "mutate.var.atomic_write0")
       .anyMatch(_intrinsics._usedIntrinsics::contains);
   }
 
@@ -1677,7 +1702,7 @@ public class C extends ANY
               var cl = _fuir.clazzAt(s);
 
               if (cc == cl &&  // calling myself
-                  _tailCall.callIsTailCall(cl, s)
+                  _tailCall.callIsTailCall(s)
                 )
                 { // then we can do tail recursion optimization!
                   var tc = _fuir.clazzOuterClazz(cc);

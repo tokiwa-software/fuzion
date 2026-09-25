@@ -26,4 +26,4 @@
 #
 public read(p io.path) outcome String =>
   io.file.use p io.file.mode.read ()->
-    String.from (io.buffered io.file.file_mutate).read_fully
+    (io.buffered io.file.file_mutate).read_fully.bind String.from

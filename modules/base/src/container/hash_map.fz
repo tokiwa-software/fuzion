@@ -25,9 +25,9 @@
 
 # hash_map -- an immutable hash map from keys HK to values V
 #
-public hash_map(
-        public HK type : property.hashable,
-        public V  type,
+private:public hash_map(
+        HK type : property.hashable,
+        V  type,
         ks Sequence HK,
         vs Sequence V) : container.Map HK V
   pre
@@ -198,15 +198,13 @@ is
     retrieve (at h)
 
 
-  # get a list of all key/value pairs in this map
+  # get a sequence of all key/value pairs in this map
   #
   public redef items Sequence (tuple HK V) =>
     contents
-      .filter (??)
-      .map (.or_else (panic "filter failed"))
+      .flat_map id
 
 
-  # empty -- convenience routine to create an empty instance of hash_map
   #
-  public fixed redef type.empty container.hash_map HK V =>
-    container.hash_map HK V [] []
+  public fixed redef type.of(kvs Sequence (tuple HK V)) container.hash_map HK V =>
+    container.hash_map HK V (kvs.map (.0)) (kvs.map (.1))

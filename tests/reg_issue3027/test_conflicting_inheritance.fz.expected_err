@@ -3,7 +3,7 @@
 aB : a, B is  redef f => 4711   # 1. should flag an error, B.f has wrong result type
 --------------------^
 In 'aB.f' that redefines 'B.f'
-result type is       : 'i32'
+result type is       : 'i64'
 result type should be: 'String'
 
 Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:32:21:
@@ -16,7 +16,7 @@ To solve this, change type of result to 'String'
 rconflic_i32_String_i32    : ri32, rString is redef f => 4711    # 2. should flag an error, rString.f has wrong result type
 ----------------------------------------------------^
 In 'rconflic_i32_String_i32.f' that redefines 'rString.f'
-result type is       : 'i32'
+result type is       : 'i64'
 result type should be: 'String'
 
 Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:40:19:
@@ -29,7 +29,7 @@ To solve this, change type of result to 'String'
 rconflic_String_i32_i32    : rString, ri32 is redef f => 4711    # 3. should flag an error, rString.f has wrong result type
 ----------------------------------------------------^
 In 'rconflic_String_i32_i32.f' that redefines 'rString.f'
-result type is       : 'i32'
+result type is       : 'i64'
 result type should be: 'String'
 
 Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:40:19:
@@ -43,12 +43,12 @@ rconflic_i32_String_String : ri32, rString is redef f => "bla"   # 4. should fla
 ----------------------------------------------------^
 In 'rconflic_i32_String_String.f' that redefines 'ri32.f'
 result type is       : 'String'
-result type should be: 'i32'
+result type should be: 'i64'
 
 Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
 ri32    is        f => 42
 ------------------^
-To solve this, change type of result to 'i32'
+To solve this, change type of result to 'i64'
 
 
 --CURDIR--/test_conflicting_inheritance.fz:44:53: error 5: Wrong result type in redefined feature
@@ -56,12 +56,12 @@ rconflic_String_i32_String : rString, ri32 is redef f => "bla"   # 5. should fla
 ----------------------------------------------------^
 In 'rconflic_String_i32_String.f' that redefines 'ri32.f'
 result type is       : 'String'
-result type should be: 'i32'
+result type should be: 'i64'
 
 Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
 ri32    is        f => 42
 ------------------^
-To solve this, change type of result to 'i32'
+To solve this, change type of result to 'i64'
 
 
 --CURDIR--/test_conflicting_inheritance.fz:45:53: error 6: Wrong result type in redefined feature
@@ -69,12 +69,12 @@ rconflic_i32_String_f64    : ri32, rString is redef f => 3.14    # 6. should fla
 ----------------------------------------------------^
 In 'rconflic_i32_String_f64.f' that redefines 'ri32.f'
 result type is       : 'f64'
-result type should be: 'i32'
+result type should be: 'i64'
 
 Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
 ri32    is        f => 42
 ------------------^
-To solve this, change type of result to 'i32'
+To solve this, change type of result to 'i64'
 
 
 --CURDIR--/test_conflicting_inheritance.fz:46:53: error 7: Wrong result type in redefined feature
@@ -82,12 +82,12 @@ rconflic_String_i32_f64    : rString, ri32 is redef f => 3.14    # 7. should fla
 ----------------------------------------------------^
 In 'rconflic_String_i32_f64.f' that redefines 'ri32.f'
 result type is       : 'f64'
-result type should be: 'i32'
+result type should be: 'i64'
 
 Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
 ri32    is        f => 42
 ------------------^
-To solve this, change type of result to 'i32'
+To solve this, change type of result to 'i64'
 
 
 --CURDIR--/test_conflicting_inheritance.fz:47:1: error 8: Repeated inheritance of conflicting features

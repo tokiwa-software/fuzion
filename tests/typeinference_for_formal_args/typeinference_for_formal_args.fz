@@ -77,7 +77,7 @@ typeinference_for_formal_args is
     f(fa option m2) =>
       _ := [1,2,3].map x->(m1 $x)
       q => fa.or_panic.y
-      t(p Sequence T) => test "scenario3: type of m2.y is " $T "Type of 'String'"
+      t(p Sequence T) => test "scenario3: type of m2.y is " $T "String"
       t ((1..0).map x->q)
 
     m1(x) is

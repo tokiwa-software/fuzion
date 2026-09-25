@@ -61,11 +61,11 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
                 #
                 match (io.buffered mutate)
                     .Writer.env
-                    .write (response.bytes i32.max)
+                    .write (response.bytes i64.max)
                   e error => log "writing response failed: $(e)"
                   unit =>
                     flush_ok := (io.buffered mutate).Writer.env.flush
-                    if flush_ok!!
+                    if !flush_ok
                       log "flushing response failed: $(flush_ok.err)"
 
             accept_res.or_else ()->
@@ -111,4 +111,4 @@ public except(log String->unit) : Middleware is
                 500
                 [("server", "FuzionWebServer v0.0.0"),
                  ("Content-Length", $"0")]
-                io.Read_Handler.empty
+                (io.buffered mutate .Reader.type.empty)

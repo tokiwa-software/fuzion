@@ -34,7 +34,7 @@ public exception (# type parameter used only to distinguish different
                   # errors raised by the reader from those raised
                   # by the writer.
                   #
-                  public T type,
+                  T type,
 
                   h error->void
                   ) : flow.fallible error h

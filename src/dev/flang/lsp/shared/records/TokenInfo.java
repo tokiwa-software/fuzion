@@ -290,8 +290,8 @@ public class TokenInfo extends ANY
       {
       case t_comment -> Optional.of(TokenType.Comment);
       case t_numliteral -> Optional.of(TokenType.Number);
-      case t_stringQQ, t_StringDQ -> Optional.of(TokenType.String);
-      case t_stringQD, t_stringQB, t_StringDD, t_StringDB, t_stringPQ, t_stringPD, t_stringPB -> Optional.empty();
+      case t_stringQQ, t_stringDQ -> Optional.of(TokenType.String);
+      case t_stringQD, t_stringQP, t_stringDD, t_stringDP, t_stringPQ, t_stringPD, t_stringPP -> Optional.empty();
       case t_question -> Optional.of(TokenType.Keyword);
       case t_op ->
            (_text.equals("=>")
@@ -304,8 +304,8 @@ public class TokenInfo extends ANY
           .map(TokenInfo::tokenType)
           // NYI: UNDER DEVELOPMENT: check if all cases are considered
           .orElse(Optional.of(TokenType.Type));
-      case t_const, t_leaf, t_infix, t_infix_right, t_prefix, t_postfix, t_private, t_module, t_public -> Optional.of(TokenType.Modifier);
-      case t_abstract,  t_check, t_do, t_else, t_env, t_fixed, t_for, t_if, t_in, t_index, t_intrinsic, t_invariant, t_is, t_loop, t_match, t_native, t_period, t_post, t_pre, t_redef, t_ref, t_set, t_ternary, t_then, t_this, t_type, t_universe, t_until, t_var, t_variant, t_while -> Optional.of(TokenType.Keyword);
+      case t_leaf, t_infix, t_infix_right, t_prefix, t_postfix, t_private, t_module, t_public -> Optional.of(TokenType.Modifier);
+      case t_abstract,  t_check, t_do, t_else, t_env, t_fixed, t_for, t_if, t_in, t_index, t_intrinsic, t_invariant, t_is, t_loop, t_match, t_native, t_period, t_post, t_pre, t_redef, t_ref, t_set, t_ternary, t_then, t_this, t_type, t_universe, t_until, t_variant, t_while -> Optional.of(TokenType.Keyword);
       default -> Optional.empty();
       };
   }

@@ -108,7 +108,7 @@ public i32(public val i32) : num.wrap_around, property.interval, java_primitive 
 
   # Convert this to a string with a fixed number of digits after the decimal point.
   #
-  public as_string_decimals(fraction_digits i32) String =>
+  public as_string_decimals(fraction_digits i64) String =>
     as_f32.as_string_decimals fraction_digits
 
   # create hash code from this number
@@ -125,14 +125,14 @@ public i32(public val i32) : num.wrap_around, property.interval, java_primitive 
 
   # count the number of trailing zeros in this integer.
   #
-  public trailing_zeros i32 =>
+  public trailing_zeros i64 =>
     val.cast_to_u32.trailing_zeros
 
 
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public redef ones_count i32 =>
+  public redef ones_count i64 =>
     val.cast_to_u32.ones_count
 
 

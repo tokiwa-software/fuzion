@@ -98,7 +98,7 @@ is
     # the port the server is listening on
     port u16,
     # the backlog, (pending connections to keep in queue)
-    backlog i32,
+    backlog i64,
     # the code to be run while server is active
     code ()->T) outcome T
   =>
@@ -109,9 +109,11 @@ is
       .bind i32 sd->
         match p
           net.protocol.tcp =>
-            listen_res := fzE_listen sd backlog
+            listen_res := fzE_listen sd backlog.as_i32
             if listen_res != 0
-              _ := fuzion.sys.net.close sd # NYI: BUG: register potential failure
+              match fuzion.sys.net.close sd
+                unit =>
+                e error => Ignored_Failure.env.register_failure (error "net.server.type.start failed closing socket $e")
               error "listening on socket failed" listen_res.as_i64
             else
               sd

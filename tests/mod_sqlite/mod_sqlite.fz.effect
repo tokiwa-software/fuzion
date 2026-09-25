@@ -1,3 +1,4 @@
+AAA_builtin_atomic_mutate (concur.atomic trit)
 concur.A0_park_mutex
 concur.Threads
 fuzion.runtime.check_fault

@@ -620,7 +620,7 @@ public class Resolution extends ANY
             var p = af.pos();
             var inh = cotypeInherits(af);
             var typeArg = new Feature(p,
-                                      Visi.PRIV,
+                                      Visi.UNSPECIFIED,
                                       0,
                                       af.selfType(),
                                       FuzionConstants.COTYPE_RELAY_TYPE,
@@ -641,9 +641,14 @@ public class Resolution extends ANY
                 var constraint0 = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
                   .resolve(this, af.context());
                 var constraint = af.rebaseTypeForCotype(constraint0);
-                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.baseName(),
-                                     Contract.EMPTY_CONTRACT,
-                                     i);
+                var ta = new Feature(
+                    p,
+                    Visi.UNSPECIFIED,
+                    t.modifiers() & FuzionConstants.MODIFIER_REDEFINE,
+                    constraint,
+                    t.baseName(),
+                    Contract.EMPTY_CONTRACT,
+                    i);
                 typeArgs.add(ta);
               }
 

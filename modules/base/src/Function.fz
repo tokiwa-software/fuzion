@@ -27,8 +27,8 @@
 #
 # R is the result type of the function, A are the argument types of the function
 #
-public Function(public R type,
-                public A type...) ref is
+public Function(R type,
+                A type...) ref is
 
   # call this function on given arguments a...
   #
@@ -36,15 +36,6 @@ public Function(public R type,
     : fuzion.lambda_target
   =>
     abstract
-
-
-  # convenience feature for declaring a lambda
-  #
-  # usage example:
-  #
-  #     Unary u64 i32 .of (.as_u64)
-  #
-  public type.of(f Function.this) Function.this => f
 
 
 # NYI: would be nice to have schönfinkeling defined here, could work like this:

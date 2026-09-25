@@ -27,13 +27,13 @@ inheritance is
 
 
   curid := mut 0
-  id i32 =>
+  id i64 =>
     res := curid.get
     curid <- res + 1
     res
 
   A ref is
-    ident i32 := id
+    ident i64 := id
     say "A's body$ident"
     x unit => abstract
   B ref : A is
@@ -67,7 +67,7 @@ inheritance is
   ei.x
   ei.xb
   ei.xc
-  say "Calling redefed multiple from non-redefed static "
+  say "Calling redefed multiple from non-redefed static"
   set di := ei
   di.x
   di.xb
@@ -236,17 +236,17 @@ inheritance is
     cnt_C_y := 0
     AA is
       x is _ := y
-      y i32 =>
+      y i64 =>
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
         0
 
       CC ref : AA is
-        redef y i32 =>
+        redef y i64 =>
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
-      DD(i i32) is
+      DD(i i64) is
         say i
         chck i=1 "call to y in arguments must be performed on heir instance"
 
@@ -270,17 +270,17 @@ inheritance is
     cnt_C_y := 0
     AA ref is
       x is _ := y
-      y i32 =>
+      y i64 =>
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
         0
 
       CC ref : AA is
-        redef y i32 =>
+        redef y i64 =>
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
-      DD(i i32) is
+      DD(i i64) is
         say i
         chck i=1 "call to y in arguments must be performed on heir instance"
 
@@ -315,17 +315,17 @@ inheritance is
     cnt_C_y := 0
     AA is
       x is _ := y
-      y i32 =>
+      y i64 =>
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
         0
 
       CC ref : AA is
-        redef y i32 =>
+        redef y i64 =>
           set cnt_C_y := cnt_C_y + 1
           say "inherit.C.y"
           1
-      DD(i i32) is
+      DD(i i64) is
         say i
         chck i=1 "call to y in arguments must be performed on heir instance"
 
@@ -392,7 +392,7 @@ inheritance is
     chck "test Dcnt" Dcnt 9
     chck "test Ecnt" Ecnt 6
     chck "test Fcnt" Fcnt 3
-    chck(msg String, v, expected i32) =>
+    chck(msg String, v, expected i64) =>
       if v = expected
         say "$msg: PASSED."
       else
@@ -427,7 +427,7 @@ inheritance is
     # to class A was missing when using the outer ref from B
     #
     v1 =>
-      A(i i32) ref is
+      A(i i64) ref is
         B ref : A 66 is
           _ := A.this.i
       _ := (A 3).B
@@ -437,7 +437,7 @@ inheritance is
     # two types (A and C1), so dynamic binding is used and the cast not needed:
     #
     v2 =>
-      A(i i32) ref is
+      A(i i64) ref is
         B ref : A 66 is
           _ := A.this.i
       _ := (A 3).B

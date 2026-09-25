@@ -30,19 +30,19 @@ module:public Dynamic_Array (
 
   # the mutate effect
   #
-  public LM type : mutate,
+  LM type : mutate,
 
   # element type
   #
-  public T type,
+  T type,
 
   # contents of the array
   #
-  data LM.new (LM.array T),
+  data LM.var (LM.array T),
 
   # length -- number of elements in data that are in use,
   #           i.e. store actual elements
-  len LM.new i64
+  len LM.var i64
 
 ) ref : Buffer T LM
   pre
@@ -72,7 +72,7 @@ is
   #
   public redef set [ ] (I type : integer, i I, o T) unit
   =>
-    data[i.as_i32] := o
+    data[i] := o
 
 
   # can another element be added to the end of this Dynamic_Array?
@@ -109,12 +109,12 @@ is
            panic "'$(Dynamic_Array.this.type.name)' can not grow, exceeded capacity of $(data.length) elements"
 
 
-    d[len.as_i32] := o
+    d[length] := o
     data <- d
     len  <- len+1
 
 
-  # iteratively add all element at the end of this Dynamic_Array
+  # iteratively add all elements at the end of this Dynamic_Array
   #
   public add_all (s Sequence T) unit =>
     for e in s do add e
@@ -168,7 +168,7 @@ is
    pre safety: length > 0
   =>
     d := Dynamic_Array.this.empty length
-    for i in i64.zero..(length-1) do
+    for i in 0..(length-1) do
       d.add (init i)
     d
 
@@ -179,7 +179,7 @@ is
   =>
     init_len := s.is_array_backed ? s.count.as_i64 : min_length
 
-    d := container.Dynamic_Array LM T (LM.env.new (LM.array T .empty init_len)) (LM.env.new i64 0)
+    d := container.Dynamic_Array LM T (LM.env.var (LM.array T .empty init_len)) (LM.env.var i64 0)
 
     for e in s do d.add e
 
@@ -189,7 +189,7 @@ is
   # initialize an empty Dynamic_Array of type T
   #
   public type.empty container.Dynamic_Array LM T =>
-    container.Dynamic_Array LM T (LM.env.new (LM.array T .empty min_length)) (LM.env.new i64 0)
+    container.Dynamic_Array LM T (LM.env.var (LM.array T .empty min_length)) (LM.env.var i64 0)
 
 
   # initialize an empty Dynamic_Array of type T, allocates the internal array with the given initial length
@@ -199,7 +199,7 @@ is
   # resulting in a reallocation of the internal array
   #
   module type.empty(initial_internal_length i64) container.Dynamic_Array LM T =>
-    container.Dynamic_Array LM T (LM.env.new (LM.array T .empty initial_internal_length)) (LM.env.new i64 0)
+    container.Dynamic_Array LM T (LM.env.var (LM.array T .empty initial_internal_length)) (LM.env.var i64 0)
 
 
   # the length below which the internal array won't shrink

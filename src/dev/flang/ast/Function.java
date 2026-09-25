@@ -349,7 +349,7 @@ public class Function extends AbstractLambda
                   {
                     var n = _names.get(i);
                     var arg = new Feature(n._pos,
-                                          Visi.PRIV,
+                                          i < cl.typeArguments().size() ? Visi.UNSPECIFIED : Visi.PRIV,
                                           0,
                                           at,
                                           n._name,
@@ -410,13 +410,20 @@ public class Function extends AbstractLambda
                   {
                     _expr.propagateExpectedType(res, context, rt0, from);
                   }
-                result = refineResultType(res, context, rt0, _feature.resultType());
-                var g = t.lambdaTargetResultTypeParameter(res);
-                if (g != null && !_inheritsCall.isDefunct())
+                if (_feature.resultTypeIfPresentUrgent(res, true) == Types.t_FORWARD_CYCLIC)
                   {
-                    int idx = g.typeParameterIndex();
-                    _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);
-                    _inheritsCall.notifyInferred();
+                    AstErrors.forwardTypeInference(pos(), _feature);
+                  }
+                else
+                  {
+                    result = refineResultType(res, context, rt0, _feature.resultType());
+                    var g = t.lambdaTargetResultTypeParameter(res);
+                    if (g != null && !_inheritsCall.isDefunct())
+                      {
+                        int idx = g.typeParameterIndex();
+                        _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);
+                        _inheritsCall.notifyInferred();
+                      }
                   }
               }
 

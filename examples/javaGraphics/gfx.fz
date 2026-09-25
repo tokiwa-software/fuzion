@@ -141,7 +141,7 @@ is
         three_times (g, c -> g.cir c 0 -radius+blw+r2 r2)
 
         # small circles
-        _ := (rotate -2.0*f64.π/3).three_times (g, c -> g.cir c 0 -radius+blw+r2 r3)
+        (rotate -2.0*f64.π/3).three_times (g, c -> g.cir c 0 -radius+blw+r2 r3)
 
 
     gfx_ =>

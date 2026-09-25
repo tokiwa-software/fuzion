@@ -4,5 +4,16 @@ f(_ type : String) => { }; f i32
 ---------------------------^
 formal type parameter '_ : String'
 actual type parameter 'i32'
+assignable to constraint: 'i32',
+                          'integer',
+                          'java_primitive',
+                          'num.wrap_around',
+                          'numeric',
+                          'property.interval',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
+                          'Any'
 
 one error.

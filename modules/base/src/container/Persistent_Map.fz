@@ -23,7 +23,7 @@
 
 # Persistent_Map -- an abstract persistent map from keys K to values V
 #
-public Persistent_Map(public K type : property.equatable, public V type) ref : container.Map K V is
+public Persistent_Map(K type : property.equatable, V type) ref : container.Map K V is
 
   # returns a new Persistent_Map
   # which contains all entries of the

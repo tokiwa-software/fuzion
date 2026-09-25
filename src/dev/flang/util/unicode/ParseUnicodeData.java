@@ -366,7 +366,7 @@ public class ParseUnicodeData extends ANY
    */
   private void printFuzion()
   {
-    // NYI: PERFORMANCE: see: https://doc.rust-lang.org/src/core/unicode/unicode_data.rs.html
+    // NYI: OPTIMIZATION: see: https://doc.rust-lang.org/src/core/unicode/unicode_data.rs.html
     // NYI: UNDER DEVELOPMENT: special casings: https://www.unicode.org/Public/UCD/latest/ucd/SpecialCasing.txt
 
     var lTable = _codepoints
@@ -409,9 +409,9 @@ public class ParseUnicodeData extends ANY
     say();
 
     say("module unicode.data is" + "\n\n"
-      + "  module lower_case_mappings => " + "container.map_of [\n    " + lTable + "]\n\n\n"
-      + "  module upper_case_mappings => " + "container.map_of [\n    " + uTable + "]\n\n\n"
-      + "  module title_case_mappings => " + "container.map_of [\n    " + tTable + "]"
+      + "  module lower_case_mappings => " + "container.ps_map u32 codepoint .of [\n    " + lTable + "]\n\n\n"
+      + "  module upper_case_mappings => " + "container.ps_map u32 codepoint .of [\n    " + uTable + "]\n\n\n"
+      + "  module title_case_mappings => " + "container.ps_map u32 codepoint .of [\n    " + tTable + "]"
       );
   }
 

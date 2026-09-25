@@ -37,7 +37,7 @@ webserver_java is
     jio := Java.java.io
 
     # open socket
-    port := 8080
+    port i32 := 8080
     serversocket := jnet.ServerSocket.new port
     match serversocket
       err error => say "#### $err ####"
@@ -103,7 +103,7 @@ webserver_java is
                       r := "", "$r$s\n"
                       s := input.readLine
                       ready := input.ready
-                    while s?? && (ready??)
+                    while s.ok && ready.ok
                     until s.or_panic = "" || !ready.or_panic
                       r
                     else
@@ -121,7 +121,7 @@ webserver_java is
                                       + "Content-Type: text/html\n"
                                       + "\n"
                                       + data)
-                    if ok!!
+                    if !ok
                       say "#### "+ok.err
 
 

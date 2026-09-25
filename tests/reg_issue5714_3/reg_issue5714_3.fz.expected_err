@@ -4,5 +4,7 @@ p.f o.i
 --^
 formal type parameter 'A : p.this.i' with constraint 'p.i'
 actual type parameter 'o.i'
+assignable to constraint: 'o.i',
+                          'Any'
 
 one error.

@@ -26,13 +26,13 @@
 # helper to allocate memory for an internal_array.
 # returns an internal_array.
 #
-module internal_array_init(T type, length i32) =>
-  internal_array T (fuzion.sys.alloc T length) length
+module internal_array_init(T type, length i64) =>
+  internal_array T (fuzion.sys.alloc T length.as_i32) length.as_i32
 
 
 # fuzion.sys.internal_array_init -- one-dimensional low-level array
 #
-module internal_array(T type, module data Array T, module length i32) is
+module internal_array(T type, module data Array T, module length i32 /* NYI: CLEANUP: change this to i64, backends need to be changed, see #7250 */ ) is
 
 
   # make sure that this internal array will no longer be modified.  This is just for
@@ -54,20 +54,20 @@ module internal_array(T type, module data Array T, module length i32) is
     array (fuzion.sys.internal_array T data length) unit unit unit unit
 
 
-  module indices => 0..length-1
+  module indices => 0..length.as_i64-1
 
   module index [ ] (I type : integer, i I) T
     pre
-      safety: 0 ≤ i.as_i32 < length
+      safety: 0 ≤ i.as_i64 < length.as_i64
   =>
     fuzion.sys.getel T data i.as_i32
 
-  module set [ ] (i i32, o T) unit
+  module set [ ] (I type : integer, i I, o T) unit
     pre
-      safety  : 0 ≤ i < length
+      safety  : 0 ≤ i.as_i64 < length.as_i64
       debug 2 : {ensure_not_frozen; true}
   =>
-    fuzion.sys.setel data i o
+    fuzion.sys.setel data i.as_i32 o
 
 
 # allocate memory for l elements of type X
