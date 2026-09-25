@@ -93,7 +93,7 @@ lib_memoize is
                             _ := <-ch
                             (1..100).for_each _->
                               fast_set.map      fib3
-                                      .for_each ignore
+                                      .consume
                         .as_array
       (1..10).for_each (_ -> ch<-unit)
       threads .for_each t->t.join!
