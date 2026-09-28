@@ -189,3 +189,58 @@ is
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
   public fixed redef type.lteq(a, b codepoint) bool => a.val <= b.val
+
+
+  # the Unicode General_Category of this codepoint
+  #
+  # see https://www.unicode.org/reports/tr44/#General_Category_Values
+  #
+  public category unicode_category =>
+    encodings.unicode.categories.of val
+
+
+  # is this a letter, i.e., is the General_Category one of Lu, Ll, Lt, Lm or Lo?
+  #
+  public is_letter bool => category.is_letter
+
+
+  # is this an uppercase letter, i.e., is the General_Category Lu?
+  #
+  # NOTE: This checks the General_Category only, not the Unicode property
+  # `Uppercase`, e.g., U+24B6 CIRCLED LATIN CAPITAL LETTER A is not Lu - uppercase letter
+  # (it is So).  No locale specific rules are applied.
+  #
+  public is_uppercase_letter bool => category = unicode_categories.uppercase_letter
+
+
+  # is this a lowercase letter, i.e., is the General_Category Ll?
+  #
+  # NOTE: This checks the General_Category only, not the Unicode property
+  # `Uppercase`, e.g., U+24B6 CIRCLED LATIN CAPITAL LETTER A is not Lu - uppercase letter
+  # (it is So).  No locale specific rules are applied.
+  #
+  public is_lowercase_letter bool => category = unicode_categories.lowercase_letter
+
+
+  # is this a decimal digit, i.e., is the General_Category Nd?
+  #
+  # This includes digits of other scripts, e.g., U+0663 ARABIC-INDIC DIGIT THREE.
+  #
+  public is_digit bool => category = unicode_categories.decimal_number
+
+
+  # is this numeric, i.e., is the General_Category one of Nd, Nl or No?
+  #
+  # This includes, e.g., U+216B ROMAN NUMERAL TWELVE and U+00BD VULGAR FRACTION ONE HALF.
+  #
+  public is_numeric bool => category.is_number
+
+
+  # is this a letter or a decimal digit?
+  #
+  public is_alpha_num bool => is_letter || is_digit
+
+
+  # is this a punctuation character, i.e., is the General_Category one of Pc, Pd, Ps, Pe, Pi, Pf or Po?
+  #
+  public is_punctuation bool => category.is_punctuation
