@@ -1342,3 +1342,19 @@ is
   # Sequence.
   #
   public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i64 => 10
+
+
+  # force evaluation of all elements of this (lazy) Sequence, and discard the
+  # results
+  #
+  public consume unit
+  =>
+    for_each ignore
+
+
+  # force evaluation of all elements of this Sequence, and turn the list of
+  # results into a non-lazy Sequence
+  #
+  public force Sequence T
+  =>
+    as_array
