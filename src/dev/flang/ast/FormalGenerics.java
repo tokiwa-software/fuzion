@@ -126,11 +126,12 @@ public class FormalGenerics extends ANY
    *
    * @param pos the source code position at which the error should be reported
    *
-   * @param detail1 part of the detail message to indicate where this happened,
-   * i.e., "call" or "type".
+   * @param detail supplier to return the following:
+   *    - part of the detail message to indicate where this happened,
+   *    i.e., "call" or "type".
    *
-   * @param detail2 optional extra lines of detail message giving further
-   * information, like {@code Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n}.
+   *    - optional extra lines of detail message giving further
+   *    information, like {@code Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n}.
    *
    * @return true iff size and type of actualGenerics does match
    */
