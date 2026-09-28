@@ -1175,7 +1175,7 @@ public class Intrinsics extends ANY
         for (var i = 0; i < c._fuir.clazzFieldCount(rt); i++)
           {
             var fi = c._fuir.clazzField(rt, i);
-            if (c._types.fieldExists(fi))
+            if (c._fuir.clazzNeedsCode(fi))
               {
                 var rti = c._fuir.clazzResultClazz(fi);
                 var f1 = value1.field(c._names.fieldName(fi));

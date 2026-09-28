@@ -1638,8 +1638,8 @@ public class C extends ANY
       {
         value = value.castTo(_types.clazz(rt));
       }
-    return _types.fieldExists(f) ? assign(af, value, rt)
-                                 : CStmnt.lineComment("assignment to unused field " + clazzInQuotes(f));
+    return _fuir.clazzNeedsCode(f) ? assign(af, value, rt)
+                                   : CStmnt.lineComment("assignment to unused field " + clazzInQuotes(f));
   }
 
 

@@ -327,10 +327,7 @@ public class CTypes extends ANY
             for (int i = 0; i < _fuir.clazzFieldCount(cl); i++)
               {
                 var f = _fuir.clazzField(cl, i);
-                var t = _fuir.clazzResultClazz(f);
-                // NYI: UNDER DEVELOPMENT: Why not just `if (fieldExists(f)`?
-                if (!_fuir.clazzIsUnitType(t) &&
-                    !_fuir.clazzIsVoidType(t))
+                if (_fuir.clazzNeedsCode(f))
                   {
                     els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
                   }
@@ -376,28 +373,6 @@ public class CTypes extends ANY
       };
 
     return res;
-  }
-
-
-  /**
-   * Does given field exist as a C field? This is the case for fields that
-   *
-   *  - contain data (are not unit types),
-   *
-   *  - that needs code
-   *
-   * @param field the clazz id of a field in _fuir.
-   *
-   * @return true if a C struct element exists for the given field.
-   */
-  boolean fieldExists(int field)
-  {
-    var rt = _fuir.clazzResultClazz(field);
-
-    return
-      !_fuir.clazzIsUnitType(rt) &&
-      !_fuir.clazzIsVoidType(rt) &&
-      _fuir.clazzNeedsCode(field);
   }
 
 }
