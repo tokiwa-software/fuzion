@@ -492,6 +492,7 @@ public class ParseUnicodeData extends ANY
    * NYI: BUG: Array literals with more than about 2500 elements cause a
    * StackOverflowError in GeneratingFUIR.toStack, so the array is split into
    * literals of at most CHUNK_SIZE elements that are concatenated.
+   * For more information: issue (#7882)
    */
   private String fuzionArray(String name, String type, List<Integer> l, ToString<Integer> e2s)
   {
