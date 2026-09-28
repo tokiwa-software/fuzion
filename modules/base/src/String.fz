@@ -961,11 +961,7 @@ public String ref : property.hashable, property.orderable is
     # else if a.utf8.count + b.utf8.count <= MAGIC_NUMBER
     #   String.from (array (a.utf8.count + b.utf8.count) (i -> if a.utf8.is_valid_index i then a.utf8[i] else b.utf8[i-a.utf8.count]))
     else
-      _ : String is
-        public redef utf8 Sequence u8 :=
-          container.Finger_Tree u8 .empty
-            .concat a.utf8
-            .concat b.utf8
+      String.from_bytes (a.utf8.concat b.utf8)
 
 
   # Takes a sequence of strings and concatenates its elements, while adding the separator
