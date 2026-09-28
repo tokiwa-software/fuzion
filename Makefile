@@ -146,6 +146,7 @@ MOD_SODIUM            = $(BUILD_DIR)/modules/sodium.fum
 MOD_CRYPTO            = $(BUILD_DIR)/modules/crypto.fum
 MOD_TOKIWA            = $(BUILD_DIR)/modules/tokiwa.fum
 MOD_WEBSERVER         = $(BUILD_DIR)/modules/webserver.fum
+MOD_DEFAULT           = $(BUILD_DIR)/modules/default.fum
 
 MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
 MOD_FZ_CMD_FZ_FILES = $(MOD_FZ_CMD_DIR)/__marker_for_make__
@@ -216,7 +217,9 @@ FZ_MODULES = \
 			$(MOD_SODIUM) \
 			$(MOD_CRYPTO) \
 			$(MOD_TOKIWA) \
-			$(MOD_WEBSERVER)
+			$(MOD_WEBSERVER) \
+			$(MOD_DEFAULT)
+
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
@@ -534,16 +537,23 @@ $(MOD_WEBSERVER): $(MOD_HTTP) $(FZ) $(shell find $(FZ_SRC)/modules/webserver/src
 	cp -rf $(FZ_SRC)/modules/webserver $(@D)
 	$(FZ) -modules=http -sourceDirs=$(BUILD_DIR)/modules/webserver/src -saveModule=$@
 
+# If this list is changed, list in default.fz must be changed as well.
+$(MOD_DEFAULT): $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_HTTP) $(MOD_UUID) $(MOD_DATABASE) $(MOD_WEBSERVER) $(MOD_WEB) $(FZ) $(shell find $(FZ_SRC)/modules/default/src -name "*.fz")
+	rm -rf $(@D)/default
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/default $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/default/src -saveModule=$@
+
 $(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
+$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz | $(FUZION_BASE)
 	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
 	@echo " + $@"
 
-$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
+$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz | $(FUZION_BASE)
 	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
 	@echo " + $@"
 

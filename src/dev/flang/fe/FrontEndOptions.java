@@ -151,7 +151,7 @@ public class FrontEndOptions extends FuzionOptions
   /**
    * The default modules to be used if none are specified.
    */
-  private final List<String> _defaultModules = new List<>("terminal", "lock_free", "http", "uuid", "database", "webserver").freeze();
+  private final List<String> _defaultModules = new List<>("default").freeze();
 
 
   /*--------------------------  constructors  ---------------------------*/
