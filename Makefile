@@ -542,7 +542,7 @@ $(MOD_DEFAULT): $(MOD_TERMINAL) $(MOD_LOCK_FREE) $(MOD_HTTP) $(MOD_UUID) $(MOD_D
 	rm -rf $(@D)/default
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/default $(@D)
-	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/default/src -saveModule=$@
+	$(FZ) -modules=terminal,lock_free,http,uuid,database,webserver,web -sourceDirs=$(BUILD_DIR)/modules/default/src -saveModule=$@
 
 $(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
