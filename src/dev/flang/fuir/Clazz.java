@@ -494,20 +494,10 @@ class Clazz extends ANY implements Comparable<Clazz>
         var t1 = t0.outer().isRef()
           ? t0
           : t0.replaceGenericsAndOuter(t0.generics(), _type.actualType(t0.outer().asThis()));
-        return normalize2(f.handDownAndApply(t1, _type));
-      }
-  }
-
-
-  private Clazz normalize2(AbstractType t)
-  {
-    var result = _fuir.universe();
-    if (!t.feature().isUniverse())
-      {
-        result = _fuir.newClazz(normalize2(t.outer().feature().selfType()), t, FuzionConstants.NO_SELECT);
+        var result = _fuir.newClazz(f.handDownAndApply(t1, _type));
         result._isNormalized = true;
+        return result;
       }
-    return result;
   }
 
 
