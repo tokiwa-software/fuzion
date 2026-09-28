@@ -26,9 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 
 
@@ -133,8 +136,7 @@ public class FormalGenerics extends ANY
    */
   public boolean errorIfSizeDoesNotMatch(List<AbstractType> actualGenerics,
                                          SourcePosition pos,
-                                         String detail1,
-                                         String detail2)
+                                         Supplier<Pair<String, String>> detail)
   {
     if (PRECONDITIONS) require
       (Errors.any() || !actualGenerics.contains(Types.t_ERROR));
@@ -142,11 +144,12 @@ public class FormalGenerics extends ANY
     var result = sizeMatches(actualGenerics) || actualGenerics.contains(Types.t_ERROR);
     if (!result)
       {
+        var d = detail.get();
         AstErrors.wrongNumberOfTypeArguments(this,
                                              actualGenerics,
                                              pos,
-                                             detail1,
-                                             detail2);
+                                             d.v0(),
+                                             d.v1());
       }
     return result;
   }
