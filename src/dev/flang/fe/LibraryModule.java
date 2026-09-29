@@ -370,7 +370,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @return the feature declared at offset in this module.
    */
-  AbstractFeature libraryFeature(int offset)
+  LibraryFeature libraryFeature(int offset)
   {
     if (offset >= 0 && offset <= _data.limit())
       {
@@ -386,11 +386,10 @@ public class LibraryModule extends Module implements MirModule
       {
         var mr = moduleRef(offset);
         if (CHECKS) check
-          (mr != null);
+          (mr != null,
+           mr._module != null);
 
-        return mr._module != null
-                ? mr._module.libraryFeature(offset - mr._offset)
-                : Types.f_ERROR;
+        return mr._module.libraryFeature(offset - mr._offset);
       }
   }
 

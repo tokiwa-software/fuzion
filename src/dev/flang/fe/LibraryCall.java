@@ -68,7 +68,7 @@ public abstract class LibraryCall extends AbstractCall
   private final Expr _target;
   private final List<Expr> _actuals;
   private final List<AbstractType> _generics;
-  private final AbstractFeature _calledFeature;
+  private final LibraryFeature _calledFeature;
   private final int _select;
 
 
@@ -126,7 +126,7 @@ public abstract class LibraryCall extends AbstractCall
 
 
   @Override public List<AbstractType> actualTypeParameters() { return _generics; }
-  @Override public AbstractFeature calledFeature() { return _calledFeature; }
+  @Override public LibraryFeature calledFeature() { return _calledFeature; }
   @Override public Expr target() { return _target; }
   @Override public List<Expr> actuals() { return _actuals; }
   @Override public int select() { return _select; }

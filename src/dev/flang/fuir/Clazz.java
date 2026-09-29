@@ -1016,7 +1016,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     return isVoidType()
       ? this
-      : lookup(new FeatureAndActuals((LibraryFeature)c.calledFeature(),
+      : lookup(new FeatureAndActuals((LibraryFeature) c.calledFeature(),
                                      typePars),
                c.select(),
                c.isInheritanceCall());
