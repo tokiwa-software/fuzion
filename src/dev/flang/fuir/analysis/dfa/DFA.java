@@ -1271,7 +1271,13 @@ public class DFA extends ANY
         public int matchCaseField(int s, int cix)
         {
           var key = ((long)s<<32)|((long)cix);
-          return _takenMatchCases.contains(key) ?  super.matchCaseField(s, cix) : NO_CLAZZ;
+          var result = NO_CLAZZ;
+          if (_takenMatchCases.contains(key))
+            {
+              var mcf = super.matchCaseField(s, cix);
+              result = mcf != NO_CLAZZ && clazzNeedsCode(mcf) ? mcf : NO_CLAZZ;
+            }
+         return result;
         }
 
 
@@ -1293,6 +1299,14 @@ public class DFA extends ANY
             }
 
           return res;
+        }
+
+
+        @Override
+        public boolean clazzNeedsCode(int cl) {
+          return !clazzIsUnitType(cl) &&
+                 !clazzIsVoidType(cl) &&
+                 super.clazzNeedsCode(cl);
         }
 
 
