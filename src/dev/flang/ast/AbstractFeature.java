@@ -2198,7 +2198,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return
       isConstructor() &&
       contract().isEmpty() &&
-      valueArguments().isEmpty() &&
+      valueArguments().stream().allMatch(va -> va.isUnitType()) &&
       (isInheritedFeature || !isRef()) &&
       code().isEmpty() &&
       // unit inheriting e.g. property.orderable is fine
