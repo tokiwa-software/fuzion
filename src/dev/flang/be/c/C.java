@@ -302,8 +302,7 @@ public class C extends ANY
 
             // NYI: UNDER DEVELOPMENT: without this heap clone tests ternary and unary are failing.
             yield onHeap
-              ? new Pair<>(CExpr
-                              .call(CNames.HEAP_CLONE._name, new List<>(result.adrOf(), result.sizeOfExpr()))
+              ? new Pair<>(heapClone(result)
                               .castTo(_types.clazz(constCl) + " *")
                               .deref(),
                              CStmnt.EMPTY)
@@ -1723,7 +1722,7 @@ public class C extends ANY
                         {
                           var tmp2 = _names.newTemp();
                           heapClone = CStmnt.seq(CStmnt.decl(_types.clazz(rt)+"*", tmp2),
-                                                 tmp2.assign(CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr())).castTo(_types.clazz(rt)+"*")));
+                                                 tmp2.assign(heapClone(res).castTo(_types.clazz(rt)+"*")));
                           res = tmp2.deref();
                         }
                       result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
@@ -2274,8 +2273,7 @@ public class C extends ANY
     if (PRECONDITIONS) require
       (_fuir.clazzIsRef(rc));
 
-    return CExpr
-      .call(CNames.HEAP_CLONE._name, new List<>(valueExpr.adrOf(), valueExpr.sizeOfExpr()))
+    return heapClone(valueExpr)
       .castTo(_types.clazz(rc));
   }
 
@@ -2503,8 +2501,21 @@ public class C extends ANY
         "." + CNames.CLAZZ_ID.code() + " = " + _names.clazzId(cl).code() + ", " +
           "." + CNames.FIELDS_IN_REF_CLAZZ.code() + " = " + obj.code());
 
-    val = CExpr.call(CNames.HEAP_CLONE._name, new List<>(val.adrOf(), val.sizeOfExpr()));
-    return val;
+    return heapClone(val);
+  }
+
+
+  /**
+   * generate a heap clone call for this CExpr
+   *
+   * @param val
+   * @return
+   */
+  CExpr heapClone(CExpr val)
+  {
+    return val == CExpr.UNIT
+      ? CNames.NULL
+      : CExpr.call(CNames.HEAP_CLONE._name, new List<>(val.adrOf(), val.sizeOfExpr()));
   }
 
 
