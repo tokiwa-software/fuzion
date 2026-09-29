@@ -186,7 +186,15 @@ fz_run := envir.Args.env[3].replace "../../bin/fz"
   dev.flang.tools.Fuzion"""
 
 file   := envir.Args.env[4]
-input := io.path.of "$file.stdin"
+input option io.path :=
+  {
+    stdin := io.path.of "$file.stdin"
+    # advent of code uses file named 'input'
+    aoc_inp := io.path.of "$file" .parent.or_panic.resolve "input"
+    if      io.file.exists stdin   then stdin
+    else if io.file.exists aoc_inp then aoc_inp
+    else                                nil
+  }
 
 
 exp_out :=
