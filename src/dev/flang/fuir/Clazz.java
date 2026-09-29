@@ -990,7 +990,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Convenience function that calls {@code lookup} followed {@code doesNeedCod()} on the
+   * Convenience function that calls {@code lookup} followed {@code doesNeedCode()} on the
    * result.
    */
   Clazz lookupNeeded(AbstractFeature f)

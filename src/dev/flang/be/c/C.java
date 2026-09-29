@@ -1894,7 +1894,7 @@ public class C extends ANY
    *
    * @param cl id of clazz to compile
    *
-   * @return C statements with the forward declarations required for cl.
+   * @return C statement with the actual code of cl.
    */
   public CStmnt code(int cl)
   {
