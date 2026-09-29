@@ -3081,6 +3081,14 @@ public class Call extends AbstractCall
   Expr resolveSyntacticSugar1(Resolution res, Context context)
   {
     Expr result = this;
+
+    // check before _calledFeature may be replaced by its preAndCallFeature
+    // below, whose internal name would hide a direct effect feature call
+    if (isDirectEffectFeatureCall(res, context))
+      {
+        AstErrors.effectFeaturesMustBeCalledViaEnv(this);
+      }
+
     // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
     // also we can not inherit from none constructor features like and/or etc.
     if (_pendingError == null && !isInheritanceCall())
@@ -3134,11 +3142,6 @@ public class Call extends AbstractCall
     if (_calledFeature != null && _calledFeature.isNative() && !res._module.isBaseModule())
       {
         result = indicateNativeAccessOutsideOfBaseModule(res, context, result);
-      }
-
-    if (isDirectEffectFeatureCall(res, context))
-      {
-        AstErrors.effectFeaturesMustBeCalledViaEnv(this);
       }
 
     return result;
