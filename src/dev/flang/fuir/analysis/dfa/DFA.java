@@ -1297,6 +1297,14 @@ public class DFA extends ANY
 
 
         @Override
+        public boolean clazzNeedsCode(int cl) {
+          return !clazzIsUnitType(cl) &&
+                 !clazzIsVoidType(cl) &&
+                 super.clazzNeedsCode(cl);
+        }
+
+
+        @Override
         public int accessedClazz(int s)
         {
           return codeAt(s) == ExprKind.Assign &&
