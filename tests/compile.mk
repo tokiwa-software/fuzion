@@ -49,7 +49,7 @@ c:
 	@printf 'COMPILE %s using  $@  backend ' "$(FILE)" && $(FUZION_RUN) -c $(NAME) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED\033[0m.\n" && cat err.txt && exit 1)
 
 effect:
-	$(ENV) ../../bin/check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/simple_example check effect "$(FUZION_RUN)" $(FILE) || exit 1
 
 record_effect:
-	$(ENV) ../../bin/record_simple_example effect "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/simple_example record effect "$(FUZION_RUN)" $(FILE)
