@@ -9137,9 +9137,15 @@ module unicode.data is
     (u32 125251, codepoint 125217)]
 
 
-  # General_Category of code points: code points in category_starts[i]..category_starts[i+1]-1
-  # (or ..0x10ffff for the last entry) have the category with index category_indices[i]
-  # in `unicode_category`.
+  # Unicode General_Category values mapped as contiguous, non-overlapping 
+  # code point ranges, sorted by start point.
+  #
+  # Gaps between ranges represent unassigned code points with the default
+  # `Cn` (Other, not assigned) category. This follows the convention of
+  # UCD's DerivedGeneralCategory.txt to keep the table compact.
+  #
+  # Code points in category_starts[i]..category_starts[i+1]-1 (or ..0x10ffff for the
+  # last entry) have the category with index category_indices[i] in `unicode_category`.
   #
   module category_starts array u32 => (category_starts_0 ++ category_starts_1 ++ category_starts_2 ++ category_starts_3 ++ category_starts_4).as_array
 
