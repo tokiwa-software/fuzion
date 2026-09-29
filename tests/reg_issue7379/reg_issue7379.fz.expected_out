@@ -1,2 +1,2 @@
-failed waiting for [cat],
-failed waiting for [cat],
+failed waiting for [sleep, 1m]
+failed waiting for [sleep, 1m]
