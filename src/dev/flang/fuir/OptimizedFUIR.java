@@ -124,7 +124,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
    */
   private int[] clazzActualGenerics(int cl)
   {
-    var cc = id2clazz(cl);
+    var cc = clazz(cl);
     var generics = cc.actualTypeParameters();
     var result = new int[generics.length];
     for (int gix = 0; gix < result.length; gix++)
