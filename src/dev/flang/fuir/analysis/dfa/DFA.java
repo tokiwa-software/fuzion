@@ -1304,9 +1304,9 @@ public class DFA extends ANY
 
         @Override
         public boolean clazzNeedsCode(int cl) {
-          return !clazzIsUnitType(cl) &&
-                 !clazzIsVoidType(cl) &&
-                 super.clazzNeedsCode(cl);
+          return super.clazzNeedsCode(cl)
+            &&
+            (clazzKind(cl) != FeatureKind.Routine || _fuir.hasCode(cl) || !_fuir.clazzIsUnitType(cl));
         }
 
 

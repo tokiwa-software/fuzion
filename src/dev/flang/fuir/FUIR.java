@@ -783,6 +783,18 @@ public abstract class FUIR extends IR
 
 
   /**
+   * Does this clazz contain any code?
+   *
+   * @param cl
+   * @return
+   */
+  public boolean hasCode(int cl)
+  {
+    return clazzCode(cl) != NO_SITE && withinCode(clazzCode(cl));
+  }
+
+
+  /**
    * Does the given clazz specify a scalar type in the C code, i.e, standard
    * numeric types i32, u64, etc.
    */
