@@ -36,36 +36,36 @@
 #
 public unicode_category
   : choice
-      unicode_categories.uppercase_letter
-      unicode_categories.lowercase_letter
-      unicode_categories.titlecase_letter
-      unicode_categories.modifier_letter
-      unicode_categories.other_letter
-      unicode_categories.nonspacing_mark
-      unicode_categories.spacing_mark
-      unicode_categories.enclosing_mark
-      unicode_categories.decimal_number
-      unicode_categories.letter_number
-      unicode_categories.other_number
-      unicode_categories.connector_punctuation
-      unicode_categories.dash_punctuation
-      unicode_categories.open_punctuation
-      unicode_categories.close_punctuation
-      unicode_categories.initial_punctuation
-      unicode_categories.final_punctuation
-      unicode_categories.other_punctuation
-      unicode_categories.math_symbol
-      unicode_categories.currency_symbol
-      unicode_categories.modifier_symbol
-      unicode_categories.other_symbol
-      unicode_categories.space_separator
-      unicode_categories.line_separator
-      unicode_categories.paragraph_separator
-      unicode_categories.control
-      unicode_categories.format
-      unicode_categories.surrogate
-      unicode_categories.private_use
-      unicode_categories.unassigned,
+      unicode_categories.uppercase_letter        # Lu
+      unicode_categories.lowercase_letter        # Ll
+      unicode_categories.titlecase_letter        # Lt
+      unicode_categories.modifier_letter         # Lm
+      unicode_categories.other_letter            # Lo
+      unicode_categories.nonspacing_mark         # Mn
+      unicode_categories.spacing_mark            # Mc
+      unicode_categories.enclosing_mark          # Me
+      unicode_categories.decimal_number          # Nd
+      unicode_categories.letter_number           # Nl
+      unicode_categories.other_number            # No
+      unicode_categories.connector_punctuation   # Pc
+      unicode_categories.dash_punctuation        # Pd
+      unicode_categories.open_punctuation        # Ps
+      unicode_categories.close_punctuation       # Pe
+      unicode_categories.initial_punctuation     # Pi
+      unicode_categories.final_punctuation       # Pf
+      unicode_categories.other_punctuation       # Po
+      unicode_categories.math_symbol             # Sm
+      unicode_categories.currency_symbol         # Sc
+      unicode_categories.modifier_symbol         # Sk
+      unicode_categories.other_symbol            # So
+      unicode_categories.space_separator         # Zs
+      unicode_categories.line_separator          # Zl
+      unicode_categories.paragraph_separator     # Zp
+      unicode_categories.control                 # Cc
+      unicode_categories.format                  # Cf
+      unicode_categories.surrogate               # Cs
+      unicode_categories.private_use             # Co
+      unicode_categories.unassigned,             # Cn
 
     property.equatable
 is
@@ -75,36 +75,36 @@ is
   #
   module ordinal u8 =>
     match unicode_category.this
-      unicode_categories.uppercase_letter      => 0
-      unicode_categories.lowercase_letter      => 1
-      unicode_categories.titlecase_letter      => 2
-      unicode_categories.modifier_letter       => 3
-      unicode_categories.other_letter          => 4
-      unicode_categories.nonspacing_mark       => 5
-      unicode_categories.spacing_mark          => 6
-      unicode_categories.enclosing_mark        => 7
-      unicode_categories.decimal_number        => 8
-      unicode_categories.letter_number         => 9
-      unicode_categories.other_number          => 10
-      unicode_categories.connector_punctuation => 11
-      unicode_categories.dash_punctuation      => 12
-      unicode_categories.open_punctuation      => 13
-      unicode_categories.close_punctuation     => 14
-      unicode_categories.initial_punctuation   => 15
-      unicode_categories.final_punctuation     => 16
-      unicode_categories.other_punctuation     => 17
-      unicode_categories.math_symbol           => 18
-      unicode_categories.currency_symbol       => 19
-      unicode_categories.modifier_symbol       => 20
-      unicode_categories.other_symbol          => 21
-      unicode_categories.space_separator       => 22
-      unicode_categories.line_separator        => 23
-      unicode_categories.paragraph_separator   => 24
-      unicode_categories.control               => 25
-      unicode_categories.format                => 26
-      unicode_categories.surrogate             => 27
-      unicode_categories.private_use           => 28
-      unicode_categories.unassigned            => 29
+      unicode_categories.uppercase_letter      => 0    # Lu
+      unicode_categories.lowercase_letter      => 1    # Ll
+      unicode_categories.titlecase_letter      => 2    # Lt
+      unicode_categories.modifier_letter       => 3    # Lm
+      unicode_categories.other_letter          => 4    # Lo
+      unicode_categories.nonspacing_mark       => 5    # Mn
+      unicode_categories.spacing_mark          => 6    # Mc
+      unicode_categories.enclosing_mark        => 7    # Me
+      unicode_categories.decimal_number        => 8    # Nd
+      unicode_categories.letter_number         => 9    # Nl
+      unicode_categories.other_number          => 10   # No
+      unicode_categories.connector_punctuation => 11   # Pc
+      unicode_categories.dash_punctuation      => 12   # Pd
+      unicode_categories.open_punctuation      => 13   # Ps
+      unicode_categories.close_punctuation     => 14   # Pe
+      unicode_categories.initial_punctuation   => 15   # Pi
+      unicode_categories.final_punctuation     => 16   # Pf
+      unicode_categories.other_punctuation     => 17   # Po
+      unicode_categories.math_symbol           => 18   # Sm
+      unicode_categories.currency_symbol       => 19   # Sc
+      unicode_categories.modifier_symbol       => 20   # Sk
+      unicode_categories.other_symbol          => 21   # So
+      unicode_categories.space_separator       => 22   # Zs
+      unicode_categories.line_separator        => 23   # Zl
+      unicode_categories.paragraph_separator   => 24   # Zp
+      unicode_categories.control               => 25   # Cc
+      unicode_categories.format                => 26   # Cf
+      unicode_categories.surrogate             => 27   # Cs
+      unicode_categories.private_use           => 28   # Co
+      unicode_categories.unassigned            => 29   # Cn
 
 
   # true if this is a letter category: Lu, Ll, Lt, Lm, or Lo.

@@ -477,13 +477,6 @@ public class ParseUnicodeData extends ANY
         addRange(starts, indices, next, "Cn");
       }
     return
-      "  # Unicode General_Category values mapped as contiguous, non-overlapping \n" +
-      "  # code point ranges, sorted by start point.\n" +
-      "  #\n" +
-      "  # Gaps between ranges represent unassigned code points with the default\n" +
-      "  # `Cn` (Other, not assigned) category. This follows the convention of\n" +
-      "  # UCD's DerivedGeneralCategory.txt to keep the table compact.\n" +
-      "  #\n" +
       "  # Code points in category_starts[i]..category_starts[i+1]-1 (or ..0x10ffff for the\n" +
       "  # last entry) have the category with index category_indices[i] in `unicode_category`.\n" +
       "  #\n" +
