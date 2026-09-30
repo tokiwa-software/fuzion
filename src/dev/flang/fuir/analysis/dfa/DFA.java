@@ -3046,28 +3046,7 @@ public class DFA extends ANY
    */
   boolean onlyOneInstance(int clazz)
   {
-    return isUnitType(clazz) || ONLY_ONE_INSTANCE &&
-      // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
-      // this should be something generic instead, e.g.
-      //
-      //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
-      //
-      switch (_fuir.clazzName(clazz))
-      {
-      case
-        "list u8",
-        "codepoint",
-        "Sequence u8",
-        "array u8",
-        // the following two are necessary for
-        // combination of Finger_Tree and
-        // tests/effect_installed_negative
-        "array (Sequence u8)",
-        "array (Sequence (Sequence u8))",
-        "container.deep u8",
-        "fuzion.sys.internal_array u8" -> true;
-      default -> false;
-      };
+    return true;
   }
 
 
@@ -3259,7 +3238,7 @@ public class DFA extends ANY
    */
   boolean siteSensitive(int cc)
   {
-    return SITE_SENSITIVE || _fuir.isConstructor(cc) && !onlyOneInstance(cc);
+    return false;
   }
 
 
