@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue7889.fz:31:8: error 1: Effect features must be called via 'env'.
+    bm.exclusive ()->
+-------^^^^^^^^^
+To solve this, insert 'env' before the call to retrieve the current value of the effect from the environment.
+
+one error.
