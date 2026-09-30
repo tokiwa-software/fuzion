@@ -249,13 +249,18 @@ is
   # are taken from the list.
   #
   public flat_map_to_list(B type, f A -> Sequence B) list B =>
+    used := concur.atomic bool .new false
     match list.this
       nil    => nil
       c Cons =>
         match (f c.head).as_list
           nil     => c.tail.flat_map_to_list f
           c2 Cons =>
-            c2.head : c2.tail.concat_list (c.tail.flat_map_to_list f)
+            c2.head : ()->
+              check debug : !used
+              if debug
+                used.write true
+              c2.tail.concat_list (c.tail.flat_map_to_list f)
 
 
   # fold the elements of this list using the given monoid.
