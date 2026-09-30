@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ir;
 
+import java.util.ArrayDeque;
 import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractAssign; // NYI: CLEANUP: remove dependency
@@ -234,6 +235,9 @@ public abstract class IR extends ANY
    * Add entries of type ExprKind created from the given expression (and its
    * nested expressions) to list l.  pop the result in case dumpResult==true.
    *
+   * This is not implemented recursively, the nested expressions are processed
+   * using an explicit work stack, see {@code toStackExpr}.
+   *
    * @param l list of ExprKind that should be extended by s's expressions
    *
    * @param e a expression.
@@ -246,27 +250,125 @@ public abstract class IR extends ANY
       (l != null,
        e != null);
 
+    var tasks = new ArrayDeque<Runnable>();
+    toStackPush(tasks, l, e, dumpResult);
+    toStackRun(tasks);
+  }
+
+
+  /**
+   * Helper for {@code toStack}: like {@code toStack}, but the code for
+   * expression e itself is created by {@code IR.toStackIR}, i.e., a heir does
+   * not get the opportunity to replace e, see {@code toStackExpr}.  This is
+   * used to inspect the code generated for e.
+   *
+   * @param l list of ExprKind that should be extended by e's expressions
+   *
+   * @param e a expression.
+   *
+   * @param dumpResult flag indicating that we are not interested in the result.
+   */
+  protected void toStackNoReplace(List<Object> l, Expr e, boolean dumpResult)
+  {
+    var tasks = new ArrayDeque<Runnable>();
+    tasks.push(() -> toStackIR(tasks, l, e, dumpResult));
+    toStackRun(tasks);
+  }
+
+
+  /**
+   * Helper for {@code toStack}: perform the given tasks until none is left.
+   *
+   * @param tasks the work stack.
+   */
+  private static void toStackRun(ArrayDeque<Runnable> tasks)
+  {
+    while (!tasks.isEmpty())
+      {
+        tasks.pop().run();
+      }
+  }
+
+
+  /**
+   * Helper for {@code toStack}: schedule adding the code for the given
+   * expression (and its nested expressions) to list l on work stack tasks.
+   *
+   * Since tasks is a stack, the task added first is executed last.  So, when
+   * the code for the nested expressions of an expression is scheduled, the
+   * code for the expression itself has to be scheduled before.
+   *
+   * @param tasks the work stack to add this expression to.
+   *
+   * @param l list of ExprKind that should be extended by e's expressions
+   *
+   * @param e a expression.
+   *
+   * @param dumpResult flag indicating that we are not interested in the result.
+   */
+  protected void toStackPush(ArrayDeque<Runnable> tasks, List<Object> l, Expr e, boolean dumpResult)
+  {
+    tasks.push(() -> toStackExpr(tasks, l, e, dumpResult));
+  }
+
+
+  /**
+   * Helper for {@code toStack}: add the code for the given expression (and its
+   * nested expressions) to list l, the nested expressions are scheduled on work
+   * stack tasks.  pop the result in case dumpResult==true.
+   *
+   * This method is called for each expression and may be overridden in heirs,
+   * e.g., to replace an expression by the code that implements it.
+   *
+   * @param tasks the work stack for the nested expressions.
+   *
+   * @param l list of ExprKind that should be extended by e's expressions
+   *
+   * @param e a expression.
+   *
+   * @param dumpResult flag indicating that we are not interested in the result.
+   */
+  protected void toStackExpr(ArrayDeque<Runnable> tasks, List<Object> l, Expr e, boolean dumpResult)
+  {
+    toStackIR(tasks, l, e, dumpResult);
+  }
+
+
+  /**
+   * IR's implementation of {@code toStackExpr}.
+   *
+   * @param tasks the work stack for the nested expressions.
+   *
+   * @param l list of ExprKind that should be extended by e's expressions
+   *
+   * @param e a expression.
+   *
+   * @param dumpResult flag indicating that we are not interested in the result.
+   */
+  private void toStackIR(ArrayDeque<Runnable> tasks, List<Object> l, Expr e, boolean dumpResult)
+  {
     if (e instanceof AbstractAssign a)
       {
-        toStack(l, boxAndTag(a._value, a._assignedField.resultType()));
-        toStack(l, a._target);
-        l.add(a);
+        tasks.push(() -> l.add(a));
+        toStackPush(tasks, l, a._target, false);
+        toStackPush(tasks, l, boxAndTag(a._value, a._assignedField.resultType()), false);
       }
     else if (e instanceof Box b)
       {
-        toStack(l, b._value, dumpResult);
         if (!dumpResult)
           {
-            l.add(b);
+            tasks.push(() -> l.add(b));
           }
+        toStackPush(tasks, l, b._value, dumpResult);
       }
     else if (e instanceof AbstractBlock b)
       {
         // for (var expr : b.expressions_)  -- not possible since we need index i
-        for (int i=0; i<b._expressions.size(); i++)
+        for (int i=b._expressions.size()-1; i>=0; i--)
           {
             var expr = b._expressions.get(i);
-            toStack(l, expr, dumpResult || i < b._expressions.size()-1);
+            var dump = dumpResult || i < b._expressions.size()-1;
+            toStackPush(tasks, l, expr, dump);
           }
       }
     else if (e instanceof Constant)
@@ -282,7 +384,7 @@ public abstract class IR extends ANY
         //  to stack as a compile time constant.
         if (!dumpResult)
         {
-          toStack(l, ia.code(), dumpResult);
+          toStackPush(tasks, l, ia.code(), false);
         }
       }
     else if (e instanceof AbstractCurrent)
@@ -297,35 +399,40 @@ public abstract class IR extends ANY
       }
     else if (e instanceof AbstractCall c)
       {
-        toStack(l, c.target());
-        var fat = c.formalArgumentTypes();
-        for (int i = 0; i < c.actuals().size(); i++)
-          {
-            toStack(l, boxAndTag(c.actuals().get(i), fat[i]));
-          }
-        l.add(c);
         if (dumpResult)
           {
-            l.add(ExprKind.Pop);
+            tasks.push(() -> l.add(ExprKind.Pop));
           }
+        tasks.push(() -> l.add(c));
+        var fat = c.formalArgumentTypes();
+        for (int i = c.actuals().size()-1; i>=0; i--)
+          {
+            var actual = boxAndTag(c.actuals().get(i), fat[i]);
+            toStackPush(tasks, l, actual, false);
+          }
+        toStackPush(tasks, l, c.target(), false);
       }
     else if (e instanceof AbstractMatch m)
       {
-        toStack(l, m.subject());
-        l.add(m);
-        for (var c : m.cases())
+        // the code of each case is added as a separate code block, the site of
+        // this code block is added to l after the code for the match itself
+        var cases = m.cases();
+        for (int i=cases.size()-1; i>=0; i--)
           {
-            var caseCode = toStack(c.code());
-            l.add(new NumLiteral(addCode(caseCode)));
+            var caseCode = new List<Object>();
+            tasks.push(() -> l.add(new NumLiteral(addCode(caseCode))));
+            toStackPush(tasks, caseCode, cases.get(i).code(), false);
           }
+        tasks.push(() -> l.add(m));
+        toStackPush(tasks, l, m.subject(), false);
       }
     else if (e instanceof Tag t)
       {
-        toStack(l, t._value, dumpResult);
         if (!dumpResult)
           {
-            l.add(t);
+            tasks.push(() -> l.add(t));
           }
+        toStackPush(tasks, l, t._value, dumpResult);
       }
     else if (e instanceof Universe)
       {
