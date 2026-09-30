@@ -29,11 +29,6 @@
 public equals(T type : property.equatable, a, b T) bool => T.equality a b
 
 
-# infix ≟ -- infix operation as shorthand for 'equals'
-#
-public infix ≟(T type : property.equatable, a, b T) bool => equals a b
-
-
 # infix = -- infix operation as shorthand for 'equals'
 #
 public infix =(T type : property.equatable, a, b T) bool => equals a b
