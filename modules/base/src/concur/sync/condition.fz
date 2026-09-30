@@ -27,37 +27,28 @@
 #
 private:public condition(mtx concur.sync.mutex, cnd Condition) is
 
-  public is_locked concur.atomic bool := concur.atomic bool .new false
-
   # run code synchronized across all threads
   # that also use this condition
   #
   public synchronized(T type, code ()->T) T ! atomic_access =>
-    mtx.synchronized ()->
-      is_locked.write true
-      res := code.call
-      is_locked.write false
-      res
+    mtx.synchronized code
 
 
   # signal one waiting thread to wake up
   #
   public signal unit
-    pre is_locked.read
   => cnd_signal cnd
 
 
   # signal all waiting threads to wake up
   #
   public broadcast unit
-    pre is_locked.read
   => cnd_broadcast cnd
 
 
   # make this thread wait for signal
   #
   public wait unit
-    pre is_locked.read
   =>
     cnd_wait cnd mtx.mtx
 
@@ -65,7 +56,6 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
   # make this thread wait for signal using given timeout
   #
   public wait(timeout time.instant) unit
-    pre is_locked.read
   =>
     cnd_timedwait cnd mtx.mtx timeout.ns
 
