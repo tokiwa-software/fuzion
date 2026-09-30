@@ -1,75 +1,75 @@
 
---CURDIR--/partially_applicable_type_feature_negative.fz:39:16: error 1: This call is ambiguous.
+--CURDIR--/partially_applicable_type_feature_negative.fz:35:16: error 1: This call is ambiguous.
 _ := "x" |> t1.of   # 1. should flag an error: inner feature or type feature?
 ---------------^^
-Called feature could be: 't1.of' defined at --CURDIR--/partially_applicable_type_feature_negative.fz:36:10:
+Called feature could be: 't1.of' defined at --CURDIR--/partially_applicable_type_feature_negative.fz:32:10:
   public of(t String) t1 => t1 "$s/$t"
 ---------^^
-or                     : 't1.type.of' defined at --CURDIR--/partially_applicable_type_feature_negative.fz:37:15:
+or                     : 't1.type.of' defined at --CURDIR--/partially_applicable_type_feature_negative.fz:33:15:
   public type.of(s String) t1 => t1 s
 --------------^^
 To solve this, rename one of the called features.
 
 
---CURDIR--/partially_applicable_type_feature_negative.fz:45:13: error 2: Different count of arguments needed when calling feature
+--CURDIR--/partially_applicable_type_feature_negative.fz:41:16: error 2: Different count of arguments needed when calling feature
 _ := "x" |> t2.of   # 2. should flag an error: wrong number of arguments
-------------^^
-Feature not found: 't2' (no arguments)
-Target feature: 'universe'
-In call: 't2'
-To solve this, you might change the actual number of arguments to match the feature 't2' (one value argument s) at --CURDIR--/partially_applicable_type_feature_negative.fz:42:1:
-t2(s String) is
-^^
-To call 't2', you must provide one argument.
+---------------^^
+Feature not found: 'of' (no arguments)
+Target expression: 'type_as_value t2'
+In call: 't2.of'
+To solve this, you might change the actual number of arguments to match the feature 'of' (2 value arguments s t) at --CURDIR--/partially_applicable_type_feature_negative.fz:39:15:
+  public type.of(s, t String) t2 => t2 "$s$t"
+--------------^^
+To call 'of', you must provide 2 arguments.
 
 
 
---CURDIR--/partially_applicable_type_feature_negative.fz:58:16: error 3: Ambiguity between direct and partially applied call target
+--CURDIR--/partially_applicable_type_feature_negative.fz:54:16: error 3: Ambiguity between direct and partially applied call target
 _ := "x" |> t4.of        # 4. should flag an error: direct call or partial application?
 ---------------^^
-This call can be resolved in two ways, either as a direct call to 't4.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:55:15:
+This call can be resolved in two ways, either as a direct call to 't4.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:51:15:
   public type.of Unary t4 String => x -> t4 "direct $x"
 --------------^^
-or by partially applying arguments to a call to 't4.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:56:15:
+or by partially applying arguments to a call to 't4.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:52:15:
   public type.of(s String) t4 => t4 "partial $s"
 --------------^^.
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partially_applicable_type_feature_negative.fz:59:21: error 4: Ambiguity between direct and partially applied call target
+--CURDIR--/partially_applicable_type_feature_negative.fz:55:21: error 4: Ambiguity between direct and partially applied call target
 _ := "x" |> t4.type.of   # 5. should flag an error: same with explicit `.type`
 --------------------^^
-This call can be resolved in two ways, either as a direct call to 't4.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:55:15:
+This call can be resolved in two ways, either as a direct call to 't4.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:51:15:
   public type.of Unary t4 String => x -> t4 "direct $x"
 --------------^^
-or by partially applying arguments to a call to 't4.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:56:15:
+or by partially applying arguments to a call to 't4.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:52:15:
   public type.of(s String) t4 => t4 "partial $s"
 --------------^^.
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partially_applicable_type_feature_negative.fz:66:20: error 5: Ambiguity between direct and partially applied call target
+--CURDIR--/partially_applicable_type_feature_negative.fz:62:20: error 5: Ambiguity between direct and partially applied call target
 _ := ["a"].map (t5.of "z")   # 6. should flag an error: direct call or partial application?
 -------------------^^
-This call can be resolved in two ways, either as a direct call to 't5.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:63:15:
+This call can be resolved in two ways, either as a direct call to 't5.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:59:15:
   public type.of(s String) t5 => t5 s
 --------------^^
-or by partially applying arguments to a call to 't5.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:64:15:
+or by partially applying arguments to a call to 't5.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:60:15:
   public type.of(s, t String) t5 => t5 "$s$t"
 --------------^^.
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partially_applicable_type_feature_negative.fz:51:6: error 6: Different count of arguments needed when calling feature
+--CURDIR--/partially_applicable_type_feature_negative.fz:47:9: error 6: Different count of arguments needed when calling feature
 _ := t3.of          # 3. should flag an error: missing argument
------^^
-Feature not found: 't3' (no arguments)
-Target feature: 'universe'
-In call: 't3'
-To solve this, you might change the actual number of arguments to match the feature 't3' (one value argument s) at --CURDIR--/partially_applicable_type_feature_negative.fz:48:1:
-t3(s String) is
-^^
-To call 't3', you must provide one argument.
+--------^^
+Feature not found: 'of' (no arguments)
+Target expression: 'type_as_value t3'
+In call: 't3.of'
+To solve this, you might change the actual number of arguments to match the feature 'of' (one value argument s) at --CURDIR--/partially_applicable_type_feature_negative.fz:45:15:
+  public type.of(s String) t3 => t3 s
+--------------^^
+To call 'of', you must provide one argument.
 
 
 6 errors.
