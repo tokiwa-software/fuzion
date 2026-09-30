@@ -1164,10 +1164,6 @@ class CodeGen
                 }
               yield _jvm.const_array(constCl, result, elCount);
             }
-          else if (_fuir.clazzIsUnitType(constCl))
-            {
-              yield new Pair<>(Expr.UNIT, Expr.UNIT);
-            }
           else if (!_fuir.clazzIsChoice(constCl))
             {
               var b = ByteBuffer.wrap(d);
