@@ -38,6 +38,8 @@ import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
@@ -1490,6 +1492,36 @@ public class DFA extends ANY
           {
             _options.verbosePrintln(6, "  call: " + c);
           }
+
+        say("most 'unique' values, grouped by clazz: ");
+
+        _uniqueValues
+          .stream()
+          .collect(Collectors.groupingBy(v -> v._clazz))
+          .values()
+          .stream()
+          .sorted((a,b) -> b.size()-a.size())
+          .limit(25)
+          .forEach(r -> {
+            say(r.size() + ": " + r);
+          });
+
+        say("most calls, grouped by clazz: ");
+
+        _calls
+          .values()
+          .stream()
+          .collect(Collectors.groupingBy(c -> c._group._cc))
+          .values()
+          .stream()
+          .sorted((a,b) -> b.size()-a.size())
+          .limit(25)
+          .forEach(r -> {
+            say(r.size() + ": " + r);
+            if (r.size()> 2)
+              say("why are first two calls different?: " + r.get(0).compareToWhy(r.get(1)));
+          });
+
       }
 
     if (_real)
