@@ -61,6 +61,9 @@ public class C extends ANY
   /*-----------------------------  classes  -----------------------------*/
 
 
+  public int _maxTagNum = 0;
+
+
   /**
    * Expression processor used with AbstractInterpreter to generate C code.
    */
@@ -537,13 +540,7 @@ public class C extends ANY
         {// replace unit-type values by 0, 1, 2, 3,... cast to ref Object
           if (CHECKS) check
             (value == CExpr.UNIT);
-          // NYI: BUG: this should be an assert in fz_init
-          if (tagNum >= CConstants.PAGE_SIZE)
-            {
-              Errors.error("Number of tags for choice type exceeds page size.",
-                           "While creating code for '" + _fuir.siteAsString(s) + "'\n" +
-                           "Found in choice type '" + _fuir.clazzName(newcl)+ "'\n");
-            }
+          _maxTagNum = Integer.max(tagNum, _maxTagNum);
           value = CExpr.int32const(tagNum);
           valuecl = _fuir.clazzAny();
         }
@@ -1114,6 +1111,7 @@ public class C extends ANY
 
     cf.println("\nvoid __main__()\n{ ");
     cf.indent();
+    cf.println("assert("+ _maxTagNum + " <= fzE_page_size());");
     cf.print(CStmnt.seq(
       initializeEffectsEnvironment(),
       CExpr.call(_names.function(_fuir.mainClazz()), new List<>())));
