@@ -17,30 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test partially_applicable_type_feature
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-partially_applicable_type_feature =>
-
-# partial application of type features, see #7790
-
-p1(s String) is
-  public redef as_string String => "p1($s)"
-  public type.of(s String) p1 => p1 s
-
-# `of` exists with one and two arguments, `|>` needs the one with one argument
-p2(s String) is
-  public redef as_string String => "p2($s)"
-  public type.of(s String) p2 => p2 s
-  public type.of(s, t String) p2 => p2 "$s$t"
-
-say ("/" |> io.path.of)
-say (io.path.of <| String.from "/".utf8)
-
-say ("x" |> p1.of)
-say (p1.of <| "y")
-say (["u","v"].map p1.of)
-say ("x" |> p1.type.of)
-
-say ("x" |> p2.of)
+override NAME = partially_applicable_type_feature_negative
+include ../simple_and_negative.mk
