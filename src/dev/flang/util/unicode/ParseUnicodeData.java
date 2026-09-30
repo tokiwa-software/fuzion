@@ -170,6 +170,36 @@ public class ParseUnicodeData extends ANY
    */
   static final boolean VERBOSE = false;
 
+  /**
+   * All General_Category values in the order used by Fuzion's
+   * `unicode_category`.  The index of a category in this list is what the
+   * generated table `category_indices` contains, so this order must match the
+   * order of the choice elements in `modules/base/src/unicode_category.fz`.
+   *
+   * see https://www.unicode.org/reports/tr44/#General_Category_Values
+   */
+  static final java.util.List<String> CATEGORY_ORDER = java.util.List.of(
+    "Lu", "Ll", "Lt", "Lm", "Lo",
+    "Mn", "Mc", "Me",
+    "Nd", "Nl", "No",
+    "Pc", "Pd", "Ps", "Pe", "Pi", "Pf", "Po",
+    "Sm", "Sc", "Sk", "So",
+    "Zs", "Zl", "Zp",
+    "Cc", "Cf", "Cs", "Co", "Cn");
+
+
+  /**
+   * The maximum valid Unicode code point value.
+   */
+  static final int MAX_CODE_POINT = 0x10FFFF;
+
+
+  /**
+   * Maximum number of elements in one generated Fuzion array literal,
+   * see fuzionArray().
+   */
+  static final int CHUNK_SIZE = 1000;
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -411,8 +441,88 @@ public class ParseUnicodeData extends ANY
     say("module unicode.data is" + "\n\n"
       + "  module lower_case_mappings => " + "container.ps_map u32 codepoint .of [\n    " + lTable + "]\n\n\n"
       + "  module upper_case_mappings => " + "container.ps_map u32 codepoint .of [\n    " + uTable + "]\n\n\n"
-      + "  module title_case_mappings => " + "container.ps_map u32 codepoint .of [\n    " + tTable + "]"
+      + "  module title_case_mappings => " + "container.ps_map u32 codepoint .of [\n    " + tTable + "]\n\n\n"
+      + fuzionCategoryTables()
       );
+  }
+
+
+  /**
+   * Create Fuzion source code for two lookup tables representing the
+   * General_Category mapping across all valid code points.
+   *
+   *   category_starts[i]  first code point of range i
+   *   category_indices[i] index in CATEGORY_ORDER of the category of range i
+   *
+   * Range i ends right before category_starts[i+1], the last range ends at
+   * MAX_CODE_POINT.  Code points missing from UnicodeData.txt get the
+   * default category Cn, adjacent ranges with equal category are merged.
+   */
+  private String fuzionCategoryTables()
+  {
+    var starts  = new List<Integer>();
+    var indices = new List<Integer>();
+    int next = 0;  // first code point not covered yet
+    for (var b : _blocks)
+      {
+        if (b._first._code > next)
+          {
+            addRange(starts, indices, next, "Cn");
+          }
+        addRange(starts, indices, b._first._code, b._first._category);
+        next = b._last._code + 1;
+      }
+    if (next <= MAX_CODE_POINT)
+      {
+        addRange(starts, indices, next, "Cn");
+      }
+    return
+      "  # Code points in category_starts[i]..category_starts[i+1]-1 (or ..0x10ffff for the\n" +
+      "  # last entry) have the category with index category_indices[i] in `unicode_category`.\n" +
+      "  #\n" +
+      fuzionArray("category_starts",  "u32", starts,  x -> "0x" + Integer.toHexString(x)) + "\n\n\n" +
+      fuzionArray("category_indices", "u8",  indices, x -> Integer.toString(x));
+  }
+
+
+  /**
+   * Create Fuzion source code for an array feature by chunking elements.
+   *
+   * NYI: BUG: Array literals with more than about 2500 elements cause a
+   * StackOverflowError in GeneratingFUIR.toStack, so the array is split into
+   * literals of at most CHUNK_SIZE elements that are concatenated.
+   * For more information: issue (#7882)
+   */
+  private String fuzionArray(String name, String type, List<Integer> l, ToString<Integer> e2s)
+  {
+    var chunks = new StringBuilder();
+    var concat = new StringBuilder();
+    for (int i = 0, c = 0; i < l.size(); i += CHUNK_SIZE, c++)
+      {
+        var chunk = new java.util.ArrayList<Integer>(l.subList(i, Math.min(l.size(), i + CHUNK_SIZE)));
+        chunks.append("\n\n  " + name + "_" + c + " array " + type + " => [" + table(chunk, e2s) + "]");
+        concat.append(c == 0 ? "" : " ++ ").append(name + "_" + c);
+      }
+    return "  module " + name + " array " + type + " => (" + concat + ").as_array" + chunks;
+  }
+
+
+  /**
+   * Helper for fuzionCategoryTables: add range starting at code point cp of
+   * category cat, merge with the previous range if the category is the same.
+   */
+  private void addRange(List<Integer> starts, List<Integer> indices, int cp, String cat)
+  {
+    var i = CATEGORY_ORDER.indexOf(cat);
+    if (i < 0)
+      {
+        Errors.fatal("*** error, unknown General_Category '" + cat + "' at code point 0x" + Integer.toHexString(cp));
+      }
+    if (indices.isEmpty() || indices.getLast() != i)
+      {
+        starts.add(cp);
+        indices.add(i);
+      }
   }
 
 
