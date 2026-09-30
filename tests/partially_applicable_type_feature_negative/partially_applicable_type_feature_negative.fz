@@ -1,0 +1,62 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test partially_applicable_type_feature_negative
+#
+# -----------------------------------------------------------------------
+
+partially_applicable_type_feature_negative =>
+
+
+# errors and ambiguities in partial application of type features, see #7790
+
+# `t1.of` could be the inner feature or the type feature
+t1(s String) is
+  public redef as_string String => "t1($s)"
+  public of(t String) t1 => t1 "$s/$t"
+  public type.of(s String) t1 => t1 s
+
+_ := "x" |> t1.of   # 1. should flag an error: inner feature or type feature?
+
+# `of` needs two arguments, `|>` provides one
+t2(s String) is
+  public type.of(s, t String) t2 => t2 "$s$t"
+
+_ := "x" |> t2.of   # 2. should flag an error: wrong number of arguments
+
+# no function expected, so no partial application
+t3(s String) is
+  public type.of(s String) t3 => t3 s
+
+_ := t3.of          # 3. should flag an error: missing argument
+
+# `of` returns a function, but `of(s)` could also be partially applied
+t4(s String) is
+  public type.of Unary t4 String => x -> t4 "direct $x"
+  public type.of(s String) t4 => t4 "partial $s"
+
+_ := "x" |> t4.of        # 4. should flag an error: direct call or partial application?
+_ := "x" |> t4.type.of   # 5. should flag an error: same with explicit `.type`
+
+# `of "z"` could be `of(s)` or partially applied `of(s, t)`
+t5(s String) is
+  public type.of(s String) t5 => t5 s
+  public type.of(s, t String) t5 => t5 "$s$t"
+
+_ := ["a"].map (t5.of "z")   # 6. should flag an error: direct call or partial application?
