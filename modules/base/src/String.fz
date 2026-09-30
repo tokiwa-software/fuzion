@@ -952,14 +952,15 @@ public String ref : property.hashable, property.orderable is
   # concat strings a and b by
   # concatenating their byte sequences.
   #
-  public type.concat(a, b String) String =>
+  public type.concat(a, b String) String
+    pre
+      debug: a.utf8.finite != trit.no
+      debug: b.utf8.finite != trit.no
+  =>
     if a.is_empty
       b
     else if b.is_empty
       a
-    # NYI: PERFORMANCE:
-    # else if a.utf8.count + b.utf8.count <= MAGIC_NUMBER
-    #   String.from (array (a.utf8.count + b.utf8.count) (i -> if a.utf8.is_valid_index i then a.utf8[i] else b.utf8[i-a.utf8.count]))
     else
       String.from_bytes (a.utf8.concat b.utf8)
 
