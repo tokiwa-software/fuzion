@@ -1035,12 +1035,15 @@ int fzE_pipe_create(int64_t *fds)
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
+  fzE_lock();
   DWORD bytesRead;
   if (!ReadFile((HANDLE)desc, buf, nbytes, &bytesRead, NULL)){
+    fzE_unlock();
     return GetLastError() == ERROR_BROKEN_PIPE
       ? 0
       : -1;
   }
+  fzE_unlock();
   return bytesRead;
 }
 
@@ -1048,18 +1051,22 @@ int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
 // return -1 on error, the number of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
   DWORD bytesWritten;
+  fzE_lock();
   if (!WriteFile((HANDLE)desc, buf, nbytes, &bytesWritten, NULL)){
+     fzE_unlock();
     return -1;
   }
+  fzE_unlock();
   return bytesWritten;
 }
 
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-  return CloseHandle((HANDLE)desc)
-    ? 0
-    : -1;
+  fzE_lock();
+  int result = CloseHandle((HANDLE)desc) ? 0 : -1;
+  fzE_unlock();
+  return result;
 }
 
 
