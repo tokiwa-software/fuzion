@@ -531,6 +531,11 @@ public class ParsedCall extends Call
 
     var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
     var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
+    var tf = targetFeature(res, context);
+    if (tf != null && tf != Types.f_ERROR && tf != paa._feature.outer())
+          {
+            fos.addAll(res._module.lookup(tf, _name, this, false, false));
+          }
     var direct = FeatureAndOuter.filter(fos,
                                         pos(),
                                         FuzionConstants.OPERATION_CALL,
