@@ -383,7 +383,7 @@ public class GeneratingFUIR extends FUIR
 
              var tagNums = new int[] { tagNum++ };
              var types = new List<>(g);
-             var tf_call = tf.lookup(new FeatureAndActuals(Types.resolved.f_Typed_Function_call,
+             var tf_call = tf.lookup(new FeatureAndActuals((LibraryFeature) Types.resolved.f_Typed_Function_call,
                                                            types),
                                      FuzionConstants.NO_SELECT,
                                      false /* isInheritanceCall */);
@@ -1922,8 +1922,8 @@ public class GeneratingFUIR extends FUIR
           {
             var o = clazz(s._outer);
             var oc = clazz(o);
-            var of = oc.feature();
-            var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
+            var of = (LibraryFeature) oc.feature();
+            var f = of.get(of._libModule, s._name, s._argCount);
             result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
             if (CHECKS) check
               (f.isRef() == (result.isRef()));
@@ -2656,7 +2656,7 @@ public class GeneratingFUIR extends FUIR
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
     if (!tclazz.isVoidType())
       {
-        innerClazz = tclazz.lookup(new FeatureAndActuals((LibraryFeature)cf, typePars), c.select(), c.isInheritanceCall());
+        innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature)cf, typePars), c.select(), c.isInheritanceCall());
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];

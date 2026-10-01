@@ -989,7 +989,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       (f != null,
        !isVoidType());
 
-    return lookup(new FeatureAndActuals((LibraryFeature)f), FuzionConstants.NO_SELECT, false);
+    return lookup(new FeatureAndActuals((FuirFeature) f), FuzionConstants.NO_SELECT, false);
   }
 
 
