@@ -58,10 +58,10 @@ assignable to constraint: 'Any',
 --^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
 actual type parameter 'compile_time_type_casts_negative.this.bc'
-assignable to constraint: 'compile_time_type_casts_negative.this.bc',
-                          'Any',
+assignable to constraint: 'Any',
                           'compile_time_type_casts_negative.this.B',
-                          'compile_time_type_casts_negative.this.C'
+                          'compile_time_type_casts_negative.this.C',
+                          'compile_time_type_casts_negative.this.bc'
 
 
 --CURDIR--/compile_time_type_casts_negative.fz:67:12: error 7: Incompatible types when passing argument in a call
@@ -165,7 +165,7 @@ To solve this, you could change the type of the target 'v' to 'T' or convert the
 ------------------^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
 actual type parameter 'U'
-assignable to constraint: 'U',
-                          'Any'
+assignable to constraint: 'Any',
+                          'U'
 
 15 errors.

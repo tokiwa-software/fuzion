@@ -4,7 +4,7 @@
 -------^^
 formal type parameter 'T : checkGenericConstraint.this.H'
 actual type parameter 'checkGenericConstraint.this.m32'
-assignable to constraint: 'checkGenericConstraint.this.m32',
-                          'Any'
+assignable to constraint: 'Any',
+                          'checkGenericConstraint.this.m32'
 
 one error.
