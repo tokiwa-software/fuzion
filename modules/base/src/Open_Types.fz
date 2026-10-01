@@ -26,7 +26,7 @@
 # Open_Types -- parent feature of type used for open types
 #
 # This is the parent feature of the result type of open type parameters
-# such as `choice..CHOICE_ELEMENT_TYPE`.
+# such as `choice.CHOICE_ELEMENT_TYPE`.
 #
 # The Open_Types value inherits from `Types` permitting access to
 # the individual types.
