@@ -415,9 +415,11 @@ public class Call extends AbstractCall
    * Helper to check if the target of this call is erroneous, i.e., it might
    * have a pending error.
    */
-  private boolean targetErroneous()
+  private boolean targetErroneous(Resolution res, Context context)
   {
-    return _target != null && _target.type() == Types.t_ERROR;
+    return _target != null &&
+      (_target.asParsedType() == null || (_target.asParsedType() != null && _target.asParsedType().resolve(res, context, true) == null)) &&
+      _target.type() == Types.t_ERROR;
   }
 
 
@@ -637,7 +639,6 @@ public class Call extends AbstractCall
 
     if (_calledFeature == null)
       { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
-        resolveTypesOfActuals(res, context);
         findChainedBooleans(res, context);
       }
 
@@ -649,12 +650,10 @@ public class Call extends AbstractCall
 
     addPendingError(res, targetFeature);
 
-    resolveTypesOfActuals(res, context);
-
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
        Errors.any() || _target        != Call.ERROR,
-       Errors.any() || _calledFeature != null || _pendingError != null || targetErroneous(),
+       Errors.any() || _calledFeature != null || _pendingError != null || targetErroneous(res, context),
        Errors.any() || _target        != null || _pendingError != null);
 
     return !targetVoid;
@@ -880,9 +879,11 @@ public class Call extends AbstractCall
     var traverseOuter = _originalTarget == null;
     var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(res, context);
     var a = expectedType.arity(res);
-    if (targetFeature != null && a >= 0)
+    if (a >= 0)
       {
-        var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
+        var fos = targetFeature == null // could still find type applicable type feature
+          ? new List<FeatureAndOuter>()
+          : res._module.lookup(targetFeature, _name, this, traverseOuter, false);
         if (_target != null && _target.asParsedType() != null)
           {
             var tt = _target.asParsedType().resolve(res, context, true);
@@ -947,7 +948,7 @@ public class Call extends AbstractCall
    * the same context.  Moving the call into a lambda or a lazy value will
    * change its context and resolution of actuals will have to be repeated.
    */
-  protected Context _actualsResolvedFor;
+  private Context _actualsResolvedFor;
 
 
   /**
@@ -1506,8 +1507,7 @@ public class Call extends AbstractCall
       .generics()
       .errorIfSizeDoesNotMatch(_generics,
                                pos(),
-                               FuzionConstants.OPERATION_CALL,
-                               "Called feature: "+_calledFeature.qualifiedNameHuman()+"\n");
+                               ()-> new Pair<>(FuzionConstants.OPERATION_CALL, "Called feature: "+_calledFeature.qualifiedNameHuman()+"\n"));
   }
 
 
@@ -2044,7 +2044,14 @@ public class Call extends AbstractCall
                                     actual = actual.propagateExpectedType(res, context, ac,
                                                                           () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
                                   }
-                                _actuals = _actuals.setOrClone(argnum, actual);
+
+                                if (CHECKS) check
+                                  (_actuals.size() > argnum || Errors.any());
+
+                                if (_actuals.size() > argnum)
+                                  {
+                                    _actuals = _actuals.setOrClone(argnum, actual);
+                                  }
                                 actualType = typeFromActual(res, context, actual, false);
                               }
                           }
@@ -2687,7 +2694,7 @@ public class Call extends AbstractCall
     // Check that we either know _calledFeature, or there is an error pending
     // either for this Call, or we have a problem with the target:
     if (PRECONDITIONS) require
-      (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetErroneous());
+      (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetErroneous(res, context));
 
     if (_calledFeature == Types.f_ERROR)
       {
@@ -2718,7 +2725,7 @@ public class Call extends AbstractCall
         resolveTypesOfActuals(res, context);
         notifyInferred();
 
-        result = isErroneous(res)
+        result = isErroneous(res, context)
           ? resolveTypesErrorResult()
           : resolveTypesSuccessResult(res, context);
       }
@@ -2782,7 +2789,7 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (targetErroneous() || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR || result == Call.ERROR);
+      (targetErroneous(res, context) || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR || result == Call.ERROR);
 
     return  result;
   }
@@ -2791,10 +2798,10 @@ public class Call extends AbstractCall
   /**
    * Is this call in an erroneous state?
    */
-  private boolean isErroneous(Resolution res)
+  private boolean isErroneous(Resolution res, Context context)
   {
     return !res._options.isLanguageServer() &&
-      (targetErroneous() || _pendingError == null && typeForInferencing() == Types.t_ERROR);
+      (targetErroneous(res, context) || _pendingError == null && typeForInferencing() == Types.t_ERROR);
   }
 
 
@@ -3074,6 +3081,14 @@ public class Call extends AbstractCall
   Expr resolveSyntacticSugar1(Resolution res, Context context)
   {
     Expr result = this;
+
+    // check before _calledFeature may be replaced by its preAndCallFeature
+    // below, whose internal name would hide a direct effect feature call
+    if (isDirectEffectFeatureCall(res, context))
+      {
+        AstErrors.effectFeaturesMustBeCalledViaEnv(this);
+      }
+
     // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
     // also we can not inherit from none constructor features like and/or etc.
     if (_pendingError == null && !isInheritanceCall())
@@ -3123,15 +3138,42 @@ public class Call extends AbstractCall
             _calledFeature = cf.preAndCallFeature();
           }
       }
+
     if (_calledFeature != null && _calledFeature.isNative() && !res._module.isBaseModule())
       {
-        var nativeAccessFromEnv = new ParsedCall(
-          Call.typeAsValue(SourcePosition.notAvailable, new ParsedType(SourcePosition.notAvailable, "native_access")),
-          new ParsedName(SourcePosition.notAvailable, "from_env"));
-        var replace = new ParsedCall(nativeAccessFromEnv, new ParsedName(SourcePosition.notAvailable, "replace"));
-        result = new Block(new List<>(replace.resolveTypes(res, context), result));
+        result = indicateNativeAccessOutsideOfBaseModule(res, context, result);
       }
-    if (_calledFeature != null &&
+
+    return result;
+  }
+
+
+  /**
+   * If this is a call to a native feature we
+   * we call `native_access.from_env` to have `native_access` appear in
+   * effect analysis.
+   */
+  private Expr indicateNativeAccessOutsideOfBaseModule(Resolution res, Context context, Expr result)
+  {
+    var nativeAccessFromEnv = new ParsedCall(
+      Call.typeAsValue(SourcePosition.notAvailable, new ParsedType(SourcePosition.notAvailable, "native_access")),
+      new ParsedName(SourcePosition.notAvailable, "from_env"));
+    var replace = new ParsedCall(nativeAccessFromEnv, new ParsedName(SourcePosition.notAvailable, "replace"));
+    return new Block(new List<>(replace.resolveTypes(res, context), result));
+  }
+
+
+  /**
+   * Is this a call of an effect feature from outside an effect feature
+   * and not via `env`?
+   *
+   * @param res
+   * @param context
+   * @return
+   */
+  private boolean isDirectEffectFeatureCall(Resolution res, Context context)
+  {
+    return _calledFeature != null &&
         _calledFeature.isEffectFeature() &&
         // NYI: UNDER DEVELOPMENT: this should better just allow calls from inherited contracts
         !_calledFeature.featureName().isInternal() &&
@@ -3141,12 +3183,7 @@ public class Call extends AbstractCall
         // calling from somewhere within the effect is okay
         !inSameEffect(calledFeature().outer(), context.outerFeature()) &&
         // NYI: UNDER DEVELOPMENT: should not be necessary
-        !res._module.isBaseModule()
-       )
-      {
-        AstErrors.effectFeaturesMustBeCalledViaEnv(this);
-      }
-    return result;
+        !res._module.isBaseModule();
   }
 
 
@@ -3157,7 +3194,8 @@ public class Call extends AbstractCall
    * @param context
    * @return
    */
-  private boolean inSameEffect(AbstractFeature effect, AbstractFeature context) {
+  private boolean inSameEffect(AbstractFeature effect, AbstractFeature context)
+  {
     return context == effect
       ? true
       : context.outer() != null

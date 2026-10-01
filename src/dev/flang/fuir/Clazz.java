@@ -495,20 +495,10 @@ class Clazz extends ANY implements Comparable<Clazz>
         var t1 = t0.outer().isRef()
           ? t0
           : t0.replaceGenericsAndOuter(t0.generics(), _type.actualType(t0.outer().asThis()));
-        return normalize2(f.handDownAndApply(t1, _type));
-      }
-  }
-
-
-  private Clazz normalize2(AbstractType t)
-  {
-    var result = _fuir.universe();
-    if (!t.feature().isUniverse())
-      {
-        result = _fuir.newClazz(normalize2(t.outer().feature().selfType()), t, FuzionConstants.NO_SELECT);
+        var result = _fuir.newClazz(f.handDownAndApply(t1, _type));
         result._isNormalized = true;
+        return result;
       }
-    return result;
   }
 
 
@@ -999,12 +989,12 @@ class Clazz extends ANY implements Comparable<Clazz>
       (f != null,
        !isVoidType());
 
-    return lookup(new FeatureAndActuals(f), FuzionConstants.NO_SELECT, false);
+    return lookup(new FeatureAndActuals((LibraryFeature)f), FuzionConstants.NO_SELECT, false);
   }
 
 
   /**
-   * Convenience function that calls {@code lookup} followed {@code doesNeedCod()} on the
+   * Convenience function that calls {@code lookup} followed {@code doesNeedCode()} on the
    * result.
    */
   Clazz lookupNeeded(AbstractFeature f)
@@ -1030,7 +1020,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     return isVoidType()
       ? this
-      : lookup(new FeatureAndActuals(c.calledFeature(),
+      : lookup(new FeatureAndActuals((LibraryFeature)c.calledFeature(),
                                      typePars),
                c.select(),
                c.isInheritanceCall());
@@ -1113,7 +1103,7 @@ class Clazz extends ANY implements Comparable<Clazz>
             if (CHECKS)
               check(Errors.any() || fa._tp.isEmpty());  // there should not be an actual type parameters to a type parameter
           }
-        else if (f != Types.f_ERROR)
+        else
           {
             var af = findRedefinition(f);
             if (CHECKS) check
@@ -2061,7 +2051,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                 var n = replaceOpenCount(field);
                 for (var i = 0; i < n; i++)
                   {
-                    fields.add(lookup(new FeatureAndActuals(field), i, false));
+                    fields.add(lookup(new FeatureAndActuals((LibraryFeature)field), i, false));
                   }
               }
             else

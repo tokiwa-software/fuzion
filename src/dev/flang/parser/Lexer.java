@@ -196,7 +196,6 @@ public class Lexer extends SourceFile
     t_match("match"),
     t_ref("ref"),
     t_redef("redef"),
-    t_const("const"),                 // unused
     t_leaf("leaf"),                   // unused
     t_infix("infix"),
     t_infix_right("infix_right"),

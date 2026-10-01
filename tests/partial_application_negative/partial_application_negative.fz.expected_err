@@ -54,7 +54,7 @@ To solve this, rename one of the ambiguous features.
 --CURDIR--/partial_application_negative.fz:42:47: error 6: Could not find called feature
   test "data.map 3.prefix*   " (data.map    3.prefix* ) "[3,6,9,12,15,18,21,24,27,30]"  # 1. should flag an error, do not change named prefix call to infix call
 ----------------------------------------------^^^^^^^
-Feature not found: 'prefix *' (one argument)
+Feature not found: 'prefix *' (no arguments)
 Target feature: 'i64'
 In call: '3.prefix*'
 
@@ -74,10 +74,9 @@ To solve this, you could change the type of the target 'f' to 'i64' or convert t
 --CURDIR--/partial_application_negative.fz:44:47: error 8: Could not find called feature
   test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  # 3. should flag an error, do not change named prefix call to infix call
 ----------------------------------------------^^^^^^^^
-Feature not found: 'postfix *' (one argument)
+Feature not found: 'postfix *' (no arguments)
 Target feature: 'i64'
 In call: '3.postfix*'
-This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 
 --CURDIR--/partial_application_negative.fz:77:38: error 9: Different count of arguments needed when calling feature
@@ -86,7 +85,7 @@ This call was created automatically by partial application. To solve this, you m
 Feature not found: 'map' (no arguments)
 Target feature: 'interval'
 In call: 'map'
-To solve this, you might change the actual number of arguments to match the feature 'map' (one type parameter B, one value argument f) at {base.fum}/Sequence.fz:553:10:
+To solve this, you might change the actual number of arguments to match the feature 'map' (one type parameter B, one value argument f) at {base.fum}/Sequence.fz:556:10:
   public map(B type, f T->B) Sequence B
 ---------^^^
 To call 'map', you must provide 2 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.

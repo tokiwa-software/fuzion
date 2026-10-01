@@ -43,7 +43,7 @@ import java.util.function.Function;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class EmbeddedValue extends Val
+class EmbeddedValue extends Val
 {
 
 

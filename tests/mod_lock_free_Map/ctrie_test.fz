@@ -51,7 +51,7 @@ ctrie_test is
   no  := removed.difference readded
   yes := (all.difference removed) ∪ readded
 
-  say (no  ∀ (k -> ctrie[k].is_nil))
+  say (no  ∀ (k -> ctrie[k] = nil))
 
   say (yes ∀ (k -> ctrie[k].or_panic = "v$k"))
 

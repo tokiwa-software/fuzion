@@ -293,7 +293,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
     var cl = _fuir.clazzAt(s);
     if (cc == cl // calling myself
-        && _tailCall.callIsTailCall(cl, s))
+        && _tailCall.callIsTailCall(s))
       {
         throw new TailCallException(tvalue, args);
       }
@@ -302,7 +302,9 @@ public class Executor extends ProcessExpression<Value, Object>
       {
       case Routine :
         // NYI: UNDER DEVELOPMENT: change call to pass in ai as in match expression?
-        var cur = callOnNewInstance(s, cc, tvalue, args);
+        var cur = _fuir.clazzNeedsCode(cc)
+          ? callOnNewInstance(s, cc, tvalue, args)
+          : Value.UNIT;
 
         Value rres = cur;
         if (!_fuir.isConstructor(cc))

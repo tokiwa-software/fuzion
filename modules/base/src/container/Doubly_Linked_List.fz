@@ -72,7 +72,7 @@ V_Node(# mutate effect to be used manipulate pointers and stored element
 
        # the element stored in this list node
        #
-       # NYI: BUG: #7712: Should be possible to `redef payload` right here
+       # NYI: BUG: #3092: pre- and postconditions for fields not supported yet
        #
        payload0 T
        ) ref
@@ -81,7 +81,7 @@ is
 
   # the element stored in this list node
   #
-  # NYI: BUG: #7712: Should be possible to `redef payload` in the argument list
+  # NYI: BUG: #3092: pre- and postconditions for fields not supported yet
   #
   redef payload => payload0
 

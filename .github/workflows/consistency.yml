@@ -47,14 +47,14 @@ env:
 
 jobs:
   run_tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev shellcheck asciidoc asciidoctor ruby-asciidoctor-pdf antlr4
+          sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev shellcheck asciidoc asciidoctor asciidoctor-pdf antlr4
 
           # for DTRACE_PROBE
           sudo apt-get install systemtap-sdt-dev

@@ -77,9 +77,8 @@ public sqlite(db Native_Ref) : Database is
 
 
   public redef close outcome unit =>
-    # NYI: proper error handling
-    check c.sqlite3_close db = 0
-    unit
+    if c.sqlite3_close db != 0
+      error "closing of sqlite database failed"
 
 
   public redef query(query_string String, callback Function i32 (Sequence (String, String))) outcome unit =>
@@ -95,9 +94,7 @@ public sqlite(db Native_Ref) : Database is
 
     query outcome unit =>
       ret := sqlite3_exec db (query_string.as_c_string lm) cb_wrapper ffi.null (lm.array Native_Ref .from_Sequence [ffi.null])
-      if ret = 0
-        unit
-      else
+      if ret != 0
         error "error executing query $query_string, sqlite3_exec." ret.as_i64
 
     lm ! query

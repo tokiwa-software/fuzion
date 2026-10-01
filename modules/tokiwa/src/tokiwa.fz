@@ -136,13 +136,10 @@ public tokiwa is
           lm ! ()->
             p.with_err String lm (() -> (io.buffered lm).read_fully.bind String.from)
 
-        match feed_stdin
-          nil =>
-          stdin_file io.path =>
-            if io.file.exists stdin_file
-              lm ! ()->
-                (p.with_in unit lm ()->
-                  (io.buffered lm).Writer.env.write (io.slurp stdin_file).or_panic .or_panic).or_panic
+        _ := feed_stdin.bind input->
+          lm ! ()->
+            (p.with_in unit lm ()->
+              (io.buffered lm).Writer.env.write (io.slurp input).or_panic .or_panic).or_panic
 
         p.close_in.or_panic
 

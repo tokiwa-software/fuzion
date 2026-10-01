@@ -1,0 +1,227 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature unicode_category
+#
+# -----------------------------------------------------------------------
+
+# unicode_category -- the Unicode General_Category of a code point
+#
+# This is a choice of all 30 values of the General_Category property as
+# defined in https://www.unicode.org/reports/tr44/#General_Category_Values.
+# The elements are declared in `unicode_categories`.
+#
+# Use `codepoint.category` to get the category of a code point.
+#
+# NOTE: The order of the choice elements must match the
+# order in `CATEGORY_ORDER` of `src/dev/flang/util/unicode/ParseUnicodeData.java`
+# since the generated table `encodings.unicode.data.category_indices` refers to
+# this order.
+#
+public unicode_category
+  : choice
+      unicode_categories.uppercase_letter        # Lu
+      unicode_categories.lowercase_letter        # Ll
+      unicode_categories.titlecase_letter        # Lt
+      unicode_categories.modifier_letter         # Lm
+      unicode_categories.other_letter            # Lo
+      unicode_categories.nonspacing_mark         # Mn
+      unicode_categories.spacing_mark            # Mc
+      unicode_categories.enclosing_mark          # Me
+      unicode_categories.decimal_number          # Nd
+      unicode_categories.letter_number           # Nl
+      unicode_categories.other_number            # No
+      unicode_categories.connector_punctuation   # Pc
+      unicode_categories.dash_punctuation        # Pd
+      unicode_categories.open_punctuation        # Ps
+      unicode_categories.close_punctuation       # Pe
+      unicode_categories.initial_punctuation     # Pi
+      unicode_categories.final_punctuation       # Pf
+      unicode_categories.other_punctuation       # Po
+      unicode_categories.math_symbol             # Sm
+      unicode_categories.currency_symbol         # Sc
+      unicode_categories.modifier_symbol         # Sk
+      unicode_categories.other_symbol            # So
+      unicode_categories.space_separator         # Zs
+      unicode_categories.line_separator          # Zl
+      unicode_categories.paragraph_separator     # Zp
+      unicode_categories.control                 # Cc
+      unicode_categories.format                  # Cf
+      unicode_categories.surrogate               # Cs
+      unicode_categories.private_use             # Co
+      unicode_categories.unassigned,             # Cn
+
+    property.equatable
+is
+
+
+  # index of this category in the list of choice elements, 0..29
+  #
+  module ordinal u8 =>
+    match unicode_category.this
+      unicode_categories.uppercase_letter      => 0    # Lu
+      unicode_categories.lowercase_letter      => 1    # Ll
+      unicode_categories.titlecase_letter      => 2    # Lt
+      unicode_categories.modifier_letter       => 3    # Lm
+      unicode_categories.other_letter          => 4    # Lo
+      unicode_categories.nonspacing_mark       => 5    # Mn
+      unicode_categories.spacing_mark          => 6    # Mc
+      unicode_categories.enclosing_mark        => 7    # Me
+      unicode_categories.decimal_number        => 8    # Nd
+      unicode_categories.letter_number         => 9    # Nl
+      unicode_categories.other_number          => 10   # No
+      unicode_categories.connector_punctuation => 11   # Pc
+      unicode_categories.dash_punctuation      => 12   # Pd
+      unicode_categories.open_punctuation      => 13   # Ps
+      unicode_categories.close_punctuation     => 14   # Pe
+      unicode_categories.initial_punctuation   => 15   # Pi
+      unicode_categories.final_punctuation     => 16   # Pf
+      unicode_categories.other_punctuation     => 17   # Po
+      unicode_categories.math_symbol           => 18   # Sm
+      unicode_categories.currency_symbol       => 19   # Sc
+      unicode_categories.modifier_symbol       => 20   # Sk
+      unicode_categories.other_symbol          => 21   # So
+      unicode_categories.space_separator       => 22   # Zs
+      unicode_categories.line_separator        => 23   # Zl
+      unicode_categories.paragraph_separator   => 24   # Zp
+      unicode_categories.control               => 25   # Cc
+      unicode_categories.format                => 26   # Cf
+      unicode_categories.surrogate             => 27   # Cs
+      unicode_categories.private_use           => 28   # Co
+      unicode_categories.unassigned            => 29   # Cn
+
+
+  # true if this is a letter category: Lu, Ll, Lt, Lm, or Lo.
+  #
+  public is_letter bool => ordinal < 5
+
+
+  # true if this is a cased letter category: Lu, Ll, or Lt.
+  #
+  public is_cased_letter bool => ordinal < 3
+
+
+  # true if this is a mark category: Mn, Mc, or Me.
+  #
+  public is_mark bool => (u8 5 .. 7).contains ordinal
+
+
+  # true if this is a number category: Nd, Nl, or No.
+  #
+  public is_number bool => (u8 8 .. 10).contains ordinal
+
+
+  # true if this is a punctuation category: Pc, Pd, Ps, Pe, Pi, Pf, or Po.
+  #
+  public is_punctuation bool => (u8 11 .. 17).contains ordinal
+
+
+  # true if this is a symbol category: Sm, Sc, Sk, or So.
+  #
+  public is_symbol bool => (u8 18 .. 21).contains ordinal
+
+
+  # true if this is a separator category: Zs, Zl, or Zp.
+  #
+  public is_separator bool => (u8 22 .. 24).contains ordinal
+
+
+  # true if this is an other category: Cc, Cf, Cs, Co, or Cn.
+  #
+  public is_other bool => ordinal >= 25
+
+
+  # equality of two Unicode categories.
+  #
+  public fixed redef type.equality(a, b unicode_category) bool =>
+    a.ordinal = b.ordinal
+
+
+  # the short property value alias of this category, e.g. "Lu"
+  #
+  public redef as_string String =>
+    match unicode_category.this
+      c unicode_categories.uppercase_letter      => c.as_string
+      c unicode_categories.lowercase_letter      => c.as_string
+      c unicode_categories.titlecase_letter      => c.as_string
+      c unicode_categories.modifier_letter       => c.as_string
+      c unicode_categories.other_letter          => c.as_string
+      c unicode_categories.nonspacing_mark       => c.as_string
+      c unicode_categories.spacing_mark          => c.as_string
+      c unicode_categories.enclosing_mark        => c.as_string
+      c unicode_categories.decimal_number        => c.as_string
+      c unicode_categories.letter_number         => c.as_string
+      c unicode_categories.other_number          => c.as_string
+      c unicode_categories.connector_punctuation => c.as_string
+      c unicode_categories.dash_punctuation      => c.as_string
+      c unicode_categories.open_punctuation      => c.as_string
+      c unicode_categories.close_punctuation     => c.as_string
+      c unicode_categories.initial_punctuation   => c.as_string
+      c unicode_categories.final_punctuation     => c.as_string
+      c unicode_categories.other_punctuation     => c.as_string
+      c unicode_categories.math_symbol           => c.as_string
+      c unicode_categories.currency_symbol       => c.as_string
+      c unicode_categories.modifier_symbol       => c.as_string
+      c unicode_categories.other_symbol          => c.as_string
+      c unicode_categories.space_separator       => c.as_string
+      c unicode_categories.line_separator        => c.as_string
+      c unicode_categories.paragraph_separator   => c.as_string
+      c unicode_categories.control               => c.as_string
+      c unicode_categories.format                => c.as_string
+      c unicode_categories.surrogate             => c.as_string
+      c unicode_categories.private_use           => c.as_string
+      c unicode_categories.unassigned            => c.as_string
+
+
+  # all categories in the order of the choice elements, such that
+  # `unicode_category.all[c.ordinal] = c`
+  #
+  module type.all array unicode_category =>
+    [
+      unicode_categories.uppercase_letter,
+      unicode_categories.lowercase_letter,
+      unicode_categories.titlecase_letter,
+      unicode_categories.modifier_letter,
+      unicode_categories.other_letter,
+      unicode_categories.nonspacing_mark,
+      unicode_categories.spacing_mark,
+      unicode_categories.enclosing_mark,
+      unicode_categories.decimal_number,
+      unicode_categories.letter_number,
+      unicode_categories.other_number,
+      unicode_categories.connector_punctuation,
+      unicode_categories.dash_punctuation,
+      unicode_categories.open_punctuation,
+      unicode_categories.close_punctuation,
+      unicode_categories.initial_punctuation,
+      unicode_categories.final_punctuation,
+      unicode_categories.other_punctuation,
+      unicode_categories.math_symbol,
+      unicode_categories.currency_symbol,
+      unicode_categories.modifier_symbol,
+      unicode_categories.other_symbol,
+      unicode_categories.space_separator,
+      unicode_categories.line_separator,
+      unicode_categories.paragraph_separator,
+      unicode_categories.control,
+      unicode_categories.format,
+      unicode_categories.surrogate,
+      unicode_categories.private_use,
+      unicode_categories.unassigned
+    ]

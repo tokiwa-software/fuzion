@@ -182,14 +182,17 @@ is
 
 
   # number of elements as `i64`, `nil` if unbounded
+  # or if size does not fit into an i64.
   #
   # Enables the inherited `Set.finite` and `Set.type.equality`, which are
   # built on `size_option` and panic without it.
   #
   public redef size_option option i64
   =>
-    # NYI: for `T` wider than `i64` the result may overflow.
-    through.ok ? size.as_i64 : nil
+    if through.ok && size.fits_in_i64
+      size.as_i64
+    else
+      nil
 
 
   # index of `e` in this interval, `nil` if not contained

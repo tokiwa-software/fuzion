@@ -30,6 +30,9 @@ import static dev.flang.util.FuzionConstants.NO_SELECT;
 
 import java.util.Set;
 import java.util.TreeSet;
+
+import java.util.regex.Pattern;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -116,6 +119,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * line feed matcher
+   */
+  public static final Pattern LF = Pattern.compile("\n");
+
+
+  /**
+   * double space matcher
+   */
+  public static final Pattern DOUBLE_SPACE = Pattern.compile("  ");
 
 
   /**
@@ -466,6 +481,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
+  private String _baseNameHuman = null;
   /**
    * returns human-readable base name of this feature. @see FeatureName.baseNameHuman(AbstractFeature).
    *
@@ -473,30 +489,33 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public String baseNameHuman()
   {
-    var result = featureName().baseNameHuman();
-    if (result == FuzionConstants.HUMAN_READABLE_LAMBDA_NAME)
+    if (_baseNameHuman == null)
       {
-        var code = result + pos().sourceText().split("#")[0].trim();
-        var dotdotdot = "";
-        code = code.replaceAll("\n", " ");
-        while (code.indexOf("  ") >= 0)
+        _baseNameHuman = featureName().baseNameHuman();
+        if (_baseNameHuman == FuzionConstants.HUMAN_READABLE_LAMBDA_NAME)
           {
-            code = code.replaceAll("  "," ");
+            var code = _baseNameHuman + pos().sourceText().split("#")[0].trim();
+            var dotdotdot = "";
+            code = LF.matcher(code).replaceAll(" ");
+            while (code.indexOf("  ") >= 0)
+              {
+                code = DOUBLE_SPACE.matcher(code).replaceAll(" ");
+              }
+            var nl = code.indexOf("\n");
+            if (nl >= 0)
+              {
+                code = code.substring(0, nl);
+                dotdotdot = "...";
+              }
+            if (code.length() > 40)
+              {
+                code = code.substring(0, 39);
+                dotdotdot = "...";
+              }
+            _baseNameHuman = "(" + code + dotdotdot + ")";
           }
-        var nl = code.indexOf("\n");
-        if (nl >= 0)
-          {
-            code = code.substring(0, nl);
-            dotdotdot = "...";
-          }
-        if (code.length() > 40)
-          {
-            code = code.substring(0, 39);
-            dotdotdot = "...";
-          }
-        result = "(" + code + dotdotdot + ")";
       }
-    return result;
+    return _baseNameHuman;
   }
 
 
@@ -734,7 +753,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                       {
                         if (res != null)
                           {
-                            af.visit(res.resolveTypesOnly(af));
+                            af.returnType().resolveArgumentType(res, af);
                           }
                         t = af.returnType().functionReturnType();
                       }
@@ -777,7 +796,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
               {
                 if (res != null)
                   {
-                    af.visit(res.resolveTypesOnly(af));
+                    af.returnType().resolveArgumentType(res, af);
                   }
                 t = af.returnType().functionReturnType();
               }
@@ -2217,12 +2236,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  private boolean isUnitType(boolean isInheritedFeature)
+  public boolean isUnitType(boolean isInheritedFeature)
   {
     return
       isConstructor() &&
       contract().isEmpty() &&
-      valueArguments().isEmpty() &&
+      valueArguments().stream().allMatch(va -> va.isUnitType()) &&
       (isInheritedFeature || !isRef()) &&
       code().isEmpty() &&
       // unit inheriting e.g. property.orderable is fine
@@ -2238,9 +2257,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return
       outer() != null &&
       outer().inheritsFrom(Types.resolved.f_effect) &&
-      outer() != Types.resolved.f_effect &&
-      !isArgument() &&
-      !isField();
+      outer() != Types.resolved.f_effect;
   }
 
 

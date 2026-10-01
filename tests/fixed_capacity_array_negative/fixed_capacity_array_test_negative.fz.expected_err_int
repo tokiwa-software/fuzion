@@ -4,19 +4,19 @@ Call stack:
 fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg := kind_and_m...).call#1: {base.fum}/fuzion/runtime/fault.fz:63:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fuzion.runtime.fault.cause#1: {base.fum}/flow/fallible.fz:35:6:
+fuzion.runtime.fault.cause#1: {base.fum}/flow/fallible.fz:40:6:
   => h e
 -----^
 fuzion.type.runtime.type.contract_fault.type.default_value.(λkind_and_msg-> fuzion.runtime.fault.en...).call#1: {base.fum}/fuzion/runtime/contract_fault.fz:42:7:
       fuzion.runtime.fault.env.cause kind_and_msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fuzion.runtime.contract_fault.cause#1: {base.fum}/flow/fallible.fz:35:6:
+fuzion.runtime.contract_fault.cause#1: {base.fum}/flow/fallible.fz:40:6:
   => h e
 -----^
 fuzion.type.runtime.type.pre_fault.type.default_value.(λmsg-> fuzion.runtime.contract_fault.en...).call#1: {base.fum}/fuzion/runtime/pre_fault.fz:42:7:
       fuzion.runtime.contract_fault.env.cause ("precondition", msg)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fuzion.runtime.pre_fault.cause#1: {base.fum}/flow/fallible.fz:35:6:
+fuzion.runtime.pre_fault.cause#1: {base.fum}/flow/fallible.fz:40:6:
   => h e
 -----^
 fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:56:3:
@@ -31,7 +31,7 @@ fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:56:3
 fixed_capacity_array_test_negative.(λ()-> fca := container.Fixed_Capacity_A...).call: --CURDIR--/fixed_capacity_array_test_negative.fz:50:5:
     fca.add 21 # should panic: Fixed_Capacity_Array can not grow, exceeded limit of 10 elements
 ----^^^^^^^^^^
-(instate_helper unit fixed_capacity_array_test_negative.m).call_code.call: {base.fum}/effect.fz:405:18:
+(instate_helper unit fixed_capacity_array_test_negative.m).call_code.call: {base.fum}/effect.fz:404:18:
       set res := code()
 -----------------^^^^
 instate_helper unit fixed_capacity_array_test_negative.m: <source position not available>:
@@ -39,13 +39,13 @@ instate_helper unit fixed_capacity_array_test_negative.m: <source position not a
 fixed_capacity_array_test_negative.type.m.type.instate#4 unit: {base.fum}/effect.fz:170:10:
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fixed_capacity_array_test_negative.type.m.type.instate#3 unit: {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fixed_capacity_array_test_negative.m.instate_self#2 unit: {base.fum}/effect.fz:212:5:
+fixed_capacity_array_test_negative.type.m.type.instate#3 unit: {base.fum}/effect.fz:190:5:
+    instate R e code (_ -> compile_time_panic)
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fixed_capacity_array_test_negative.m.instate_self#2 unit: {base.fum}/effect.fz:211:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fixed_capacity_array_test_negative.m.infix !#2 unit: {base.fum}/effect.fz:229:5:
+fixed_capacity_array_test_negative.m.infix !#2 unit: {base.fum}/effect.fz:228:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
 fixed_capacity_array_test_negative: --CURDIR--/fixed_capacity_array_test_negative.fz:28:3:

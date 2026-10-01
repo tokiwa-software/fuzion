@@ -43,7 +43,6 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.TailCall;
-import dev.flang.fuir.analysis.dfa.Val;
 import dev.flang.ir.IR.FeatureKind;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -60,6 +59,9 @@ public class C extends ANY
 {
 
   /*-----------------------------  classes  -----------------------------*/
+
+
+  public int _maxTagNum = 0;
 
 
   /**
@@ -303,8 +305,7 @@ public class C extends ANY
 
             // NYI: UNDER DEVELOPMENT: without this heap clone tests ternary and unary are failing.
             yield onHeap
-              ? new Pair<>(CExpr
-                              .call(CNames.HEAP_CLONE._name, new List<>(result.adrOf(), result.sizeOfExpr()))
+              ? new Pair<>(heapClone(result)
                               .castTo(_types.clazz(constCl) + " *")
                               .deref(),
                              CStmnt.EMPTY)
@@ -332,15 +333,19 @@ public class C extends ANY
         {
           var arg = _fuir.clazzArg(constCl, i);
           var fr = _fuir.clazzArgClazz(constCl, i);
-          var bytes = _fuir.deserializeConst(fr, bb);
-          sb.append("." + _names.fieldName(arg).code());
-          sb.append(" = ");
-          var cd = constData(_fuir.clazzResultClazz(arg), bytes, false);
-          l.add(cd.v1());
-          sb.append(cd.v0().code());
-          if (i + 1 != argCount)
+          // NYI: CLEANUP: would be better if clazzArg would not return unit type args
+          if (!_fuir.clazzIsUnitType(fr))
             {
-              sb.append(",");
+              var bytes = _fuir.deserializeConst(fr, bb);
+              sb.append("." + _names.fieldName(arg).code());
+              sb.append(" = ");
+              var cd = constData(_fuir.clazzResultClazz(arg), bytes, false);
+              l.add(cd.v1());
+              sb.append(cd.v0().code());
+              if (i + 1 != argCount)
+                {
+                  sb.append(",");
+                }
             }
         }
 
@@ -535,13 +540,7 @@ public class C extends ANY
         {// replace unit-type values by 0, 1, 2, 3,... cast to ref Object
           if (CHECKS) check
             (value == CExpr.UNIT);
-          // NYI: BUG: this should be an assert in fz_init
-          if (tagNum >= CConstants.PAGE_SIZE)
-            {
-              Errors.error("Number of tags for choice type exceeds page size.",
-                           "While creating code for '" + _fuir.siteAsString(s) + "'\n" +
-                           "Found in choice type '" + _fuir.clazzName(newcl)+ "'\n");
-            }
+          _maxTagNum = Integer.max(tagNum, _maxTagNum);
           value = CExpr.int32const(tagNum);
           valuecl = _fuir.clazzAny();
         }
@@ -802,7 +801,7 @@ public class C extends ANY
 
         if (!_options._debugBuild && !_options.fuzionDebug())
           {
-            command.addAll("-O3");
+            command.addAll("-O3", "-DNDEBUG");
           }
       }
 
@@ -1112,6 +1111,7 @@ public class C extends ANY
 
     cf.println("\nvoid __main__()\n{ ");
     cf.indent();
+    cf.println("assert("+ _maxTagNum + " <= fzE_page_size());");
     cf.print(CStmnt.seq(
       initializeEffectsEnvironment(),
       CExpr.call(_names.function(_fuir.mainClazz()), new List<>())));
@@ -1767,7 +1767,7 @@ public class C extends ANY
               var cl = _fuir.clazzAt(s);
 
               if (cc == cl &&  // calling myself
-                  _tailCall.callIsTailCall(cl, s)
+                  _tailCall.callIsTailCall(s)
                 )
                 { // then we can do tail recursion optimization!
                   var tc = _fuir.clazzOuterClazz(cc);
@@ -1788,7 +1788,7 @@ public class C extends ANY
                         {
                           var tmp2 = _names.newTemp();
                           heapClone = CStmnt.seq(CStmnt.decl(_types.clazz(rt)+"*", tmp2),
-                                                 tmp2.assign(CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr())).castTo(_types.clazz(rt)+"*")));
+                                                 tmp2.assign(heapClone(res).castTo(_types.clazz(rt)+"*")));
                           res = tmp2.deref();
                         }
                       result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
@@ -1960,7 +1960,7 @@ public class C extends ANY
    *
    * @param cl id of clazz to compile
    *
-   * @return C statements with the forward declarations required for cl.
+   * @return C statement with the actual code of cl.
    */
   public CStmnt code(int cl)
   {
@@ -2339,8 +2339,7 @@ public class C extends ANY
     if (PRECONDITIONS) require
       (_fuir.clazzIsRef(rc));
 
-    return CExpr
-      .call(CNames.HEAP_CLONE._name, new List<>(valueExpr.adrOf(), valueExpr.sizeOfExpr()))
+    return heapClone(valueExpr)
       .castTo(_types.clazz(rc));
   }
 
@@ -2568,8 +2567,21 @@ public class C extends ANY
         "." + CNames.CLAZZ_ID.code() + " = " + _names.clazzId(cl).code() + ", " +
           "." + CNames.FIELDS_IN_REF_CLAZZ.code() + " = " + obj.code());
 
-    val = CExpr.call(CNames.HEAP_CLONE._name, new List<>(val.adrOf(), val.sizeOfExpr()));
-    return val;
+    return heapClone(val);
+  }
+
+
+  /**
+   * generate a heap clone call for this CExpr
+   *
+   * @param val
+   * @return
+   */
+  CExpr heapClone(CExpr val)
+  {
+    return val == CExpr.UNIT
+      ? CNames.NULL
+      : CExpr.call(CNames.HEAP_CLONE._name, new List<>(val.adrOf(), val.sizeOfExpr()));
   }
 
 

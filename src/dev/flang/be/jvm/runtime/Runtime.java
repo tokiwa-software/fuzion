@@ -159,7 +159,7 @@ public class Runtime extends ANY
     };
 
 
-  /* NYI: UNDER DEVELOPMENT: Constants to be kept in sync with `modules/baser/src/posix.fz`, should be automated.
+  /* NYI: UNDER DEVELOPMENT: Constants to be kept in sync with `modules/base/src/posix.fz`, should be automated.
    */
   static final int CLOCK_REALTIME  = 0;
   static final int CLOCK_MONOTONIC = 1;
@@ -739,6 +739,10 @@ public class Runtime extends ANY
                     strs.removeLast();
                   }
                 strs.add("[..]");
+              }
+            else if (s.getFileName().equals("--builtin--"))
+              {
+                strs.add(str);
               }
             else
               {

@@ -462,6 +462,9 @@ uint64_t fzE_posix_time(int clockid)
       exit(EXIT_FAILURE);
   }
 
+  // assert that this division will not be rounded to zero
+  assert( 1000000000ULL / frequency.QuadPart != 0ULL );
+
   return (uint64_t)(counter.QuadPart * (1000000000ULL / frequency.QuadPart));
 }
 
@@ -627,6 +630,8 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
     metadata[7] = 0; /* NYI: UNDER DEVELOPMENT: uid  */
     metadata[8] = 0; /* NYI: UNDER DEVELOPMENT: gid  */
 
+    CloseHandle(hFile);
+
     result = 0;
   }
   else {
@@ -637,7 +642,6 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
     result = -1;
   }
 
-  CloseHandle(hFile);
 
   return result;
 }
@@ -663,7 +667,11 @@ void fzE_init()
   }
   // NYI: UNDER DEVELOPMENT: WSACleanup
 
-  InitializeCriticalSection(&fzE_global_mutex);
+  if (!InitializeCriticalSectionEx(&fzE_global_mutex, 0, 0))
+  {
+    fprintf(stderr, "*** InitializeCriticalSectionEx failed\n");
+    exit(EXIT_FAILURE);
+  }
   // NYI: UNDER DEVELOPMENT: DeleteCriticalSection(&fzE_global_mutex);
 
   GC_INIT();
@@ -948,21 +956,30 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 //   -2  : an error occurred when calling waitpid, check errno
 int64_t fzE_process_poll(int64_t p){
 
-    assert(p != 0);
+  assert(p != 0);
 
-    DWORD status;
+  HANDLE h = (HANDLE)p;
 
-    if (!GetExitCodeProcess((HANDLE)p, &status)) {
-        // Error calling GetExitCodeProcess()
-        return -2;
+  DWORD result = WaitForSingleObject(h, 0);
+
+  if (result == WAIT_TIMEOUT)
+    {
+      return -1; // still running
     }
 
-    if (status == STILL_ACTIVE) {
-        // Process is still running.
-        return -1;
+  if (result == WAIT_FAILED)
+    {
+      return -2;
     }
 
-    return (int64_t)status;
+  DWORD status;
+
+  if (!GetExitCodeProcess(h, &status))
+    {
+      return -2;
+    }
+
+  return (int64_t)status;
 }
 
 /**
@@ -1110,7 +1127,8 @@ void * fzE_mtx_init() {
   if (!InitializeCriticalSectionEx(mtx, 0, 0))
   {
     fzE_free(mtx);
-    return NULL;
+    fprintf(stderr, "*** InitializeCriticalSectionEx failed\n");
+    exit(EXIT_FAILURE);
   }
   return (void *)mtx;
 }

@@ -33,6 +33,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 
 
@@ -690,8 +691,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                 generics = res.resolveTypes(generics, context);
                 if (!f.generics().errorIfSizeDoesNotMatch(generics,
                                                           pos.pos(),
-                                                          "type",
-                                                          "Type: " + thiz.toString(true) + "\n"))
+                                                          ()-> new Pair<>("type", "Type: " + thiz.toString(true) + "\n")))
                   {
                     f = Types.f_ERROR;
                   }

@@ -464,14 +464,16 @@ public abstract class AbstractCall extends Expr
       {
         res.resolveTypes(frml);
       }
-    return calledFeature()
-      .outer()
-      .handDownListToType(new List<>(frml.resultType()), target().type())
-      // next, replace generics given in the target type and in this call
-      .flatMap(ft -> ft.isOpenGeneric()
-                     // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target
-                     ? openGenericsFor(res, context, ft)
-                     : new List<>(actualArgType(res, context, ft, frml)));
+    return calledFeature() == Types.f_ERROR
+      ? NO_GENERICS
+      : calledFeature()
+        .outer()
+        .handDownListToType(new List<>(frml.resultType()), target().type())
+        // next, replace generics given in the target type and in this call
+        .flatMap(ft -> ft.isOpenGeneric()
+                      // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target
+                      ? openGenericsFor(res, context, ft)
+                      : new List<>(actualArgType(res, context, ft, frml)));
   }
 
 

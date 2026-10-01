@@ -40,6 +40,6 @@ public once(T type, f Lazy T) : auto_unwrap T once_mutate is
   # get the result of `f`
   #
   public redef unwrap T ! once_mutate =>
-    if cache.get.is_nil
+    if cache.get = nil
       cache <- f()
     cache.get.or_panic

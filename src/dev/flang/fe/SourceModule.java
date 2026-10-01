@@ -110,16 +110,19 @@ public class SourceModule extends Module implements SrcModule
 
 
   /**
+   * Resolution instance
+   */
+  final Resolution _res;
+
+
+  /**
    * In case this module defines a main feature, this is its fully qualified
    * name.
    */
   String _main;
 
 
-  /**
-   * Resolution instance
-   */
-  Resolution _res;
+
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -135,6 +138,7 @@ public class SourceModule extends Module implements SrcModule
     _options = options;
     _sourceDirs = sourceDirs;
     _universe = universe;
+    _res = new Resolution(_options, _universe, this);
   }
 
 
@@ -246,7 +250,6 @@ public class SourceModule extends Module implements SrcModule
     if (CHECKS) check
       (_universe != null);
 
-    _res = new Resolution(_options, _universe, this);
     if (_dependsOn.length > 0)
       {
         _universe.setState(State.RESOLVED);

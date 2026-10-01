@@ -11,20 +11,20 @@ While parsing: implRout, parse stack: implRout, routOrField, feature, expr, expr
 While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
---CURDIR--/choice_negative.fz:140:9: error 3: Could not find called feature
-    x : choice i64 bool := true  # 28. should flag an error, choice feature must not be field
---------^^^^^^
-Feature not found: 'choice' (2 arguments)
-Target feature: 'choice_negative.impl2'
-In call: 'choice i64 bool'
-
-
---CURDIR--/choice_negative.fz:140:5: error 4: Could not find called feature
+--CURDIR--/choice_negative.fz:140:5: error 3: Could not find called feature
     x : choice i64 bool := true  # 28. should flag an error, choice feature must not be field
 ----^
 Feature not found: 'x' (no arguments)
 Target feature: 'choice_negative.impl2'
 In call: 'x'
+
+
+--CURDIR--/choice_negative.fz:140:9: error 4: Could not find called feature
+    x : choice i64 bool := true  # 28. should flag an error, choice feature must not be field
+--------^^^^^^
+Feature not found: 'choice' (2 arguments)
+Target feature: 'choice_negative.impl2'
+In call: 'choice i64 bool'
 
 
 --CURDIR--/choice_negative.fz:35:5: error 5: Choice feature must not be ref

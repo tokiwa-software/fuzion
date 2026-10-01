@@ -29,6 +29,6 @@ Tests from lib_io_dir/lib_io_dir.fz using unicode:
 
 unit
 an error occurred while creating the following directory: "⚗️🧫"
---error: no more directory entries--
 1️⃣📜
 2️⃣🗒️
+no more directory entries

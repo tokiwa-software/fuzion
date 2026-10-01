@@ -36,11 +36,10 @@ is
   # zero is represented by the empty list.
   data := n.b.drop_while (=0)
 
-  name String =>
-    "int"
 
   public fixed redef type.zero int =>
     int true uint.zero
+
 
   public fixed redef type.one int =>
     int true uint.one

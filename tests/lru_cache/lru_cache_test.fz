@@ -104,11 +104,11 @@ lru_cache_test =>
         res := test c op i nil
         # make sure only non evicted elements return a value and check that it is correct
         check (res.ok && res.or_panic = "_$(i)_") ^ exp_evicted.contains i
-        op ? del => {check (test c get i nil).is_nil} | * =>
+        op ? del => {check (test c get i nil) = nil} | * =>
 
       # get and del from empty cache
-      check test c get -1 nil .is_nil
-      check test c del -1 nil .is_nil
+      check test c get -1 nil  = nil
+      check test c del -1 nil  = nil
 
   for op in (id (array operation) [get, del]) do
     for cap in [1,2,3,6] do
@@ -158,7 +158,7 @@ lru_cache_test =>
       m ! ()->
 
         # expected key value pairs
-        exp_map := container.mutable_tree_map m i64 i64 .empty
+        exp_map := container.Mutable_Tree_Map m i64 i64 .empty
         # expected order from mru to lru
         exp_ord := m.env.var (Sequence i64) []
         cache := container.LRU_Cache m i64 i64 .new capacity
