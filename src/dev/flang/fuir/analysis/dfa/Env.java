@@ -230,7 +230,7 @@ class Env extends ANY implements Comparable<Env>
 
           }
         if (CHECKS)
-          check(a!=null || b!=null || res==0);
+          check(a != null || b != null || res == 0);
       }
     return res;
   }
