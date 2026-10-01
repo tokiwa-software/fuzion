@@ -71,42 +71,6 @@ public unicode_category
 is
 
 
-  # index of this category in the list of choice elements, 0..29
-  #
-  module ordinal u8 =>
-    match unicode_category.this
-      unicode_categories.uppercase_letter      => 0    # Lu
-      unicode_categories.lowercase_letter      => 1    # Ll
-      unicode_categories.titlecase_letter      => 2    # Lt
-      unicode_categories.modifier_letter       => 3    # Lm
-      unicode_categories.other_letter          => 4    # Lo
-      unicode_categories.nonspacing_mark       => 5    # Mn
-      unicode_categories.spacing_mark          => 6    # Mc
-      unicode_categories.enclosing_mark        => 7    # Me
-      unicode_categories.decimal_number        => 8    # Nd
-      unicode_categories.letter_number         => 9    # Nl
-      unicode_categories.other_number          => 10   # No
-      unicode_categories.connector_punctuation => 11   # Pc
-      unicode_categories.dash_punctuation      => 12   # Pd
-      unicode_categories.open_punctuation      => 13   # Ps
-      unicode_categories.close_punctuation     => 14   # Pe
-      unicode_categories.initial_punctuation   => 15   # Pi
-      unicode_categories.final_punctuation     => 16   # Pf
-      unicode_categories.other_punctuation     => 17   # Po
-      unicode_categories.math_symbol           => 18   # Sm
-      unicode_categories.currency_symbol       => 19   # Sc
-      unicode_categories.modifier_symbol       => 20   # Sk
-      unicode_categories.other_symbol          => 21   # So
-      unicode_categories.space_separator       => 22   # Zs
-      unicode_categories.line_separator        => 23   # Zl
-      unicode_categories.paragraph_separator   => 24   # Zp
-      unicode_categories.control               => 25   # Cc
-      unicode_categories.format                => 26   # Cf
-      unicode_categories.surrogate             => 27   # Cs
-      unicode_categories.private_use           => 28   # Co
-      unicode_categories.unassigned            => 29   # Cn
-
-
   # true if this is a letter category: Lu, Ll, Lt, Lm, or Lo.
   #
   public is_letter bool => ordinal < 5

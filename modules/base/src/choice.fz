@@ -138,11 +138,31 @@ is
 
   # The tag to identify this value
   #
-  # NYI: UNDER DEVELOPMENT: Chose a better name, mabe `ordinal`?
-  #
-  public tag i32
+  private tag i32
   =>
     intrinsic
+
+
+  # Ordinal number corresponding that maps a choice to the index of
+  # the type of the value in the possible types CHOICE_ELEMENT_TYPE.
+  #
+  # Note that this is defined even for choices of ambiguous types like
+  # `option nil`: Even though this type may only contain `nil` it can
+  # still be distinguished:
+  #
+  #     [nil].first.ordinal
+  #
+  # is `0` while
+  #
+  #     (Sequence nil).empty.first.ordinal
+  #
+  # is `1`.
+  #
+  public ordinal i64
+  post
+    debug: 0 <= result < CHOICE_ELEMENT_TYPE.count
+  =>
+    tag.as_i64
 
 
   # apply -- apply `f.call` to the value stored in this choice
