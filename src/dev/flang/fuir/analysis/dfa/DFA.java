@@ -1503,7 +1503,7 @@ public class DFA extends ANY
           .sorted((a,b) -> b.size()-a.size())
           .limit(25)
           .forEach(r -> {
-            say(r.size() + ": " + r);
+            say(r.size() + " of " + _fuir.clazzName(r.getFirst()._clazz) + "\n\t" + r.stream().map(x -> x.toString()).collect(Collectors.joining("\n\t\t")));
           });
 
         say("most calls, grouped by clazz: ");
@@ -1511,15 +1511,14 @@ public class DFA extends ANY
         _calls
           .values()
           .stream()
-          .collect(Collectors.groupingBy(c -> c._group._cc))
+          .collect(Collectors.groupingBy(c -> c.calledClazz()))
           .values()
           .stream()
           .sorted((a,b) -> b.size()-a.size())
           .limit(25)
           .forEach(r -> {
-            say(r.size() + ": " + r);
-            if (r.size()> 2)
-              say("why are first two calls different?: " + r.get(0).compareToWhy(r.get(1)));
+            say(r.size() + " of " + _fuir.clazzName(r.getFirst().calledClazz()) + "\n\t" + r.stream().map(x -> x.toString()).collect(Collectors.joining("\n\t\t")) +
+              (r.size()>2 ? "\n\twhy are first two calls different?: " + r.get(0).compareToWhy(r.get(1)): ""));
           });
 
       }
