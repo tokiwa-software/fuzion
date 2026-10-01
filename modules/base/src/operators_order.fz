@@ -40,18 +40,6 @@ public infix ≥(T type : property.orderable, a, b T) bool =>
   lteq b a
 
 
-# does this come strictly after other?
-#
-public infix ⩼(T type : property.orderable, a, b T) bool =>
-  a > b
-
-
-# does this come strictly before other?
-#
-public infix ⩻(T type : property.orderable, a, b T) bool =>
-  a < b
-
-
 # three-way comparison between this and other.
 #
 # result is < 0 if this < other
