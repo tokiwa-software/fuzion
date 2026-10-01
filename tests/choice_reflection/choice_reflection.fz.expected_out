@@ -1,0 +1,58 @@
+PASS tag: got 0
+PASS tag: got 1
+PASS tag: got 2
+PASS tag: got 4
+PASS tag and as_string in call to f: got tag is 4 for böa
+PASS tag and as_string in call to f: got tag is 0 for true
+PASS tag and as_string in call to f: got tag is 1 for 42
+PASS tag and as_string in call to f: got tag is 2 for 98
+PASS tag and as_string in call to f: got tag is 4 for hi
+PASS true .tag      : got 1
+PASS true .as_string: got true
+PASS false.tag      : got 0
+PASS false.as_string: got false
+PASS (option String "bla").tag      : got 0
+PASS (option String "bla").as_string: got bla
+PASS (option String nil    ).tag      : got 1
+PASS (option String nil    ).as_string: got --nil--
+PASS (option i64 42 ).tag      : got 0
+PASS (option i64 42 ).as_string: got 42
+PASS (option i64 nil).tag      : got 1
+PASS (option i64 nil).as_string: got --nil--
+PASS id (choice void void void i32 void void unit nil void void) 42   .tag: got 3
+PASS id (choice void void void i32 void void unit nil void void) 42   .as_string: got 42
+PASS id (choice void void void i32 void void unit nil void void) unit .tag: got 6
+PASS id (choice void void void i32 void void unit nil void void) unit .as_string: got unit
+PASS id (choice void void void i32 void void unit nil void void) nil  .tag: got 7
+PASS id (choice void void void i32 void void unit nil void void) nil  .as_string: got --nil--
+PASS id (choice unit void void) unit .tag: got 0
+PASS id (choice void unit void) unit .tag: got 1
+PASS id (choice void void unit) unit .tag: got 2
+PASS id (Sequence nil) [nil] .first.tag:: got 0
+PASS id (Sequence nil) []    .first.tag:: got 1
+PASS id (choice unit String nil (Sequence i64) concur) unit    .tag: got 0
+PASS id (choice unit String nil (Sequence i64) concur) 'str'   .tag: got 1
+PASS id (choice unit String nil (Sequence i64) concur) nil     .tag: got 2
+PASS id (choice unit String nil (Sequence i64) concur) [1,2,4] .tag: got 3
+PASS id (choice unit String nil (Sequence i64) concur) concur  .tag: got 4
+PASS id (choice unit nil concur) unit   .tag: got 0
+PASS id (choice unit nil concur) nil    .tag: got 1
+PASS id (choice unit nil concur) concur .tag: got 2
+PASS impossible option: got nil
+PASS option nil !ok: got nil --nil-- tag:1
+PASS option nil ok!: got nil --nil-- tag:0
+PASS option nil !ok via generic call: got matches B: --nil-- type option nil 1
+PASS option nil ok! via generic call: got matches A: --nil-- type option nil 0
+PASS blub: got 1: StringYeahYeah!
+PASS blub: got 2: nil
+PASS blub: got 3: Sequence [1, 2, 3, 4]
+PASS blub: got 4: unit
+PASS blob: got 1: StringYeahYeah!
+PASS blob: got 2: nil
+PASS blob: got 3: option Sequence [1, 2, 3, 4]
+PASS blob: got 4: unit
+c is of type true_ value instance[true_]
+c is String 'hi!' length 3
+c is of type nil value --nil--
+c is numeric -1.0+1.0i, c² is 0.0-2.0i
+c is numeric 3⁄4, c² is 9⁄16
