@@ -169,6 +169,7 @@ public class Runner extends ClassLoader
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+        System.exit(1);
     }, "delayed-thread-dump");
 
     dumpThread.setDaemon(true);
