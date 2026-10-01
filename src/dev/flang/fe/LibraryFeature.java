@@ -65,7 +65,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LibraryFeature extends AbstractFeature
+public class LibraryFeature extends FuirFeature
 {
 
 
@@ -875,25 +875,27 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * Constant result value for `LibraryFeature.comparisonId`
+   */
+  static int _comparisonId_ = (_comparisonIds_++);
+
+
+  @Override public int comparisonId()
+  {
+    return _comparisonId_;
+  }
+
+
+  /**
    * Compare this to other for sorting Features
    */
   public int compareTo(AbstractFeature other)
   {
-    int result;
-    if (other instanceof Feature)
-      {
-        result = -1;
-      }
-    else if (other instanceof LibraryFeature lf)
-      {
-        result = globalIndex() - lf.globalIndex();
-      }
-    else
-      {
-        throw new Error("LibraryFeature.compareTo expects that there are only two subclasses: Feature and LibraryFeature.");
-      }
-    return result;
+    return (other instanceof LibraryFeature lf)
+      ? globalIndex() - lf.globalIndex()
+      : super.compareTo(other) /* comparing against dev.flang.ast.Feature or other type */;
   }
+
 
   /**
    * Union of the library modules of all inner features. Checks inner features recursively.

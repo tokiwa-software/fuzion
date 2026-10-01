@@ -580,18 +580,7 @@ part of the (((inner features))) declarations of the corresponding
    * Set of all features that are direct outer features of features declared by
    * sources in this source module and that themselves come from other modules.
    */
-  TreeSet<LibraryFeature> _outerWithDeclarations = new TreeSet<>
-    (new Comparator<LibraryFeature>()
-     {
-       public int compare(LibraryFeature f1, LibraryFeature f2)
-       {
-         var l1 = f1._libModule;
-         var l2 = f2._libModule;
-         return
-           (l1 != l2) ? l1.name().compareTo(l2.name())
-                      : Integer.signum(f1._index - f2._index);
-       }
-      });
+  TreeSet<LibraryFeature> _outerWithDeclarations = new TreeSet<>();
 
 
   /**

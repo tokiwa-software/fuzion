@@ -593,7 +593,7 @@ public class Executor extends ProcessExpression<Value, Object>
     if (sub instanceof boolValue)
       {
         tag = sub.boolValue() ? 1 : 0;
-        val = sub;
+        val = Value.UNIT;
       }
     else
       {
@@ -602,6 +602,10 @@ public class Executor extends ProcessExpression<Value, Object>
           {
             val = Interpreter.getChoiceRefVal(staticSubjectClazz, staticSubjectClazz, sub);
             tag = ChoiceIdAsRef.tag(staticSubjectClazz, val);
+            if (val == null || val instanceof ChoiceIdAsRef)
+              {
+                val = Value.UNIT;
+              }
           }
         else
           {

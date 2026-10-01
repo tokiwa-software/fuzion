@@ -1430,7 +1430,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return this or Types.t_ERROR in case an error was reported.
    */
-  void checkChoice(SourcePosition pos, Context context)
+  void checkChoiceForMatch(SourcePosition pos, Context context)
   {
     if (isChoice())
       {
@@ -2682,7 +2682,6 @@ there is no common super type of the two types (Types.t_ERROR)
         else if (a != null && !a.isArtificialType())
           {
             a.checkLegalThisType(p, context);
-            a.checkChoice(p, context);
             if (!c.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
                 !f.isCoTypesRelayTypeParameter() &&

@@ -170,6 +170,7 @@ public abstract class AbstractMatch extends ExprWithPos
       {
         AstErrors.matchSubjectMustNotBeTypeParameter(subject().pos(), st);
       }
+    st.checkChoiceForMatch(pos(), context);
 
     if (CHECKS) check
       (Errors.any() || st != Types.t_ERROR,

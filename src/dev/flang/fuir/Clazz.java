@@ -44,6 +44,7 @@ import dev.flang.ast.AstErrors;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Types;
 
+import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryFeature;
 
 import dev.flang.ir.IR;
@@ -733,9 +734,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * The feature underlying this clazz.
    */
-  LibraryFeature feature()
+  FuirFeature feature()
   {
-    return (LibraryFeature) _type.feature();
+    return (FuirFeature) _type.feature();
   }
 
 
@@ -937,9 +938,10 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * find redefinition of a given feature in this clazz. NYI: This will have to
-   * take the whole inheritance chain into account including the parent view that is
-   * being filled with live:
+   * find redefinition of a given feature in this clazz.
+   *
+   * NYI: CLEANUP: #7900 This will have to take the whole inheritance chain into
+   * account including the parent view that is being filled with live:
    */
   private AbstractFeature findRedefinition(AbstractFeature f)
   {
@@ -965,8 +967,10 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     // first look in the feature itself
     AbstractFeature result = _fuir.lookupFeature(feature(), fn);
+    if (CHECKS) check
+      (result != null);
 
-    if (!result.redefinesFull().contains(f))
+    if (!result.redefinesFull().contains(f)) // NYI: CLEANUP: #7900 this strange special handling should not be needed.
       {
         result = f;
       }
@@ -1474,7 +1478,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   @Override
   public int hashCode()
   {
-    return (_type.isRef() ? 0x777377 : 0) ^ feature().globalIndex();  // NYI: outer and type parameters!
+    throw new Error("dev.flang.fuir.Clazz is not hashable!");
   }
 
 
