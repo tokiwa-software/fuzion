@@ -957,7 +957,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 int64_t fzE_process_poll(int64_t p){
 
   assert(p != 0);
-  assert (GetProcessId(h) != 0)
+  assert (GetProcessId(h) != 0);
 
   HANDLE h = (HANDLE)p;
 
