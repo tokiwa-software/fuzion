@@ -2945,8 +2945,8 @@ public class GeneratingFUIR extends FUIR
     var result = NO_CLAZZ;
     if (f != null)
       {
-        // NYI: Check if this works for a case that is part of an inherits clause, do
-        // we need to store in outerClazz.outer?
+        // NYI: CLEANUP: #7896: Check if this works for a case that is part of
+        // an inherits clause, do we need to store in outerClazz.outer?
         result = outerClazz.lookup(f)._id;
       }
     return result;
