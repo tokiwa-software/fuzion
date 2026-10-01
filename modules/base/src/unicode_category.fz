@@ -83,27 +83,27 @@ is
 
   # true if this is a mark category: Mn, Mc, or Me.
   #
-  public is_mark bool => (u8 5 .. 7).contains ordinal
+  public is_mark bool => (5 .. 7).contains ordinal
 
 
   # true if this is a number category: Nd, Nl, or No.
   #
-  public is_number bool => (u8 8 .. 10).contains ordinal
+  public is_number bool => (8 .. 10).contains ordinal
 
 
   # true if this is a punctuation category: Pc, Pd, Ps, Pe, Pi, Pf, or Po.
   #
-  public is_punctuation bool => (u8 11 .. 17).contains ordinal
+  public is_punctuation bool => (11 .. 17).contains ordinal
 
 
   # true if this is a symbol category: Sm, Sc, Sk, or So.
   #
-  public is_symbol bool => (u8 18 .. 21).contains ordinal
+  public is_symbol bool => (18 .. 21).contains ordinal
 
 
   # true if this is a separator category: Zs, Zl, or Zp.
   #
-  public is_separator bool => (u8 22 .. 24).contains ordinal
+  public is_separator bool => (22 .. 24).contains ordinal
 
 
   # true if this is an other category: Cc, Cf, Cs, Co, or Cn.
