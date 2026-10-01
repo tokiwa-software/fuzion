@@ -1,9 +1,21 @@
 
---CURDIR--/reg_issue3895.fz:24:13: error 1: Could not find called feature
+--CURDIR--/reg_issue3895.fz:24:40: error 1: Could not find called feature
+a := String.concat 1 2 3 4 5 6; _ := a.utf8
+---------------------------------------^^^^
+Feature not found: 'utf8' (no arguments)
+Target feature: 'Monoid'
+In call: 'a.utf8'
+
+
+--CURDIR--/reg_issue3895.fz:24:13: error 2: Wrong number of actual value arguments in call
 a := String.concat 1 2 3 4 5 6; _ := a.utf8
 ------------^^^^^^
-Feature not found: 'concat' (6 arguments)
-Target feature: 'String'
-In call: 'String.concat 1 2 3 4 5 6'
+Number of actual value arguments is 6, while call expects no value arguments.
+Actual value arguments: '1', '2', '3', '4', '5', '6'
+Called feature: 'String.type.concat'
+Formal value arguments: --none--
+Declared at {base.fum}/String.fz:937:15:
+  public type.concat Monoid String =>
+--------------^^^^^^
 
-one error.
+2 errors.
