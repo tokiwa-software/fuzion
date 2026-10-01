@@ -1420,48 +1420,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check that in case this is a choice type, it is valid, i.e., it is a value
-   * type and the generic arguments to the choice are different.  Create compile
-   * time error in case this is not the case.
-   *
-   * @param pos source position to report as part of the error message
-   *
-   * @param context the source code context where this Type is used
-   *
-   * @return this or Types.t_ERROR in case an error was reported.
-   */
-  void checkChoiceForMatch(SourcePosition pos, Context context)
-  {
-    if (isChoice())
-      {
-        var g = choiceGenerics(context);
-        if (CHECKS) check
-          (Errors.any() || !isRef());
-
-        int i1 = 0;
-        for (var t1 : g)
-          {
-            int i2 = 0;
-            for (var t2 : g)
-              {
-                if (i1 < i2)
-                  {
-                    if (!t1.disjoint(t2, context) &&
-                         t1 != Types.t_ERROR &&
-                         t2 != Types.t_ERROR)
-                      {
-                        AstErrors.genericsMustBeDisjoint(pos, t1, t2);
-                      }
-                  }
-                i2++;
-              }
-            i1++;
-          }
-      }
-  }
-
-
-  /**
    * Are this and other disjoint?
    * In other words:
    * Do the sets these types represent not have any overlapping values?
