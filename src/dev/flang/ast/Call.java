@@ -2618,6 +2618,23 @@ public class Call extends AbstractCall
 
 
   /**
+   * Helper for tryResolveTypeCall.
+   * Checks if '_name' is missing in 'tf', but exists as a type feature in its cotype 'ttf'.
+   *
+   * @param res the resolution context.
+   * @param tf  the feature of the target type.
+   * @param ttf the cotype of tf.
+   * @return true if the name matches only a type feature in the cotype, false otherwise.
+   */
+  private boolean onlyTypeFeatureNamed(Resolution res, AbstractFeature tf, AbstractFeature ttf)
+  {
+    return
+      res._module.lookup(tf , _name, this, false, false).isEmpty() &&
+      res._module.lookup(ttf, _name, this, false, false).stream().anyMatch(fo -> fo._feature.isTypeFeature());
+  }
+
+
+  /**
    * try resolving this call as dot-type-call
    *
    * On success _calledFeature and _target will be set.
@@ -2671,6 +2688,12 @@ public class Call extends AbstractCall
                       _pendingError = null;
                       _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
                     }
+                }
+              else if (tfo == null && fo == null && onlyTypeFeatureNamed(res, tf, ttf))
+                {
+                  // target can only be meant as the type: use it as target such
+                  // that a mismatch in the argument count is reported for the type feature.
+                  _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
                 }
               if (_calledFeature != null)
                 {
