@@ -1585,15 +1585,6 @@ public class AstErrors extends ANY
           "Formal type parameter declared in " + tp.pos().show() + "\n");
   }
 
-  static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
-  {
-    error(pos,
-          "Actual type parameters to choice type must be disjoint types",
-          "The following types have overlapping values:\n" +
-          s(t1) + /* " at " + t1.pos().show() + */ "\n" +  // NYI: use pos before Types were interned!
-          s(t2) + /* " at " + t2.pos().show() + */ "\n");
-  }
-
   static void illegalUseOfOpenFormalGeneric(SourcePosition pos, AbstractFeature generic)
   {
     error(pos,

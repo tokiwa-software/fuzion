@@ -2078,10 +2078,6 @@ A ((Choice)) declaration must not contain a result type.
 
     choiceTypeCheckAndInternalFields(res);
 
-    selfType().checkChoice(_pos, context());
-
-    _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
-
     visit(new ContextVisitor(context()) {
         /* if an error is reported in a call it might no longer make sense to check the actuals: */
         @Override public boolean visitActualsLate() { return true; }
