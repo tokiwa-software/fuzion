@@ -1417,7 +1417,7 @@ public class AstErrors extends ANY
         error(call.pos(), msg,
               (lo != null && lo.isChoice() ? "" : "Feature not found: " + sbnf(calledName) + "\n") +
               (targetFeature != null
-                ? (targetFeature.isCotype() ? "Target type: " + s(target.type()) + "\n" : "Target feature: " + s(targetFeature) + "\n")
+                ? (targetFeature.isCotype() ? "Target expression: " + expr(target.toString()) + "\n" : "Target feature: " + s(targetFeature) + "\n")
                 : "") +
               "In call: " + s(call) + "\n" +
               (solution0 != "" ? solution0 :
