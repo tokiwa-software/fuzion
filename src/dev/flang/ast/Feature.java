@@ -2748,13 +2748,25 @@ A pre-condition of a feature that does not redefine an inherited feature must st
 
 
   /**
+   * Constant result value for `Feature.comparisonId`
+   */
+  static int _comparisonId_ = (_comparisonIds_++);
+
+
+  @Override public int comparisonId()
+  {
+    return _comparisonId_;
+  }
+
+
+  /**
    * Compare this to other for sorting Feature
    */
   public int compareTo(AbstractFeature other)
   {
     return (other instanceof Feature of)
       ? _id - of._id
-      : +1;
+      : super.compareTo(other) /* comparing against LibraryFeature or other type */;
   }
 
 
