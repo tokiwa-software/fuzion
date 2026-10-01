@@ -468,14 +468,6 @@ public class ParsedCall extends Call
       (expectedType.isLambdaTargetButNotLazy(res));
 
     var paa = partiallyApplicableAlternative(res, context, expectedType);
-        if (paa != null && paa._feature.isTypeFeature())
-      {
-        checkTypeFeaturePartialAmbiguity(res, paa);
-        if (_calledFeature == Types.f_ERROR)
-          {
-            return this;
-          }
-      }
     Expr l = paa != null && !paa._feature.isTypeFeature()
       ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
       : this;
@@ -483,6 +475,11 @@ public class ParsedCall extends Call
         _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
         checkPartialAmbiguity(res, context, expectedType);
+        checkTypeFeaturePartialAmbiguity(res, context, expectedType);
+        if(_calledFeature == Types.f_ERROR /* checkTypeFeaturePartialAmbiguity may have set _calledFeature to error */)
+          {
+            return this;
+          }
         if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
             _pendingError != null                       ||
 
@@ -527,10 +524,10 @@ public class ParsedCall extends Call
    * @param paa the partially applicable type feature found by
    * partiallyApplicableAlternative.
    */
-  private void checkTypeFeaturePartialAmbiguity(Resolution res, FeatureAndOuter paa)
+  private void checkTypeFeaturePartialAmbiguity(Resolution res, Context context, AbstractType expectedType)
   {
-    if (PRECONDITIONS) require
-      (paa._feature.isTypeFeature());
+    var paa = partiallyApplicableAlternative(res, context, expectedType);
+    if (paa != null && paa._feature.isTypeFeature()){
 
     var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
     var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
@@ -545,6 +542,7 @@ public class ParsedCall extends Call
         _calledFeature = Types.f_ERROR;
         setToErrorState();
       }
+    }
   }
 
 
