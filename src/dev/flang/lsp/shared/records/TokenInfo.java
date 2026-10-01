@@ -399,11 +399,6 @@ public class TokenInfo extends ANY
     return pos.line() * 1000 + pos.column();
   }
 
-  public boolean isWhitespace()
-  {
-    return token() == Token.t_ws;
-  }
-
   private static final Set<Token> leftBrackets =
     List.of(Token.t_lbrace, Token.t_lbracket, Token.t_lparen).stream().collect(Collectors.toUnmodifiableSet());
   private static final Set<Token> rightBrackets =
