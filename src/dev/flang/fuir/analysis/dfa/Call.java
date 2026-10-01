@@ -214,14 +214,17 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   String compareToWhy(Call other)
   {
-    return
-      calledClazz() != other.calledClazz() ? "cc different" :
-      target()._id  != other.target()._id  ? "target different" :
-      site()        != other.site()        ? "site different" :
-      envCompare(other) != 0               ? "env different" + " env1: "+env()+ " env2: "+other.env() +
-                                             " used " + _group.usedEffectsAsString() +
-                                             " req " + _group.requiredEffectsAsString()
-                                           : "not different";
+    var differences = new List<>();
+
+    if(calledClazz() != other.calledClazz()) { differences.add("cc different"); }
+    if(target()._id  != other.target()._id ) { differences.add("target different"); }
+    if(site()        != other.site()       ) { differences.add("site different"); }
+    if(envCompare(other) != 0              ) { differences.add("env different" + " env1: "+env()+ " env2: "+other.env() +
+                                                                " used " + _group.usedEffectsAsString() +
+                                                                " req " + _group.requiredEffectsAsString()); }
+    return differences.isEmpty()
+      ? "not different"
+      : differences.toString();
   }
 
 
