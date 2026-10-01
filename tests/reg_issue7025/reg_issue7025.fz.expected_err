@@ -4,7 +4,7 @@ v t2.e
 ^
 formal type parameter 'E : t.e'
 actual type parameter 't2.e'
-assignable to constraint: 't2.e',
-                          'Any'
+assignable to constraint: 'Any',
+                          't2.e'
 
 one error.
