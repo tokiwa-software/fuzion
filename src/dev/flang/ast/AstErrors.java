@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -395,7 +396,7 @@ public class AstErrors extends ANY
           {
             var assignableTo = new TreeSet<AbstractType>();
             frmlT.isAssignableFrom(actlT, context, false, true, assignableTo);
-            for (var ts : assignableTo)
+            for (var ts : assignableTo.stream().sorted(Comparator.comparing(t->t.toString(true))).toList())
               {
                 errorOrUndefinedFound |= ts.containsUndefined();
                 assignableToSB
@@ -1929,7 +1930,7 @@ public class AstErrors extends ANY
   {
     var errorOrUndefinedFound = g.containsUndefined();
     var assignableToSB = new StringBuilder();
-    for (var ts : assignableTo)
+    for (var ts : assignableTo.stream().sorted(Comparator.comparing(t->t.toString(true))).toList())
       {
         errorOrUndefinedFound |= ts.containsUndefined();
         assignableToSB
