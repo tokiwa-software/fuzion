@@ -118,6 +118,7 @@ public ip_address (val u128) : property.orderable is
           .flat_map (.chunk 2)
           .map (.parse_i32_hex)
           .map (.or_panic.as_u8)
+          .as_array_backed
 
         from_sequence x
       .catch m->
