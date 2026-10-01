@@ -35,6 +35,39 @@ p2(s String) is
   public type.of(s String) p2 => p2 s
   public type.of(s, t String) p2 => p2 "$s$t"
 
+# `"x" |> p3.of` is ambiguous (see partially_applicable_type_feature_negative),
+# but the direct call to `of` and partially applied `of(s)` can be selected
+# explicitly
+p3(s String) is
+  public redef as_string String => "p3($s)"
+  public type.of Unary p3 String => x -> p3 "via type.of Unary: $x"
+  public type.of(s String) p3 => p3 "via type.of(s): $s"
+
+# same with more arguments: direct call to `f(a, b)` and partially applied
+# `f(a, b, c)` can be selected explicitly
+p4(s String) is
+  public redef as_string String => "p4($s)"
+  public type.f(a, b String) Unary p4 String =>
+    x -> p4 "via type.f(a,b): $a $b $x"
+  public type.f(a, b, c String) p4 => p4 "via type.f(a,b,c): $a $b $c"
+
+# the inner feature `of` returns a function, but `p5` cannot be called without
+# an argument, so only the type feature `of(s)` can be used
+p5(s String) is
+  public redef as_string String => "p5($s)"
+  public of Unary p5 String => x -> p5 "via of: $s $x"
+  public type.of(s String) p5 => p5 "via type.of(s): $s"
+
+# the direct call to `g(a)` already matches `String -> String -> p6`, so
+# `g(a, b)` is not partially applied, same as for normal features
+p6(s String) is
+  public redef as_string String => "p6($s)"
+  public type.g(a String) Unary (Unary p6 String) String =>
+    x -> y -> p6 "via type.g(a): $a $x $y"
+  public type.g(a, b String) Unary p6 String =>
+    y -> p6 "via type.g(a,b): $a $b $y"
+  public type.g(a, b, c String) p6 => p6 "via type.g(a,b,c): $a $b $c"
+
 say ("/" |> io.path.of)
 say (io.path.of <| String.from "/".utf8)
 
@@ -44,3 +77,14 @@ say (["u","v"].map p1.of)
 say ("x" |> p1.type.of)
 
 say ("x" |> p2.of)
+
+say (p3.of.call "x")                # direct call, apply result
+say ("y" |> (x -> p3.of x))         # explicit lambda
+
+say ((p4.f "x" "y").call "z")       # direct call, apply result
+say ("z" |> (c -> p4.f "x" "y" c))  # explicit lambda
+
+say ("x" |> p5.of)
+
+h String -> String -> p6 := p6.g "x"
+say (h.call "1" .call "2")
