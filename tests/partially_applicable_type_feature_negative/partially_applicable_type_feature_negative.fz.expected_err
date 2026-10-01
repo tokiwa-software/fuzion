@@ -60,7 +60,43 @@ or by partially applying arguments to a call to 't5.type.of' declared at --CURDI
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partially_applicable_type_feature_negative.fz:47:9: error 6: Different count of arguments needed when calling feature
+--CURDIR--/partially_applicable_type_feature_negative.fz:70:17: error 6: Ambiguity between direct and partially applied call target
+_ := "z" |> (t6.f "x" "y")      # 7. should flag an error: direct or partial?
+----------------^
+This call can be resolved in two ways, either as a direct call to 't6.type.f' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:66:15:
+  public type.f(a, b String) Unary t6 String =>
+--------------^
+or by partially applying arguments to a call to 't6.type.f' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:68:15:
+  public type.f(a, b, c String) t6 => t6 "via type.f(a,b,c): $a $b $c"
+--------------^.
+To solve this, rename one of the ambiguous features.
+
+
+--CURDIR--/partially_applicable_type_feature_negative.fz:71:20: error 7: Ambiguity between direct and partially applied call target
+_ := ["z"].map (t6.f "x" "y")   # 8. should flag an error: direct or partial?
+-------------------^
+This call can be resolved in two ways, either as a direct call to 't6.type.f' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:66:15:
+  public type.f(a, b String) Unary t6 String =>
+--------------^
+or by partially applying arguments to a call to 't6.type.f' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:68:15:
+  public type.f(a, b, c String) t6 => t6 "via type.f(a,b,c): $a $b $c"
+--------------^.
+To solve this, rename one of the ambiguous features.
+
+
+--CURDIR--/partially_applicable_type_feature_negative.fz:79:16: error 8: Ambiguity between direct and partially applied call target
+_ := "x" |> t7.of               # 9. should flag an error: inner or type?
+---------------^^
+This call can be resolved in two ways, either as a direct call to 't7.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:76:10:
+  public of Unary String String => x -> "via of: $x"
+---------^^
+or by partially applying arguments to a call to 't7.type.of' declared at --CURDIR--/partially_applicable_type_feature_negative.fz:77:15:
+  public type.of(s String) String => "via type.of(s): $s"
+--------------^^.
+To solve this, rename one of the ambiguous features.
+
+
+--CURDIR--/partially_applicable_type_feature_negative.fz:47:9: error 9: Different count of arguments needed when calling feature
 _ := t3.of          # 3. should flag an error: missing argument
 --------^^
 Feature not found: 'of' (no arguments)
@@ -72,4 +108,4 @@ To solve this, you might change the actual number of arguments to match the feat
 To call 'of', you must provide one argument.
 
 
-6 errors.
+9 errors.

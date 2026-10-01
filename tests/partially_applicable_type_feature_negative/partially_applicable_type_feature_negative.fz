@@ -60,3 +60,20 @@ t5(s String) is
   public type.of(s, t String) t5 => t5 "$s$t"
 
 _ := ["a"].map (t5.of "z")   # 6. should flag an error: direct call or partial application?
+# `f "x" "y"` could be a direct call to `f(a, b)` returning a function or
+# partially applied `f(a, b, c)`
+t6(s String) is
+  public type.f(a, b String) Unary t6 String =>
+    x -> t6 "via type.f(a,b): $a $b $x"
+  public type.f(a, b, c String) t6 => t6 "via type.f(a,b,c): $a $b $c"
+
+_ := "z" |> (t6.f "x" "y")      # 7. should flag an error: direct or partial?
+_ := ["z"].map (t6.f "x" "y")   # 8. should flag an error: direct or partial?
+
+# `t7` can be called without arguments, so `t7.of` could be the inner feature
+# `of` returning a function or partially applied type feature `of(s)`
+t7 is
+  public of Unary String String => x -> "via of: $x"
+  public type.of(s String) String => "via type.of(s): $s"
+
+_ := "x" |> t7.of               # 9. should flag an error: inner or type?
