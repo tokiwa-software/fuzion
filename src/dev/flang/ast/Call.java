@@ -677,7 +677,7 @@ public class Call extends AbstractCall
         findOperatorOnOuter(res, context);
       }
 
-    addPendingError(res, context, targetFeature);
+    addPendingError(res, targetFeature);
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
@@ -728,7 +728,7 @@ public class Call extends AbstractCall
   /**
    * Add a pending error to this call to be called later (or never).
    */
-  private void addPendingError(Resolution res, Context context, AbstractFeature targetFeature)
+  private void addPendingError(Resolution res, AbstractFeature targetFeature)
   {
     if (_calledFeature != null ||                 // found sth, no error needed
         Types.resolved != null &&                 // may happen when building bad base.fum
@@ -740,11 +740,7 @@ public class Call extends AbstractCall
       {
         _pendingError = ()->
           {
-            if (reportTypeFeatureArgCountMismatch(res, context))
-              {
-                // error reported for type feature, suppress error of target
-              }
-            else if (_target.type() != Types.t_ERROR)
+            if (_target.type() != Types.t_ERROR)
               {
                 triggerFeatureNotFoundError(res, new List<>(), _target.type().feature());
               }
@@ -2831,38 +2827,6 @@ public class Call extends AbstractCall
   {
     return !res._options.isLanguageServer() &&
       (targetErroneous(res, context) || _pendingError == null && typeForInferencing() == Types.t_ERROR);
-  }
-
-
-  /**
-   * Checks if the call target is a type defining a type feature with the same name but a different argument count.
-   * If so, reports a specific mismatch error for that feature instead of a generic constructor error.
-   * Example: For {@code t.of(x)} where {@code t} defines {@code type.of(s, t String)}, this reports that
-   * {@code t.type.of} requires two arguments, suppressing the error that constructor {@code t} requires one.
-   *
-   * @param res     the resolution instance
-   * @param context the source code context where this call is used
-   * @return {@code true} if a type feature error was reported; {@code false} otherwise
-   */
-  private boolean reportTypeFeatureArgCountMismatch(Resolution res, Context context)
-  {
-    var pt = _target.asParsedType();
-    var tt = pt == null ? null : pt.resolve(res, context, true);
-    if (tt != null && tt != Types.t_ERROR && tt.isNormalType() && tt.feature().hasCotype())
-      {
-        var cotype = tt.feature().cotype();
-        var fos = res._module.lookup(cotype, _name, this, false, false)
-          .filter(fo -> fo._feature.isTypeFeature());
-        if (!fos.isEmpty())
-          {
-            // the target is the type, not a call to its constructor, so do not
-            // report the error pending for the constructor call:
-            _target = Call.typeAsValue(_target.pos(), pt).resolveTypes(res, context);
-            triggerFeatureNotFoundError(res, fos, cotype);
-            return true;
-          }
-      }
-    return false;
   }
 
 
