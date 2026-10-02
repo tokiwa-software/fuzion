@@ -239,6 +239,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.iconst(jvm._options.fuzionDebugLevel()), Expr.UNIT);
         });
 
+    put("choice.tag", (jvm, si, cc, tvalue, args) -> new Pair<>(jvm._types._choices.getTag(jvm, si, jvm._fuir.clazzOuterClazz(cc), tvalue), Expr.UNIT));
+
     put("fuzion.jvm.is_null0",
         (jvm, si, cc, tvalue, args) ->
         {

@@ -103,4 +103,34 @@
 # A choice type with no actual generic arguments is isomorphic to 'void', i.e, it
 # is a type that has an empty set of possible values.
 #
-public choice(CHOICE_ELEMENT_TYPE type...) is
+public choice(CHOICE_ELEMENT_TYPE type...)
+is
+
+
+  # The tag to identify this value
+  #
+  private tag i32
+  =>
+    intrinsic
+
+
+  # Ordinal number corresponding to the index in this choice's open type
+  # parameters of the type of the value stored in this choice.
+  #
+  # Note that this is defined even for choices of ambiguous types like
+  # `option nil`: Even though this type may only contain `nil` it can
+  # still be distinguished:
+  #
+  #     [nil].first.ordinal
+  #
+  # is `0` while
+  #
+  #     (Sequence nil).empty.first.ordinal
+  #
+  # is `1`.
+  #
+  public ordinal i64
+  post
+    debug: 0 <= result < CHOICE_ELEMENT_TYPE.count
+  =>
+    tag.as_i64

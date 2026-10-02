@@ -1,0 +1,177 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test choice_reflection
+#
+# -----------------------------------------------------------------------
+
+# Test for choice reflection fucntions like `choice.ordinal` and `choice.apply`
+#
+choice_reflection =>
+
+  chck(msg String, res, expected _ : property.equatable) =>
+    say "$(res = expected ? "PASS $msg: got $res" : "FAIL $msg: got $res expected $expected")"
+
+  say ""
+  say "--- testing ordinal of simple choice type: ---"
+  say ""
+
+  # checking `ordinal`
+  chck "ordinal" (id (choice bool i64 u8 void String) true             ).ordinal 0
+  chck "ordinal" (id (choice bool i64 u8 void String) 42               ).ordinal 1
+  chck "ordinal" (id (choice bool i64 u8 void String) "bla".utf8.first!).ordinal 2
+  # chck "ordinal" (id (choice bool i64 u8 void String) void             ).ordinal 3 # -- impossible to create `void`
+  chck "ordinal" (id (choice bool i64 u8 void String) "hi"             ).ordinal 4
+
+  f(a choice bool i64 u8 void String) =>
+    "ordinal is "+a.ordinal+" for $a"
+
+  chck "ordinal and as_string in call to f" (f "böa"            ) "ordinal is 4 for instance[choice bool i64 u8 void String]"
+  chck "ordinal and as_string in call to f" (f true             ) "ordinal is 0 for instance[choice bool i64 u8 void String]"
+  chck "ordinal and as_string in call to f" (f 42               ) "ordinal is 1 for instance[choice bool i64 u8 void String]"
+  chck "ordinal and as_string in call to f" (f "bla".utf8.first!) "ordinal is 2 for instance[choice bool i64 u8 void String]"
+  chck "ordinal and as_string in call to f" (f "hi"             ) "ordinal is 4 for instance[choice bool i64 u8 void String]"
+
+  say ""
+  say "--- testing ordinals of some common choice types: ---"
+  say ""
+
+  # basic bool types
+  chck "true .ordinal      " (true .ordinal      ) 1
+  chck "true .as_string" (true .as_string) "true"
+  chck "false.ordinal      " (false.ordinal      ) 0
+  chck "false.as_string" (false.as_string) "false"
+
+  # basic option types
+  chck "(option String \"bla\").ordinal      " ((option String "bla").ordinal      ) 0
+  chck "(option String \"bla\").as_string" ((option String "bla").as_string) "bla"
+  chck "(option String nil    ).ordinal      " ((option String nil  ).ordinal      ) 1
+  chck "(option String nil    ).as_string" ((option String nil  ).as_string) "--nil--"
+  chck "(option i64 42 ).ordinal      " ((option i64 42 ).ordinal      ) 0
+  chck "(option i64 42 ).as_string" ((option i64 42 ).as_string) "42"
+  chck "(option i64 nil).ordinal      " ((option i64 nil).ordinal      ) 1
+  chck "(option i64 nil).as_string" ((option i64 nil).as_string) "--nil--"
+
+  say ""
+  say "--- testing ordinals choice with several `void` entries: ---"
+  say ""
+
+  # ordinals of `void` mixed with `i32`/`unit`/`nil` types
+  chck "id (choice void void void i32 void void unit nil void void) 42   .ordinal" (id (choice void void void i32 void void unit nil void void) 42   .ordinal) 3
+  chck "id (choice void void void i32 void void unit nil void void) 42   .as_string" $(id (choice void void void i32 void void unit nil void void) 42  ) "instance[choice void void void i32 void void unit nil void void]"
+  chck "id (choice void void void i32 void void unit nil void void) unit .ordinal" (id (choice void void void i32 void void unit nil void void) unit .ordinal) 6
+  chck "id (choice void void void i32 void void unit nil void void) unit .as_string" $(id (choice void void void i32 void void unit nil void void) unit) "instance[choice void void void i32 void void unit nil void void]"
+  chck "id (choice void void void i32 void void unit nil void void) nil  .ordinal" (id (choice void void void i32 void void unit nil void void) nil  .ordinal) 7
+  chck "id (choice void void void i32 void void unit nil void void) nil  .as_string" $(id (choice void void void i32 void void unit nil void void) nil ) "instance[choice void void void i32 void void unit nil void void]"
+
+  # ordinals of `unit` mixed with `void` types
+  chck "id (choice unit void void) unit .ordinal" (id (choice unit void void) unit .ordinal) 0
+  chck "id (choice void unit void) unit .ordinal" (id (choice void unit void) unit .ordinal) 1
+  chck "id (choice void void unit) unit .ordinal" (id (choice void void unit) unit .ordinal) 2
+
+  say ""
+  say "--- testing `option nil`, which is effectively `choice nil nil`, but it can have ordinals 0 and 1: ---"
+  say ""
+
+  # ordinals of `option nil`, i.e, `choice nil nil'
+  chck "id (Sequence nil) [nil] .first.ordinal:" (id (Sequence nil) [nil] .first.ordinal) 0   # option nil that exists
+  chck "id (Sequence nil) []    .first.ordinal:" (id (Sequence nil) []    .first.ordinal) 1   # option nil that does not exist
+
+  say ""
+  say "--- choice of unit types and ref types only are encoded using no tag field but special ref values by the C backend: ---"
+  say ""
+
+  # ordinals of mixed types
+  chck "id (choice unit String nil (Sequence i64) concur) unit    .ordinal" (id (choice unit String nil (Sequence i64) concur) unit    .ordinal) 0
+  chck "id (choice unit String nil (Sequence i64) concur) 'str'   .ordinal" (id (choice unit String nil (Sequence i64) concur) "str"   .ordinal) 1
+  chck "id (choice unit String nil (Sequence i64) concur) nil     .ordinal" (id (choice unit String nil (Sequence i64) concur) nil     .ordinal) 2
+  chck "id (choice unit String nil (Sequence i64) concur) [1,2,4] .ordinal" (id (choice unit String nil (Sequence i64) concur) [1,2,4] .ordinal) 3
+  chck "id (choice unit String nil (Sequence i64) concur) concur  .ordinal" (id (choice unit String nil (Sequence i64) concur) concur  .ordinal) 4
+
+  say ""
+  say "--- choice of only unit types are treated like an int type by the JVM backend: ---"
+  say ""
+
+  # ordinals of only unit types
+  chck "id (choice unit nil concur) unit   .ordinal" (id (choice unit nil concur) unit   .ordinal) 0
+  chck "id (choice unit nil concur) nil    .ordinal" (id (choice unit nil concur) nil    .ordinal) 1
+  chck "id (choice unit nil concur) concur .ordinal" (id (choice unit nil concur) concur .ordinal) 2
+
+  say ""
+  say "--- testing with void alternatives ---"
+  say ""
+
+  # test with impossible option
+  q(o option (choice void)) =>
+    o ? c choice void => $c.ordinal
+      | nil           => "nil"
+
+  chck "impossible option" (q nil) "nil"
+
+  # test `option nil`
+  test(s Sequence nil) =>
+    o := s.first
+    "$o ordinal:$(o.ordinal)"
+
+  chck "option nil !ok" (test []   ) "--nil-- ordinal:1"
+  chck "option nil ok!" (test [nil]) "--nil-- ordinal:0"
+
+  test2(s Sequence nil) =>
+    o := s.first
+    test2a nil nil _ o
+
+  test2a(A, B type, C type : choice A B, v C) =>
+    match v
+      A => "matches A: $v type $C $(v.ordinal)"
+      B => "matches B: $v type $C $(v.ordinal)"
+
+  chck "option nil !ok via generic call" (test2 []   ) "matches B: --nil-- type option nil 1"
+  chck "option nil ok! via generic call" (test2 [nil]) "matches A: --nil-- type option nil 0"
+
+  say ""
+  say "--- mix of void, several ref and several unit types ---"
+  say ""
+
+  # more ordinal tests via calls:
+
+  blub(x choice void String nil (Sequence i64) unit) =>
+    "$(x.ordinal): " + match x
+      String     => "StringYeahYeah!"
+      nil        => "nil"
+      s Sequence => "Sequence $s"
+      unit       => "unit"
+      void        =>
+
+  blob(x choice void String nil (option (Sequence i64)) unit) =>
+    "$(x.ordinal): " + match x
+      String   => "StringYeahYeah!"
+      nil      => "nil"
+      s option => "option Sequence $s"
+      unit     => "unit"
+      void     =>
+
+  chck "blub" (blub "hi"     ) "1: StringYeahYeah!"
+  chck "blub" (blub nil      ) "2: nil"
+  chck "blub" (blub [1,2,3,4]) "3: Sequence [1, 2, 3, 4]"
+  chck "blub" (blub unit     ) "4: unit"
+
+  chck "blob" (blob "hi"     ) "1: StringYeahYeah!"
+  chck "blob" (blob nil      ) "2: nil"
+  chck "blob" (blob [1,2,3,4]) "3: option Sequence [1, 2, 3, 4]"
+  chck "blob" (blob unit     ) "4: unit"
