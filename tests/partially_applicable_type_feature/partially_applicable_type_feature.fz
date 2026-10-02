@@ -68,6 +68,12 @@ p6(s String) is
     y -> p6 "via type.g(a,b): $a $b $y"
   public type.g(a, b, c String) p6 => p6 "via type.g(a,b,c): $a $b $c"
 
+# `"p7.a` is ambiguous (see partially_applicable_type_feature_negative), but the
+# type feature can be selected via `.type` and the inner feature via a value
+p7 is
+  public a(v i64) bool => v > 1
+  public type.a(v i64) bool => v > 2
+
 say ("/" |> io.path.of)
 say (io.path.of <| String.from "/".utf8)
 
@@ -88,3 +94,7 @@ say ("x" |> p5.of)
 
 h String -> String -> p6 := p6.g "x"
 say (h.call "1" .call "2")
+
+say ([1, 2, 3].filter p7.type.a)      # type feature: [3]
+p7v := p7
+say ([1, 2, 3].filter p7v.a)          # inner feature: [2, 3]

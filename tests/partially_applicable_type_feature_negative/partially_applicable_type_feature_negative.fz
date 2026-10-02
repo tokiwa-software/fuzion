@@ -77,3 +77,11 @@ t7 is
   public type.of(s String) String => "via type.of(s): $s"
 
 _ := "x" |> t7.of               # 9. should flag an error: inner or type?
+
+# `t8` can be called without arguments, so `t8.a` could be partially applied
+# for the inner feature `a(v)` as well as for the type feature `a(v)`
+t8 is
+  public a(v i64) bool => v > 1
+  public type.a(v i64) bool => v > 2
+
+_ := [1, 2, 3].filter t8.a      # 10. should flag an error: inner or type?
