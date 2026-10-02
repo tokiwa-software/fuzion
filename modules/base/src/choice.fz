@@ -158,7 +158,7 @@ is
   #     `v`   : the value stored in `choice.this`.
   #
   # So, e.g., `(id (option String) "hi").as_string` will result in
-  # `"option.0(String,hi)"`
+  # `"option String.0(String,hi)"`
   #
   public as_string_detailed String
   =>
