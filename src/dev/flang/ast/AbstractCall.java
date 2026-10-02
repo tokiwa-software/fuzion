@@ -73,6 +73,12 @@ public abstract class AbstractCall extends Expr
   public static final List<AbstractType> NO_GENERICS = new List<AbstractType>().freeze();
 
 
+  /**
+   * Empty List of calls.
+   */
+  public static final List<AbstractCall> NO_CALLS = new List<AbstractCall>().freeze();
+
+
   /*-----------------------------  methods  -----------------------------*/
 
   /**
