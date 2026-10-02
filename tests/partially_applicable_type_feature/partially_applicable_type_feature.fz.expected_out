@@ -11,3 +11,5 @@ p4(via type.f(a,b): x y z)
 p4(via type.f(a,b,c): x y z)
 p5(via type.of(s): x)
 p6(via type.g(a): x 1 2)
+[3]
+[2, 3]

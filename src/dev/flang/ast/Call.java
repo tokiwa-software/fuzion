@@ -2626,15 +2626,12 @@ public class Call extends AbstractCall
 
 
   /**
-   * Helper for targetFeature: If the target of this call is a type {@code t}
-   * that has no feature named {@code _name}, but its cotype has at least one
-   * type feature with this name, the target can only be meant as the type.
+   * Helper for targetFeature. Returns the cotype of the target type if the target has no feature
+   * named _name, but its cotype has at least one type feature with this name that fails to match the actual arguments.
    *
-   * @param res the resolution instance.
-   *
+   * @param res the resolution instance
    * @param context the source code context where this Call is used
-   *
-   * @return the cotype of {@code t} or null if the target is not such a type.
+   * @return the cotype of the target type, or null if the target is not such a type
    */
   private AbstractFeature cotypeIfOnlyTypeFeatureNamed(Resolution res, Context context)
   {
@@ -2644,8 +2641,10 @@ public class Call extends AbstractCall
       {
         var tf = tt.feature();
         var ct = res.cotype(tf);
+        res.resolveDeclarations(ct);
         if (res._module.lookup(tf, _name, this, false, false).isEmpty() &&
-            res._module.lookup(ct, _name, this, false, false).stream().anyMatch(fo -> fo._feature.isTypeFeature()))
+            res._module.lookup(ct, _name, this, false, false).stream().anyMatch(fo -> fo._feature.isTypeFeature())&&
+            findOnTarget(res, ct, true).v1() == null) // a matching type feature is found by tryResolveTypeCall
           {
             return ct;
           }
