@@ -183,13 +183,16 @@ class ValueSet extends Value
   /*----------------------------  constants  ----------------------------*/
 
 
-  /*----------------------------  variables  ----------------------------*/
-
-
   /**
    * The values as an array.
    */
   final Value[] _componentsArray;
+
+
+  /*----------------------------  variables  ----------------------------*/
+
+
+  public static ValueSet largest = null;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -209,10 +212,18 @@ class ValueSet extends Value
   {
     super(cl);
 
+    if (CHECKS) check
+      (v1._clazz == cl || dfa._fuir.clazzIsRef(cl),
+       v2._clazz == cl || dfa._fuir.clazzIsRef(cl));
+
     var coll = new Collect(dfa);
     coll.add(v1);
     coll.add(v2);
     _componentsArray = coll.asComponents();
+    if (largest == null || _componentsArray.length > largest._componentsArray.length)
+      {
+        largest = this;
+      }
   }
 
 
