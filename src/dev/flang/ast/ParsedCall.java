@@ -475,6 +475,11 @@ public class ParsedCall extends Call
         _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
         checkPartialAmbiguity(res, context, expectedType);
+        checkTypeFeaturePartialAmbiguity(res, context, expectedType);
+        if (isDefunct() /* checkTypeFeaturePartialAmbiguity may have set _calledFeature to error */)
+          {
+            return this;
+          }
         if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
             _pendingError != null                       ||
 
@@ -493,6 +498,57 @@ public class ParsedCall extends Call
           }
       }
     return l;
+  }
+
+
+  /**
+   * Checks for ambiguity between a partially applied type feature and a potential direct call.
+   * Verifies that no other type feature with the same name exists that could be called
+   * directly using the same number of actual arguments.
+   *
+   * Example:
+   * For an expression like "x" |> t.of, given that t is a type:
+   *
+   *   t is
+   *     type.of Unary t String => ...    # 1. Direct call (matches argument count)
+   *     type.of(s String) t    => ...    # 2. Partial application (the 'paa' target)
+   *
+   * If both exist, this method triggers an ambiguity error.
+   *
+   * This corresponds to {@link #checkPartialAmbiguity} for normal features,
+   * which cannot be used here since the target {@code t} is a type and the
+   * call is not resolved before partial application.
+   *
+   * @param res the resolution instance.
+   *
+   * @param paa the partially applicable type feature found by
+   * partiallyApplicableAlternative.
+   */
+  private void checkTypeFeaturePartialAmbiguity(Resolution res, Context context, AbstractType expectedType)
+  {
+    var paa = partiallyApplicableAlternative(res, context, expectedType);
+    if (paa != null && paa._feature.isTypeFeature())
+      {
+
+        var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
+        var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
+        var tf = targetFeature(res, context);
+        if (tf != null && tf != Types.f_ERROR && tf != paa._feature.outer())
+              {
+                fos.addAll(res._module.lookup(tf, _name, this, false, false));
+              }
+        var direct = FeatureAndOuter.filter(fos,
+                                            pos(),
+                                            FuzionConstants.OPERATION_CALL,
+                                            FeatureName.get(_name, n),
+                                            ff -> ff.valueArguments().size() == n);
+        if (direct != null && direct._feature != paa._feature)
+          {
+            AstErrors.partialApplicationAmbiguity(pos(), direct._feature, paa._feature);
+            _calledFeature = Types.f_ERROR;
+            setToErrorState();
+          }
+      }
   }
 
 

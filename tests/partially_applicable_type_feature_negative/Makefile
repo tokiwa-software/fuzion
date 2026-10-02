@@ -17,11 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test partially_applicable_type_feature
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-partially_applicable_type_feature =>
-
-  say ("/" |> io.path.of)
-  say (io.path.of <| String.from "/".utf8)
+override NAME = partially_applicable_type_feature_negative
+include ../simple_and_negative.mk

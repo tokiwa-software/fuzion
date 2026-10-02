@@ -499,8 +499,16 @@ public class Call extends AbstractCall
         _target.loadCalledFeature(res, context);
         _target = res.resolveType(_target, context);
         var tt = targetFeatureType(res, context);
-
-        if (tt == null && _target instanceof Call c)
+        var ct = tt == null ? cotypeIfOnlyTypeFeatureNamed(res, context) : null;
+        if (ct != null)
+          { // target can only be meant as a type, so look for the called feature in its cotype
+            result = ct;
+            if (_target instanceof Call c)
+              { // the target is not called, so its error must not be reported
+                c._pendingError = null;
+              }
+          }
+        else if (tt == null && _target instanceof Call c)
           {
             c._pendingError = ()->
               {
@@ -887,7 +895,7 @@ public class Call extends AbstractCall
         if (_target != null && _target.asParsedType() != null)
           {
             var tt = _target.asParsedType().resolve(res, context, true);
-            if (tt != null && tt.isNormalType() && tt.feature().hasCotype())
+            if (tt != null && tt.isNormalType() && tt.feature().hasCotype() && tt.feature().cotype() != targetFeature)
               {
                 fos.addAll(res._module.lookup(tt.feature().cotype(), _name, this, false, false));
               }
@@ -2589,6 +2597,34 @@ public class Call extends AbstractCall
   public Context resolvedFor()
   {
     return _resolvedFor;
+  }
+
+
+  /**
+   * Helper for targetFeature. Returns the cotype of the target type if the target has no feature
+   * named _name, but its cotype has at least one type feature with this name that fails to match the actual arguments.
+   *
+   * @param res the resolution instance
+   * @param context the source code context where this Call is used
+   * @return the cotype of the target type, or null if the target is not such a type
+   */
+  private AbstractFeature cotypeIfOnlyTypeFeatureNamed(Resolution res, Context context)
+  {
+    var pt = _target.asParsedType();
+    var tt = pt == null ? null : pt.resolve(res, context, true);
+    if (tt != null && tt != Types.t_ERROR && tt.isNormalType() && !tt.feature().isTypeParameter())
+      {
+        var tf = tt.feature();
+        var ct = res.cotype(tf);
+        res.resolveDeclarations(ct);
+        if (res._module.lookup(tf, _name, this, false, false).isEmpty() &&
+            res._module.lookup(ct, _name, this, false, false).stream().anyMatch(fo -> fo._feature.isTypeFeature())&&
+            findOnTarget(res, ct, true).v1() == null) // a matching type feature is found by tryResolveTypeCall
+          {
+            return ct;
+          }
+      }
+    return null;
   }
 
 
