@@ -340,9 +340,10 @@ public class GeneratingFUIR extends FUIR
              @Override public AbstractType       type()                 { return currentClazz.feature().outerRef().resultType(); }
            };
          var res_field = currentClazz.feature().resultField();
-         var tagNum = 0;
+         var tagNums = 0;
          for (var g : cgs)
            {
+             var tagNum = tagNums++;
              var vname = FeatureName.get(FuzionConstants.AUTO_CHOICE_APPLY_CASE_FIELD_PREFIX + tagNum, 0);
              var field = new FuirFeature()
                {
@@ -381,7 +382,7 @@ public class GeneratingFUIR extends FUIR
              fuir.addFeatureDuringMonomorphization(currentClazz.feature(),
                                                    field);
 
-             var tagNums = new int[] { tagNum++ };
+             var tagNumArray = new int[] { tagNum };
              var types = new List<>(g);
              var tf_call = tf.lookup(new FeatureAndActuals((LibraryFeature) Types.resolved.f_Typed_Function_call,
                                                            types),
@@ -392,7 +393,7 @@ public class GeneratingFUIR extends FUIR
                {
                  @Override public AbstractFeature          field()                { return field; }
                  @Override public List<AbstractType>       types()                { return types; }
-                 @Override public int[]                    tags(AbstractMatch m)  { return tagNums; }
+                 @Override public int[]                    tags(AbstractMatch m)  { return tagNumArray; }
                  @Override public Expr code()
                  {
                    var f = new AbstractCall()
