@@ -476,7 +476,7 @@ public class ParsedCall extends Call
       {
         checkPartialAmbiguity(res, context, expectedType);
         checkTypeFeaturePartialAmbiguity(res, context, expectedType);
-        if(_calledFeature == Types.f_ERROR /* checkTypeFeaturePartialAmbiguity may have set _calledFeature to error */)
+        if (_calledFeature == Types.f_ERROR /* checkTypeFeaturePartialAmbiguity may have set _calledFeature to error */)
           {
             return this;
           }
