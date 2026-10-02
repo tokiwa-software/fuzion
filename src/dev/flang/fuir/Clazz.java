@@ -983,13 +983,13 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the inner clazz of the target in the call.
    */
-  Clazz lookup(AbstractFeature f)
+  Clazz lookup(FuirFeature f)
   {
     if (PRECONDITIONS) require
       (f != null,
        !isVoidType());
 
-    return lookup(new FeatureAndActuals((FuirFeature) f), FuzionConstants.NO_SELECT, false);
+    return lookup(new FeatureAndActuals(f), FuzionConstants.NO_SELECT, false);
   }
 
 
@@ -997,7 +997,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Convenience function that calls {@code lookup} followed {@code doesNeedCode()} on the
    * result.
    */
-  Clazz lookupNeeded(AbstractFeature f)
+  Clazz lookupNeeded(FuirFeature f)
   {
     var innerClazz = lookup(f);
     innerClazz.doesNeedCode();
@@ -2056,7 +2056,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               }
             else
               {
-                fields.add(lookup(field));
+                fields.add(lookup((FuirFeature) field));
               }
           }
       }

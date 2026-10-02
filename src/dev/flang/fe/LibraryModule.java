@@ -150,7 +150,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Cache for innerFeatures created from given index
    */
-  private final Map<Integer, List<AbstractFeature>> _innerFeatures = new TreeMap<>();
+  private final Map<Integer, List<FuirFeature>> _innerFeatures = new TreeMap<>();
 
 
   /**
@@ -370,7 +370,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @return the feature declared at offset in this module.
    */
-  AbstractFeature libraryFeature(int offset)
+  LibraryFeature libraryFeature(int offset)
   {
     if (offset >= 0 && offset <= _data.limit())
       {
@@ -386,11 +386,10 @@ public class LibraryModule extends Module implements MirModule
       {
         var mr = moduleRef(offset);
         if (CHECKS) check
-          (mr != null);
+          (mr != null,
+           mr._module != null);
 
-        return mr._module != null
-                ? mr._module.libraryFeature(offset - mr._offset)
-                : Types.f_ERROR;
+        return mr._module.libraryFeature(offset - mr._offset);
       }
   }
 
@@ -422,7 +421,7 @@ public class LibraryModule extends Module implements MirModule
    * @return list of inner features of outer that are declared by this library
    * module.
    */
-  List<AbstractFeature> features(AbstractFeature outer)
+  List<FuirFeature> features(AbstractFeature outer)
   {
     if (outer.isUniverse())
       {
@@ -460,12 +459,12 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param at the index of an InnerFeatures block.
    */
-  List<AbstractFeature> innerFeatures(int at)
+  List<FuirFeature> innerFeatures(int at)
   {
     var result = _innerFeatures.get(at);
     if (result == null)
       {
-        result = new List<AbstractFeature>();
+        result = new List<FuirFeature>();
         var is = innerFeaturesSize(at);
         var ip = innerFeaturesFeaturesPos(at);
         for (var i = ip; i < ip+is; i = featureNextPos(i))
@@ -2466,7 +2465,7 @@ SourceFile
    *
    * @param fs the features to annotate.
    */
-  private void dump(HexDump hd, List<AbstractFeature> fs)
+  private void dump(HexDump hd, List<FuirFeature> fs)
   {
     for (var f: fs)
       {
