@@ -29,7 +29,10 @@ package dev.flang.ast;
 import static dev.flang.util.FuzionConstants.NO_SELECT;
 
 import java.util.Set;
+import java.util.TreeSet;
+
 import java.util.regex.Pattern;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -141,6 +144,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * failure due to previous errors.
    */
   public static final List<AbstractType> HAND_DOWN_FAILED = new List<AbstractType>().freeze();
+
+
+  /**
+   * An empty set of features.
+   */
+  public static final Set<AbstractFeature> EMPTY_SET = new TreeSet<>();
 
 
   /*-------------------------  static variables  ------------------------*/

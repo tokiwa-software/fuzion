@@ -56,6 +56,7 @@ import dev.flang.ast.Universe;
 import dev.flang.ast.AbstractFeature.Kind;
 
 import dev.flang.fe.FeatureLookup;
+import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryFeature;
 
 import dev.flang.ir.Box;
@@ -1490,7 +1491,7 @@ public class GeneratingFUIR extends FUIR
     return result;
   }
 
-  void addCode(int cl, Clazz c, List<Object> code, List<List<AbstractCall>> inhe, LibraryFeature ff, List<AbstractCall> inh)
+  void addCode(int cl, Clazz c, List<Object> code, List<List<AbstractCall>> inhe, FuirFeature ff, List<AbstractCall> inh)
   {
     var ocur = _currentClazz;
     if (CHECKS) check
@@ -1745,8 +1746,8 @@ public class GeneratingFUIR extends FUIR
           {
             var o = clazz(s._outer);
             var oc = clazz(o);
-            var of = oc.feature();
-            var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
+            var of = (LibraryFeature) oc.feature();
+            var f = of.get(of._libModule, s._name, s._argCount);
             result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
             if (CHECKS) check
               (f.isRef() == (result.isRef()));
@@ -2479,7 +2480,7 @@ public class GeneratingFUIR extends FUIR
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
     if (!tclazz.isVoidType())
       {
-        innerClazz = tclazz.lookup(new FeatureAndActuals((LibraryFeature)cf, typePars), c.select(), c.isInheritanceCall());
+        innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature)cf, typePars), c.select(), c.isInheritanceCall());
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
