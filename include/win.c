@@ -647,6 +647,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
 }
 
 CRITICAL_SECTION fzE_global_mutex;
+CRITICAL_SECTION fzE_global_mutex2;
 
 /**
  * Run plattform specific initialisation code
@@ -668,6 +669,11 @@ void fzE_init()
   // NYI: UNDER DEVELOPMENT: WSACleanup
 
   if (!InitializeCriticalSectionEx(&fzE_global_mutex, 0, 0))
+  {
+    fprintf(stderr, "*** InitializeCriticalSectionEx failed\n");
+    exit(EXIT_FAILURE);
+  }
+  if (!InitializeCriticalSectionEx(&fzE_global_mutex2, 0, 0))
   {
     fprintf(stderr, "*** InitializeCriticalSectionEx failed\n");
     exit(EXIT_FAILURE);
@@ -787,6 +793,24 @@ void fzE_lock()
 void fzE_unlock()
 {
   LeaveCriticalSection(&fzE_global_mutex);
+}
+
+
+/**
+ * Global lock
+ */
+void fzE_lock2()
+{
+  EnterCriticalSection(&fzE_global_mutex2);
+}
+
+
+/**
+ * Global lock
+ */
+void fzE_unlock2()
+{
+  LeaveCriticalSection(&fzE_global_mutex2);
 }
 
 
@@ -1035,15 +1059,15 @@ int fzE_pipe_create(int64_t *fds)
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
-  fzE_lock();
+  fzE_lock2();
   DWORD bytesRead;
   if (!ReadFile((HANDLE)desc, buf, nbytes, &bytesRead, NULL)){
-    fzE_unlock();
+    fzE_unlock2();
     return GetLastError() == ERROR_BROKEN_PIPE
       ? 0
       : -1;
   }
-  fzE_unlock();
+  fzE_unlock2();
   return bytesRead;
 }
 
@@ -1051,21 +1075,21 @@ int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
 // return -1 on error, the number of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
   DWORD bytesWritten;
-  fzE_lock();
+  fzE_lock2();
   if (!WriteFile((HANDLE)desc, buf, nbytes, &bytesWritten, NULL)){
-     fzE_unlock();
+     fzE_unlock2();
     return -1;
   }
-  fzE_unlock();
+  fzE_unlock2();
   return bytesWritten;
 }
 
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-  fzE_lock();
+  fzE_lock2();
   int result = CloseHandle((HANDLE)desc) ? 0 : -1;
-  fzE_unlock();
+  fzE_unlock2();
   return result;
 }
 
