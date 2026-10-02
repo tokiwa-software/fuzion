@@ -56,8 +56,8 @@ public abstract class FuirFeature extends AbstractFeature
   @Override public List<AbstractCall>    inherits()                { return AbstractCall.NO_CALLS; }
   @Override public List<AbstractFeature> arguments()               { return AbstractFeature._NO_FEATURES_; };
   @Override public SourcePosition        resultTypePos()           { return pos(); }
-  @Override public AbstractFeature       resultField()             { return null; }
-  @Override public AbstractFeature       outerRef()                { return null; };
+  @Override public FuirFeature           resultField()             { return null; }
+  @Override public FuirFeature           outerRef()                { return null; };
   @Override public Expr                  code()                    { require(isRoutine()); return null;  };
   @Override public Contract              contract()                { return Contract.EMPTY_CONTRACT; }
   @Override public AbstractFeature       preFeature()              { return null; }
