@@ -476,7 +476,7 @@ public class ParsedCall extends Call
       {
         checkPartialAmbiguity(res, context, expectedType);
         checkTypeFeaturePartialAmbiguity(res, context, expectedType);
-        if (_calledFeature == Types.f_ERROR /* checkTypeFeaturePartialAmbiguity may have set _calledFeature to error */)
+        if (isDefunct() /* checkTypeFeaturePartialAmbiguity may have set _calledFeature to error */)
           {
             return this;
           }
@@ -527,27 +527,28 @@ public class ParsedCall extends Call
   private void checkTypeFeaturePartialAmbiguity(Resolution res, Context context, AbstractType expectedType)
   {
     var paa = partiallyApplicableAlternative(res, context, expectedType);
-    if (paa != null && paa._feature.isTypeFeature()){
-
-    var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
-    var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
-    var tf = targetFeature(res, context);
-    if (tf != null && tf != Types.f_ERROR && tf != paa._feature.outer())
-          {
-            fos.addAll(res._module.lookup(tf, _name, this, false, false));
-          }
-    var direct = FeatureAndOuter.filter(fos,
-                                        pos(),
-                                        FuzionConstants.OPERATION_CALL,
-                                        FeatureName.get(_name, n),
-                                        ff -> ff.valueArguments().size() == n);
-    if (direct != null && direct._feature != paa._feature)
+    if (paa != null && paa._feature.isTypeFeature())
       {
-        AstErrors.partialApplicationAmbiguity(pos(), direct._feature, paa._feature);
-        _calledFeature = Types.f_ERROR;
-        setToErrorState();
+
+        var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
+        var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
+        var tf = targetFeature(res, context);
+        if (tf != null && tf != Types.f_ERROR && tf != paa._feature.outer())
+              {
+                fos.addAll(res._module.lookup(tf, _name, this, false, false));
+              }
+        var direct = FeatureAndOuter.filter(fos,
+                                            pos(),
+                                            FuzionConstants.OPERATION_CALL,
+                                            FeatureName.get(_name, n),
+                                            ff -> ff.valueArguments().size() == n);
+        if (direct != null && direct._feature != paa._feature)
+          {
+            AstErrors.partialApplicationAmbiguity(pos(), direct._feature, paa._feature);
+            _calledFeature = Types.f_ERROR;
+            setToErrorState();
+          }
       }
-    }
   }
 
 
