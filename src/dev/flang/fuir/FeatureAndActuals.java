@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
-import dev.flang.fe.LibraryFeature;
+import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryCall;
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 
@@ -35,7 +35,7 @@ import dev.flang.util.List;
 
 
 /**
- * FeatureAndActuals represents a tuple consisting of an LibraryFeature
+ * FeatureAndActuals represents a tuple consisting of an FuirFeature
  * combined with a list of actual type parameters for that feature.
  *
  * Instances of this are used as the key for the set of inner clazzes in a Clazz
@@ -54,7 +54,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   /**
    * The feature part of this triplet.
    */
-  public final LibraryFeature _f;
+  public final FuirFeature _f;
 
 
   /**
@@ -77,7 +77,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    *
    * @param tp the actual type parameters, never null.
    */
-  public FeatureAndActuals(LibraryFeature f, List<AbstractType> tp)
+  public FeatureAndActuals(FuirFeature f, List<AbstractType> tp)
   {
     if (PRECONDITIONS) require
       (f != null,
@@ -94,7 +94,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    *
    * @param f the underlying feature, must not be null
    */
-  public FeatureAndActuals(LibraryFeature f)
+  public FeatureAndActuals(FuirFeature f)
   {
     this(f, LibraryCall.NO_GENERICS);
   }
