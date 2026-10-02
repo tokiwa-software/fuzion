@@ -26,7 +26,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.util.Set;
+
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.Contract;
+import dev.flang.ast.Expr;
+import dev.flang.ast.Visi;
+
+import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -40,5 +50,25 @@ import dev.flang.ast.AbstractFeature;
 public abstract class FuirFeature extends AbstractFeature
 {
 
+  @Override public Set<AbstractFeature>  redefines()               { return AbstractFeature.EMPTY_SET; }
+  @Override public Visi                  visibility()              { return Visi.PRIV; };
+  @Override public int                   modifiers()               { return 0;  };
+  @Override public List<AbstractCall>    inherits()                { return AbstractCall.NO_CALLS; }
+  @Override public List<AbstractFeature> arguments()               { return AbstractFeature._NO_FEATURES_; };
+  @Override public SourcePosition        resultTypePos()           { return pos(); }
+  @Override public AbstractFeature       resultField()             { return null; }
+  @Override public AbstractFeature       outerRef()                { return null; };
+  @Override public Expr                  code()                    { require(isRoutine()); return null;  };
+  @Override public Contract              contract()                { return Contract.EMPTY_CONTRACT; }
+  @Override public AbstractFeature       preFeature()              { return null; }
+  @Override public AbstractFeature       preBoolFeature()          { return null; }
+  @Override public AbstractFeature       preAndCallFeature()       { return null; }
+  @Override public AbstractFeature       postFeature()             { return null; }
+  @Override public AbstractFeature       openTypesFeature()        { require(isOpenTypeParameter()); return null; }
+  @Override public AbstractFeature       valuesAsOpenTypeFeature() { require(isOpenTypeParameter()); return null; }
+  @Override public AbstractType          asParametricType()        { require(isTypeParameter()); return null; }
 
 }
+
+
+/* end of file */

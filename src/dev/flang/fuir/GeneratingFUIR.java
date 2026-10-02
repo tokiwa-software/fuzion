@@ -47,7 +47,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Contract;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
@@ -55,7 +54,6 @@ import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
-import dev.flang.ast.Visi;
 import dev.flang.ast.AbstractFeature.Kind;
 
 import dev.flang.fe.FeatureLookup;
@@ -347,28 +345,11 @@ public class GeneratingFUIR extends FUIR
              var vname = FeatureName.get(FuzionConstants.AUTO_CHOICE_APPLY_CASE_FIELD_PREFIX + tagNum, 0);
              var field = new FuirFeature()
                {
-                 @Override public SourcePosition        pos()                     { return call.pos(); }
-                 @Override public Set<AbstractFeature>  redefines()               { return AbstractFeature.EMPTY_SET; }
-                 @Override public Kind                  kind()                    { return Kind.Field; };
-                 @Override public Visi                  visibility()              { return Visi.PRIV; };
-                 @Override public int                   modifiers()               { return 0;  };
-                 @Override public FeatureName           featureName()             { return vname; };
-                 @Override public List<AbstractCall>    inherits()                { return NO_INH; }
-                 @Override public AbstractFeature       outer()                   { return Types.resolved.f_choice_apply; };
-                 @Override public List<AbstractFeature> arguments()               { return AbstractFeature._NO_FEATURES_; };
-                 @Override public AbstractType          resultType()              { return g;  };
-                 @Override public SourcePosition        resultTypePos()           { return null; }
-                 @Override public AbstractFeature       resultField()             { return null; }
-                 @Override public AbstractFeature       outerRef()                { return null; };
-                 @Override public Expr                  code()                    { require(isRoutine()); return null;  };
-                 @Override public Contract              contract()                { return Contract.EMPTY_CONTRACT; }
-                 @Override public AbstractFeature       preFeature()              { return null; }
-                 @Override public AbstractFeature       preBoolFeature()          { return null; }
-                 @Override public AbstractFeature       preAndCallFeature()       { return null; }
-                 @Override public AbstractFeature       postFeature()             { return null; }
-                 @Override public AbstractFeature       openTypesFeature()        { require(isOpenTypeParameter()); return null; }
-                 @Override public AbstractFeature       valuesAsOpenTypeFeature() { require(isOpenTypeParameter()); return null; }
-                 @Override public AbstractType          asParametricType()        { require(isTypeParameter()); return null; }
+                 @Override public SourcePosition  pos()        { return call.pos(); }
+                 @Override public Kind            kind()       { return Kind.Field; };
+                 @Override public FeatureName     featureName(){ return vname; };
+                 @Override public AbstractFeature outer()      { return Types.resolved.f_choice_apply; };
+                 @Override public AbstractType    resultType() { return g;  };
 
                  static int _comparisonId = (_comparisonIds_++);
                  public int comparisonId() { return _comparisonId; }
@@ -881,9 +862,6 @@ public class GeneratingFUIR extends FUIR
 
     return _clazzes.get(cl - CLAZZ_BASE);
   }
-
-
-  private static final List<AbstractCall> NO_INH = new List<AbstractCall>().freeze();
 
 
   /**
@@ -1650,7 +1628,7 @@ public class GeneratingFUIR extends FUIR
   {
     var code = new List<Object>();
     var inhe = new List<List<AbstractCall>>();
-    addCode(cl, c, code, inhe, c.feature(), NO_INH);
+    addCode(cl, c, code, inhe, c.feature(), AbstractCall.NO_CALLS /* no inheritance */);
     check
       (code.size() == inhe.size(),
        _allCode.size() == _inh.size());

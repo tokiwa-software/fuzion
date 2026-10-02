@@ -822,12 +822,6 @@ public class LibraryFeature extends FuirFeature
     return _libModule.pos(pos, posEnd);
   }
 
-
-  public Contract contract()
-  {
-    return Contract.EMPTY_CONTRACT;
-  }
-
   @Override
   public AbstractFeature preFeature()
   {
