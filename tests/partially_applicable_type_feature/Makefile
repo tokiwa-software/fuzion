@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = partially_applicable_type_feature
+override NAME = partially_applicable_type_feature_positive
 include ../simple.mk
