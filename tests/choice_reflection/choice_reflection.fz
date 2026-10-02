@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Test for choice reflection functions like `choice.ordinal`
+# Test for choice reflection functions like `choice.ordinal` and `choice.apply`
 #
 choice_reflection =>
 
