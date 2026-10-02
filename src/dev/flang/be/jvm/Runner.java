@@ -39,6 +39,9 @@ import java.util.TreeMap;
 
 import java.util.function.Supplier;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -135,7 +138,22 @@ public class Runner extends ClassLoader
       }
   }
 
+  public static void dumpThreads() {
+      ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
 
+      long[] ids = mxBean.getAllThreadIds();
+
+      ThreadInfo[] infos = mxBean.getThreadInfo(
+          ids,
+          Integer.MAX_VALUE
+      );
+
+      for (ThreadInfo info : infos) {
+          if (info != null) {
+              System.out.println(info);
+          }
+      }
+  }
 
   /**
    * Run the fuzion code in the generated classes.
@@ -144,6 +162,18 @@ public class Runner extends ClassLoader
    */
   public void runMain(ArrayList<String> applicationArgs)
   {
+    Thread dumpThread = new Thread(() -> {
+        try {
+            Thread.sleep(5 * 60 * 1000L); // 5 minutes
+            dumpThreads();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        System.exit(1);
+    }, "delayed-thread-dump");
+
+    dumpThread.setDaemon(true);
+    dumpThread.start();
     Class<?> c = findClass("fzC_universe");
     Method m = null;
     try
