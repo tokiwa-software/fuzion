@@ -515,6 +515,7 @@ public class Intrinsics extends ANY
     put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));
     put("debug"                 , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionDebug()));
     put("debug_level"           , (executor, innerClazz) -> args -> new i32Value (executor.options().fuzionDebugLevel()));
+    put("choice.tag"            , (executor, innerClazz) -> args -> new i32Value (executor.tagAndVal(                       args.get(0)).v0()      ));
     put("i8.as_i32"             , (executor, innerClazz) -> args -> new i32Value (              (                           args.get(0).i8Value() )));
     put("i8.cast_to_u8"         , (executor, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).i8Value() )));
     put("i8.prefix -°"          , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (                       -   args.get(0).i8Value() )));
