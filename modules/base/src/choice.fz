@@ -107,6 +107,35 @@ public choice(CHOICE_ELEMENT_TYPE type...)
 is
 
 
+  # The tag to identify this value
+  #
+  private tag i32
+  =>
+    intrinsic
+
+
+  # Ordinal number corresponding to the index in this choice's open type
+  # parameters of the type of the value stored in this choice.
+  #
+  # Note that this is defined even for choices of ambiguous types like
+  # `option nil`: Even though this type may only contain `nil` it can
+  # still be distinguished:
+  #
+  #     [nil].first.ordinal
+  #
+  # is `0` while
+  #
+  #     (Sequence nil).empty.first.ordinal
+  #
+  # is `1`.
+  #
+  public ordinal i64
+  post
+    debug: 0 <= result < CHOICE_ELEMENT_TYPE.count
+  =>
+    tag.as_i64
+
+
   # create a string from this choice.
   #
   # This will use the value stored stored in this choice abd create its String
@@ -134,35 +163,6 @@ is
   public as_string_detailed String
   =>
     apply (T,v -> "$(choice.this.type).$tag($T,$v)")
-
-
-  # The tag to identify this value
-  #
-  private tag i32
-  =>
-    intrinsic
-
-
-  # Ordinal number corresponding that maps a choice to the index of
-  # the type of the value in the possible types CHOICE_ELEMENT_TYPE.
-  #
-  # Note that this is defined even for choices of ambiguous types like
-  # `option nil`: Even though this type may only contain `nil` it can
-  # still be distinguished:
-  #
-  #     [nil].first.ordinal
-  #
-  # is `0` while
-  #
-  #     (Sequence nil).empty.first.ordinal
-  #
-  # is `1`.
-  #
-  public ordinal i64
-  post
-    debug: 0 <= result < CHOICE_ELEMENT_TYPE.count
-  =>
-    tag.as_i64
 
 
   # apply -- apply `f.call` to the value stored in this choice

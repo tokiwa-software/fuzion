@@ -1618,7 +1618,7 @@ public class C extends ANY
    *
    * @param sub the choice value
    *
-   * @param cl the clazz we are creating code for, mut be the `choice.tag` intrinsic
+   * @param cl the clazz we are creating code for, must be the `choice.tag` intrinsic
    *
    * @return the code to obtain the tag integer
    */
