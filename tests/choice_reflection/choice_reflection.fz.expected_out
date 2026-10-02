@@ -1,3 +1,6 @@
+
+--- testing ordinal of simple choice type: ---
+
 PASS ordinal: got 0
 PASS ordinal: got 1
 PASS ordinal: got 2
@@ -7,6 +10,9 @@ PASS ordinal and as_string in call to f: got ordinal is 0 for true
 PASS ordinal and as_string in call to f: got ordinal is 1 for 42
 PASS ordinal and as_string in call to f: got ordinal is 2 for 98
 PASS ordinal and as_string in call to f: got ordinal is 4 for hi
+
+--- testing ordinals of some common choice types: ---
+
 PASS true .ordinal      : got 1
 PASS true .as_string: got true
 PASS false.ordinal      : got 0
@@ -19,6 +25,9 @@ PASS (option i64 42 ).ordinal      : got 0
 PASS (option i64 42 ).as_string: got 42
 PASS (option i64 nil).ordinal      : got 1
 PASS (option i64 nil).as_string: got --nil--
+
+--- testing ordinals choice with several `void` entries: ---
+
 PASS id (choice void void void i32 void void unit nil void void) 42   .ordinal: got 3
 PASS id (choice void void void i32 void void unit nil void void) 42   .as_string: got 42
 PASS id (choice void void void i32 void void unit nil void void) unit .ordinal: got 6
@@ -28,21 +37,36 @@ PASS id (choice void void void i32 void void unit nil void void) nil  .as_string
 PASS id (choice unit void void) unit .ordinal: got 0
 PASS id (choice void unit void) unit .ordinal: got 1
 PASS id (choice void void unit) unit .ordinal: got 2
+
+--- testing `option nil`, which is effectively `choice nil nil`, but it can have ordinals 0 and 1: ---
+
 PASS id (Sequence nil) [nil] .first.ordinal:: got 0
 PASS id (Sequence nil) []    .first.ordinal:: got 1
+
+--- choice of unit types and ref types only are encoded using no tag field but special ref values by the C backend: ---
+
 PASS id (choice unit String nil (Sequence i64) concur) unit    .ordinal: got 0
 PASS id (choice unit String nil (Sequence i64) concur) 'str'   .ordinal: got 1
 PASS id (choice unit String nil (Sequence i64) concur) nil     .ordinal: got 2
 PASS id (choice unit String nil (Sequence i64) concur) [1,2,4] .ordinal: got 3
 PASS id (choice unit String nil (Sequence i64) concur) concur  .ordinal: got 4
+
+--- choice of only unit types are treated like an int type by the JVM backend: ---
+
 PASS id (choice unit nil concur) unit   .ordinal: got 0
 PASS id (choice unit nil concur) nil    .ordinal: got 1
 PASS id (choice unit nil concur) concur .ordinal: got 2
+
+--- testing with void alternatives ---
+
 PASS impossible option: got nil
 PASS option nil !ok: got nil --nil-- ordinal:1
 PASS option nil ok!: got nil --nil-- ordinal:0
 PASS option nil !ok via generic call: got matches B: --nil-- type option nil 1
 PASS option nil ok! via generic call: got matches A: --nil-- type option nil 0
+
+--- mix of void, several ref and several unit types ---
+
 PASS blub: got 1: StringYeahYeah!
 PASS blub: got 2: nil
 PASS blub: got 3: Sequence [1, 2, 3, 4]
@@ -51,6 +75,9 @@ PASS blob: got 1: StringYeahYeah!
 PASS blob: got 2: nil
 PASS blob: got 3: option Sequence [1, 2, 3, 4]
 PASS blob: got 4: unit
+
+--- testing `choice.apply` ---
+
 c is of type true_ value instance[true_]
 c is String 'hi!' length 3
 c is of type nil value --nil--
