@@ -65,7 +65,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LibraryFeature extends AbstractFeature
+public class LibraryFeature extends FuirFeature
 {
 
 
@@ -820,12 +820,6 @@ public class LibraryFeature extends AbstractFeature
   private SourcePosition pos(int pos, int posEnd)
   {
     return _libModule.pos(pos, posEnd);
-  }
-
-
-  public Contract contract()
-  {
-    return Contract.EMPTY_CONTRACT;
   }
 
   @Override

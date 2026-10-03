@@ -499,6 +499,9 @@ public class FuzionConstants extends ANY
   public static final String UNWRAP = "unwrap";
 
 
+  public static final String AUTO_CHOICE_APPLY_CASE_FIELD_PREFIX = INTERNAL_NAME_SYMBOL + "choice_value_";
+
+
   /*-----------------  special values used in MIR file  -----------------*/
 
 

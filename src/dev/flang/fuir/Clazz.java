@@ -44,6 +44,7 @@ import dev.flang.ast.AstErrors;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Types;
 
+import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryFeature;
 
 import dev.flang.ir.IR;
@@ -723,9 +724,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * The feature underlying this clazz.
    */
-  LibraryFeature feature()
+  FuirFeature feature()
   {
-    return (LibraryFeature) _type.feature();
+    return (FuirFeature) _type.feature();
   }
 
 
@@ -988,7 +989,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       (f != null,
        !isVoidType());
 
-    return lookup(new FeatureAndActuals((LibraryFeature)f), FuzionConstants.NO_SELECT, false);
+    return lookup(new FeatureAndActuals((FuirFeature) f), FuzionConstants.NO_SELECT, false);
   }
 
 
@@ -1467,7 +1468,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   @Override
   public int hashCode()
   {
-    return (_type.isRef() ? 0x777377 : 0) ^ feature().globalIndex();  // NYI: outer and type parameters!
+    throw new Error("dev.flang.fuir.Clazz is not hashable!");
   }
 
 

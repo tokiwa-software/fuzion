@@ -44,11 +44,11 @@ choice_nested =>
   x4 (a1 | a2 | a3) | (choice b1 b2) | (c1 | c2) | d1 := d1
 
   match x1
-    a choice a1 a2 a3 => say "its an A=$a"
+    a choice a1 a2 a3 => say "its an A=$(a.as_string_detailed)"
     (choice b1 b2), (choice c1 c2) => say "its a A or a B"
     d1 => say "its d1"
 
-  x1 ? a choice a1 a2 a3 => say "its an A=$a"
+  x1 ? a choice a1 a2 a3 => say "its an A=$(a.as_string_detailed)"
      | (choice b1 b2), (choice c1 c2) => say "its a A or a B"
      | d1 => say "its d1"
 
