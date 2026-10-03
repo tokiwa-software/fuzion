@@ -33,9 +33,9 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
    * [Language server](#language-server)
      * [Install](#install)
        * [Vim](#vim)
+       * [Neovim](#neovim)
        * [Emacs](#emacs)
          * [Eglot](#eglot)
-         * [LSP-Mode](#lsp-mode)
      * [Build](#build-language-server)
      * [Run standalone](#run-standalone)
        * [socket](#transport-socket)
@@ -333,80 +333,85 @@ But the following tools/dependencies are used e.g. for generating the documentat
 
 #### Vim
 
-0) Note: fuzion_language_server (from ./bin/) needs to be in $PATH
+> `fuzion_language_server` (from `./bin/`) must be in `$PATH`.
 
-1) Example .vimrc:
+Using [coc.nvim](https://github.com/neoclide/coc.nvim):
+
+1. Add to your `.vimrc`:
     ```vim
-    :filetype on
+    filetype plugin on
 
     call plug#begin('~/.vim/plugged')
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
     call plug#end()
     ```
-2) in vim
-
-    1) `:PlugInstall`
-
-    2) `:CocConfig`
-
-          ```json
-          {
-            "languageserver": {
-              "fuzion": {
-                "command": "fuzion_language_server",
-                "args" : ["-stdio"],
-                "filetypes": [
-                  "fz",
-                  "fuzion"
-                ]
-              }
-            }
-          }
-          ```
-
-3) add filetype-detection file ~/.vim/ftdetect/fz.vim
+2. In Vim, run `:PlugInstall`, then `:CocConfig` and add:
+    ```json
+    {
+      "languageserver": {
+        "fuzion": {
+          "command": "fuzion_language_server",
+          "args": ["-stdio"],
+          "filetypes": ["fz", "fuzion"]
+        }
+      }
+    }
+    ```
+3. Add filetype detection `~/.vim/ftdetect/fz.vim`:
     ```vim
-    au BufRead,BufNewFile *.fz            set filetype=fz
+    au BufRead,BufNewFile *.fz set filetype=fz
+    ```
+
+#### Neovim
+
+> `fuzion_language_server` (from `./bin/`) must be in `$PATH`.
+
+Using [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) (requires Neovim 0.8+):
+
+1. Install nvim-lspconfig with your preferred package manager (e.g., [lazy.nvim](https://github.com/folke/lazy.nvim)):
+    ```lua
+    { "neovim/nvim-lspconfig" }
+    ```
+2. Add to your Neovim config (e.g., `~/.config/nvim/init.lua`):
+    ```lua
+    vim.filetype.add({ extension = { fz = "fuzion" } })
+
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = "fuzion",
+      callback = function(args)
+        vim.lsp.start({
+          name = "fuzion",
+          cmd = { "fuzion_language_server", "-stdio" },
+          root_dir = vim.fs.root(args.buf, { ".git" }) or vim.fn.getcwd(),
+        })
+      end,
+    })
+    ```
+
+Or, if you use nvim-lspconfig's built-in setup:
+    ```lua
+    require("lspconfig.configs").fuzion = {
+      default_config = {
+        cmd = { "fuzion_language_server", "-stdio" },
+        filetypes = { "fz" },
+        root_dir = require("lspconfig.util").root_pattern(".git"),
+      },
+    }
+    require("lspconfig").fuzion.setup({})
     ```
 
 #### Emacs
 
-> fuzion_language_server (from ./bin/) needs to be in $PATH
+> `fuzion_language_server` (from `./bin/`) must be in `$PATH`.
 
-For emacs there is two options eglot or lsp-mode.
+Using [Eglot](https://github.com/joaotavora/eglot) (built into Emacs 29+):
 
-##### Eglot
-
-
-- M-x package-install RET eglot RET (only needed for emacs version <29)
-- add the following code to ~/.emacs.d/fuzion-lsp.el to enable [eglot](https://github.com/joaotavora/eglot)
-
+- For Emacs < 29, install eglot: `M-x package-install RET eglot RET`
+- Add to your `~/.emacs` or `~/.config/emacs/init.el`:
 
 ```elisp
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/"))
-;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
-;; and `package-pinned-packages`. Most users will not need or want to do this.
-;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(package-initialize)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(inhibit-startup-screen t)
- '(package-selected-packages '(eglot ##)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-
-(define-derived-mode fuzion-mode
-  fundamental-mode "Fuzion"
-  "Major mode for Fuzion.")
+(define-derived-mode fuzion-mode fundamental-mode "Fuzion"
+  "Major mode for editing Fuzion files.")
 
 (add-to-list 'auto-mode-alist '("\\.fz\\'" . fuzion-mode))
 
@@ -415,97 +420,8 @@ For emacs there is two options eglot or lsp-mode.
 (add-to-list 'eglot-server-programs
              '(fuzion-mode . ("fuzion_language_server" "-stdio")))
 
-(add-hook 'after-init-hook 'global-company-mode)
-(add-hook 'fuzion-mode-hook 'eglot-ensure)
-
-(provide 'init)
-;;; init.el ends here
+(add-hook 'fuzion-mode-hook #'eglot-ensure)
 ```
-
-- add following line to ~/.emacs.d/init.el or to ~/.emacs
-
-  (load "~/.emacs.d/fuzion-lsp.el")
-
-##### LSP-Mode
-
-- install lsp-mode, flycheck and company for emacs using
-    - M-x package-install RET lsp-mode
-    - M-x package-install RET flycheck
-    - M-x package-install RET company RET
-- add the following code to ~/.emacs.d/fuzion-lsp.el to enable [lsp-mode](https://github.com/emacs-lsp/lsp-mode)
-
-```elisp
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/"))
-(package-initialize)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(inhibit-startup-screen t)
- '(package-selected-packages '(lsp-ui company flycheck lsp-mode ##)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-
-(define-derived-mode fuzion-mode
-  fundamental-mode "Fuzion"
-  "Major mode for Fuzion.")
-
-(add-to-list 'auto-mode-alist '("\\.fz\\'" . fuzion-mode))
-
-(require 'lsp-mode)
-(global-flycheck-mode)
-(add-to-list 'lsp-language-id-configuration '(fuzion-mode . "fuzion"))
-
-(defgroup lsp-fuzionlsp nil
-  "LSP support for Fuzion, using fuzionlsp."
-  :group 'lsp-mode
-  :link '(url-link ""))
-
-(lsp-register-client
- (make-lsp-client :new-connection (lsp-stdio-connection  (lambda ()
-                                                          `(,"fuzion_language_server"
-                                                            "-stdio")))
-                  :major-modes '(fuzion-mode)
-                  :priority -1
-                  :server-id 'fuzionls))
-
-
-(lsp-consistency-check lsp-fuzion)
-
-(add-hook 'fuzion-mode-hook #'lsp)
-(add-hook 'after-init-hook 'global-company-mode)
-
-(setq lsp-enable-symbol-highlighting t)
-
-;; (setq  lsp-enable-semantic-highlighting t
-;;        lsp-semantic-tokens-enable t
-;;        lsp-semantic-tokens-warn-on-missing-face t
-;;        lsp-semantic-tokens-apply-modifiers nil
-;;        lsp-semantic-tokens-allow-delta-requests nil
-;;        lsp-semantic-tokens-allow-ranged-requests nil)
-
-;; (setq lsp-modeline-code-actions-mode t)
-
-;; (setq lsp-modeline-code-actions-segments '(name icon))
-
-;; (setq lsp-log-io t)
-
-(provide 'lsp-fuzion)
-
-(provide 'init)
-;;; init.el ends here
-```
-
-- add following line to ~/.emacs.d/init.el or to ~/.emacs
-
-  (load "~/.emacs.d/fuzion-lsp.el")
 
 
 ### Build Language Server
