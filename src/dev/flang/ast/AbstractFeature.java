@@ -143,6 +143,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public static final List<AbstractType> HAND_DOWN_FAILED = new List<AbstractType>().freeze();
 
 
+  /*-------------------------  static variables  ------------------------*/
+
+
+  /**
+   * Static counter used to assign ordinal numbers to sub-classes that redefined
+   * `compareTo`.
+   */
+  public static int _comparisonIds_ = 0;
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -230,6 +239,31 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /*----------------------------  abstract methods  ----------------------------*/
 
+
+  /**
+   * An integer used to compare features of different classes (like Feature and
+   * LibraryFeature).  This is set to a unique constants for each clazz that
+   * implements `compareTo` using `static _comparisonId_ =
+   * _comparisonIds_++`. This method then should return this constant
+   * _comparisonId_.
+   */
+  public abstract int comparisonId();
+
+
+  /**
+   * Compare this to other for sorting Feature. This default implementation can
+   * only compare features of different comparisonId()s, i.e., of different
+   * sub-classes.
+   */
+  public int compareTo(AbstractFeature other)
+  {
+    var result = Integer.compare(comparisonId(), other.comparisonId());
+
+    if (CHECKS) check
+      (result != 0 /* `compareTo` not redefined for this Feature implementation */);
+
+    return result;
+  }
 
 
   /**

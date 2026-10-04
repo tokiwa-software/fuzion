@@ -17,9 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue3749
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue3749 =>
-  A : choice i32 i32 is  # this is no longer forbidden
+override NAME = reg_issue7913
+include ../simple.mk

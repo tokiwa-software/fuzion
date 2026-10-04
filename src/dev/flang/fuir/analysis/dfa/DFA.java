@@ -38,6 +38,8 @@ import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
@@ -1490,6 +1492,35 @@ public class DFA extends ANY
           {
             _options.verbosePrintln(6, "  call: " + c);
           }
+
+        say("most 'unique' values, grouped by clazz: ");
+
+        _uniqueValues
+          .stream()
+          .collect(Collectors.groupingBy(v -> v._clazz))
+          .values()
+          .stream()
+          .sorted((a,b) -> b.size()-a.size())
+          .limit(25)
+          .forEach(r -> {
+            say(r.size() + " of " + _fuir.clazzName(r.getFirst()._clazz) + "\n\t" + r.stream().map(x -> x.toString()).collect(Collectors.joining("\n\t\t")));
+          });
+
+        say("most calls, grouped by clazz: ");
+
+        _calls
+          .values()
+          .stream()
+          .collect(Collectors.groupingBy(c -> c.calledClazz()))
+          .values()
+          .stream()
+          .sorted((a,b) -> b.size()-a.size())
+          .limit(25)
+          .forEach(r -> {
+            say(r.size() + " of " + _fuir.clazzName(r.getFirst().calledClazz()) + "\n\t" + r.stream().map(x -> x.toString()).collect(Collectors.joining("\n\t\t")) +
+              (r.size()>2 ? "\n\twhy are first two calls different?: " + r.get(0).compareToWhy(r.get(1)): ""));
+          });
+
       }
 
     if (_real)
@@ -1932,6 +1963,8 @@ public class DFA extends ANY
     put("safety"                         , cl -> cl._dfa.boolAsVal(cl._dfa._options.fuzionSafety()));
     put("debug"                          , cl -> cl._dfa.boolAsVal(cl._dfa._options.fuzionDebug()));
     put("debug_level"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz()), cl._dfa._options.fuzionDebugLevel()) );
+
+    put("choice.tag"                     , cl -> genericNumResult(cl) ); // NYI: Could be more precise and list the actuall possible tags of the target
 
     put("fuzion.sys.args.count"          , cl -> genericNumResult(cl) );
     put("fuzion.sys.args.get"            , cl -> cl._dfa.newConstString(null, cl) );

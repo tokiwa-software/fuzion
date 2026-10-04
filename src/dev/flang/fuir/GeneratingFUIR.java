@@ -740,9 +740,6 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  private static final List<AbstractCall> NO_INH = new List<AbstractCall>().freeze();
-
-
   /**
    * Find feature with given name in outer.
    *
@@ -1472,7 +1469,7 @@ public class GeneratingFUIR extends FUIR
   {
     var code = new List<Object>();
     var inhe = new List<List<AbstractCall>>();
-    addCode(cl, c, code, inhe, c.feature(), NO_INH);
+    addCode(cl, c, code, inhe, c.feature(), AbstractCall.NO_CALLS /* no inheritance */);
     check
       (code.size() == inhe.size(),
        _allCode.size() == _inh.size());
@@ -2945,8 +2942,8 @@ public class GeneratingFUIR extends FUIR
     var result = NO_CLAZZ;
     if (f != null)
       {
-        // NYI: Check if this works for a case that is part of an inherits clause, do
-        // we need to store in outerClazz.outer?
+        // NYI: CLEANUP: #7896: Check if this works for a case that is part of
+        // an inherits clause, do we need to store in outerClazz.outer?
         result = outerClazz.lookup(f)._id;
       }
     return result;
