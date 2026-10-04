@@ -2461,14 +2461,13 @@ public class Call extends AbstractCall
   {
     return generics
       .stream()
-      .map(g -> {
-        var result = false;
-        if (!g.isParametricType())
+      .map(g -> switch (g.kind())
+        {
+        case RefType, ValueType, ThisType ->
+          inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, g.generics(), argumentType);
+        case ParametricType ->
           {
-            result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, g.generics(), argumentType);
-          }
-        else
-          {
+            var result = false;
             var rg = g.typeParameter();
             var ri = rg.typeParameterIndex();
             if (rg.outer() == _calledFeature && foundAt.get(ri) == null)
@@ -2480,9 +2479,9 @@ public class Call extends AbstractCall
                     result = true;
                   }
               }
+            yield result;
           }
-        return result;
-      })
+        })
       .anyMatch(x->x);
   }
 
