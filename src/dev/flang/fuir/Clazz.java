@@ -660,8 +660,11 @@ class Clazz extends ANY implements Comparable<Clazz>
       // clazz actually describes a cotype
       feature().isCotype() &&
       // NYI: UNDER DEVELOPMENT: can this logic be simplified?
-         (t.isParametricType() && t.typeParameter().outer().isCotype() ||
-         !t.isParametricType() && t.feature() == _type.generics().get(0).actualType(t).feature()))
+         (switch (t.kind())
+           {
+           case ParametricType               -> t.typeParameter().outer().isCotype();
+           case RefType, ValueType, ThisType -> t.feature() == _type.generics().get(0).actualType(t).feature();
+           }))
       {
         t = _type.generics().get(0).actualType(t);
       }
@@ -1685,6 +1688,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz resultClazz()
   {
+    if (PRECONDITIONS) require
+      (this != NO_CLAZZ);
+
     var result = _resultClazz;
     if (result == null)
       {
@@ -1782,19 +1788,19 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     if (_typeClazz == null)
       {
-        if (_type.isParametricType())
+        _typeClazz = switch (_type.kind())
           {
-            _typeClazz = _fuir.error();
-          }
-        else
-          {
-            var tt = _type.cotypeType();
-            var ty = Types.resolved.f_Type.selfType();
-            _typeClazz = _type.containsError()  ? _fuir.error() :
-                         feature().isUniverse() ? this    :
-                         tt.compareTo(ty) == 0  ? _fuir.newClazz(_fuir.universe()  , ty, FuzionConstants.NO_SELECT)
-                                                : _fuir.newClazz(_outer.typeClazz(), tt, FuzionConstants.NO_SELECT);
-          }
+          case ParametricType -> _fuir.error();
+          case RefType, ValueType, ThisType ->
+            {
+              var tt = _type.cotypeType();
+              var ty = Types.resolved.f_Type.selfType();
+              yield _type.containsError()  ? _fuir.error() :
+                     feature().isUniverse() ? this    :
+                     tt.compareTo(ty) == 0  ? _fuir.newClazz(_fuir.universe()  , ty, FuzionConstants.NO_SELECT)
+                                            : _fuir.newClazz(_outer.typeClazz(), tt, FuzionConstants.NO_SELECT);
+            }
+          };
       }
     return _typeClazz;
   }
