@@ -265,7 +265,7 @@ public class Html extends ANY
    */
   private String annotateUnitType(AbstractFeature af)
   {
-    return af.isUnitType()
+    return af.isNameSpace()
       ? "<div class='fd-parent ml-10' title='This feature is guaranteed to be a unit type, "
         + "it does not have any internal state and might serve as a namespace.\n\n"
         + "Note that features without this annotation might still be unit types.'>[Unit Type]</div>" // NYI: replace title attribute with proper tooltip

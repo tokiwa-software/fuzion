@@ -292,7 +292,7 @@ public abstract class IR extends ANY
             l.add(ExprKind.Current);
           }
       }
-    else if (e instanceof AbstractCall c && (c.calledFeature() == Types.resolved.f_type_as_value || c.calledFeature().isUnitType()))
+    else if (e instanceof AbstractCall c && (c.calledFeature() == Types.resolved.f_type_as_value || c.calledFeature().isNameSpace()))
       {
       }
     else if (e instanceof AbstractCall c)

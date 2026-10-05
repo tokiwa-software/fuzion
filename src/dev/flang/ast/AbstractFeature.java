@@ -2019,7 +2019,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   protected boolean mayBeNativeValue()
   {
     return kind() == Kind.Constructor
-      && (!hasOuterRef() || outerRef().resultType().feature().isUnitType())
+      && (!hasOuterRef() || outerRef().resultType().feature().isNameSpace())
       && typeArguments().isEmpty()
       && inherits().size() == 1
       && !Contract.hasPreConditionsFeature(this)
@@ -2209,35 +2209,35 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  private Boolean _isUnitType = null;
+  private Boolean _isNameSpace = null;
   /**
-   * Can this feature only ever be a unit type?
+   * Is this feature a guaranteed namespace?
    */
-  public boolean isUnitType()
+  public boolean isNameSpace()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.RESOLVED));
 
-    if (_isUnitType == null)
+    if (_isNameSpace == null)
       {
-        _isUnitType = isUnitType(false);
+        _isNameSpace = isNameSpace(false);
       }
 
-    return _isUnitType;
+    return _isNameSpace;
   }
 
 
-  public boolean isUnitType(boolean isInheritedFeature)
+  public boolean isNameSpace(boolean isInheritedFeature)
   {
     return
       isConstructor() &&
       contract().isEmpty() &&
-      valueArguments().stream().allMatch(va -> va.isUnitType()) &&
+      valueArguments().stream().allMatch(va -> va.isNameSpace()) &&
       (isInheritedFeature || !isRef()) &&
       code().isEmpty() &&
       // unit inheriting e.g. property.orderable is fine
-      (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitType()) &&
-      inherits().stream().allMatch(c -> c.calledFeature().isUnitType(true));
+      (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isNameSpace()) &&
+      inherits().stream().allMatch(c -> c.calledFeature().isNameSpace(true));
   }
 
 
