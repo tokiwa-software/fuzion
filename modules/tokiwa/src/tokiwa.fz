@@ -130,11 +130,15 @@ public tokiwa is
     lm : mutate is
     (concur.thread_pool 2 ()->
         fout := concur.thread_pool.env.submit _ ()->
-          lm ! ()->
+          res := lm ! ()->
             p.with_out String lm (() -> (io.buffered lm).read_fully.bind String.from)
+          p.close_out.or_panic
+          res
         ferr := concur.thread_pool.env.submit _ ()->
-          lm ! ()->
+          res := lm ! ()->
             p.with_err String lm (() -> (io.buffered lm).read_fully.bind String.from)
+          p.close_err.or_panic
+          res
 
         _ := feed_stdin.bind input->
           lm ! ()->
@@ -145,14 +149,8 @@ public tokiwa is
 
         match p.wait (timeout.or_default time.duration.max)
           e error =>
-            p.close_out.or_panic
-            p.close_err.or_panic
-            p.kill     .or_else (say "sending kill signal to $p failed")
+            p.kill.or_else (say "sending kill signal to $p failed")
             process_result "" "failed waiting for $cmd, error is: $e" 1
           ec u32 =>
-            o := fout.get
-            e := ferr.get
-            p.close_out.or_panic
-            p.close_err.or_panic
-            process_result $o $e ec)
+            process_result fout.get ferr.get ec)
       .or_panic
