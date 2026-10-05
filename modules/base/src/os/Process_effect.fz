@@ -150,10 +150,10 @@ public Process ref : effect is
       public redef finally unit =>
         running_processes.for_each p->
           # NYI: UNDER DEVELOPMENT: register failures
-          _ := p.wait
           _ := fzE_pipe_close p.std_in
           _ := fzE_pipe_close p.std_out
           _ := fzE_pipe_close p.std_err
+          # _ := p.wait # NYI: wait for none detached processes
           if fzE_process_close p.pid != 0
             Ignored_Failure.env.register_failure (error "process could not be closed successfully: $p")
 
