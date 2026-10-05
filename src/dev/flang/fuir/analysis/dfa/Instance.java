@@ -161,8 +161,6 @@ class Instance extends Value
       (v != null,
        Errors.any()
         || v == Value.UNIT && dfa._fuir.clazzIsUnitType(dfa._fuir.clazzResultClazz(field))
-        || v instanceof SysArray // NYI: CLEANUP: try to remove?
-        || v == Value.UNKNOWN_JAVA_REF  // NYI: CLEANUP: remove
         || dfa._fuir.clazzIsOuterRef(field) // NYI: CLEANUP: try to remove?
         || dfa._fuir.clazzIsRef(v._clazz)
         || dfa._fuir.clazzResultClazz(field) == v._clazz);
