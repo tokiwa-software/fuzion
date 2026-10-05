@@ -17,11 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test partially_applicable_type_feature
+#  Source code of Fuzion test partially_applicable_type_feature_positive
 #
 # -----------------------------------------------------------------------
 
-partially_applicable_type_feature =>
+partially_applicable_type_feature_positive =>
 
 # partial application of type features, see #7790
 
@@ -51,24 +51,18 @@ p4(s String) is
     x -> p4 "via type.f(a,b): $a $b $x"
   public type.f(a, b, c String) p4 => p4 "via type.f(a,b,c): $a $b $c"
 
-# the inner feature `of` returns a function, but `p5` cannot be called without
-# an argument, so only the type feature `of(s)` can be used
+
+# the direct call to `g(a)` already matches `String -> String -> p5`, so
+# `g(a, b)` is not partially applied, same as for normal features
 p5(s String) is
   public redef as_string String => "p5($s)"
-  public of Unary p5 String => x -> p5 "via of: $s $x"
-  public type.of(s String) p5 => p5 "via type.of(s): $s"
+  public type.g(a String) Unary (Unary p5 String) String =>
+    x -> y -> p5 "via type.g(a): $a $x $y"
+  public type.g(a, b String) Unary p5 String =>
+    y -> p5 "via type.g(a,b): $a $b $y"
+  public type.g(a, b, c String) p5 => p5 "via type.g(a,b,c): $a $b $c"
 
-# the direct call to `g(a)` already matches `String -> String -> p6`, so
-# `g(a, b)` is not partially applied, same as for normal features
-p6(s String) is
-  public redef as_string String => "p6($s)"
-  public type.g(a String) Unary (Unary p6 String) String =>
-    x -> y -> p6 "via type.g(a): $a $x $y"
-  public type.g(a, b String) Unary p6 String =>
-    y -> p6 "via type.g(a,b): $a $b $y"
-  public type.g(a, b, c String) p6 => p6 "via type.g(a,b,c): $a $b $c"
-
-# `"p7.a` is ambiguous (see partially_applicable_type_feature_negative), but the
+# `p7.a` is ambiguous (see partially_applicable_type_feature_negative), but the
 # type feature can be selected via `.type` and the inner feature via a value
 p7 is
   public a(v i64) bool => v > 1
@@ -90,9 +84,7 @@ say ("y" |> (x -> p3.of x))         # explicit lambda
 say ((p4.f "x" "y").call "z")       # direct call, apply result
 say ("z" |> (c -> p4.f "x" "y" c))  # explicit lambda
 
-say ("x" |> p5.of)
-
-h String -> String -> p6 := p6.g "x"
+h String -> String -> p5 := p5.g "x"
 say (h.call "1" .call "2")
 
 say ([1, 2, 3].filter p7.type.a)      # type feature: [3]

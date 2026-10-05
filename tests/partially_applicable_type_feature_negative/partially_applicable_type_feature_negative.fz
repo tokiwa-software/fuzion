@@ -60,6 +60,7 @@ t5(s String) is
   public type.of(s, t String) t5 => t5 "$s$t"
 
 _ := ["a"].map (t5.of "z")   # 6. should flag an error: direct call or partial application?
+
 # `f "x" "y"` could be a direct call to `f(a, b)` returning a function or
 # partially applied `f(a, b, c)`
 t6(s String) is
@@ -85,3 +86,11 @@ t8 is
   public type.a(v i64) bool => v > 2
 
 _ := [1, 2, 3].filter t8.a      # 10. should flag an error: inner or type?
+
+# only the argument count decides: inner `of` without arguments exists, so
+# this is ambiguous even though `t9` cannot be called without an argument
+t9(s String) is
+  public of Unary t9 String => x -> t9 "via of: $s $x"
+  public type.of(s String) t9 => t9 "via type.of(s): $s"
+
+_ := "x" |> t9.of               # 11. should flag an error: inner or type?
