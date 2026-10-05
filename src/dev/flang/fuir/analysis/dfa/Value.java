@@ -197,38 +197,6 @@ class Value extends Val
     };
 
 
-  /**
-   * used for jref field of Java_Objects
-   */
-  static final Value UNKNOWN_JAVA_REF = new Value(NO_CLAZZ)
-    {
-
-      /**
-       * Add v to the set of values of given field within this instance.
-       */
-      @Override
-      public void setField(DFA dfa, int field, Value v)
-      {
-        throw new Error("setField");
-      }
-
-      /**
-       * Get set of values of given field within this value.  This works for unit
-       * type results even if this is not an instance (but a unit type itself).
-       */
-      @Override
-      public Val readField(DFA dfa, int field, int site, Context why)
-      {
-        throw new Error("readField");
-      }
-
-      public String toString()
-      {
-        return "UNKNOWN_JAVA_REF";
-      }
-    };
-
-
   /*----------------------------  variables  ----------------------------*/
 
 

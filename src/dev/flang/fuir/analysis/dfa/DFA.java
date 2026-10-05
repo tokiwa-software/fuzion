@@ -2371,7 +2371,7 @@ public class DFA extends ANY
           var len  = fuir(cl).clazzArg(ia, 1);
           cl._dfa.readField(data);
           cl._dfa.readField(len);
-          return Value.UNKNOWN_JAVA_REF;
+          return genericResult(cl);
         });
     put("fuzion.jvm.get_field0"            , cl ->
       {
@@ -2381,7 +2381,7 @@ public class DFA extends ANY
         if (fuir(cl).clazzIsRef(rc))
           {
             var jref = fuir(cl).lookupJavaRef(rc);
-            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+            jobj.setField(cl._dfa, jref, cl._dfa.newInstance(fuir(cl).clazzResultClazz(jref), NO_SITE, cl));
           }
         return jobj;
       });
@@ -2392,8 +2392,8 @@ public class DFA extends ANY
     put("fuzion.jvm.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.jvm.create_jvm", cl -> genericResult(cl));
     put("fuzion.jvm.destroy_jvm", cl -> Value.UNIT);
-    put("fuzion.jvm.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
-    put("fuzion.jvm.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
+    put("fuzion.jvm.string_to_java_object0", cl -> genericResult(cl));
+    put("fuzion.jvm.primitive_to_java_object", cl -> genericResult(cl));
   }
 
 
@@ -2516,7 +2516,7 @@ public class DFA extends ANY
               if (CHECKS) check
                 (jref != NO_CLAZZ);
               res = cl._dfa.newInstance(rc, NO_SITE, cl._context);
-              res.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+              res.setField(cl._dfa, jref, cl._dfa.newInstance(fuir(cl).clazzResultClazz(jref), NO_SITE, cl));
               setOuterRefs(cl, rc, res);
             }
           yield res;
@@ -2594,7 +2594,7 @@ public class DFA extends ANY
         if (fuir(cl).clazzIsRef(rc))
           {
             var jref = fuir(cl).lookupJavaRef(rc);
-            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+            jobj.setField(cl._dfa, jref, cl._dfa.newInstance(fuir(cl).clazzResultClazz(jref), NO_SITE, cl));
           }
         return jobj;
       });
