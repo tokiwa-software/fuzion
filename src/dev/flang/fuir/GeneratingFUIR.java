@@ -2629,14 +2629,14 @@ public class GeneratingFUIR extends FUIR
       : explicitTarget;
 
     Clazz innerClazz = null;
-    var cf      = c.calledFeature();
-    var dynamic = c.isDynamic() && tclazz.isRef();
-    var needsCode = !dynamic || explicitTarget != null;
-    var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
     if (!tclazz.isVoidType())
       {
-        innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature)cf, typePars), c.select(), c.isInheritanceCall());
-        if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
+        var cf      = c.calledFeature();
+        var dynamic = c.isDynamic() && tclazz.isRef();
+        var needsCode = !dynamic || explicitTarget != null;
+        var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
+        innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature) cf, typePars), c.select(), c.isInheritanceCall());
+        if (cf == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
             if (!T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
@@ -2648,7 +2648,7 @@ public class GeneratingFUIR extends FUIR
             cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;
-            innerClazz = tclazz.lookup(new FeatureAndActuals((LibraryFeature)cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
+            innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature) cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
           }
         if (needsCode)
           {

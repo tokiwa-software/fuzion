@@ -1267,9 +1267,10 @@ public abstract class FUIR extends IR
   public void dumpCode(int cl)
   {
     if (PRECONDITIONS) require
-      (clazzKind(cl) == FeatureKind.Routine);
+      (clazzKind(cl) == FeatureKind.Routine,
+       clazzNeedsCode(cl));
 
-    say("Code for " + clazzNameWithArgsAndResult(cl) + (cl == mainClazz() ? " *** main *** " : ""));
+    say("Code for " + clazzNameWithArgsAndResult(cl));
     dumpCode(cl, clazzCode(cl));
   }
 
