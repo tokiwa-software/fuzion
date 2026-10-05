@@ -887,11 +887,10 @@ public class GeneratingFUIR extends FUIR
    */
   AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f)
   {
-    var m = _redefinitions.get(heir);
-    if (m == null)
+    var m = _redefinitions.computeIfAbsent(heir, h ->
       {
         var res = new TreeMap<AbstractFeature, AbstractFeature>();
-        _featureLookup.forEachDeclaredOrInheritedFeature(heir, g ->
+        _featureLookup.forEachDeclaredOrInheritedFeature(h, g ->
           {
             for (var o : g.redefinesFull())
               {
@@ -900,9 +899,8 @@ public class GeneratingFUIR extends FUIR
                   (prev == null || prev == g || Errors.any());
               }
           });
-        m = res;
-        _redefinitions.put(heir, m);
-      }
+        return res;
+      });
     return m.getOrDefault(f, f);
   }
 
