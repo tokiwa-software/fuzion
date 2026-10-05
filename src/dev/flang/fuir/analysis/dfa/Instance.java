@@ -159,7 +159,13 @@ class Instance extends Value
   {
     if (PRECONDITIONS) require
       (v != null,
-       Errors.any() || v._clazz == NO_CLAZZ || dfa._fuir.clazzIsRef(v._clazz) || dfa._fuir.clazzResultClazz(field) == v._clazz);
+       Errors.any()
+        || v == Value.UNIT && dfa._fuir.clazzIsUnitType(dfa._fuir.clazzResultClazz(field))
+        || v instanceof SysArray // NYI: CLEANUP: try to remove?
+        || v == Value.UNKNOWN_JAVA_REF  // NYI: CLEANUP: remove
+        || dfa._fuir.clazzIsOuterRef(field) // NYI: CLEANUP: try to remove?
+        || dfa._fuir.clazzIsRef(v._clazz)
+        || dfa._fuir.clazzResultClazz(field) == v._clazz);
 
     var oldv = _fields.get(field);
     if (oldv != null)

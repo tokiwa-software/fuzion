@@ -198,7 +198,9 @@ class Value extends Val
 
 
   /**
-   * used for jref field of Java_Objects
+   * used for jref field of Java_Objects,
+   *
+   * NYI: CLEANUP: model this more precisly
    */
   static final Value UNKNOWN_JAVA_REF = new Value(NO_CLAZZ)
     {
