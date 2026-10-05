@@ -413,7 +413,7 @@ is
             public redef finite trit => list.this.finite)
 
 
-  # create a string representation of this Sequence including all the string
+  # create a string representation of this list including all the string
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.
   #
@@ -422,9 +422,9 @@ is
   # resulting string. Otherwise, only the first elements will be shown followed by
   # ",…" as in "[1,2,3,4,5,6,7,8,9,10,…]".
   #
-  # To force printing of all elements of a finite `Sequence` for which `finite` is
-  # false (which may be the case since a Sequence in general might not know that it
-  # if finite), you may use `as_string_all`.
+  # To force printing of all elements of a finite `list` for which `finite` is
+  # false (which may be the case since a `list` in general might not know that it
+  # is finite), you may use `as_string_all`.
   #
   # NYI: UNDER DEVELOPMENT: #5801 would be nicer if we renamed `choice.as_string`
   # when it is inherited and use `Sequence.as_string` automatically.

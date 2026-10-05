@@ -140,7 +140,7 @@ is
 
   # create a string from this choice.
   #
-  # This will use the value stored stored in this choice abd create its String
+  # This will use the value stored stored in this choice and create its String
   # representation using `prefix $` and return that without any additional
   # information.
   #
@@ -155,8 +155,8 @@ is
   # the string representations of
   #
   #     `type`: `choice.this.type`
-  #     `tag` : the result of `tag`
-  #     `T`   : the type of the value stored in `choice.this, and
+  #     `tag` : the result of `choice.this.tag`
+  #     `T`   : the type of the value stored in `choice.this`, and
   #     `v`   : the value stored in `choice.this`.
   #
   # So, e.g., `(id (option String) "hi").as_string` will result in
@@ -173,7 +173,8 @@ is
   #
   # Example:
   #
-  #     # A feature callable on any choice type with two parameters
+  #     # This is a feature that can be called with an argument of any choice
+  #     # type with two type parameters, i.e, two variants.
   #     #
   #     reflect_on_choice(X, Y type,
   #                       C type : choice X Y,

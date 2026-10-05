@@ -328,8 +328,6 @@ public class GeneratingFUIR extends FUIR
 
          var cazes = new List<AbstractCase>();
          var apply_this  = new Current(call.pos(), currentClazz.feature());
-         var apply_this2 = new Current(call.pos(), currentClazz.feature());
-         var apply_this3 = new Current(call.pos(), currentClazz.feature());
          var choice_this = new AbstractCall()             // e.g. option String
            {
              @Override public SourcePosition     pos()                  { return call.pos(); }
@@ -372,10 +370,10 @@ public class GeneratingFUIR extends FUIR
 
              cazes.add(new AbstractCase(call.pos())
                {
-                 @Override public AbstractFeature          field()                { return field; }
-                 @Override public List<AbstractType>       types()                { return types; }
-                 @Override public int[]                    tags(AbstractMatch m)  { return tagNumArray; }
-                 @Override public Expr code()
+                 @Override public AbstractFeature    field()                { return field; }
+                 @Override public List<AbstractType> types()                { return types; }
+                 @Override public int[]              tags(AbstractMatch m)  { return tagNumArray; }
+                 @Override public Expr               code()
                  {
                    var f = new AbstractCall()
                      {
@@ -401,7 +399,7 @@ public class GeneratingFUIR extends FUIR
                        @Override public AbstractType       type()                 { return tr._type; }
                      };
                    return new AbstractAssign(res_field,
-                                             apply_this2,
+                                             apply_this,
                                              call_f)
                      {
                        @Override public SourcePosition     pos()                  { return call.pos(); }
@@ -418,14 +416,15 @@ public class GeneratingFUIR extends FUIR
              new AbstractCall()
              {
                @Override public SourcePosition     pos()                  { return call.pos(); }
-               @Override public Expr               target()               { return apply_this3; }
+               @Override public Expr               target()               { return apply_this; }
                @Override public AbstractFeature    calledFeature()        { return res_field; }
                @Override public AbstractType       type()                 { return tr._type; }
              }
              );
-         return new AbstractBlock(l) {
-           @Override public SourcePosition     pos()                  { return call.pos(); }
-         };
+         return new AbstractBlock(l)
+           {
+             @Override public SourcePosition     pos()                  { return call.pos(); }
+           };
        });
 
     _removedIntrinsics_.put

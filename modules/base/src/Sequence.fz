@@ -513,7 +513,7 @@ is
   #
   # To force printing of all elements of a finite `Sequence` for which `finite` is
   # false (which may be the case since a Sequence in general might not know that it
-  # if finite), you may use `as_string_all`.
+  # is finite), you may use `as_string_all`.
   #
   public redef as_string String =>
     sequence_as_string
