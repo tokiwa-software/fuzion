@@ -532,11 +532,14 @@ public class ParsedCall extends Call
 
         var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
         var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
-        var tf = targetFeature(res, context);
-        if (tf != null && tf != Types.f_ERROR && tf != paa._feature.outer())
-              {
-                fos.addAll(res._module.lookup(tf, _name, this, false, false));
-              }
+        // also look in the target type, even if the target cannot be called
+        // without arguments: only the argument count decides, see #7912
+        var pt = _target == null ? null : _target.asParsedType();
+        var tt = pt == null ? null : pt.resolve(res, context, true);
+        if (tt != null && tt != Types.t_ERROR && tt.isNormalType() && tt.feature() != paa._feature.outer())
+          {
+            fos.addAll(res._module.lookup(tt.feature(), _name, this, false, false));
+          }
         var direct = FeatureAndOuter.filter(fos,
                                             pos(),
                                             FuzionConstants.OPERATION_CALL,
