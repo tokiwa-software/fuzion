@@ -740,9 +740,6 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  private static final List<AbstractCall> NO_INH = new List<AbstractCall>().freeze();
-
-
   /**
    * Find feature with given name in outer.
    *
@@ -1472,7 +1469,7 @@ public class GeneratingFUIR extends FUIR
   {
     var code = new List<Object>();
     var inhe = new List<List<AbstractCall>>();
-    addCode(cl, c, code, inhe, c.feature(), NO_INH);
+    addCode(cl, c, code, inhe, c.feature(), AbstractCall.NO_CALLS /* no inheritance */);
     check
       (code.size() == inhe.size(),
        _allCode.size() == _inh.size());
@@ -2473,12 +2470,12 @@ public class GeneratingFUIR extends FUIR
       : explicitTarget;
 
     Clazz innerClazz = null;
-    var cf      = c.calledFeature();
-    var dynamic = c.isDynamic() && tclazz.isRef();
-    var needsCode = !dynamic || explicitTarget != null;
-    var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
     if (!tclazz.isVoidType())
       {
+        var cf      = c.calledFeature();
+        var dynamic = c.isDynamic() && tclazz.isRef();
+        var needsCode = !dynamic || explicitTarget != null;
+        var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
         innerClazz = tclazz.lookup(new FeatureAndActuals((LibraryFeature)cf, typePars), c.select(), c.isInheritanceCall());
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
