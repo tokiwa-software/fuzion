@@ -141,7 +141,7 @@ main =>
           append_line results "$test in $(elapsed_time): $e error"
           append_line failures "$test: $e"
         res tokiwa.process_result =>
-          if res.exit_code = 0 || target = "fuir" then
+          if res.exit_code = 0 then
             yap "."
             append_line results "$test in $(elapsed_time): ok"
           else
