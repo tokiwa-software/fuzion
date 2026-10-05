@@ -508,6 +508,7 @@ public abstract class Module extends ANY implements FeatureLookup
    *
    * @param fun operation to apply to all declared or inherited features of af.
    */
+  @Override
   public void forEachDeclaredOrInheritedFeature(AbstractFeature af, Consumer<AbstractFeature> fun)
   {
     for (var l: new List<List<AbstractFeature>>(declaredOrInheritedFeatures(af).values().iterator()))

@@ -49,7 +49,6 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
-import dev.flang.ast.FeatureName;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
 import dev.flang.ast.Types;
@@ -864,50 +863,47 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Find feature with given name in outer.
-   *
-   * @param feature the declaring or inheriting feature
-   *
-   * @param fn the feature name that we are searching for
+   * Cache for findRedefinition: For an heir feature, map each feature that is
+   * redefined in heir to the redefining feature.
    */
-  AbstractFeature lookupFeature(AbstractFeature feature, FeatureName fn)
-  {
-    var res = _featureLookup.lookupFeature(feature, fn);
-    if (res == null)
-      {
-        var fs = _featuresAddedDuringMonomorphization.get(feature);
-        if (fs != null)
-          {
-            res = fs.get(fn);
-          }
-      }
-    return res;
-  }
+  private final Map<AbstractFeature, Map<AbstractFeature, AbstractFeature>> _redefinitions = new TreeMap<>();
 
 
   /**
-   * Add a new feature `added` that was created during monomorphisation to the inner features of `outer`.
+   * Find the redefinition of feature f within heir.
    *
-   * This is a little restriced, it will not add the feature to any heirs of
-   * `outer`, so it will not be found if looked up in heirs.
+   * This does not perform a lookup by name, but uses the redefinition
+   * relation as determined by the front end, so features in heir that have
+   * the same name as f but do not redefine f (e.g., fixed features) are
+   * ignored.
    *
-   * NYI: CLEANUP: #7900 when this issue is fixed, this should no longer be
-   * needed or replaced by some other mechanism.
+   * @param heir a feature that inherits from f.outer(), directly or
+   * indirectly.
    *
-   * @param outer the outer feature of the added feature
+   * @param f a feature declared in or inherited by f.outer()
    *
-   * @param added the added feature.
+   * @return the feature in heir that redefines f, or f itself if f is not
+   * redefined in heir.
    */
-  void addFeatureDuringMonomorphization(AbstractFeature outer,
-                                        FuirFeature added)
+  AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f)
   {
-    var fs = _featuresAddedDuringMonomorphization.get(outer);
-    if (fs == null)
+    var m = _redefinitions.get(heir);
+    if (m == null)
       {
-        fs = new TreeMap<>();
-        _featuresAddedDuringMonomorphization.put(outer, fs);
+        var res = new TreeMap<AbstractFeature, AbstractFeature>();
+        _featureLookup.forEachDeclaredOrInheritedFeature(heir, g ->
+          {
+            for (var o : g.redefinesFull())
+              {
+                var prev = res.put(o, g);
+                if (CHECKS) check
+                  (prev == null || prev == g || Errors.any());
+              }
+          });
+        m = res;
+        _redefinitions.put(heir, m);
       }
-    fs.put(added.featureName(), added);
+    return m.getOrDefault(f, f);
   }
 
 

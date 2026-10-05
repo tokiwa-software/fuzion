@@ -30,6 +30,8 @@ package dev.flang.fe;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.FeatureName;
 
+import java.util.function.Consumer;
+
 
 /**
  * Interface for looking up features that is used by middle end.
@@ -45,6 +47,16 @@ public interface FeatureLookup {
    * @param name the feature name that we are searching for
    */
   public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
+
+
+  /**
+   * Apply given function to all declared or inherited features of outer.
+   *
+   * @param outer the declaring or inheriting feature
+   *
+   * @param fun operation to apply to all declared or inherited features of outer.
+   */
+  public void forEachDeclaredOrInheritedFeature(AbstractFeature outer, Consumer<AbstractFeature> fun);
 
 
 }
