@@ -638,7 +638,7 @@ run_tests_jar: run_tests_jar_build
 
 .PHONY: run_tests_dump_fuir
 run_tests_dump_fuir: $(BUILD_DIR)/tests
-	$(FZ) -XdumpFUIR $(BUILD_DIR)/tests/hello/HelloWorld.fz > /dev/null
+	$(MAKE) fuir -C $(BUILD_DIR)/tests/dump_fuir
 
 .PHONY: clean
 clean:
