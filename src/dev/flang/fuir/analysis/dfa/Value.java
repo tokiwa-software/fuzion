@@ -185,18 +185,6 @@ class Value extends Val
     };
 
 
-  /**
-   * undefined value, used for not initialized fields.
-   */
-  static final Value UNDEFINED = new Value(NO_CLAZZ)
-    {
-      public String toString()
-      {
-        return "UNDEFINED";
-      }
-    };
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -356,14 +344,6 @@ class Value extends Val
   public Value join(DFA dfa, Value v, int clazz)
   {
     if (this == v)
-      {
-        return this;
-      }
-    else if (this == UNDEFINED)
-      {
-        return v;
-      }
-    else if (v == UNDEFINED)
       {
         return this;
       }
