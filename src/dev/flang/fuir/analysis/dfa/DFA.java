@@ -603,7 +603,7 @@ public class DFA extends ANY
             ? constData(s, elementClazz, b).value()
             : elements.join(DFA.this, constData(s, elementClazz, b).value(), elementClazz);
         }
-      SysArray sysArray = newSysArray(elements, elementClazz);
+      SysArray sysArray = newSysArray(elements, _fuir.clazzResultClazz(data));
 
       sa0.setField(DFA.this, data, sysArray);
       sa0.setField(DFA.this, lengthField, NumericValue.create(DFA.this, _fuir.clazzResultClazz(lengthField), elCount));
@@ -2142,8 +2142,7 @@ public class DFA extends ANY
 
     put("fuzion.sys.type.alloc"          , cl ->
         {
-          var ec = fuir(cl).clazzActualGeneric(cl.calledClazz(), 0);
-          return cl._dfa.newSysArray(null, ec); // NYI: get length from args
+          return cl._dfa.newSysArray(null, fuir(cl).clazzResultClazz(cl.calledClazz())); // NYI: get length from args
         });
     put("fuzion.sys.type.setel"          , cl ->
         {
@@ -2680,7 +2679,7 @@ public class DFA extends ANY
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
-        return cl._dfa.newSysArray(null, cl._dfa._fuir.clazzActualGeneric(cl.calledClazz(), 0));
+        return cl._dfa.newSysArray(null, fuir(cl).clazzResultClazz(cl.calledClazz()));
       });
   }
 
@@ -3120,20 +3119,20 @@ public class DFA extends ANY
    *
    * @param ne the element values, null if not initialized
    *
-   * @param ec the element clazz.
+   * @param ac the array clazz.
    *
    * @return a new or existing instance of SysArray.
    */
-  SysArray newSysArray(Value ne, int ec)
+  SysArray newSysArray(Value ne, int ac)
   {
     SysArray res;
     if (ne == null)
       {
-        res = _uninitializedSysArray.get(ec);
+        res = _uninitializedSysArray.get(ac);
         if (res == null)
           {
-            res = new SysArray(this, ne, ec);
-            _uninitializedSysArray.put(ec, res);
+            res = new SysArray(this, ne, ac);
+            _uninitializedSysArray.put(ac, res);
           }
       }
     else
@@ -3141,7 +3140,7 @@ public class DFA extends ANY
         res = ne._sysArrayOf;
         if (res == null)
           {
-            res = new SysArray(this, ne, ec);
+            res = new SysArray(this, ne, ac);
             ne._sysArrayOf = res;
           }
       }
@@ -3252,7 +3251,7 @@ public class DFA extends ANY
     var length        = _fuir.clazzFuzionSysArrayU8Length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);
     var c_u8          = _fuir.clazz(SpecialClazzes.c_u8);
-    var adata         = newSysArray(NumericValue.create(this, c_u8), c_u8);
+    var adata         = newSysArray(NumericValue.create(this, c_u8), _fuir.clazzResultClazz(data));
     if (utf8Bytes != null)
       {
         for (int i = 0; i < utf8Bytes.length; i++)
