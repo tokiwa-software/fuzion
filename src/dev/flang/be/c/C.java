@@ -1111,7 +1111,7 @@ public class C extends ANY
 
     cf.println("\nvoid __main__()\n{ ");
     cf.indent();
-    cf.println("assert("+ _maxTagNum + " <= fzE_page_size());");
+    cf.println("if ("+ _maxTagNum + " > fzE_page_size()) { fprintf(stderr, \"*** number of choice tags exceed page size!\"); exit(EXIT_FAILURE); }");
     cf.print(CStmnt.seq(
       initializeEffectsEnvironment(),
       CExpr.call(_names.function(_fuir.mainClazz()), new List<>())));
