@@ -215,7 +215,6 @@ public typed_zipper(# the result type of two values that were zipped
   public apply(T type,
                e E,
                v, w T) E
-    : fuzion.lambda_target
   =>
     abstract
 
