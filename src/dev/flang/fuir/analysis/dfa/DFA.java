@@ -2783,7 +2783,7 @@ public class DFA extends ANY
       {
         // Instances are cached using two maps with keys
         //
-        //  - clazzAt(site)           and then
+        //  - clazzAt(site)           in case `sizeSentitive(clazzAt(site)), and then
         //  - cl << 32 || env.id
         //
         var sc = site == FUIR.NO_SITE ? FUIR.NO_CLAZZ : _fuir.clazzAt(site);
