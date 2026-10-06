@@ -1,0 +1,121 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_time_date_time
+#
+# -----------------------------------------------------------------------
+
+lib_time_cpu_time =>
+
+  ms(n u64) => time.duration.ms n
+
+  # print result of check `name`
+  #
+  t(name String, ok bool) =>
+    r :=  ok ? "ok" : "FAIL"
+    say "$name: $r"
+
+  # one xorshift64 step, cheap work the optimizer cannot remove
+  #
+  xs(x u64) u64 =>
+    x1 := x  ^ (x  << 13)
+    x2 := x1 ^ (x1 >> 7)
+    x2 ^ (x2 << 17)
+
+  # burn at least `dur` CPU time in the current thread
+  #
+  spin(dur time.duration) u64 =>
+    start := time.cpu_time.thread
+    for
+      x := u64 88172645463325252, xs x
+    while time.cpu_time.thread - start < dur
+    else
+      x
+
+  # 1. clocks never go backwards
+  #
+  test_monotonic =>
+    a := time.cpu_time.thread
+    b := time.cpu_time.thread
+    t "thread_monotonic" (a <= b)
+    c := time.cpu_time.process
+    d := time.cpu_time.process
+    t "process_monotonic" (c <= d)
+  test_monotonic
+
+  # 2. measure sees busy work
+  #
+  test_busy =>
+    m := time.cpu_time.measure ()->
+      _ := spin (ms 100)
+    t "measure_busy" (m >= ms 100)
+  test_busy
+
+  # 3. sleeping does not consume CPU
+  #
+  test_sleep =>
+    s := time.cpu_time.measure ()->
+      time.Nano.env.sleep (ms 200)
+    t "sleep_no_cpu" (s < ms 50)
+  test_sleep
+
+  # 4. process time includes current thread
+  #
+  test_process_ge_thread =>
+    th := time.cpu_time.thread
+    pr := time.cpu_time.process
+    t "process_ge_thread" (pr >= th)
+  test_process_ge_thread
+
+    # 5. child's work is not counted in parent's thread time
+  #
+  test_child =>
+
+    # CPU time of the parent while a child burns `work` CPU time
+    #
+    parent_cost(work time.duration) time.duration =>
+      p0 := time.cpu_time.thread
+      ct := concur.Threads.env.spawn ()->
+        _ := spin work
+      ct.join.or_panic
+      time.cpu_time.thread - p0
+
+    _    := parent_cost time.duration.zero   # warm-up: one-time costs (e.g. JVM class loading)
+    base := parent_cost time.duration.zero   # spawn + join overhead only
+    busy := parent_cost (ms 500)             # same, but child works 500ms
+    t "parent_not_charged" (busy < base + ms 100)
+
+    child_ns := concur.atomic u64 .new 0
+    cc := concur.Threads.env.spawn ()->
+      child_ns.write (time.cpu_time.measure ()->
+                        _ := spin (ms 200)).nanos
+    cc.join.or_panic
+    t "child_measured_own" (child_ns.read >= (ms 200).nanos)
+  test_child
+
+  # 6. process time includes all (also terminated) threads
+  #
+  test_children_sum =>
+    q0 := time.cpu_time.process
+    ths := (1..3).map _->
+      concur.Threads.env.spawn ()->
+        _ := spin (ms 100)
+    ths.for_each x->x.join.or_panic
+    t "process_includes_children" (time.cpu_time.process - q0 >= ms 300)
+  test_children_sum
