@@ -202,3 +202,46 @@ choice_reflection =>
   reflect_on_choice String nil (option String) nil
   reflect_on_choice (num.complex f64) (num.fraction i64) (choice (num.complex f64) (num.fraction i64)) (num.complex -1.0 1.0)
   reflect_on_choice (num.complex f64) (num.fraction i64) (choice (num.complex f64) (num.fraction i64)) (3⁄4)
+
+  # helper features to create choices
+  choice0(A, B, C, D type, a A) choice A B C D => a
+  choice1(A, B, C, D type, b B) choice A B C D => b
+  choice2(A, B, C, D type, c C) choice A B C D => c
+  choice3(A, B, C, D type, d D) choice A B C D => d
+
+  say ""
+  say "--- testing `choice.type.lteq` ---"
+  say ""
+
+  choices := [choice0 unit String i64 bool unit  ,
+              choice1 unit String i64 bool "abc",
+              choice1 unit String i64 bool "str",
+              choice2 unit String i64 bool -2<<62,
+              choice2 unit String i64 bool 9223372036854775807,
+              choice3 unit String i64 bool true,
+              choice3 unit String i64 bool false # ,
+              ]
+
+  choices.combine choices v,w->
+           say "$(($v).pad 20)  <> $(($w).pad 20) is $(v <> w)"
+         .consume
+
+  nils := [choice0 nil nil nil nil nil,
+           choice1 nil nil nil nil nil,
+           choice2 nil nil nil nil nil,
+           choice3 nil nil nil nil nil]
+
+  nils.combine nils v,w->
+        say "$(($v).pad 20)  <> $(($w).pad 20) is $(v <> w)"
+      .consume
+
+
+  say ""
+  say "--- testing `choice.type.hash_code` ---"
+  say ""
+
+  choices.for_each v->
+           say "$(($v).pad 20).hash_code is $((choice unit String i64 bool).hash_code v)"
+
+  nils.for_each v->
+        say "$(($v).pad 20).hash_code is $((choice nil nil nil nil).hash_code v)"
