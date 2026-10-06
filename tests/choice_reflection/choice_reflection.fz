@@ -210,7 +210,7 @@ choice_reflection =>
   choice3(A, B, C, D type, d D) choice A B C D => d
 
   say ""
-  say "--- testing `choice.type.lteq` ---"
+  say "--- testing `choice.type.equality` ---"
   say ""
 
   choices := [choice0 unit String i64 bool unit  ,
@@ -223,7 +223,7 @@ choice_reflection =>
               ]
 
   choices.combine choices v,w->
-           say "$(($v).pad 20)  <> $(($w).pad 20) is $(v <> w)"
+           say "$(($v).pad 20) = $(($w).pad 20) is $(v = w)"
          .consume
 
   nils := [choice0 nil nil nil nil nil,
@@ -232,9 +232,21 @@ choice_reflection =>
            choice3 nil nil nil nil nil]
 
   nils.combine nils v,w->
-        say "$(($v).pad 20)  <> $(($w).pad 20) is $(v <> w)"
+        say "$(v.as_string_detailed) = $(w.as_string_detailed) is $(v = w)"
       .consume
 
+
+  say ""
+  say "--- testing `choice.type.lteq` ---"
+  say ""
+
+  choices.combine choices v,w->
+           say "$(($v).pad 20) <> $(($w).pad 20) is $(v <> w)"
+         .consume
+
+  nils.combine nils v,w->
+        say "$(v.as_string_detailed) <> $(w.as_string_detailed) is $(v <> w)"
+      .consume
 
   say ""
   say "--- testing `choice.type.hash_code` ---"
