@@ -477,14 +477,13 @@ void fzE_nanosleep(uint64_t n)
   uint64_t start = fzE_posix_time(-1);
   uint64_t end = start + n;
 
-  while (fzE_posix_time(-1) < end) {
-    uint64_t remaining_ns = end - fzE_posix_time(-1);
-    if (remaining_ns > 1000000ULL) {
-      Sleep((DWORD)(remaining_ns / 1000000ULL));
-    } else if (remaining_ns > 0) {
-      Sleep(1);
+  uint64_t now = fzE_posix_time(-1);
+  while (now < end)
+    {
+      uint64_t remaining_ms = (end - now) / 1000000ULL;
+      Sleep((DWORD)(remaining_ms == 0 ? 1ULL : remaining_ms));
+      now = fzE_posix_time(-1);
     }
-  }
 }
 
 

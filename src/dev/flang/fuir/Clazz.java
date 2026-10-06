@@ -340,7 +340,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     // stack must be empty at the end of a basic block
     // In other words, it needs to be known that `unit`
     // is a unit type.
-    _isUnitType = type.feature().isUnitType()
+    _isUnitType = type.feature().isUnitTypeWithoutSideEffect()
         ? YesNo.yes
         : YesNo.dontKnow;
   }
