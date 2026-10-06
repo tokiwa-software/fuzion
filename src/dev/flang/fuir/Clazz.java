@@ -44,6 +44,7 @@ import dev.flang.ast.AstErrors;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Types;
 
+import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryFeature;
 
 import dev.flang.ir.IR;
@@ -339,7 +340,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     // stack must be empty at the end of a basic block
     // In other words, it needs to be known that `unit`
     // is a unit type.
-    _isUnitType = type.feature().isUnitType()
+    _isUnitType = type.feature().isUnitTypeWithoutSideEffect()
         ? YesNo.yes
         : YesNo.dontKnow;
   }
@@ -659,8 +660,11 @@ class Clazz extends ANY implements Comparable<Clazz>
       // clazz actually describes a cotype
       feature().isCotype() &&
       // NYI: UNDER DEVELOPMENT: can this logic be simplified?
-         (t.isParametricType() && t.typeParameter().outer().isCotype() ||
-         !t.isParametricType() && t.feature() == _type.generics().get(0).actualType(t).feature()))
+         (switch (t.kind())
+           {
+           case ParametricType               -> t.typeParameter().outer().isCotype();
+           case RefType, ValueType, ThisType -> t.feature() == _type.generics().get(0).actualType(t).feature();
+           }))
       {
         t = _type.generics().get(0).actualType(t);
       }
@@ -723,9 +727,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * The feature underlying this clazz.
    */
-  LibraryFeature feature()
+  FuirFeature feature()
   {
-    return (LibraryFeature) _type.feature();
+    return (FuirFeature) _type.feature();
   }
 
 
@@ -982,13 +986,13 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the inner clazz of the target in the call.
    */
-  Clazz lookup(AbstractFeature f)
+  Clazz lookup(FuirFeature f)
   {
     if (PRECONDITIONS) require
       (f != null,
        !isVoidType());
 
-    return lookup(new FeatureAndActuals((LibraryFeature)f), FuzionConstants.NO_SELECT, false);
+    return lookup(new FeatureAndActuals(f), FuzionConstants.NO_SELECT, false);
   }
 
 
@@ -996,7 +1000,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Convenience function that calls {@code lookup} followed {@code doesNeedCode()} on the
    * result.
    */
-  Clazz lookupNeeded(AbstractFeature f)
+  Clazz lookupNeeded(FuirFeature f)
   {
     var innerClazz = lookup(f);
     innerClazz.doesNeedCode();
@@ -1467,7 +1471,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   @Override
   public int hashCode()
   {
-    return (_type.isRef() ? 0x777377 : 0) ^ feature().globalIndex();  // NYI: outer and type parameters!
+    throw new Error("dev.flang.fuir.Clazz is not hashable!");
   }
 
 
@@ -1684,6 +1688,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz resultClazz()
   {
+    if (PRECONDITIONS) require
+      (this != NO_CLAZZ);
+
     var result = _resultClazz;
     if (result == null)
       {
@@ -1781,19 +1788,19 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     if (_typeClazz == null)
       {
-        if (_type.isParametricType())
+        _typeClazz = switch (_type.kind())
           {
-            _typeClazz = _fuir.error();
-          }
-        else
-          {
-            var tt = _type.cotypeType();
-            var ty = Types.resolved.f_Type.selfType();
-            _typeClazz = _type.containsError()  ? _fuir.error() :
-                         feature().isUniverse() ? this    :
-                         tt.compareTo(ty) == 0  ? _fuir.newClazz(_fuir.universe()  , ty, FuzionConstants.NO_SELECT)
-                                                : _fuir.newClazz(_outer.typeClazz(), tt, FuzionConstants.NO_SELECT);
-          }
+          case ParametricType -> _fuir.error();
+          case RefType, ValueType, ThisType ->
+            {
+              var tt = _type.cotypeType();
+              var ty = Types.resolved.f_Type.selfType();
+              yield _type.containsError()  ? _fuir.error() :
+                     feature().isUniverse() ? this    :
+                     tt.compareTo(ty) == 0  ? _fuir.newClazz(_fuir.universe()  , ty, FuzionConstants.NO_SELECT)
+                                            : _fuir.newClazz(_outer.typeClazz(), tt, FuzionConstants.NO_SELECT);
+            }
+          };
       }
     return _typeClazz;
   }
@@ -2055,7 +2062,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               }
             else
               {
-                fields.add(lookup(field));
+                fields.add(lookup((FuirFeature) field));
               }
           }
       }

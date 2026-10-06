@@ -121,15 +121,16 @@ public Process ref : effect is
               _ := running_processes.update (container.Set os.process)->(container.Set os.process) rp->
                 rp ∖ ((container.ps_set os.process).new [p])
               outcome r.as_u32
+            else if r = -1 && elapsed_time > timeout
+              error "Waiting for process with id $(p.pid) timed out waited for $(elapsed_time)." fzE_last_error
+            else if r < -100
+              sig := (r.abs - 100)
+              sig_name := os.signal.from_number sig .bind s->" ($(s.as_string))" .or_default ""
+              error "Process $(p.pid) was terminated by signal $sig$sig_name"
+            else if r = -2
+              error "Waiting for process with id $(p.pid) was unsuccessful" fzE_last_error
             else
-              if r = -1 && elapsed_time > timeout
-                error "Waiting for process with id $(p.pid) timed out waited for $(elapsed_time)." fzE_last_error
-              else if r < -100
-                sig := (r.abs - 100)
-                sig_name := os.signal.from_number sig .bind s->" ($(s.as_string))" .or_default ""
-                error "Process $(p.pid) was terminated by signal $sig$sig_name"
-              else
-                error "Waiting for process with id $(p.pid) was unsuccessful" fzE_last_error
+              panic "unexpected result from fzE_process_poll: $r"
 
 
       # send signal to process
@@ -150,10 +151,10 @@ public Process ref : effect is
       public redef finally unit =>
         running_processes.for_each p->
           # NYI: UNDER DEVELOPMENT: register failures
-          _ := p.wait
           _ := fzE_pipe_close p.std_in
           _ := fzE_pipe_close p.std_out
           _ := fzE_pipe_close p.std_err
+          # _ := p.wait # NYI: wait for none detached processes
           if fzE_process_close p.pid != 0
             Ignored_Failure.env.register_failure (error "process could not be closed successfully: $p")
 
