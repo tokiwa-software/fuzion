@@ -274,6 +274,24 @@ is
         compile_time_panic
 
 
+  # create hash code for this choice
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  # This will result in a compile-time `panic` in case any element type is not hashable.
+  #
+  public redef fixed type.hash_code(a choice.this) u64
+  =>
+    a.apply T,v->
+      if T : property.hashable then
+        h0 := xxh_next xxh_first 0x325292358f18b185  # created using https://cryptotools.dev/
+        xxh_next h0 (T.hash_code v)
+      else
+        compile_time_panic  # choice is not hashable since one element type is not
+
+
   # combine -- if `choice.this` and `other` have the same ordinal number, combine
   # the value stored in this `ta` and in other `ov` using `f.call va vb`.
   # Otherwise, return `e`.
