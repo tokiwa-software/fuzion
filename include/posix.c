@@ -120,6 +120,10 @@ clockid_t get_clock_id(int clock)
         return CLOCK_REALTIME;
       case 1:
         return CLOCK_MONOTONIC;
+      case 2:
+        return CLOCK_THREAD_CPUTIME_ID;
+      case 3:
+        return CLOCK_PROCESS_CPUTIME_ID;
       default:
         assert(false);
         return -1;

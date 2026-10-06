@@ -447,7 +447,24 @@ int fzE_munmap(void * mapped_address, const int file_size){
  */
 uint64_t fzE_posix_time(int clockid)
 {
-  // NYI: BUG: clockid currently ignored
+    // CPU time clocks: 2 = thread, 3 = process.
+  // NOTE: GetThreadTimes/GetProcessTimes have scheduler tick granularity (~15.6ms).
+  if (clockid == 2 || clockid == 3)
+    {
+      FILETIME c, e, k, u;
+      BOOL ok = clockid == 2
+        ? GetThreadTimes (GetCurrentThread (), &c, &e, &k, &u)
+        : GetProcessTimes(GetCurrentProcess(), &c, &e, &k, &u);
+      if (!ok)
+        {
+          fprintf(stderr, "*** GetThreadTimes/GetProcessTimes failed\n");
+          exit(EXIT_FAILURE);
+        }
+      uint64_t kk = ((uint64_t)k.dwHighDateTime << 32) | k.dwLowDateTime;
+      uint64_t uu = ((uint64_t)u.dwHighDateTime << 32) | u.dwLowDateTime;
+      return (kk + uu) * 100;   // FILETIME unit is 100ns
+    }
+
   static LARGE_INTEGER frequency = {0};
   if (frequency.QuadPart == 0) {
       if (!QueryPerformanceFrequency(&frequency)) {
