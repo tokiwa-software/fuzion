@@ -608,7 +608,6 @@ public class GeneratingFUIR extends FUIR
     _accessedClazzes = new IntMap<>();
     _accessedTarget = new IntMap<>();
     _featureLookup = fl;
-    _redefinitions = new TreeMap<>();
     _clazzes = new List<>();
     if (CACHE_RESULT_CLAZZ)
       {
@@ -655,7 +654,6 @@ public class GeneratingFUIR extends FUIR
     _accessedClazzes = original._accessedClazzes;
     _accessedTarget = original._accessedTarget;
     _featureLookup = original._featureLookup;
-    _redefinitions = original._redefinitions;
     _mainClazz = original._mainClazz;
     _universe = original._universe;
     _clazzes = original._clazzes;
@@ -856,45 +854,18 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Cache for findRedefinition: For an heir feature, map each feature that is
-   * redefined in heir to the redefining feature.
-   */
-  private final Map<AbstractFeature, Map<AbstractFeature, AbstractFeature>> _redefinitions;
-
-
-  /**
    * Find the redefinition of feature f within heir.
    *
-   * This does not perform a lookup by name, but uses the redefinition
-   * relation as determined by the front end, so features in heir that have
-   * the same name as f but do not redefine f (e.g., fixed features) are
-   * ignored.
-   *
    * @param heir a feature that inherits from f.outer(), directly or
-   * indirectly.
+   *             indirectly.
    *
-   * @param f a feature declared in or inherited by f.outer()
+   * @param f    a feature declared in or inherited by f.outer()
    *
    * @return the feature in heir that redefines f, or f itself if f is not
-   * redefined in heir.
+   *         redefined in heir.
    */
-  AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f)
-  {
-    var m = _redefinitions.computeIfAbsent(heir, h ->
-      {
-        var res = new TreeMap<AbstractFeature, AbstractFeature>();
-        _featureLookup.forEachDeclaredOrInheritedFeature(h, g ->
-          {
-            for (var o : g.redefinesFull())
-              {
-                var prev = res.put(o, g);
-                if (CHECKS) check
-                  (prev == null || prev == g || Errors.any());
-              }
-          });
-        return res;
-      });
-    return m.getOrDefault(f, f);
+  AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
+    return _featureLookup.findRedefinition(heir, f);
   }
 
 

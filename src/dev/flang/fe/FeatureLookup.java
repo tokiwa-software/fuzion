@@ -30,8 +30,6 @@ package dev.flang.fe;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.FeatureName;
 
-import java.util.function.Consumer;
-
 
 /**
  * Interface for looking up features that is used by middle end.
@@ -50,13 +48,17 @@ public interface FeatureLookup {
 
 
   /**
-   * Apply given function to all declared or inherited features of outer.
+   * Find the redefinition of feature f within heir.
    *
-   * @param outer the declaring or inheriting feature
+   * @param heir a feature that inherits from f.outer(), directly or
+   *             indirectly.
    *
-   * @param fun operation to apply to all declared or inherited features of outer.
+   * @param f    a feature declared in or inherited by f.outer()
+   *
+   * @return the feature in heir that redefines f, or f itself if f is not
+   *         redefined in heir.
    */
-  public void forEachDeclaredOrInheritedFeature(AbstractFeature outer, Consumer<AbstractFeature> fun);
+  public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f);
 
 
 }
