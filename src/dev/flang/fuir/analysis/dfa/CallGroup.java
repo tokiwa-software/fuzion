@@ -30,6 +30,9 @@ package dev.flang.fuir.analysis.dfa;
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 
 import java.util.TreeSet;
@@ -167,6 +170,13 @@ class CallGroup extends ANY implements Comparable<CallGroup>
    */
   public CallGroup(DFA dfa, int cc, int site, Value target)
   {
+    if (PRECONDITIONS) require
+      (Errors.any() ||
+       dfa._fuir.clazzOuterClazz(cc) == target._clazz ||
+       dfa._fuir.clazzOuterClazz(cc) == dfa._fuir.clazzUniverse() && target._clazz == NO_CLAZZ ||
+       dfa._fuir.clazzIsUnitType(dfa._fuir.clazzOuterClazz(cc)) ||
+       dfa._fuir.clazzIsRef(dfa._fuir.clazzOuterClazz(cc)) &&  dfa._fuir.clazzIsRef(target._clazz));
+
     _dfa = dfa;
     _cc = cc;
     _site = site;
