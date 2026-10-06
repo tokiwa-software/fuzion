@@ -85,28 +85,28 @@ Faulty type parameter: 'choice_negative.cyclic5.this.A'
     A : choice i32 bool, choice String f64 is # 9. should flag an error: choice type must inherit exactly once from choice
 -------------------------^^^^^^
 A choice feature must inherit directly from choice exactly once.
-Previous inheritance from choice at --CURDIR--/choice_negative.fz:61:9:
+Previous inheritance from choice at --CURDIR--/choice_negative.fz:61:9
 
 
 --CURDIR--/choice_negative.fz:66:12: error 14: Repeated inheritance of choice is not permitted
     C : A, B is                     # 10. should flag an error: choice type must inherit exactly once from choice
 -----------^
 A choice feature must inherit directly from choice exactly once.
-Previous inheritance from choice at --CURDIR--/choice_negative.fz:66:9:
+Previous inheritance from choice at --CURDIR--/choice_negative.fz:66:9
 
 
 --CURDIR--/choice_negative.fz:70:12: error 15: Repeated inheritance of choice is not permitted
     B : A, choice String f64 is     # 11. should flag an error: choice type must inherit exactly once from choice
 -----------^^^^^^
 A choice feature must inherit directly from choice exactly once.
-Previous inheritance from choice at --CURDIR--/choice_negative.fz:70:9:
+Previous inheritance from choice at --CURDIR--/choice_negative.fz:70:9
 
 
 --CURDIR--/choice_negative.fz:74:28: error 16: Repeated inheritance of choice is not permitted
     B : choice String f64, A is     # 12. should flag an error: choice type must inherit exactly once from choice
 ---------------------------^
 A choice feature must inherit directly from choice exactly once.
-Previous inheritance from choice at --CURDIR--/choice_negative.fz:74:9:
+Previous inheritance from choice at --CURDIR--/choice_negative.fz:74:9
 
 
 --CURDIR--/choice_negative.fz:77:5: error 17: Choice feature must not contain any code
@@ -119,7 +119,7 @@ A choice feature must be a normal feature with empty code section
     A : choice i32 String bool is   # 13. should flag an error: choice type must not have any fields
 ----^
 Field 'choice_negative.nofields1.A.x' is not permitted.
-Field declared at --CURDIR--/choice_negative.fz:78:14:
+Field declared at --CURDIR--/choice_negative.fz:78:14
       public x i32 := any
 -------------^
 
@@ -128,7 +128,7 @@ Field declared at --CURDIR--/choice_negative.fz:78:14:
     A (x i32) : choice i32 String bool is  # 14. should flag an error: choice type must not have any fields
 ----^
 Field 'choice_negative.nofields2.A.x' is not permitted.
-Field declared at --CURDIR--/choice_negative.fz:81:8:
+Field declared at --CURDIR--/choice_negative.fz:81:8
     A (x i32) : choice i32 String bool is  # 14. should flag an error: choice type must not have any fields
 -------^
 
@@ -137,7 +137,7 @@ Field declared at --CURDIR--/choice_negative.fz:81:8:
     B : A, choice i32 String bool is # 15. should flag an error: choice type must not have any fields
 ----^
 Field 'choice_negative.nofields3.A.x' is not permitted.
-Field declared at --CURDIR--/choice_negative.fz:84:17:
+Field declared at --CURDIR--/choice_negative.fz:84:17
     A is public x i32 := any
 ----------------^
 
@@ -146,7 +146,7 @@ Field declared at --CURDIR--/choice_negative.fz:84:17:
     B : choice i32 String bool, A is # 16. should flag an error: choice type must not have any fields
 ----^
 Field 'choice_negative.nofields4.A.x' is not permitted.
-Field declared at --CURDIR--/choice_negative.fz:88:17:
+Field declared at --CURDIR--/choice_negative.fz:88:17
     A is public x i32 := any
 ----------------^
 
@@ -155,7 +155,7 @@ Field declared at --CURDIR--/choice_negative.fz:88:17:
     C : B, choice i32 String bool is # 17. should flag an error: choice type must not have any fields
 ----^
 Field 'choice_negative.nofields5.A.x' is not permitted.
-Field declared at --CURDIR--/choice_negative.fz:92:8:
+Field declared at --CURDIR--/choice_negative.fz:92:8
     A (x i32) is
 -------^
 
@@ -164,7 +164,7 @@ Field declared at --CURDIR--/choice_negative.fz:92:8:
     C : choice i32 String bool, B is # 18. should flag an error: choice type must not have any fields
 ----^
 Field 'choice_negative.nofields6.A.x' is not permitted.
-Field declared at --CURDIR--/choice_negative.fz:97:8:
+Field declared at --CURDIR--/choice_negative.fz:97:8
     A (x i32) is
 -------^
 
@@ -185,7 +185,7 @@ Field declared at --CURDIR--/choice_negative.fz:97:8:
     A : choice i64 f32 is
 ----^
 A closure cannot be built for a choice type. Forbidden accesses occur at
---CURDIR--/choice_negative.fz:131:14:
+--CURDIR--/choice_negative.fz:131:14
         _ := x                       # 21. should flag an error: access to closure not permitted in choice
 -------------^
 
@@ -196,7 +196,7 @@ To solve this, you might move the accessed features outside of the common outer 
     B : A, choice i64 f32 is
 --------^
 A closure cannot be built for a choice type. Forbidden accesses occur at
---CURDIR--/choice_negative.fz:136:14:
+--CURDIR--/choice_negative.fz:136:14
         _ := x                       # 22. should flag an error: access to closure not permitted in choice
 -------------^
 
@@ -221,7 +221,7 @@ A choice feature must be a normal feature with empty code section
     x bool : choice i64 bool := true # 23. should flag an error, choice feature must not be field
 ----^
 A choice feature cannot be called, so it does not make sense to define a result type of a choice.
-Result type 'bool' at --CURDIR--/choice_negative.fz:140:7:
+Result type 'bool' at --CURDIR--/choice_negative.fz:140:7
     x bool : choice i64 bool := true # 23. should flag an error, choice feature must not be field
 ------^^^^
 
@@ -236,7 +236,7 @@ A choice feature must be a normal feature with empty code section
     x bool : choice i64 bool := any  # 25. should flag an error, choice feature must not be field
 ----^
 A choice feature cannot be called, so it does not make sense to define a result type of a choice.
-Result type 'bool' at --CURDIR--/choice_negative.fz:145:7:
+Result type 'bool' at --CURDIR--/choice_negative.fz:145:7
     x bool : choice i64 bool := any  # 25. should flag an error, choice feature must not be field
 ------^^^^
 
@@ -263,7 +263,7 @@ A choice feature must be a normal feature with empty code section
     x unit : choice i64 bool => abstract  # 28. should flag an error, choice feature must not be abstract
 ----^
 A choice feature cannot be called, so it does not make sense to define a result type of a choice.
-Result type 'unit' at --CURDIR--/choice_negative.fz:151:7:
+Result type 'unit' at --CURDIR--/choice_negative.fz:151:7
     x unit : choice i64 bool => abstract  # 28. should flag an error, choice feature must not be abstract
 ------^^^^
 
@@ -278,7 +278,7 @@ A choice feature must be a normal feature with empty code section
      x unit : choice i64 bool => intrinsic  # 29. should flag an error, choice feature must not be intrinsic
 -----^
 A choice feature cannot be called, so it does not make sense to define a result type of a choice.
-Result type 'unit' at --CURDIR--/choice_negative.fz:153:8:
+Result type 'unit' at --CURDIR--/choice_negative.fz:153:8
      x unit : choice i64 bool => intrinsic  # 29. should flag an error, choice feature must not be intrinsic
 -------^^^^
 

@@ -6,7 +6,7 @@ Number of actual value arguments is 2, while call expects one value argument.
 Actual value arguments: 'partial application argument #partialFunctionArg2', 'partial application argument #partialFunctionArg3'
 Called feature: 'id'
 Formal value arguments: 'x' 'unit'
-Declared at {base.fum}/id.fz:31:8:
+Declared at {base.fum}/id.fz:31:8
 public id(T type, x T) T => x
 -------^^
 

@@ -9,10 +9,10 @@
       4
 ------^
 Incompatible result types in different branches:
-block returns value of type 'String' at --CURDIR--/incomp_type_in_cases.fz:29:7:
+block returns value of type 'String' at --CURDIR--/incomp_type_in_cases.fz:29:7
       "hello"
 ------^^^^^^^
-block returns value of type 'i64' at --CURDIR--/incomp_type_in_cases.fz:31:7:
+block returns value of type 'i64' at --CURDIR--/incomp_type_in_cases.fz:31:7
       4
 ------^
 

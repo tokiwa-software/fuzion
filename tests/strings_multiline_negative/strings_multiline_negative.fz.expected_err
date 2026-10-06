@@ -2,7 +2,7 @@
 --CURDIR--/strings_multiline_negative.fz:28:8: error 1: Expected multiline string to start in first line following fat quotation '"""'
   _ := """"""    #  1. should flag an error: Expected multiline string to start in first line following fat quotation
 -------^
-Found start at --CURDIR--/strings_multiline_negative.fz:28:11:
+Found start at --CURDIR--/strings_multiline_negative.fz:28:11
   _ := """"""    #  1. should flag an error: Expected multiline string to start in first line following fat quotation
 ----------^ instead.
 
@@ -10,7 +10,7 @@ Found start at --CURDIR--/strings_multiline_negative.fz:28:11:
 --CURDIR--/strings_multiline_negative.fz:29:8: error 2: Expected multiline string to start in first line following fat quotation '"""'
   _ := """ """   #  2. should flag an error: Expected multiline string to start in first line following fat quotation
 -------^
-Found start at --CURDIR--/strings_multiline_negative.fz:29:12:
+Found start at --CURDIR--/strings_multiline_negative.fz:29:12
   _ := """ """   #  2. should flag an error: Expected multiline string to start in first line following fat quotation
 -----------^ instead.
 
@@ -31,7 +31,7 @@ To solve this, remove this whitespace or replace it by escape codes.
 --CURDIR--/strings_multiline_negative.fz:43:75: error 5: Unexpected control sequence in constant string.
   """"  # 5. should flag an error: Found unexpected control sequence 'LF '
 --------------------------------------------------------------------------^
-Found unexpected control sequence 'LF ' (0xa) in constant string starting at --CURDIR--/strings_multiline_negative.fz:43:6:
+Found unexpected control sequence 'LF ' (0xa) in constant string starting at --CURDIR--/strings_multiline_negative.fz:43:6
   """"  # 5. should flag an error: Found unexpected control sequence 'LF '
 -----^
 
