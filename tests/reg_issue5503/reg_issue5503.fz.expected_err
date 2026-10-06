@@ -5,7 +5,7 @@
 In 'reg_issue5503.b.f' that redefines 'reg_issue5503.a.f' type parameter count is 0 while it should be 1.
 Original type parameters: 'X'
 redefined type parameters: ''
-Original feature declared at --CURDIR--/reg_issue5503.fz:30:5:
+Original feature declared at --CURDIR--/reg_issue5503.fz:30:5
     f(X type) =>
 ----^
 
@@ -16,7 +16,7 @@ Original feature declared at --CURDIR--/reg_issue5503.fz:30:5:
 In 'reg_issue5503.e.f' that redefines 'reg_issue5503.d.f' type parameter count is 0 while it should be 3.
 Original type parameters: 'X, Y, Z'
 redefined type parameters: ''
-Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
+Original feature declared at --CURDIR--/reg_issue5503.fz:45:5
     f(X, Y, Z type, v, w i32) =>
 ----^
 
@@ -27,7 +27,7 @@ Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
 In 'reg_issue5503.f.f' that redefines 'reg_issue5503.d.f' type parameter count is 1 while it should be 3.
 Original type parameters: 'X, Y, Z'
 redefined type parameters: 'X'
-Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
+Original feature declared at --CURDIR--/reg_issue5503.fz:45:5
     f(X, Y, Z type, v, w i32) =>
 ----^
 
@@ -38,7 +38,7 @@ Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
 In 'reg_issue5503.g.f' that redefines 'reg_issue5503.d.f' type parameter count is 2 while it should be 3.
 Original type parameters: 'X, Y, Z'
 redefined type parameters: 'X, Y'
-Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
+Original feature declared at --CURDIR--/reg_issue5503.fz:45:5
     f(X, Y, Z type, v, w i32) =>
 ----^
 
@@ -49,7 +49,7 @@ Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
 In 'reg_issue5503.i.f' that redefines 'reg_issue5503.d.f' type parameter count is 4 while it should be 3.
 Original type parameters: 'X, Y, Z'
 redefined type parameters: 'X, Y, Z, V'
-Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
+Original feature declared at --CURDIR--/reg_issue5503.fz:45:5
     f(X, Y, Z type, v, w i32) =>
 ----^
 
@@ -60,7 +60,7 @@ Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
 In 'reg_issue5503.j.f' that redefines 'reg_issue5503.d.f' type parameter count is 5 while it should be 3.
 Original type parameters: 'X, Y, Z'
 redefined type parameters: 'X, Y, Z, V, W'
-Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
+Original feature declared at --CURDIR--/reg_issue5503.fz:45:5
     f(X, Y, Z type, v, w i32) =>
 ----^
 

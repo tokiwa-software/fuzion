@@ -11,7 +11,7 @@ doubledeclaration2.fz:26:43: error 2: Duplicate feature declaration
 public doubledeclaration_negative.cyclic1.a i32 := 4   # 1. should flag an error, field not allowed in qualified declaration
 ------------------------------------------^
 Feature that was declared repeatedly: 'doubledeclaration_negative.cyclic1.a'
-originally declared at --CURDIR--/doubledeclaration_negative.fz:29:12:
+originally declared at --CURDIR--/doubledeclaration_negative.fz:29:12
     public a i32 := 3
 -----------^
 To solve this, consider renaming one of these two features, e.g., as 'aʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
@@ -28,7 +28,7 @@ doubledeclaration2.fz:27:49: error 4: Duplicate feature declaration
 public redef doubledeclaration_negative.cyclic1.b i32 => 44  # 2. should flag an error, feature already declared in doubledeclaration_negative.fz
 ------------------------------------------------^
 Feature that was declared repeatedly: 'doubledeclaration_negative.cyclic1.b'
-originally declared at --CURDIR--/doubledeclaration_negative.fz:30:12:
+originally declared at --CURDIR--/doubledeclaration_negative.fz:30:12
     public b i32 => 33
 -----------^
 To solve this, consider renaming one of these two features, e.g., as 'bʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).

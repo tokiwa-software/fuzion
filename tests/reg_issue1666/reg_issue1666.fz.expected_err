@@ -3,7 +3,7 @@
 f l => l (do)
 ---------^^^^
 Declared features:
-declared 'f.loop' at --CURDIR--/reg_issue1666.fz:27:13:
+declared 'f.loop' at --CURDIR--/reg_issue1666.fz:27:13
 f l => l (do)
 ------------^
 This is an implementation restriction that should be removed in a future version of Fuzion.

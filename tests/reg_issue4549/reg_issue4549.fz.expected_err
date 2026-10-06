@@ -2,10 +2,10 @@
 --CURDIR--/reg_issue4549.fz:24:26: error 1: Ambiguity between direct and partially applied call target
 s(a, b) => s := [1].map (s 1)
 -------------------------^
-This call can be resolved in two ways, either as a direct call to 's' declared at --CURDIR--/reg_issue4549.fz:25:1:
+This call can be resolved in two ways, either as a direct call to 's' declared at --CURDIR--/reg_issue4549.fz:25:1
 s(a) =>
 ^
-or by partially applying arguments to a call to 's' declared at --CURDIR--/reg_issue4549.fz:24:1:
+or by partially applying arguments to a call to 's' declared at --CURDIR--/reg_issue4549.fz:24:1
 s(a, b) => s := [1].map (s 1)
 ^.
 To solve this, rename one of the ambiguous features.

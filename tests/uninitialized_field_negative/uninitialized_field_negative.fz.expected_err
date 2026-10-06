@@ -4,10 +4,10 @@
 ---------^
 Callchain that lead to this point:
 
-call 'uninitialized_field_negative.case1.n' at --CURDIR--/uninitialized_field_negative.fz:31:10:
+call 'uninitialized_field_negative.case1.n' at --CURDIR--/uninitialized_field_negative.fz:31:10
     a := n
 ---------^
-call 'uninitialized_field_negative.case1' at --CURDIR--/uninitialized_field_negative.fz:36:3:
+call 'uninitialized_field_negative.case1' at --CURDIR--/uninitialized_field_negative.fz:35:3
   case1
 --^^^^^
 call 'uninitialized_field_negative'

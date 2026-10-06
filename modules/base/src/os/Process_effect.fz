@@ -58,7 +58,7 @@ public Process ref : effect is
     #
     universe.P_ref ref : os.Process is
 
-      running_processes := concur.atomic (container.Set os.process) .new (container.ps_set os.process).empty
+      processes := concur.atomic (container.Set os.process) .new (container.ps_set os.process).empty
 
       # start process with option to pass environment variables
       #
@@ -87,7 +87,7 @@ public Process ref : effect is
           error "creating process $n" fzE_last_error
         else
           res := os.process res_data[0] res_data[1] res_data[2] res_data[3] n args
-          _ := running_processes.update (container.Set os.process)->(container.Set os.process) rp->
+          _ := processes.update (container.Set os.process)->(container.Set os.process) rp->
             rp ∪ ((container.ps_set os.process).new [res])
           res
 
@@ -98,7 +98,7 @@ public Process ref : effect is
       #
       public redef wait(p os.process, timeout time.duration) outcome u32
       =>
-        if !running_processes.contains p
+        if !processes.contains p
           error "process not in set of running processes."
         else
           start := time.Nano.env.read
@@ -117,9 +117,6 @@ public Process ref : effect is
             time.Nano.env.sleep (min timeout-elapsed_time polling_time)
           else
             if r >= 0
-              # NYI: UNDER DEVELOPMENT: it is kind of arbitrary to remove process from running processes in this case...
-              _ := running_processes.update (container.Set os.process)->(container.Set os.process) rp->
-                rp ∖ ((container.ps_set os.process).new [p])
               outcome r.as_u32
             else if r = -1 && elapsed_time > timeout
               error "Waiting for process with id $(p.pid) timed out." fzE_last_error
@@ -143,13 +140,13 @@ public Process ref : effect is
       # in this effect as a string
       #
       public redef as_string String =>
-        $running_processes.read
+        $processes.read
 
 
       # cleanup effect
       #
       public redef finally unit =>
-        running_processes.for_each p->
+        processes.for_each p->
           # NYI: UNDER DEVELOPMENT: register failures
           _ := fzE_pipe_close p.std_in
           _ := fzE_pipe_close p.std_out

@@ -5,13 +5,13 @@
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
 Possible features that match this type:
-'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5:
+'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5
     a is
 ----^
-and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:38:5:
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:38:5
     a(i i32) is
 ----^
-and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:39:5:
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
@@ -24,13 +24,13 @@ To solve this, rename these features such that each one has a unique name.
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
 Possible features that match this type:
-'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5:
+'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5
     a is
 ----^
-and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:38:5:
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:38:5
     a(i i32) is
 ----^
-and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:39:5:
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
@@ -43,13 +43,13 @@ To solve this, rename these features such that each one has a unique name.
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
 Possible features that match this type:
-'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5:
+'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5
     a is
 ----^
-and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:38:5:
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:38:5
     a(i i32) is
 ----^
-and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:39:5:
+and 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
@@ -63,13 +63,13 @@ Type 'a' was not found, no corresponding feature nor formal type parameter exist
 Type that was not found: 'a'
 in feature: 'overloading_negative.test2.a1'
 However, 3 features have been found that match the type name but that do not define a type:
-'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:54:5:
+'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:54:5
     a() unit =>
 ----^
-and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:55:5:
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:55:5
     a(i i32) i32 => 13
 ----^
-and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:56:5:
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:56:5
     a(i, j i32) String => "foo"
 ----^
 
@@ -83,13 +83,13 @@ Type 'a' was not found, no corresponding feature nor formal type parameter exist
 Type that was not found: 'a'
 in feature: 'overloading_negative.test2.a2'
 However, 3 features have been found that match the type name but that do not define a type:
-'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:54:5:
+'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:54:5
     a() unit =>
 ----^
-and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:55:5:
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:55:5
     a(i i32) i32 => 13
 ----^
-and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:56:5:
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:56:5
     a(i, j i32) String => "foo"
 ----^
 
@@ -103,13 +103,13 @@ Type 'a' was not found, no corresponding feature nor formal type parameter exist
 Type that was not found: 'a'
 in feature: 'overloading_negative.test2.a3'
 However, 3 features have been found that match the type name but that do not define a type:
-'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:54:5:
+'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:54:5
     a() unit =>
 ----^
-and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:55:5:
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:55:5
     a(i i32) i32 => 13
 ----^
-and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:56:5:
+and 'overloading_negative.test2.a' defined at --CURDIR--/overloading_negative.fz:56:5
     a(i, j i32) String => "foo"
 ----^
 
