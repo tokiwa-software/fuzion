@@ -2,7 +2,7 @@
 --CURDIR--/reg_issue3754.fz:27:14: error 1: Inconsistent indentation
              say "b"} # this should cause an indentation error AND continue parsing after the closing bracket
 -------------^
-Indentation reference point is --CURDIR--/reg_issue3754.fz:26:15:
+Indentation reference point is --CURDIR--/reg_issue3754.fz:26:15
   my_feat is {say "a"
 --------------^
 While parsing: block, parse stack: block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit

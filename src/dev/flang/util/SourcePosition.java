@@ -150,7 +150,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    */
   public void show(String msg, String detail)
   {
-    Errors.println(fileNameWithPosition() + " " + msg);
+    Errors.println(fileNameWithPosition() + ": " + msg);
     if (!isBuiltIn())
       {
         Errors.println(showInSource());
@@ -332,7 +332,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    */
   public String fileNameWithPosition()
   {
-    return Terminal.GREEN + rawFileNameWithPosition() + ":" + Terminal.REGULAR_COLOR;
+    return Terminal.GREEN + rawFileNameWithPosition() + Terminal.REGULAR_COLOR;
   }
 
 

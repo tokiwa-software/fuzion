@@ -107,16 +107,16 @@ To solve this, you could change the type of the target 'b' to 'bool' or convert 
   a3(a, b) => a+b    # *** error ***, mixes String and f64 in arg `a`
 -----^
 For the formal argument 'typeinference_for_args_negative.a3.a' the following incompatible actual arguments where found for type inference:
-actual is value of type 'String' at --CURDIR--/typeinference_for_args_negative.fz:41:11:
+actual is value of type 'String' at --CURDIR--/typeinference_for_args_negative.fz:41:11
   say (a3 "hello"     " world!")
 ----------^^^^^^^
-actuals are values of type 'f64' at --CURDIR--/typeinference_for_args_negative.fz:42:11:
+actuals are values of type 'f64' at --CURDIR--/typeinference_for_args_negative.fz:42:11
   say (a3 1.0         " world!")
 ----------^^^
-and at --CURDIR--/typeinference_for_args_negative.fz:43:14:
+and at --CURDIR--/typeinference_for_args_negative.fz:43:14
   say (a3 10.as_f64   " world!")
 -------------^^^^^^
-and at --CURDIR--/typeinference_for_args_negative.fz:44:11:
+and at --CURDIR--/typeinference_for_args_negative.fz:44:11
   say (a3 1.1         " world!")
 ----------^^^
 
@@ -125,16 +125,16 @@ and at --CURDIR--/typeinference_for_args_negative.fz:44:11:
   a4(a, b) => a+b    # *** error ***, mixes String, i32, f64 and bool in arg `b`
 --------^
 For the formal argument 'typeinference_for_args_negative.a4.b' the following incompatible actual arguments where found for type inference:
-actual is value of type 'String' at --CURDIR--/typeinference_for_args_negative.fz:46:23:
+actual is value of type 'String' at --CURDIR--/typeinference_for_args_negative.fz:46:23
   say (a4 "hello"     " world!")
 ----------------------^^^^^^^^^
-actual is value of type 'i64' at --CURDIR--/typeinference_for_args_negative.fz:47:33:
+actual is value of type 'i64' at --CURDIR--/typeinference_for_args_negative.fz:47:33
   say (a4 "1.0"       " world!".byte_count)
 --------------------------------^^^^^^^^^^
-actual is value of type 'f64' at --CURDIR--/typeinference_for_args_negative.fz:48:23:
+actual is value of type 'f64' at --CURDIR--/typeinference_for_args_negative.fz:48:23
   say (a4 "10.as_f64" 3.14)
 ----------------------^^^^
-actual is value of type 'bool' at --CURDIR--/typeinference_for_args_negative.fz:49:23:
+actual is value of type 'bool' at --CURDIR--/typeinference_for_args_negative.fz:49:23
   say (a4 "1.1"       " world!"=" monde!")
 ----------------------^^^^^^^^^^^^^^^^^^^
 

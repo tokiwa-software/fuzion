@@ -706,7 +706,7 @@ public class Executor extends ProcessExpression<Value, Object>
   {
     if (frame != NO_CLAZZ)
       {
-        sb.append(_fuir.clazzNameHuman(frame)).append(": ");
+        sb.append(_fuir.clazzNameHuman(frame)).append(" at ");
       }
     sb.append(_fuir.sitePos(callSite).show()).append("\n");
   }

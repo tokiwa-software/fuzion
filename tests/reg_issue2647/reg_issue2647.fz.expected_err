@@ -6,7 +6,7 @@ Number of actual value arguments is 1, while call expects no value arguments.
 Actual value arguments: '3'
 Called feature: 'reg_issue2647.a'
 Formal value arguments: --none--
-Declared at --CURDIR--/reg_issue2647.fz:31:3:
+Declared at --CURDIR--/reg_issue2647.fz:31:3
   a(ELEMENT_TYPE type...) is
 --^
 
