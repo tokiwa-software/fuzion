@@ -122,7 +122,7 @@ public Process ref : effect is
                 rp ∖ ((container.ps_set os.process).new [p])
               outcome r.as_u32
             else if r = -1 && elapsed_time > timeout
-              error "Waiting for process with id $(p.pid) timed out." fzE_last_error
+              outcome u32 0
             else if r < -100
               sig := (r.abs - 100)
               sig_name := os.signal.from_number sig .bind s->" ($(s.as_string))" .or_default ""
