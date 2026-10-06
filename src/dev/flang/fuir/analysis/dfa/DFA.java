@@ -2819,11 +2819,11 @@ public class DFA extends ANY
       {
         // Instances are cached using two maps with keys
         //
-        //  - clazzAt(site)           and then
+        //  - clazzAt(site)           in case `siteSensitive(clazzAt(site)), and then
         //  - cl << 32 || env.id
         //
         var sc = site == FUIR.NO_SITE ? FUIR.NO_CLAZZ : _fuir.clazzAt(site);
-        var sci = sc == FUIR.NO_CLAZZ ? 0 : 1 + _fuir.clazzId2num(sc);
+        var sci = sc == FUIR.NO_CLAZZ || !siteSensitive(sc) ? 0 : 1 + _fuir.clazzId2num(sc);
 
         var clazzm = _instancesForSite.getIfExists(sci);
         if (clazzm == null)
