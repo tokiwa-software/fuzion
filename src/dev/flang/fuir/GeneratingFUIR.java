@@ -2215,7 +2215,7 @@ public class GeneratingFUIR extends FUIR
           ac.calledFeature().code().containsOnlyDeclarations() &&
           // only features without args and no fields may be inherited
           // NYI: UNDER DEVELOPMENT: we could relax this more
-          ac.calledFeature().inherits().stream().allMatch(c -> isConst(c) || c.calledFeature().isUnitType(true)) &&
+          ac.calledFeature().inherits().stream().allMatch(c -> isConst(c) || c.calledFeature().isUnitTypeWithoutSideEffect(true)) &&
           // NYI: UNDER DEVELOPMENT: support consts with contracts
           ac.calledFeature().contract().isEmpty() &&
           ac.actuals().stream().allMatch(x -> isConst(x));
