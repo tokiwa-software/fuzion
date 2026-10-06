@@ -541,28 +541,32 @@ public class DFA extends ANY
      */
     private Value newValueConst(int s, int constCl, Context context, ByteBuffer b)
     {
-      var result = newInstance(constCl, NO_SITE, context);
-      var args = new List<Val>();
-      for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
+      var result = Value.UNIT;
+      if (!_fuir.clazzIsUnitType(constCl) && _fuir.clazzUniverse() != constCl)
         {
-          var f = _fuir.clazzArg(constCl, index);
-          var fr = _fuir.clazzArgClazz(constCl, index);
-          var bytes = _fuir.deserializeConst(fr, b);
-          var arg = constData(s, fr, bytes).value();
-          args.add(arg);
-          result.setField(DFA.this, f, arg);
+          result = newInstance(constCl, NO_SITE, context);
+          var args = new List<Val>();
+          for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
+            {
+              var f = _fuir.clazzArg(constCl, index);
+              var fr = _fuir.clazzArgClazz(constCl, index);
+              var bytes = _fuir.deserializeConst(fr, b);
+              var arg = constData(s, fr, bytes).value();
+              args.add(arg);
+              result.setField(DFA.this, f, arg);
+            }
+
+          // register calls for constant creation even though
+          // not every backend actually performs these calls.
+          newCall(_call,
+                  constCl,
+                  NO_SITE,
+                  newValueConst(s, _fuir.clazzOuterClazz(constCl), context, ByteBuffer.allocate(0)),
+                  args,
+                  null /* new environment */,
+                  context);
+
         }
-
-      // register calls for constant creation even though
-      // not every backend actually performs these calls.
-      newCall(_call,
-              constCl,
-              NO_SITE,
-              Value.UNIT /* universe, but we do not use _universe as target */,
-              args,
-              null /* new environment */,
-              context);
-
       return result;
     }
 
