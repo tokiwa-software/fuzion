@@ -159,6 +159,8 @@ public class Types extends ANY
     public final AbstractFeature f_id;
     public final AbstractFeature f_void;
     public final AbstractFeature f_choice;
+    public final AbstractFeature f_choice_apply;
+    public final AbstractFeature f_choice_apply_f;
     public final AbstractFeature f_TRUE;
     public final AbstractFeature f_FALSE;
     public final AbstractFeature f_true;
@@ -211,6 +213,8 @@ public class Types extends ANY
     public final AbstractFeature f_Type_infix_colon_true;
     public final AbstractFeature f_Type_infix_colon_false;
     public final AbstractFeature f_type_as_value;
+    public final AbstractFeature f_Typed_Function;
+    public final AbstractFeature f_Typed_Function_call;
     public final AbstractFeature f_Nullary;
     public final AbstractFeature f_Lazy;
     public final AbstractFeature f_auto_unwrap;
@@ -237,6 +241,8 @@ public class Types extends ANY
       f_id                      = universe.get(mod, "id", 2);
       f_void                    = universe.get(mod, "void", 0);
       f_choice                  = universe.get(mod, FuzionConstants.CHOICE_NAME, 1);
+      f_choice_apply            = f_choice.get(mod, "apply", 3);
+      f_choice_apply_f          = f_choice_apply.get(mod, "f", 0);
       f_TRUE                    = universe.get(mod, "true_", 0);
       f_FALSE                   = universe.get(mod, "false_", 0);
       f_true                    = universe.get(mod, "true", 0);
@@ -289,6 +295,8 @@ public class Types extends ANY
       f_Type_infix_colon_true   = f_Type.get(mod, "infix_colon_true", 1);
       f_Type_infix_colon_false  = f_Type.get(mod, "infix_colon_false", 1);
       f_type_as_value           = universe.get(mod, "type_as_value", 1);
+      f_Typed_Function          = universe.get(mod, "Typed_Function", 2);
+      f_Typed_Function_call     = f_Typed_Function.get(mod, "call", 3);
       f_Nullary                 = universe.get(mod, NULLARY_NAME, 1);
       f_Lazy                    = universe.get(mod, LAZY_NAME, 1);
       f_auto_unwrap             = universe.get(mod, "auto_unwrap", 2);

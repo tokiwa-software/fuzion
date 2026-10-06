@@ -53,8 +53,7 @@ public f32(public val f32) : float, java_primitive is
   # does this `f32` value fit into an `i64`?  Used in inherited
   # precondition of `as_i64`.
   #
-  public redef fits_in_i64 bool =>
-    i64.min.as_f32 ≤ val ≤ i64.max.as_f32
+  public redef fits_in_i64 bool => as_f64.fits_in_i64
 
 
   # conversion

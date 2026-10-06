@@ -44,6 +44,7 @@ import dev.flang.ast.AstErrors;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Types;
 
+import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryFeature;
 
 import dev.flang.ir.IR;
@@ -339,7 +340,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     // stack must be empty at the end of a basic block
     // In other words, it needs to be known that `unit`
     // is a unit type.
-    _isUnitType = type.feature().isUnitType()
+    _isUnitType = type.feature().isUnitTypeWithoutSideEffect()
         ? YesNo.yes
         : YesNo.dontKnow;
   }
@@ -726,9 +727,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * The feature underlying this clazz.
    */
-  LibraryFeature feature()
+  FuirFeature feature()
   {
-    return (LibraryFeature) _type.feature();
+    return (FuirFeature) _type.feature();
   }
 
 
@@ -985,13 +986,13 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the inner clazz of the target in the call.
    */
-  Clazz lookup(AbstractFeature f)
+  Clazz lookup(FuirFeature f)
   {
     if (PRECONDITIONS) require
       (f != null,
        !isVoidType());
 
-    return lookup(new FeatureAndActuals((LibraryFeature)f), FuzionConstants.NO_SELECT, false);
+    return lookup(new FeatureAndActuals(f), FuzionConstants.NO_SELECT, false);
   }
 
 
@@ -999,7 +1000,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Convenience function that calls {@code lookup} followed {@code doesNeedCode()} on the
    * result.
    */
-  Clazz lookupNeeded(AbstractFeature f)
+  Clazz lookupNeeded(FuirFeature f)
   {
     var innerClazz = lookup(f);
     innerClazz.doesNeedCode();
@@ -1470,7 +1471,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   @Override
   public int hashCode()
   {
-    return (_type.isRef() ? 0x777377 : 0) ^ feature().globalIndex();  // NYI: outer and type parameters!
+    throw new Error("dev.flang.fuir.Clazz is not hashable!");
   }
 
 
@@ -2061,7 +2062,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               }
             else
               {
-                fields.add(lookup(field));
+                fields.add(lookup((FuirFeature) field));
               }
           }
       }

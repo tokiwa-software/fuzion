@@ -65,7 +65,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LibraryFeature extends AbstractFeature
+public class LibraryFeature extends FuirFeature
 {
 
 
@@ -102,7 +102,7 @@ public class LibraryFeature extends AbstractFeature
   /**
    * cached result of innerFeatures()
    */
-  List<AbstractFeature> _innerFeatures;
+  List<FuirFeature> _innerFeatures;
 
 
   /**
@@ -132,13 +132,13 @@ public class LibraryFeature extends AbstractFeature
   /**
    * cached result of resultField()
    */
-  private AbstractFeature _resultField;
+  private FuirFeature _resultField;
 
 
   /**
    * cached result of outerRef()
    */
-  private AbstractFeature _outerRef;
+  private FuirFeature _outerRef;
 
   /**
    * cached result of modulesOfInnerFeatures()
@@ -231,7 +231,7 @@ public class LibraryFeature extends AbstractFeature
   /**
    * The inner features declared within this feature's module file.
    */
-  List<AbstractFeature> innerFeatures()
+  List<FuirFeature> innerFeatures()
   {
     var result = _innerFeatures;
     if (result == null)
@@ -247,7 +247,7 @@ public class LibraryFeature extends AbstractFeature
   /**
    * The features declared within this feature.
    */
-  List<AbstractFeature> declaredFeatures()
+  List<FuirFeature> declaredFeatures()
   {
     return innerFeatures();
   }
@@ -277,9 +277,9 @@ public class LibraryFeature extends AbstractFeature
    *
    * @return the result or null if this does not have a result field.
    */
-  public AbstractFeature resultField()
+  public FuirFeature resultField()
   {
-    AbstractFeature result = _resultField;
+    var result = _resultField;
     if (result == null && hasResultField())
       {
         var i = innerFeatures();
@@ -300,9 +300,9 @@ public class LibraryFeature extends AbstractFeature
    *
    * @return the outer ref or null if this does not have an outer ref.
    */
-  public AbstractFeature outerRef()
+  @Override public FuirFeature outerRef()
   {
-    AbstractFeature result = _outerRef;
+    var result = _outerRef;
     if (result == null && hasOuterRef())
       {
         var i = innerFeatures();
@@ -820,12 +820,6 @@ public class LibraryFeature extends AbstractFeature
   private SourcePosition pos(int pos, int posEnd)
   {
     return _libModule.pos(pos, posEnd);
-  }
-
-
-  public Contract contract()
-  {
-    return Contract.EMPTY_CONTRACT;
   }
 
   @Override

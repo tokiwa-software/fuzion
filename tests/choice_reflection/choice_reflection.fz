@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Test for choice reflection functions like `choice.ordinal`
+# Test for choice reflection functions like `choice.ordinal` and `choice.apply`
 #
 choice_reflection =>
 
@@ -42,11 +42,11 @@ choice_reflection =>
   f(a choice bool i64 u8 void String) =>
     "ordinal is "+a.ordinal+" for $a"
 
-  chck "ordinal and as_string in call to f" (f "böa"            ) "ordinal is 4 for instance[choice bool i64 u8 void String]"
-  chck "ordinal and as_string in call to f" (f true             ) "ordinal is 0 for instance[choice bool i64 u8 void String]"
-  chck "ordinal and as_string in call to f" (f 42               ) "ordinal is 1 for instance[choice bool i64 u8 void String]"
-  chck "ordinal and as_string in call to f" (f "bla".utf8.first!) "ordinal is 2 for instance[choice bool i64 u8 void String]"
-  chck "ordinal and as_string in call to f" (f "hi"             ) "ordinal is 4 for instance[choice bool i64 u8 void String]"
+  chck "ordinal and as_string in call to f" (f "böa"            ) "ordinal is 4 for böa"
+  chck "ordinal and as_string in call to f" (f true             ) "ordinal is 0 for true"
+  chck "ordinal and as_string in call to f" (f 42               ) "ordinal is 1 for 42"
+  chck "ordinal and as_string in call to f" (f "bla".utf8.first!) "ordinal is 2 for 98"
+  chck "ordinal and as_string in call to f" (f "hi"             ) "ordinal is 4 for hi"
 
   say ""
   say "--- testing ordinals of some common choice types: ---"
@@ -74,11 +74,11 @@ choice_reflection =>
 
   # ordinals of `void` mixed with `i32`/`unit`/`nil` types
   chck "id (choice void void void i32 void void unit nil void void) 42   .ordinal" (id (choice void void void i32 void void unit nil void void) 42   .ordinal) 3
-  chck "id (choice void void void i32 void void unit nil void void) 42   .as_string" $(id (choice void void void i32 void void unit nil void void) 42  ) "instance[choice void void void i32 void void unit nil void void]"
+  chck "id (choice void void void i32 void void unit nil void void) 42   .as_string" $(id (choice void void void i32 void void unit nil void void) 42  ) "42"
   chck "id (choice void void void i32 void void unit nil void void) unit .ordinal" (id (choice void void void i32 void void unit nil void void) unit .ordinal) 6
-  chck "id (choice void void void i32 void void unit nil void void) unit .as_string" $(id (choice void void void i32 void void unit nil void void) unit) "instance[choice void void void i32 void void unit nil void void]"
+  chck "id (choice void void void i32 void void unit nil void void) unit .as_string" $(id (choice void void void i32 void void unit nil void void) unit) "unit"
   chck "id (choice void void void i32 void void unit nil void void) nil  .ordinal" (id (choice void void void i32 void void unit nil void void) nil  .ordinal) 7
-  chck "id (choice void void void i32 void void unit nil void void) nil  .as_string" $(id (choice void void void i32 void void unit nil void void) nil ) "instance[choice void void void i32 void void unit nil void void]"
+  chck "id (choice void void void i32 void void unit nil void void) nil  .as_string" $(id (choice void void void i32 void void unit nil void void) nil ) "--nil--"
 
   # ordinals of `unit` mixed with `void` types
   chck "id (choice unit void void) unit .ordinal" (id (choice unit void void) unit .ordinal) 0
@@ -127,10 +127,10 @@ choice_reflection =>
   # test `option nil`
   test(s Sequence nil) =>
     o := s.first
-    "$o ordinal:$(o.ordinal)"
+    o.apply (T,v -> "$T $v ordinal:$(o.ordinal)")
 
-  chck "option nil !ok" (test []   ) "--nil-- ordinal:1"
-  chck "option nil ok!" (test [nil]) "--nil-- ordinal:0"
+  chck "option nil !ok" (test []   ) "nil --nil-- ordinal:1"
+  chck "option nil ok!" (test [nil]) "nil --nil-- ordinal:0"
 
   test2(s Sequence nil) =>
     o := s.first
@@ -175,3 +175,30 @@ choice_reflection =>
   chck "blob" (blob nil      ) "2: nil"
   chck "blob" (blob [1,2,3,4]) "3: option Sequence [1, 2, 3, 4]"
   chck "blob" (blob unit     ) "4: unit"
+
+  say ""
+  say "--- testing `choice.apply` ---"
+  say ""
+
+  # example code from comment of `choice.apply`:
+
+  # A feature callable on any choice type with two parameters
+  #
+  reflect_on_choice(X, Y type,
+                    C type : choice X Y,
+                    c C)
+  =>
+    c.apply T,v->
+      if T : numeric then
+        say "c is numeric $v, c² is $(v*v)"
+      else if T : String then
+        say "c is String '$v' length $(v.codepoint_count)"
+      else
+        say "c is of type $T value $v"
+
+  # NYI: ENHANCEMENT: #7791 better type inference should avoid the explicit types here:
+  reflect_on_choice false_ true_ bool true
+  reflect_on_choice String nil (option String) "hi!"
+  reflect_on_choice String nil (option String) nil
+  reflect_on_choice (num.complex f64) (num.fraction i64) (choice (num.complex f64) (num.fraction i64)) (num.complex -1.0 1.0)
+  reflect_on_choice (num.complex f64) (num.fraction i64) (choice (num.complex f64) (num.fraction i64)) (3⁄4)
