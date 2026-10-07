@@ -21,18 +21,24 @@
 #
 # -----------------------------------------------------------------------
 
-partially_applicable_type_feature_negative =>
+# `t1ok` requires an argument, so `t1ok.of` can only be the type feature, the
+# inner feature requires a value, e.g., `(t1ok "y").of`
+t1ok(s String) is
+  public redef as_string String => "t1ok($s)"
+  public of(t String) t1ok => t1ok "$s/$t"
+  public type.of(s String) t1ok => t1ok s
 
+_ := "x" |> t1ok.of         # ok, type feature
+_ := "x" |> (t1ok "y").of   # ok, inner feature
 
-# errors and ambiguities in partial application of type features, see #7790
-
-# `t1.of` could be the inner feature or the type feature
-t1(s String) is
-  public redef as_string String => "t1($s)"
-  public of(t String) t1 => t1 "$s/$t"
-  public type.of(s String) t1 => t1 s
+# `t1` can be called without arguments, so `t1.of` could be the inner feature
+# or the type feature
+t1 is
+  public of(t String) t1 => t1
+  public type.of(s String) t1 => t1
 
 _ := "x" |> t1.of   # 1. should flag an error: inner feature or type feature?
+
 
 # `of` needs two arguments, `|>` provides one
 t2(s String) is
@@ -40,19 +46,22 @@ t2(s String) is
 
 _ := "x" |> t2.of   # 2. should flag an error: wrong number of arguments
 
+
 # no function expected, so no partial application
 t3(s String) is
   public type.of(s String) t3 => t3 s
 
 _ := t3.of          # 3. should flag an error: missing argument
 
-# `of` returns a function, but `of(s)` could also be partially applied
+
+# `of` returns a function, but `of s` could also be partially applied
 t4(s String) is
   public type.of Unary t4 String => x -> t4 "direct $x"
   public type.of(s String) t4 => t4 "partial $s"
 
 _ := "x" |> t4.of        # 4. should flag an error: direct call or partial application?
-_ := "x" |> t4.type.of   # 5. should flag an error: same with explicit `.type`
+_ := "x" |> t4.type.of   # 5. should flag an error: direct call or partial application? with explicit `.type`
+
 
 # `of "z"` could be `of(s)` or partially applied `of(s, t)`
 t5(s String) is
@@ -79,18 +88,18 @@ t7 is
 
 _ := "x" |> t7.of               # 9. should flag an error: inner or type?
 
-# `t8` can be called without arguments, so `t8.a` could be partially applied
-# for the inner feature `a(v)` as well as for the type feature `a(v)`
+# same as `t7` with argument lists exchanged: type feature `of` returning a
+# function or partially applied inner feature `of(s)`
 t8 is
+  public type.of Unary String String => x -> "via type.of: $x"
+  public of(s String) String => "via of(s): $s"
+
+_ := "x" |> t8.of               # 10. should flag an error: inner or type?
+
+# `t9` can be called without arguments, so `t9.a` could be partially applied
+# for the inner feature `a(v)` as well as for the type feature `a(v)`
+t9 is
   public a(v i64) bool => v > 1
   public type.a(v i64) bool => v > 2
 
-_ := [1, 2, 3].filter t8.a      # 10. should flag an error: inner or type?
-
-# only the argument count decides: inner `of` without arguments exists, so
-# this is ambiguous even though `t9` cannot be called without an argument
-t9(s String) is
-  public of Unary t9 String => x -> t9 "via of: $s $x"
-  public type.of(s String) t9 => t9 "via type.of(s): $s"
-
-_ := "x" |> t9.of               # 11. should flag an error: inner or type?
+_ := [1, 2, 3].filter t9.a      # 11. should flag an error: inner or type?
