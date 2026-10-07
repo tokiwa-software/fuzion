@@ -1,0 +1,63 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_time_stopwatch
+#
+# -----------------------------------------------------------------------
+
+# tests for time.stopwatch and time.Clock.type.stopwatch using a
+# deterministic clock as effect handler
+#
+lib_time_stopwatch =>
+
+  # a deterministic clock: the n-th read returns `start + n * step`
+  #
+  # NOTE: must be `ref`: `env` returns a copy of a value type effect, so
+  # updates of `reads` would be lost.
+  #
+  fake_nano(start time.instant, step time.duration) ref : time.Nano is
+
+    reads := concur.atomic u64 .new 0
+
+    public redef read time.instant =>
+      n := reads.read
+      reads.write n+1
+      start + step * n
+
+    public redef sleep(d time.duration) unit =>
+      unit
+
+
+  ms(d time.duration) => d.as_string time.time_unit.ms
+
+
+  # Clock.type.stopwatch reads the clock exactly twice: before and after `f`
+  #
+  (fake_nano time.Nano.env.read (time.duration.ms 13)).instate_self ()->
+    say (ms (fake_nano.stopwatch ()->unit))
+    r1, d1 := fake_nano.stopwatch _ ()->42
+    say "$r1 $(ms d1)"
+
+
+  # time.stopwatch uses the current time.Nano effect
+  #
+  time.Nano.instate unit (fake_nano time.Nano.env.read (time.duration.ms 7)) ()->
+    say (ms (time.stopwatch ()->unit))
+    r2, d2 := time.stopwatch _ ()->"hello"
+    say "$r2 $(ms d2)"

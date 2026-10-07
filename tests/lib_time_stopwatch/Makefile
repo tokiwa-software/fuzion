@@ -17,17 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test lib_time_cpu_time
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# tests for time.Thread_Time and time.Process_Time
-#
-# NOTE: values are not checked since `clock_gettime(2)` gives no guarantees,
-# e.g., on monotonicity, for CPU time clocks.
-#
-lib_time_cpu_time =>
-
-  _ := time.Thread_Time.env.read
-  _ := time.Process_Time.env.read
-  say "cpu time clocks readable"
+override NAME = lib_time_stopwatch
+include ../simple.mk
