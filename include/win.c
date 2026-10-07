@@ -442,29 +442,20 @@ int fzE_munmap(void * mapped_address, const int file_size){
 }
 
 
-/**
- * @return the time of the given posix clock
+//**
+ * convert a FILETIME (100ns units) to nano seconds
  */
-uint64_t fzE_posix_time(int clockid)
+static uint64_t fzE_filetime_to_ns(FILETIME ft)
 {
-    // CPU time clocks: 2 = thread, 3 = process.
-  // NOTE: GetThreadTimes/GetProcessTimes have scheduler tick granularity (~15.6ms).
-  if (clockid == 2 || clockid == 3)
-    {
-      FILETIME c, e, k, u;
-      BOOL ok = clockid == 2
-        ? GetThreadTimes (GetCurrentThread (), &c, &e, &k, &u)
-        : GetProcessTimes(GetCurrentProcess(), &c, &e, &k, &u);
-      if (!ok)
-        {
-          fprintf(stderr, "*** GetThreadTimes/GetProcessTimes failed\n");
-          exit(EXIT_FAILURE);
-        }
-      uint64_t kk = ((uint64_t)k.dwHighDateTime << 32) | k.dwLowDateTime;
-      uint64_t uu = ((uint64_t)u.dwHighDateTime << 32) | u.dwLowDateTime;
-      return (kk + uu) * 100;   // FILETIME unit is 100ns
-    }
+  return ((((uint64_t)ft.dwHighDateTime) << 32) | ft.dwLowDateTime) * 100;
+}
 
+
+/**
+ * @return monotonic time in nano seconds using the performance counter
+ */
+static uint64_t fzE_performance_counter_ns()
+{
   static LARGE_INTEGER frequency = {0};
   if (frequency.QuadPart == 0) {
       if (!QueryPerformanceFrequency(&frequency)) {
@@ -485,6 +476,46 @@ uint64_t fzE_posix_time(int clockid)
   return (uint64_t)(counter.QuadPart * (1000000000ULL / frequency.QuadPart));
 }
 
+
+/**
+ * @return CPU time (kernel + user) of the current thread or process in nano seconds
+ *
+ *
+ */
+static uint64_t fzE_cpu_time_ns(bool thread)
+{
+  FILETIME creation, exit, kernel, user;
+  BOOL ok = thread
+    ? GetThreadTimes (GetCurrentThread (), &creation, &exit, &kernel, &user)
+    : GetProcessTimes(GetCurrentProcess(), &creation, &exit, &kernel, &user);
+  if (!ok)
+  {
+      fprintf(stderr, "*** GetThreadTimes/GetProcessTimes failed\n");
+      exit(EXIT_FAILURE);
+  }
+  return fzE_filetime_to_ns(kernel) + fzE_filetime_to_ns(user);
+}
+
+
+/**
+ * @return the time of the given posix clock, see `get_clock_id` in posix.c
+ */
+uint64_t fzE_posix_time(int clockid)
+{
+  switch (clockid)
+    {
+    case 0:  // CLOCK_REALTIME, NYI: BUG: not wall clock time, uses performance counter
+    case 1:  // CLOCK_MONOTONIC
+      return fzE_performance_counter_ns();
+    case 2:  // CLOCK_THREAD_CPUTIME_ID
+      return fzE_cpu_time_ns(true);
+    case 3:  // CLOCK_PROCESS_CPUTIME_ID
+      return fzE_cpu_time_ns(false);
+    default:
+      assert(false);
+      return 0;
+    }
+}
 
 /**
  * Sleep for `n` nano seconds.
