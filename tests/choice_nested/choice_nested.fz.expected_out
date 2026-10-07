@@ -1,5 +1,5 @@
-its an A=instance[choice choice_nested.a1 choice_nested.a2 choice_nested.a3]
-its an A=instance[choice choice_nested.a1 choice_nested.a2 choice_nested.a3]
+its an A=choice choice_nested.a1 choice_nested.a2 choice_nested.a3.2(choice_nested.a3,instance[choice_nested.a3])
+its an A=choice choice_nested.a1 choice_nested.a2 choice_nested.a3.2(choice_nested.a3,instance[choice_nested.a3])
 its a A or a B
 its a A or a B
 its a A or a B

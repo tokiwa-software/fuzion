@@ -292,18 +292,18 @@ public abstract class IR extends ANY
             l.add(ExprKind.Current);
           }
       }
+    else if (e instanceof AbstractCall c && (c.calledFeature() == Types.resolved.f_type_as_value || c.calledFeature().isUnitTypeWithoutSideEffect()))
+      {
+      }
     else if (e instanceof AbstractCall c)
       {
-        if (c.calledFeature() != Types.resolved.f_type_as_value)
+        toStack(l, c.target());
+        var fat = c.formalArgumentTypes();
+        for (int i = 0; i < c.actuals().size(); i++)
           {
-            toStack(l, c.target());
-            var fat = c.formalArgumentTypes();
-            for (int i = 0; i < c.actuals().size(); i++)
-              {
-                toStack(l, boxAndTag(c.actuals().get(i), fat[i]));
-              }
-            l.add(c);
+            toStack(l, boxAndTag(c.actuals().get(i), fat[i]));
           }
+        l.add(c);
         if (dumpResult)
           {
             l.add(ExprKind.Pop);

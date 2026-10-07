@@ -31,6 +31,7 @@ module:public connections(active container.Set i32) : effect is
     connections (active.union ((container.ps_set i32).new [desc]))
       .replace
 
+  /* NYI: UNDER DEVELOPMENT: currently unused
 
   # close connection manually.
   # note that connections are closed automatically
@@ -44,6 +45,7 @@ module:public connections(active container.Set i32) : effect is
 
   module is_active(desc i32) => active.contains desc
 
+  */
 
   # cleanup active connections that
   # have not been closed manually

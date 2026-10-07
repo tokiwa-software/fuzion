@@ -29,6 +29,10 @@ package dev.flang.ast;
 import static dev.flang.util.FuzionConstants.NO_SELECT;
 
 import java.util.Set;
+import java.util.TreeSet;
+
+import java.util.regex.Pattern;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -118,6 +122,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * line feed matcher
+   */
+  public static final Pattern LF = Pattern.compile("\n");
+
+
+  /**
+   * double space matcher
+   */
+  public static final Pattern DOUBLE_SPACE = Pattern.compile("  ");
+
+
+  /**
    * empty list of AbstractFeature
    */
   public static final List<AbstractFeature> _NO_FEATURES_ = new List<AbstractFeature>().freeze();
@@ -129,6 +145,21 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public static final List<AbstractType> HAND_DOWN_FAILED = new List<AbstractType>().freeze();
 
+
+  /**
+   * An empty set of features.
+   */
+  public static final Set<AbstractFeature> EMPTY_SET = new TreeSet<>();
+
+
+  /*-------------------------  static variables  ------------------------*/
+
+
+  /**
+   * Static counter used to assign ordinal numbers to sub-classes that redefined
+   * `compareTo`.
+   */
+  public static int _comparisonIds_ = 0;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -217,6 +248,31 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /*----------------------------  abstract methods  ----------------------------*/
 
+
+  /**
+   * An integer used to compare features of different classes (like Feature and
+   * LibraryFeature).  This is set to a unique constants for each clazz that
+   * implements `compareTo` using `static _comparisonId_ =
+   * _comparisonIds_++`. This method then should return this constant
+   * _comparisonId_.
+   */
+  public abstract int comparisonId();
+
+
+  /**
+   * Compare this to other for sorting Feature. This default implementation can
+   * only compare features of different comparisonId()s, i.e., of different
+   * sub-classes.
+   */
+  public int compareTo(AbstractFeature other)
+  {
+    var result = Integer.compare(comparisonId(), other.comparisonId());
+
+    if (CHECKS) check
+      (result != 0 /* `compareTo` not redefined for this Feature implementation */);
+
+    return result;
+  }
 
 
   /**
@@ -425,6 +481,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
+  private String _baseNameHuman = null;
   /**
    * returns human-readable base name of this feature. @see FeatureName.baseNameHuman(AbstractFeature).
    *
@@ -432,30 +489,33 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public String baseNameHuman()
   {
-    var result = featureName().baseNameHuman();
-    if (result == FuzionConstants.HUMAN_READABLE_LAMBDA_NAME)
+    if (_baseNameHuman == null)
       {
-        var code = result + pos().sourceText().split("#")[0].trim();
-        var dotdotdot = "";
-        code = code.replaceAll("\n", " ");
-        while (code.indexOf("  ") >= 0)
+        _baseNameHuman = featureName().baseNameHuman();
+        if (_baseNameHuman == FuzionConstants.HUMAN_READABLE_LAMBDA_NAME)
           {
-            code = code.replaceAll("  "," ");
+            var code = _baseNameHuman + pos().sourceText().split("#")[0].trim();
+            var dotdotdot = "";
+            code = LF.matcher(code).replaceAll(" ");
+            while (code.indexOf("  ") >= 0)
+              {
+                code = DOUBLE_SPACE.matcher(code).replaceAll(" ");
+              }
+            var nl = code.indexOf("\n");
+            if (nl >= 0)
+              {
+                code = code.substring(0, nl);
+                dotdotdot = "...";
+              }
+            if (code.length() > 40)
+              {
+                code = code.substring(0, 39);
+                dotdotdot = "...";
+              }
+            _baseNameHuman = "(" + code + dotdotdot + ")";
           }
-        var nl = code.indexOf("\n");
-        if (nl >= 0)
-          {
-            code = code.substring(0, nl);
-            dotdotdot = "...";
-          }
-        if (code.length() > 40)
-          {
-            code = code.substring(0, 39);
-            dotdotdot = "...";
-          }
-        result = "(" + code + dotdotdot + ")";
       }
-    return result;
+    return _baseNameHuman;
   }
 
 
@@ -693,7 +753,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                       {
                         if (res != null)
                           {
-                            af.visit(res.resolveTypesOnly(af));
+                            af.returnType().resolveArgumentType(res, af);
                           }
                         t = af.returnType().functionReturnType();
                       }
@@ -736,7 +796,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
               {
                 if (res != null)
                   {
-                    af.visit(res.resolveTypesOnly(af));
+                    af.returnType().resolveArgumentType(res, af);
                   }
                 t = af.returnType().functionReturnType();
               }
@@ -1968,7 +2028,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   protected boolean mayBeNativeValue()
   {
     return kind() == Kind.Constructor
-      && (!hasOuterRef() || outerRef().resultType().feature().isUnitType())
+      && (!hasOuterRef() || outerRef().resultType().feature().isUnitTypeWithoutSideEffect())
       && typeArguments().isEmpty()
       && inherits().size() == 1
       && !Contract.hasPreConditionsFeature(this)
@@ -2158,35 +2218,41 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  private Boolean _isUnitType = null;
+  private Boolean _isUnitTypeWithoutSideEffect = null;
   /**
-   * Can this feature only ever be a unit type?
+   * Is this feature a unit type without any side effects?
    */
-  public boolean isUnitType()
+  public boolean isUnitTypeWithoutSideEffect()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.RESOLVED));
 
-    if (_isUnitType == null)
+    if (_isUnitTypeWithoutSideEffect == null)
       {
-        _isUnitType = isUnitType(false);
+        _isUnitTypeWithoutSideEffect = isUnitTypeWithoutSideEffect(false);
       }
 
-    return _isUnitType;
+    return _isUnitTypeWithoutSideEffect;
   }
 
 
-  private boolean isUnitType(boolean isInheritedFeature)
+  /**
+   * Is this feature a unit type without any side effects?
+   *
+   * @param isInheritedFeature true if we are checking an inherited feature
+   * @return
+   */
+  public boolean isUnitTypeWithoutSideEffect(boolean isInheritedFeature)
   {
     return
       isConstructor() &&
       contract().isEmpty() &&
-      valueArguments().isEmpty() &&
+      valueArguments().stream().allMatch(va -> va.isUnitTypeWithoutSideEffect()) &&
       (isInheritedFeature || !isRef()) &&
       code().isEmpty() &&
       // unit inheriting e.g. property.orderable is fine
-      (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitType()) &&
-      inherits().stream().allMatch(c -> c.calledFeature().isUnitType(true));
+      (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitTypeWithoutSideEffect()) &&
+      inherits().stream().allMatch(c -> c.calledFeature().isUnitTypeWithoutSideEffect(true));
   }
 
 

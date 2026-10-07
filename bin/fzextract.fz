@@ -159,11 +159,11 @@ function_declarations := mut (container.expanding_array String).empty
 
 # store known structs
 #
-known_structs := container.mutable_tree_map mutate String clang.struct_decl .empty
+known_structs := container.Mutable_Tree_Map mutate String clang.struct_decl .empty
 
 # store known enums
 #
-known_enums := container.mutable_tree_map mutate String clang.enum_decl .empty
+known_enums := container.Mutable_Tree_Map mutate String clang.enum_decl .empty
 
 match {
   clang.parse_header envir.Args.env[1] c->

@@ -229,6 +229,8 @@ class Env extends ANY implements Comparable<Env>
               }
 
           }
+        if (CHECKS)
+          check(a != null || b != null || res == 0);
       }
     return res;
   }
@@ -327,8 +329,9 @@ class Env extends ANY implements Comparable<Env>
   static int compare(Env a, Env b)
   {
     return
-      a == null ? -1 :
-      b == null ? +1 : Integer.compare(a._id, b._id);
+      a == null && b == null ? 0  :
+      a == null              ? -1 :
+      b == null              ? +1 : Integer.compare(a._id, b._id);
   }
 
 

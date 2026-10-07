@@ -65,6 +65,8 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
   public redef concat (s Sequence T) Sequence T =>
     if s.finite.is_no
       as_list.concat_list s.as_list
+    # NYI: PERFORMANCE: it probably makes sense to return new (copied) array
+    # if count+s.count smaller than e.g. 32
     else
       match s.as_finger_tree
         nil => append s.as_array_backed

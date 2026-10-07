@@ -502,7 +502,7 @@ public class Feature extends AbstractFeature
                        NoType.INSTANCE,
                        new List<String>(FuzionConstants.DESTRUCTURE_PREFIX + (uniqueDestructureFeatureId++)),
                        new List<>(),
-                       Function.NO_CALLS,
+                       AbstractCall.NO_CALLS,
                        Contract.EMPTY_CONTRACT,
                        new Impl(pos, e, Impl.Kind.FieldDef));
   }
@@ -2078,10 +2078,6 @@ A ((Choice)) declaration must not contain a result type.
 
     choiceTypeCheckAndInternalFields(res);
 
-    selfType().checkChoice(_pos, context());
-
-    _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
-
     visit(new ContextVisitor(context()) {
         /* if an error is reported in a call it might no longer make sense to check the actuals: */
         @Override public boolean visitActualsLate() { return true; }
@@ -2748,13 +2744,25 @@ A pre-condition of a feature that does not redefine an inherited feature must st
 
 
   /**
+   * Constant result value for `Feature.comparisonId`
+   */
+  static int _comparisonId_ = (_comparisonIds_++);
+
+
+  @Override public int comparisonId()
+  {
+    return _comparisonId_;
+  }
+
+
+  /**
    * Compare this to other for sorting Feature
    */
   public int compareTo(AbstractFeature other)
   {
     return (other instanceof Feature of)
       ? _id - of._id
-      : +1;
+      : super.compareTo(other) /* comparing against LibraryFeature or other type */;
   }
 
 

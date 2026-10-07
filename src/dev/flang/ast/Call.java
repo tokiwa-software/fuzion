@@ -415,9 +415,11 @@ public class Call extends AbstractCall
    * Helper to check if the target of this call is erroneous, i.e., it might
    * have a pending error.
    */
-  private boolean targetErroneous()
+  private boolean targetErroneous(Resolution res, Context context)
   {
-    return _target != null && _target.type() == Types.t_ERROR;
+    return _target != null &&
+      (_target.asParsedType() == null || (_target.asParsedType() != null && _target.asParsedType().resolve(res, context, true) == null)) &&
+      _target.type() == Types.t_ERROR;
   }
 
 
@@ -651,7 +653,7 @@ public class Call extends AbstractCall
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
        Errors.any() || _target        != Call.ERROR,
-       Errors.any() || _calledFeature != null || _pendingError != null || targetErroneous(),
+       Errors.any() || _calledFeature != null || _pendingError != null || targetErroneous(res, context),
        Errors.any() || _target        != null || _pendingError != null);
 
     return !targetVoid;
@@ -877,9 +879,11 @@ public class Call extends AbstractCall
     var traverseOuter = _originalTarget == null;
     var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(res, context);
     var a = expectedType.arity(res);
-    if (targetFeature != null && a >= 0)
+    if (a >= 0)
       {
-        var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
+        var fos = targetFeature == null // could still find type applicable type feature
+          ? new List<FeatureAndOuter>()
+          : res._module.lookup(targetFeature, _name, this, traverseOuter, false);
         if (_target != null && _target.asParsedType() != null)
           {
             var tt = _target.asParsedType().resolve(res, context, true);
@@ -1503,8 +1507,7 @@ public class Call extends AbstractCall
       .generics()
       .errorIfSizeDoesNotMatch(_generics,
                                pos(),
-                               FuzionConstants.OPERATION_CALL,
-                               "Called feature: "+_calledFeature.qualifiedNameHuman()+"\n");
+                               ()-> new Pair<>(FuzionConstants.OPERATION_CALL, "Called feature: "+_calledFeature.qualifiedNameHuman()+"\n"));
   }
 
 
@@ -2458,14 +2461,13 @@ public class Call extends AbstractCall
   {
     return generics
       .stream()
-      .map(g -> {
-        var result = false;
-        if (!g.isParametricType())
+      .map(g -> switch (g.kind())
+        {
+        case RefType, ValueType, ThisType ->
+          inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, g.generics(), argumentType);
+        case ParametricType ->
           {
-            result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, g.generics(), argumentType);
-          }
-        else
-          {
+            var result = false;
             var rg = g.typeParameter();
             var ri = rg.typeParameterIndex();
             if (rg.outer() == _calledFeature && foundAt.get(ri) == null)
@@ -2477,9 +2479,9 @@ public class Call extends AbstractCall
                     result = true;
                   }
               }
+            yield result;
           }
-        return result;
-      })
+        })
       .anyMatch(x->x);
   }
 
@@ -2691,7 +2693,7 @@ public class Call extends AbstractCall
     // Check that we either know _calledFeature, or there is an error pending
     // either for this Call, or we have a problem with the target:
     if (PRECONDITIONS) require
-      (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetErroneous());
+      (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetErroneous(res, context));
 
     if (_calledFeature == Types.f_ERROR)
       {
@@ -2722,7 +2724,7 @@ public class Call extends AbstractCall
         resolveTypesOfActuals(res, context);
         notifyInferred();
 
-        result = isErroneous(res)
+        result = isErroneous(res, context)
           ? resolveTypesErrorResult()
           : resolveTypesSuccessResult(res, context);
       }
@@ -2786,7 +2788,7 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (targetErroneous() || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR || result == Call.ERROR);
+      (targetErroneous(res, context) || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR || result == Call.ERROR);
 
     return  result;
   }
@@ -2795,10 +2797,10 @@ public class Call extends AbstractCall
   /**
    * Is this call in an erroneous state?
    */
-  private boolean isErroneous(Resolution res)
+  private boolean isErroneous(Resolution res, Context context)
   {
     return !res._options.isLanguageServer() &&
-      (targetErroneous() || _pendingError == null && typeForInferencing() == Types.t_ERROR);
+      (targetErroneous(res, context) || _pendingError == null && typeForInferencing() == Types.t_ERROR);
   }
 
 
@@ -3078,6 +3080,14 @@ public class Call extends AbstractCall
   Expr resolveSyntacticSugar1(Resolution res, Context context)
   {
     Expr result = this;
+
+    // check before _calledFeature may be replaced by its preAndCallFeature
+    // below, whose internal name would hide a direct effect feature call
+    if (isDirectEffectFeatureCall(res, context))
+      {
+        AstErrors.effectFeaturesMustBeCalledViaEnv(this);
+      }
+
     // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
     // also we can not inherit from none constructor features like and/or etc.
     if (_pendingError == null && !isInheritanceCall())
@@ -3131,11 +3141,6 @@ public class Call extends AbstractCall
     if (_calledFeature != null && _calledFeature.isNative() && !res._module.isBaseModule())
       {
         result = indicateNativeAccessOutsideOfBaseModule(res, context, result);
-      }
-
-    if (isDirectEffectFeatureCall(res, context))
-      {
-        AstErrors.effectFeaturesMustBeCalledViaEnv(this);
       }
 
     return result;

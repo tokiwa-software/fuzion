@@ -7,10 +7,10 @@
     t true_  => t
 ----^^^^^^^^^^^^^
 Incompatible result types in different branches:
-block returns value of type 'false_' at --CURDIR--/unused_result.fz:35:17:
+block returns value of type 'false_' at --CURDIR--/unused_result.fz:35:17
     f false_ => f
 ----------------^
-block returns value of type 'true_' at --CURDIR--/unused_result.fz:36:17:
+block returns value of type 'true_' at --CURDIR--/unused_result.fz:36:17
     t true_  => t
 ----------------^
 

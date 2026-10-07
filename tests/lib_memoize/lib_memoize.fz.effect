@@ -2,7 +2,6 @@ AAA_builtin_atomic_mutate (concur.atomic (concur.bqstate unit))
 AAA_builtin_atomic_mutate (concur.atomic (lock_free.Main_Node i32 String))
 AAA_builtin_atomic_mutate (concur.atomic (lock_free.prev_node i32 String))
 AAA_builtin_atomic_mutate (concur.atomic (lock_free.root_node i32 String))
-AAA_builtin_atomic_mutate (concur.atomic bool)
 AAA_builtin_atomic_mutate (concur.atomic trit)
 Ignored_Failure
 Unique_Id

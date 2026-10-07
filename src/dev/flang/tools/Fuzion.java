@@ -384,6 +384,10 @@ public class Fuzion extends Tool
       {
         fuir.dumpCode();
       }
+      boolean serializeFuir()
+      {
+        return true; // this is necessary now, see #7925
+      }
     },
 
     effects    ("-effects")

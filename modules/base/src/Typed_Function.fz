@@ -39,3 +39,22 @@ public Typed_Function(R type,
   public call(T type, a A..., v T) R
     : fuzion.lambda_target
   => abstract
+
+
+# Typed_Combiner -- generic function with type parameter `T` and arguments `v` and `w`
+# of that type
+#
+# R is the result type of the function, `A` are the argument types of the function in
+# addition to `T`, 'v'  and `w`.
+#
+# This is used, e.g., as an argument to `choice.combine`.
+#
+public Typed_Combiner(R type,
+                      A type...) ref is
+
+
+  # call this function for type `T` on arguments `a...`, 'v'  and `w`.
+  #
+  public call(T type, a A..., v T, w T) R
+    : fuzion.lambda_target
+  => abstract

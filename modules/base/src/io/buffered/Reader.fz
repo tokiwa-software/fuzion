@@ -81,7 +81,7 @@ public Reader ref : effect is
   #
   public type.from(data choice (Sequence u8) String) i64 -> choice (Sequence u8) io.end_of_file error =>
     match data
-      bytes Sequence u8 => Reader.this.type.from_array_backed_u8 bytes.as_array_backed
+      bytes Sequence => Reader.this.type.from_array_backed_u8 bytes.as_array_backed
       str String => Reader.this.type.from_array_backed_u8 str.utf8.as_array_backed
 
 
@@ -127,11 +127,11 @@ public type.read_bytes(n i64) outcome (Sequence u8) ! Reader
   post debug: {
     match result
       error => true
-      s Sequence u8 => s.count <= n
+      s Sequence => s.count <= n
   }
 =>
 
-  for res Sequence u8 := container.Finger_Tree u8 .empty,
+  for res Sequence u8 := [],
             {
               match r
                 outcome => res

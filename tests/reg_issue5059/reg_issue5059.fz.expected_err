@@ -3,7 +3,7 @@
 a => _ : a is
 ---------^
 The parents of feature 'a.anonymous' include 'a', which is not a constructor but a 'function'.
-Parent declared at --CURDIR--/reg_issue5059.fz:24:1:
+Parent declared at --CURDIR--/reg_issue5059.fz:24:1
 a => _ : a is
 ^To solve this, you might remove the inheritance call to 'a' or you could change 'a' into a constructor, i.e., a feature without explicit result type declared using 'is'.
 

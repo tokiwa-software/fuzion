@@ -1,0 +1,61 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test f64_fits_in_u128
+#
+# -----------------------------------------------------------------------
+f64_fits_in_i64 =>
+
+  # 2^n exactly, built from integers (no float literal rounding)
+  p2(n i64) u128 => u128.one << n.as_u128
+
+  # Prints:
+  #
+  # ok <label> <x.as_i64>  if x fits in i64,
+  # no <label>             otherwise.
+  #
+  chk(label String, x f64) unit =>
+    if x.fits_in_i64
+      say "ok $label $(x.as_i64)"
+    else
+      say "no $label"
+
+  # --- near zero / truncation toward zero
+  chk "0"                   0.0
+  chk "-0"                  (-0.0)
+  chk "0.5"                 0.5
+  chk "-0.5"                (-0.5)                # truncates to 0 -> fits
+  chk "-1.5"                (-1.5)
+  chk "2^-1074"             1.0P-1074             # smallest subnormal
+
+  # --- mantissa boundary
+  chk "2^52"                (p2 52).as_f64
+  chk "2^53+2"              (p2 53 + (u128 0 2)).as_f64
+
+  # --- upper edge: asymmetric range [-2^63, 2^63-1]
+  chk "(2^53-1)*2^10"       ((p2 53 - u128.one) << (u128 0 10)).as_f64   # largest f64 < 2^63
+  chk "2^63"                (p2 63).as_f64                               # old check accepted this -> overflow
+  chk "-2^63"               i64.min.as_f64                               # exactly i64.min -> fits
+  chk "-(2^63+2^11)"        (-(p2 63 + (u128 0 2048)).as_f64)            # next f64 below i64.min
+
+  # --- invalid inputs
+  chk "inf"                 f64.infinity
+  chk "-inf"                (-f64.infinity)
+  chk "nan"                 f64.NaN
+  chk "-nan"                (-f64.NaN)            # NaN with sign bit set

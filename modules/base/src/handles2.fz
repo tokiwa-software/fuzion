@@ -137,14 +137,11 @@ is
 
   public fixed return(B type, w B) handles2 T B => handles2 T B w last_opt oneway_monad_mode.plain
 
+
 # shorthand for creating and installing an empty set of handles2 of given type.
 #
 public handles2(T type, rr ()->unit) unit =>
   (handles2 T unit unit nil oneway_monad_mode.inst) ! rr
-
-# shorthand for creating an empty set of handles2 of given type.
-#
-handles2_(T type) handles2 T unit => handles2 T unit unit nil oneway_monad_mode.plain
 
 
 # handle value created by `handles2.new`

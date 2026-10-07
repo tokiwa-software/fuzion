@@ -513,9 +513,20 @@ is
   #
   # To force printing of all elements of a finite `Sequence` for which `finite` is
   # false (which may be the case since a Sequence in general might not know that it
-  # if finite), you may use `as_string_all`.
+  # is finite), you may use `as_string_all`.
   #
   public redef as_string String =>
+    sequence_as_string
+
+
+  # Implementation of `Sequence.as_string` but under a different name such that
+  # we can use it if multiple inheritance results in clashing `as_string`
+  # implementations.
+  #
+  # NYI: UNDER DEVELOPMENT: #5801 this could be done if renaming was possible
+  # during inheritance.
+  #
+  module sequence_as_string =>
     if finite.is_yes
       as_string_all
     else
@@ -1226,7 +1237,7 @@ is
   =>
     lm : mutate is
     lm ! ()->
-      res := (container.mutable_tree_map lm K B).empty
+      res := (container.Mutable_Tree_Map lm K B).empty
 
       for_each x->
         key := key_f x
@@ -1267,7 +1278,7 @@ is
   =>
     lm : mutate is
     lm ! ()->
-      res := (container.mutable_tree_map lm K (Sequence B)).empty
+      res := (container.Mutable_Tree_Map lm K (Sequence B)).empty
 
       for_each x->
         key := key_f x
@@ -1297,7 +1308,7 @@ is
 
 
   # group the elements of this sequence by a key of type K
-  # using a mutable_tree_map
+  # using a Mutable_Tree_Map
   #
   # f determines the key of an element
   #
@@ -1305,7 +1316,7 @@ is
     lm : mutate is
     lm.instate_self (container.Map K (Sequence T)) ()->
       if K : property.orderable
-        group_by_mutable_map K (container.mutable_tree_map lm K (Sequence T)) (container.ps_map K (Sequence T)) f
+        group_by_mutable_map K (container.Mutable_Tree_Map lm K (Sequence T)) (container.ps_map K (Sequence T)) f
       else if K : property.hashable
         group_by_mutable_map K (container.Mutable_Hash_Map lm K (Sequence T)) (container.hash_map K (Sequence T)) f
       else
@@ -1342,3 +1353,19 @@ is
   # Sequence.
   #
   public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i64 => 10
+
+
+  # force evaluation of all elements of this (lazy) Sequence, and discard the
+  # results
+  #
+  public consume unit
+  =>
+    for_each ignore
+
+
+  # force evaluation of all elements of this Sequence, and turn the list of
+  # results into a non-lazy Sequence
+  #
+  public force Sequence T
+  =>
+    as_array

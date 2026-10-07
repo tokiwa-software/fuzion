@@ -17,18 +17,60 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature mutable_tree_map
+#  Source code of Fuzion standard library feature Mutable_Tree_Map
 #
 # -----------------------------------------------------------------------
 
 
-# mutable_tree_map -- a mutable map using an AVL tree
-#
-private:public mutable_tree_map(LM  type : mutate,
-                                KEY type : property.orderable,
-                                VAL type                      ) : container.Mutable_Map KEY VAL
-is
 
+# Entry -- an entry of a mutable tree map
+#
+Entry(LM  type : mutate, KEY type : property.orderable, VAL type, key KEY, val VAL) ref is
+
+
+  # reference to the left subtree at this entry, or, if it is empty, nil
+  #
+  left := LM.env.var (option (Entry LM KEY VAL)) nil
+
+
+  # reference to the right subtree at this entry, or if it is empty, nil
+  #
+  right := LM.env.var (option (Entry LM KEY VAL)) nil
+
+
+  # height of the subtree whose root is this entry
+  #
+  height := LM.env.var i32 0
+
+
+  # get the value stored in this submap at key k, nil if k is not a key
+  # in this submap
+  #
+  get(k KEY) =>
+    if k < key
+      left.get.bind VAL (.get k)
+    else if key < k
+      right.get.bind VAL (.get k)
+    else
+      val
+
+
+  # get a sequence of all key/value pairs in this Entry
+  #
+  items Sequence (tuple KEY VAL) =>
+    [(key,val)] ++
+      (left.get.bind (.items)).or_else (list (tuple KEY VAL)).empty ++
+      (right.get.bind (.items)).or_else (list (tuple KEY VAL)).empty
+
+
+
+# Mutable_Tree_Map -- a mutable map using an AVL tree
+#
+private:public Mutable_Tree_Map(
+  LM  type : mutate,
+  KEY type : property.orderable,
+  VAL type                      ) ref : container.Mutable_Map KEY VAL
+is
 
   # the root entry of this map
   #
@@ -37,7 +79,7 @@ is
   #
   # if this map is empty, this is nil
   #
-  root := LM.env.var (option Entry) nil
+  root := LM.env.var (option (Entry LM KEY VAL)) nil
 
 
   # returns the size of the map, i.e. the number of elements it contains
@@ -96,7 +138,7 @@ is
     # in this step, the helper feature to actually add the mapping
     # is called first. then the AVL rebalancing is done
     #
-    put_recursively(node option Entry) tuple (option Entry) (option VAL) =>
+    put_recursively(node option (Entry LM KEY VAL)) tuple (option (Entry LM KEY VAL)) (option VAL) =>
       new_node, old_val := insert_or_modify_entries node
       (rebalance new_node, old_val)
 
@@ -109,10 +151,10 @@ is
     # in this step, the actual addition of the mapping to the binary
     # tree is done, but this might violate the AVL invariants.
     #
-    insert_or_modify_entries(node option Entry) tuple (option Entry) (option VAL) =>
+    insert_or_modify_entries(node option (Entry LM KEY VAL)) tuple (option (Entry LM KEY VAL)) (option VAL) =>
       match node
         nil =>
-          new_node := Entry k v
+          new_node := Entry LM _ _ k v
           (option new_node, option VAL nil)
         e Entry =>
           if k < e.key
@@ -125,7 +167,7 @@ is
             (option e, old_val)
           else
             old_val := e.val
-            new_node := Entry k v
+            new_node := Entry LM _ _ k v
             new_node.left <- e.left.get
             new_node.right <- e.right.get
             (option new_node, option old_val)
@@ -149,7 +191,7 @@ is
     # in this step, the helper feature to actually remove the
     # mapping is called first. then the AVL rebalancing is done
     #
-    remove_recursively(k KEY, node option Entry) tuple (option Entry) (option VAL) =>
+    remove_recursively(k KEY, node option (Entry LM KEY VAL)) tuple (option (Entry LM KEY VAL)) (option VAL) =>
       new_node, old_val := remove_or_modify_entries k node
       (rebalance new_node, old_val)
 
@@ -160,7 +202,7 @@ is
     # minimal here means the node with the smallest key, by the given
     # ordering of the keys
     #
-    minimum(node option Entry) option Entry =>
+    minimum(node option (Entry LM KEY VAL)) option (Entry LM KEY VAL) =>
       node.bind e->
         e.left.get ? nil => e
                    | l Entry => minimum l
@@ -173,9 +215,9 @@ is
     # in this step, the actual removal of the mapping from the binary
     # tree is done, but this might violate the AVL invariants.
     #
-    remove_or_modify_entries(k KEY, node option Entry) tuple (option Entry) (option VAL) =>
+    remove_or_modify_entries(k KEY, node option (Entry LM KEY VAL)) tuple (option (Entry LM KEY VAL)) (option VAL) =>
       match node
-        nil => (option Entry nil, option VAL nil)
+        nil => (option (Entry LM KEY VAL) nil, option VAL nil)
         e Entry =>
           if k < e.key
             n, old_val := remove_recursively k e.left.get
@@ -195,7 +237,7 @@ is
                   Entry =>
                     m := minimum e.right.get
 
-                    new_node := Entry m.or_panic.key m.or_panic.val
+                    new_node := Entry LM _ _ m.or_panic.key m.or_panic.val
                     new_node.left <- l
 
                     nr, old_val0 := remove_recursively m.or_panic.key e.right.get
@@ -213,11 +255,11 @@ is
   # this determines the balance factor of the given node and applies
   # the appropriate rotations
   #
-  rebalance(node option Entry) =>
+  rebalance(node option (Entry LM KEY VAL)) =>
     # returns the height of the subtree whose root is the given
     # node, or -1 if an empty subtree is given
     #
-    height(n option Entry) =>
+    height(n option (Entry LM KEY VAL)) =>
       match n
         nil => -1
         e Entry => e.height.get
@@ -226,7 +268,7 @@ is
     # returns the (AVL) balance factor of the given node, or
     # 0 if a nil node is given
     #
-    balance_factor(n option Entry) =>
+    balance_factor(n option (Entry LM KEY VAL)) =>
       match n
         nil => 0
         e Entry => (height e.right.get) - (height e.left.get)
@@ -235,7 +277,7 @@ is
     # recalculates and updates the heights of the subtrees in the
     # subtree whose root is the given node
     #
-    fix_height(n option Entry) =>
+    fix_height(n option (Entry LM KEY VAL)) =>
       _ := n.bind e->
         lh := height e.left.get
         rh := height e.right.get
@@ -245,7 +287,7 @@ is
 
     # rotate right at the given node
     #
-    rotate_right(n option Entry) =>
+    rotate_right(n option (Entry LM KEY VAL)) =>
       # because this feature is only called when the tree is out of balance,
       # i.e. the left subtree has more nodes than the right one, we can safely
       # assume here that node and node.left are not nil.
@@ -262,7 +304,7 @@ is
 
     # rotate left at the given node
     #
-    rotate_left(n option Entry) =>
+    rotate_left(n option (Entry LM KEY VAL)) =>
       # because this feature is only called when the tree is out of balance,
       # i.e. the right subtree has more nodes than the left one, we can safely
       # assume here that node and node.right are not nil.
@@ -310,8 +352,8 @@ is
   # f. the latter takes the last result of the computation and the node
   # currently visited and combines this information in some way.
   #
-  fold(B type, init B, f (B, Entry) -> B) =>
-    fold0(init B, node option Entry) =>
+  fold(B type, init B, f (B, Entry LM KEY VAL) -> B) =>
+    fold0(init B, node option (Entry LM KEY VAL)) =>
       node ? nil => fold0.this.init
            | n Entry => fold0 (f (fold0 fold0.this.init n.left.get) n) n.right.get
 
@@ -320,8 +362,8 @@ is
 
   # returns an empty tree of elements of type A.
   #
-  public fixed redef type.empty container.mutable_tree_map LM KEY VAL =>
-    container.mutable_tree_map LM KEY VAL
+  public fixed redef type.empty container.Mutable_Tree_Map LM KEY VAL =>
+    container.Mutable_Tree_Map LM KEY VAL
 
 
   # initialize a map from a Sequence of key value tuples
@@ -329,7 +371,7 @@ is
   # if the freeze argument is true, then the map is frozen
   # after being populated with the entries from the Sequence.
   #
-  module type.from_sequence(kvs Sequence (tuple KEY VAL), freeze bool) container.mutable_tree_map LM KEY VAL =>
+  module type.from_sequence(kvs Sequence (tuple KEY VAL), freeze bool) container.Mutable_Tree_Map LM KEY VAL =>
     new_map := empty
     kvs.for_each x->
       new_map.put x.0 x.1
@@ -340,26 +382,25 @@ is
     new_map
 
 
-  # initialize a mutable_tree_map from data
+  # initialize a Mutable_Tree_Map from data
   #
   public type.from(data tuple KEY VAL
-                      | Sequence (tuple KEY VAL)) container.mutable_tree_map LM KEY VAL =>
+                      | Sequence (tuple KEY VAL)) container.Mutable_Tree_Map LM KEY VAL =>
     container
-      .mutable_tree_map LM KEY VAL
+      .Mutable_Tree_Map LM KEY VAL
       .from data false
 
 
-  # initialize a mutable_tree_map from data
+  # initialize a Mutable_Tree_Map from data
   #
   # if the freeze argument is true, then the map is frozen
   # after being populated with the entries from data.
   #
   public type.from(data tuple KEY VAL
-                      | Sequence (tuple KEY VAL), freeze bool) container.mutable_tree_map LM KEY VAL =>
+                      | Sequence (tuple KEY VAL), freeze bool) container.Mutable_Tree_Map LM KEY VAL =>
 
     match data
       t tuple =>
-        (container.mutable_tree_map LM KEY VAL).from_sequence [t] freeze
+        (container.Mutable_Tree_Map LM KEY VAL).from_sequence [t] freeze
       kvs Sequence =>
-        (container.mutable_tree_map LM KEY VAL).from_sequence kvs freeze
-
+        (container.Mutable_Tree_Map LM KEY VAL).from_sequence kvs freeze

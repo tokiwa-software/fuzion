@@ -143,14 +143,14 @@ module next_line(LM type : mutate) => (io.buffered LM).read_delimiter encodings.
 
 
 
-module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map LM String String) =>
+module parse_header_fields(LM type : mutate) outcome (container.Mutable_Tree_Map LM String String) =>
 
   flow.exception unit _ ()->
 
     cause(s String) void =>
       (flow.exception unit).env.cause (error s)
 
-    fields := (container.mutable_tree_map LM String String) .empty
+    fields := (container.Mutable_Tree_Map LM String String) .empty
 
     for cur := match next_line LM
                   io.end_of_file => cause "unexpected end of input"

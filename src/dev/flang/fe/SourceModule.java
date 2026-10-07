@@ -110,16 +110,19 @@ public class SourceModule extends Module implements SrcModule
 
 
   /**
+   * Resolution instance
+   */
+  final Resolution _res;
+
+
+  /**
    * In case this module defines a main feature, this is its fully qualified
    * name.
    */
   String _main;
 
 
-  /**
-   * Resolution instance
-   */
-  Resolution _res;
+
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -135,6 +138,7 @@ public class SourceModule extends Module implements SrcModule
     _options = options;
     _sourceDirs = sourceDirs;
     _universe = universe;
+    _res = new Resolution(_options, _universe, this);
   }
 
 
@@ -246,7 +250,6 @@ public class SourceModule extends Module implements SrcModule
     if (CHECKS) check
       (_universe != null);
 
-    _res = new Resolution(_options, _universe, this);
     if (_dependsOn.length > 0)
       {
         _universe.setState(State.RESOLVED);
@@ -580,18 +583,7 @@ part of the (((inner features))) declarations of the corresponding
    * Set of all features that are direct outer features of features declared by
    * sources in this source module and that themselves come from other modules.
    */
-  TreeSet<LibraryFeature> _outerWithDeclarations = new TreeSet<>
-    (new Comparator<LibraryFeature>()
-     {
-       public int compare(LibraryFeature f1, LibraryFeature f2)
-       {
-         var l1 = f1._libModule;
-         var l2 = f2._libModule;
-         return
-           (l1 != l2) ? l1.name().compareTo(l2.name())
-                      : Integer.signum(f1._index - f2._index);
-       }
-      });
+  TreeSet<LibraryFeature> _outerWithDeclarations = new TreeSet<>();
 
 
   /**

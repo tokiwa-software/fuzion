@@ -539,15 +539,11 @@ $(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
-	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
+$(BUILD_DIR)/bin/simple_example: $(FZ_SRC)/bin/simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
+	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/simple_example.fz
 	@echo " + $@"
 
-$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
-	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
-	@echo " + $@"
-
-$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
+$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(BUILD_DIR)/include $(BUILD_DIR)/bin/simple_example
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_TESTS) $@
@@ -594,7 +590,7 @@ $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_jar
+run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_jar run_tests_dump_fuir
 
 TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/fuzion.jar
 
@@ -639,6 +635,10 @@ run_tests_jar: run_tests_jar_build
 		exit 1; \
 	fi
 	rm -f HelloWorld HelloWorld.jar libfuzion_rt.so libfuzion_rt.dylib fuzion_rt.dll
+
+.PHONY: run_tests_dump_fuir
+run_tests_dump_fuir: $(BUILD_DIR)/tests
+	$(MAKE) fuir -C $(BUILD_DIR)/tests/dump_fuir
 
 .PHONY: clean
 clean:
@@ -696,6 +696,9 @@ $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAG
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop,java.net.http -saveModule=$@
 
+# target triple for the Windows runtime; the MSYS2 clang of the active
+# environment (UCRT64, CLANGARM64) knows its native triple
+WINDOWS_CLANG_TARGET ?= $(shell clang -dumpmachine)
 
 $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
@@ -703,7 +706,7 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
-	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
+	clang --target=$(WINDOWS_CLANG_TARGET) -Wall -Werror -O3 -shared \
 	-DPTW32_STATIC_LIB \
 	-DGC_THREADS -DGC_WIN32_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \

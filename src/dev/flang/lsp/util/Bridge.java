@@ -126,11 +126,6 @@ public class Bridge extends ANY
     return SymbolKind.Class;
   }
 
-  public static TextDocumentPositionParams toTextDocumentPosition(SourcePosition sourcePosition)
-  {
-    return LSP4jUtils.textDocumentPositionParams(ParserTool.getUri(sourcePosition), toPosition(sourcePosition));
-  }
-
   public static SourcePosition toSourcePosition(TextDocumentPositionParams params)
   {
     return SourcePositionTool.byLineColumn(toSourceFile(Util.toURI(params.getTextDocument().getUri())),

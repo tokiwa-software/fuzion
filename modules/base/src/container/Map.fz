@@ -85,7 +85,7 @@ public Map(K type : property.equatable, V type) ref is
     pre (K : property.orderable) || (K : property.hashable)
   =>
     if K : property.orderable
-      (container.mutable_tree_map LM K V).from items
+      (container.Mutable_Tree_Map LM K V).from items
     else if K : property.hashable
       mhm := container.Mutable_Hash_Map LM K V .empty
       mhm.put_all items

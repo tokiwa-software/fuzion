@@ -273,14 +273,14 @@ primes_test is
 
 
 # RANDOM TEST
-# put or remove random numbers at random , checking against mutable_tree_map
+# put or remove random numbers at random , checking against Mutable_Tree_Map
 #
 random_test is
   Random.simple 42 ()->
 
     random_test_size := 75
     random_map := container.Mutable_Hash_Map mutate i64 String .empty
-    verify_map := container.mutable_tree_map mutate i64 String .empty
+    verify_map := container.Mutable_Tree_Map mutate i64 String .empty
 
     for i in 1..random_test_size do
 

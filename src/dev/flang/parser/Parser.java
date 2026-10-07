@@ -1749,6 +1749,10 @@ actualSpaces: actualSpace actualSpaces
         result = new List<>();
         while (!endsActuals(!result.isEmpty()) && in.ok())
           {
+            if (!result.isEmpty() && !ignoredTokenBefore())
+              {
+                syntaxError(tokenPos(), "white space between space separated actual arguments", "actualSpaces");
+              }
             result.add(actualSpace());
             in.next();
           }

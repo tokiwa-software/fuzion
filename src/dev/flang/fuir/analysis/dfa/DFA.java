@@ -38,6 +38,8 @@ import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
@@ -539,28 +541,32 @@ public class DFA extends ANY
      */
     private Value newValueConst(int s, int constCl, Context context, ByteBuffer b)
     {
-      var result = newInstance(constCl, NO_SITE, context);
-      var args = new List<Val>();
-      for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
+      var result = Value.UNIT;
+      if (!_fuir.clazzIsUnitType(constCl) && _fuir.clazzUniverse() != constCl)
         {
-          var f = _fuir.clazzArg(constCl, index);
-          var fr = _fuir.clazzArgClazz(constCl, index);
-          var bytes = _fuir.deserializeConst(fr, b);
-          var arg = constData(s, fr, bytes).value();
-          args.add(arg);
-          result.setField(DFA.this, f, arg);
+          result = newInstance(constCl, NO_SITE, context);
+          var args = new List<Val>();
+          for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
+            {
+              var f = _fuir.clazzArg(constCl, index);
+              var fr = _fuir.clazzArgClazz(constCl, index);
+              var bytes = _fuir.deserializeConst(fr, b);
+              var arg = constData(s, fr, bytes).value();
+              args.add(arg);
+              result.setField(DFA.this, f, arg);
+            }
+
+          // register calls for constant creation even though
+          // not every backend actually performs these calls.
+          newCall(_call,
+                  constCl,
+                  NO_SITE,
+                  newValueConst(s, _fuir.clazzOuterClazz(constCl), context, ByteBuffer.allocate(0)),
+                  args,
+                  null /* new environment */,
+                  context);
+
         }
-
-      // register calls for constant creation even though
-      // not every backend actually performs these calls.
-      newCall(_call,
-              constCl,
-              NO_SITE,
-              Value.UNIT /* universe, but we do not use _universe as target */,
-              args,
-              null /* new environment */,
-              context);
-
       return result;
     }
 
@@ -601,7 +607,7 @@ public class DFA extends ANY
             ? constData(s, elementClazz, b).value()
             : elements.join(DFA.this, constData(s, elementClazz, b).value(), elementClazz);
         }
-      SysArray sysArray = newSysArray(elements, elementClazz);
+      SysArray sysArray = newSysArray(elements, _fuir.clazzResultClazz(data));
 
       sa0.setField(DFA.this, data, sysArray);
       sa0.setField(DFA.this, lengthField, NumericValue.create(DFA.this, _fuir.clazzResultClazz(lengthField), elCount));
@@ -1271,7 +1277,13 @@ public class DFA extends ANY
         public int matchCaseField(int s, int cix)
         {
           var key = ((long)s<<32)|((long)cix);
-          return _takenMatchCases.contains(key) ?  super.matchCaseField(s, cix) : NO_CLAZZ;
+          var result = NO_CLAZZ;
+          if (_takenMatchCases.contains(key))
+            {
+              var mcf = super.matchCaseField(s, cix);
+              result = mcf != NO_CLAZZ && clazzNeedsCode(mcf) ? mcf : NO_CLAZZ;
+            }
+         return result;
         }
 
 
@@ -1293,6 +1305,14 @@ public class DFA extends ANY
             }
 
           return res;
+        }
+
+
+        @Override
+        public boolean clazzNeedsCode(int cl) {
+          return super.clazzNeedsCode(cl)
+            &&
+            (clazzKind(cl) != FeatureKind.Routine || _fuir.hasCode(cl) || !_fuir.clazzIsUnitType(cl));
         }
 
 
@@ -1476,6 +1496,35 @@ public class DFA extends ANY
           {
             _options.verbosePrintln(6, "  call: " + c);
           }
+
+        say("most 'unique' values, grouped by clazz: ");
+
+        _uniqueValues
+          .stream()
+          .collect(Collectors.groupingBy(v -> v._clazz))
+          .values()
+          .stream()
+          .sorted((a,b) -> b.size()-a.size())
+          .limit(25)
+          .forEach(r -> {
+            say(r.size() + " of " + _fuir.clazzName(r.getFirst()._clazz) + "\n\t" + r.stream().map(x -> x.toString()).collect(Collectors.joining("\n\t\t")));
+          });
+
+        say("most calls, grouped by clazz: ");
+
+        _calls
+          .values()
+          .stream()
+          .collect(Collectors.groupingBy(c -> c.calledClazz()))
+          .values()
+          .stream()
+          .sorted((a,b) -> b.size()-a.size())
+          .limit(25)
+          .forEach(r -> {
+            say(r.size() + " of " + _fuir.clazzName(r.getFirst().calledClazz()) + "\n\t" + r.stream().map(x -> x.toString()).collect(Collectors.joining("\n\t\t")) +
+              (r.size()>2 ? "\n\twhy are first two calls different?: " + r.get(0).compareToWhy(r.get(1)): ""));
+          });
+
       }
 
     if (_real)
@@ -1919,6 +1968,8 @@ public class DFA extends ANY
     put("debug"                          , cl -> cl._dfa.boolAsVal(cl._dfa._options.fuzionDebug()));
     put("debug_level"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz()), cl._dfa._options.fuzionDebugLevel()) );
 
+    put("choice.tag"                     , cl -> genericNumResult(cl) ); // NYI: Could be more precise and list the actuall possible tags of the target
+
     put("fuzion.sys.args.count"          , cl -> genericNumResult(cl) );
     put("fuzion.sys.args.get"            , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.std.exit"                , cl -> null );
@@ -2095,8 +2146,7 @@ public class DFA extends ANY
 
     put("fuzion.sys.type.alloc"          , cl ->
         {
-          var ec = fuir(cl).clazzActualGeneric(cl.calledClazz(), 0);
-          return cl._dfa.newSysArray(null, ec); // NYI: get length from args
+          return cl._dfa.newSysArray(null, fuir(cl).clazzResultClazz(cl.calledClazz())); // NYI: get length from args
         });
     put("fuzion.sys.type.setel"          , cl ->
         {
@@ -2324,7 +2374,7 @@ public class DFA extends ANY
           var len  = fuir(cl).clazzArg(ia, 1);
           cl._dfa.readField(data);
           cl._dfa.readField(len);
-          return Value.UNKNOWN_JAVA_REF;
+          return genericResult(cl);
         });
     put("fuzion.jvm.get_field0"            , cl ->
       {
@@ -2334,7 +2384,7 @@ public class DFA extends ANY
         if (fuir(cl).clazzIsRef(rc))
           {
             var jref = fuir(cl).lookupJavaRef(rc);
-            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+            jobj.setField(cl._dfa, jref, cl._dfa.newInstance(fuir(cl).clazzResultClazz(jref), NO_SITE, cl));
           }
         return jobj;
       });
@@ -2345,8 +2395,8 @@ public class DFA extends ANY
     put("fuzion.jvm.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.jvm.create_jvm", cl -> genericResult(cl));
     put("fuzion.jvm.destroy_jvm", cl -> Value.UNIT);
-    put("fuzion.jvm.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
-    put("fuzion.jvm.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
+    put("fuzion.jvm.string_to_java_object0", cl -> genericResult(cl));
+    put("fuzion.jvm.primitive_to_java_object", cl -> genericResult(cl));
   }
 
 
@@ -2469,7 +2519,7 @@ public class DFA extends ANY
               if (CHECKS) check
                 (jref != NO_CLAZZ);
               res = cl._dfa.newInstance(rc, NO_SITE, cl._context);
-              res.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+              res.setField(cl._dfa, jref, cl._dfa.newInstance(fuir(cl).clazzResultClazz(jref), NO_SITE, cl));
               setOuterRefs(cl, rc, res);
             }
           yield res;
@@ -2547,7 +2597,7 @@ public class DFA extends ANY
         if (fuir(cl).clazzIsRef(rc))
           {
             var jref = fuir(cl).lookupJavaRef(rc);
-            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+            jobj.setField(cl._dfa, jref, cl._dfa.newInstance(fuir(cl).clazzResultClazz(jref), NO_SITE, cl));
           }
         return jobj;
       });
@@ -2633,7 +2683,7 @@ public class DFA extends ANY
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
-        return cl._dfa.newSysArray(null, cl._dfa._fuir.clazzActualGeneric(cl.calledClazz(), 0));
+        return cl._dfa.newSysArray(null, fuir(cl).clazzResultClazz(cl.calledClazz()));
       });
   }
 
@@ -2769,11 +2819,11 @@ public class DFA extends ANY
       {
         // Instances are cached using two maps with keys
         //
-        //  - clazzAt(site)           and then
+        //  - clazzAt(site)           in case `siteSensitive(clazzAt(site)), and then
         //  - cl << 32 || env.id
         //
         var sc = site == FUIR.NO_SITE ? FUIR.NO_CLAZZ : _fuir.clazzAt(site);
-        var sci = sc == FUIR.NO_CLAZZ ? 0 : 1 + _fuir.clazzId2num(sc);
+        var sci = sc == FUIR.NO_CLAZZ || !siteSensitive(sc) ? 0 : 1 + _fuir.clazzId2num(sc);
 
         var clazzm = _instancesForSite.getIfExists(sci);
         if (clazzm == null)
@@ -3073,20 +3123,20 @@ public class DFA extends ANY
    *
    * @param ne the element values, null if not initialized
    *
-   * @param ec the element clazz.
+   * @param ac the array clazz.
    *
    * @return a new or existing instance of SysArray.
    */
-  SysArray newSysArray(Value ne, int ec)
+  SysArray newSysArray(Value ne, int ac)
   {
     SysArray res;
     if (ne == null)
       {
-        res = _uninitializedSysArray.get(ec);
+        res = _uninitializedSysArray.get(ac);
         if (res == null)
           {
-            res = new SysArray(this, ne, ec);
-            _uninitializedSysArray.put(ec, res);
+            res = new SysArray(this, ne, ac);
+            _uninitializedSysArray.put(ac, res);
           }
       }
     else
@@ -3094,7 +3144,7 @@ public class DFA extends ANY
         res = ne._sysArrayOf;
         if (res == null)
           {
-            res = new SysArray(this, ne, ec);
+            res = new SysArray(this, ne, ac);
             ne._sysArrayOf = res;
           }
       }
@@ -3205,7 +3255,7 @@ public class DFA extends ANY
     var length        = _fuir.clazzFuzionSysArrayU8Length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);
     var c_u8          = _fuir.clazz(SpecialClazzes.c_u8);
-    var adata         = newSysArray(NumericValue.create(this, c_u8), c_u8);
+    var adata         = newSysArray(NumericValue.create(this, c_u8), _fuir.clazzResultClazz(data));
     if (utf8Bytes != null)
       {
         for (int i = 0; i < utf8Bytes.length; i++)

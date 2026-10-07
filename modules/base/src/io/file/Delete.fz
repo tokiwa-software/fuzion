@@ -36,7 +36,7 @@ public Delete ref : effect is
          path io.path) outcome unit => abstract
 
 
-  # default implementation of delete
+  # default implementation of Delete
   #
   # this will get instated automatically at startup
   #

@@ -158,7 +158,7 @@ lru_cache_test =>
       m ! ()->
 
         # expected key value pairs
-        exp_map := container.mutable_tree_map m i64 i64 .empty
+        exp_map := container.Mutable_Tree_Map m i64 i64 .empty
         # expected order from mru to lru
         exp_ord := m.env.var (Sequence i64) []
         cache := container.LRU_Cache m i64 i64 .new capacity

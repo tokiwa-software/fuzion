@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
+import dev.flang.ir.IR.FeatureKind;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 
@@ -392,12 +393,14 @@ public class CTypes extends ANY
    */
   boolean fieldExists(int field)
   {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(field) == FeatureKind.Field);
+
     var rt = _fuir.clazzResultClazz(field);
 
     return
-      !_fuir.clazzIsUnitType(rt) &&
-      !_fuir.clazzIsVoidType(rt) &&
-      _fuir.clazzNeedsCode(field);
+      _fuir.clazzNeedsCode(field) &&
+      _fuir.hasData(rt);
   }
 
 }
