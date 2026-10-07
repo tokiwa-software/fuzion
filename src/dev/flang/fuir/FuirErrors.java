@@ -28,6 +28,7 @@ package dev.flang.fuir;
 
 import java.util.Map;
 
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
@@ -35,6 +36,7 @@ import dev.flang.ast.AstErrors;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
+import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
@@ -119,6 +121,13 @@ public class FuirErrors extends AstErrors
   public static void unmetTypeContraint(SourcePosition pos, AbstractType tp, Clazz constraint)
   {
     error(pos, "Actual type parameter " + s(tp) + " does not satisfy constraint " + s(constraint._type), "");
+  }
+
+
+  public static void callResultsInRecursiveType(AbstractCall c, List<AbstractType> typePars)
+  {
+    error(c.pos(), "Call would result in a recursive type.",
+     "The resulting type would be: " + c.calledFeature().selfType().applyTypePars(c.calledFeature(), typePars));
   }
 
 }

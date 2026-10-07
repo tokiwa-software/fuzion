@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue7975_1.fz:30:3: error 1: Call would result in a recursive type.
+  a j
+--^^^
+The resulting type would be: a#1 (b#1 (a#1 i64).i).j
+
+one error.
