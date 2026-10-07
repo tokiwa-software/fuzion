@@ -78,8 +78,158 @@ PASS blob: got 4: unit
 
 --- testing `choice.apply` ---
 
-c is of type true_ value instance[true_]
+c is of type true_ value true_
 c is String 'hi!' length 3
 c is of type nil value --nil--
 c is numeric -1.0+1.0i, c² is 0.0-2.0i
 c is numeric 3⁄4, c² is 9⁄16
+
+--- testing `choice.type.equality` ---
+
+unit                 = unit                 is true
+unit                 = abc                  is false
+unit                 = str                  is false
+unit                 = -9223372036854775808 is false
+unit                 = 9223372036854775807  is false
+unit                 = true                 is false
+unit                 = false                is false
+abc                  = unit                 is false
+abc                  = abc                  is true
+abc                  = str                  is false
+abc                  = -9223372036854775808 is false
+abc                  = 9223372036854775807  is false
+abc                  = true                 is false
+abc                  = false                is false
+str                  = unit                 is false
+str                  = abc                  is false
+str                  = str                  is true
+str                  = -9223372036854775808 is false
+str                  = 9223372036854775807  is false
+str                  = true                 is false
+str                  = false                is false
+-9223372036854775808 = unit                 is false
+-9223372036854775808 = abc                  is false
+-9223372036854775808 = str                  is false
+-9223372036854775808 = -9223372036854775808 is true
+-9223372036854775808 = 9223372036854775807  is false
+-9223372036854775808 = true                 is false
+-9223372036854775808 = false                is false
+9223372036854775807  = unit                 is false
+9223372036854775807  = abc                  is false
+9223372036854775807  = str                  is false
+9223372036854775807  = -9223372036854775808 is false
+9223372036854775807  = 9223372036854775807  is true
+9223372036854775807  = true                 is false
+9223372036854775807  = false                is false
+true                 = unit                 is false
+true                 = abc                  is false
+true                 = str                  is false
+true                 = -9223372036854775808 is false
+true                 = 9223372036854775807  is false
+true                 = true                 is true
+true                 = false                is false
+false                = unit                 is false
+false                = abc                  is false
+false                = str                  is false
+false                = -9223372036854775808 is false
+false                = 9223372036854775807  is false
+false                = true                 is false
+false                = false                is true
+choice nil nil nil nil.0(nil,--nil--) = choice nil nil nil nil.0(nil,--nil--) is true
+choice nil nil nil nil.0(nil,--nil--) = choice nil nil nil nil.1(nil,--nil--) is false
+choice nil nil nil nil.0(nil,--nil--) = choice nil nil nil nil.2(nil,--nil--) is false
+choice nil nil nil nil.0(nil,--nil--) = choice nil nil nil nil.3(nil,--nil--) is false
+choice nil nil nil nil.1(nil,--nil--) = choice nil nil nil nil.0(nil,--nil--) is false
+choice nil nil nil nil.1(nil,--nil--) = choice nil nil nil nil.1(nil,--nil--) is true
+choice nil nil nil nil.1(nil,--nil--) = choice nil nil nil nil.2(nil,--nil--) is false
+choice nil nil nil nil.1(nil,--nil--) = choice nil nil nil nil.3(nil,--nil--) is false
+choice nil nil nil nil.2(nil,--nil--) = choice nil nil nil nil.0(nil,--nil--) is false
+choice nil nil nil nil.2(nil,--nil--) = choice nil nil nil nil.1(nil,--nil--) is false
+choice nil nil nil nil.2(nil,--nil--) = choice nil nil nil nil.2(nil,--nil--) is true
+choice nil nil nil nil.2(nil,--nil--) = choice nil nil nil nil.3(nil,--nil--) is false
+choice nil nil nil nil.3(nil,--nil--) = choice nil nil nil nil.0(nil,--nil--) is false
+choice nil nil nil nil.3(nil,--nil--) = choice nil nil nil nil.1(nil,--nil--) is false
+choice nil nil nil nil.3(nil,--nil--) = choice nil nil nil nil.2(nil,--nil--) is false
+choice nil nil nil nil.3(nil,--nil--) = choice nil nil nil nil.3(nil,--nil--) is true
+
+--- testing `choice.type.lteq` ---
+
+unit                 <> unit                 is equal
+unit                 <> abc                  is less
+unit                 <> str                  is less
+unit                 <> -9223372036854775808 is less
+unit                 <> 9223372036854775807  is less
+unit                 <> true                 is less
+unit                 <> false                is less
+abc                  <> unit                 is greater
+abc                  <> abc                  is equal
+abc                  <> str                  is less
+abc                  <> -9223372036854775808 is less
+abc                  <> 9223372036854775807  is less
+abc                  <> true                 is less
+abc                  <> false                is less
+str                  <> unit                 is greater
+str                  <> abc                  is greater
+str                  <> str                  is equal
+str                  <> -9223372036854775808 is less
+str                  <> 9223372036854775807  is less
+str                  <> true                 is less
+str                  <> false                is less
+-9223372036854775808 <> unit                 is greater
+-9223372036854775808 <> abc                  is greater
+-9223372036854775808 <> str                  is greater
+-9223372036854775808 <> -9223372036854775808 is equal
+-9223372036854775808 <> 9223372036854775807  is less
+-9223372036854775808 <> true                 is less
+-9223372036854775808 <> false                is less
+9223372036854775807  <> unit                 is greater
+9223372036854775807  <> abc                  is greater
+9223372036854775807  <> str                  is greater
+9223372036854775807  <> -9223372036854775808 is greater
+9223372036854775807  <> 9223372036854775807  is equal
+9223372036854775807  <> true                 is less
+9223372036854775807  <> false                is less
+true                 <> unit                 is greater
+true                 <> abc                  is greater
+true                 <> str                  is greater
+true                 <> -9223372036854775808 is greater
+true                 <> 9223372036854775807  is greater
+true                 <> true                 is equal
+true                 <> false                is greater
+false                <> unit                 is greater
+false                <> abc                  is greater
+false                <> str                  is greater
+false                <> -9223372036854775808 is greater
+false                <> 9223372036854775807  is greater
+false                <> true                 is less
+false                <> false                is equal
+choice nil nil nil nil.0(nil,--nil--) <> choice nil nil nil nil.0(nil,--nil--) is equal
+choice nil nil nil nil.0(nil,--nil--) <> choice nil nil nil nil.1(nil,--nil--) is less
+choice nil nil nil nil.0(nil,--nil--) <> choice nil nil nil nil.2(nil,--nil--) is less
+choice nil nil nil nil.0(nil,--nil--) <> choice nil nil nil nil.3(nil,--nil--) is less
+choice nil nil nil nil.1(nil,--nil--) <> choice nil nil nil nil.0(nil,--nil--) is greater
+choice nil nil nil nil.1(nil,--nil--) <> choice nil nil nil nil.1(nil,--nil--) is equal
+choice nil nil nil nil.1(nil,--nil--) <> choice nil nil nil nil.2(nil,--nil--) is less
+choice nil nil nil nil.1(nil,--nil--) <> choice nil nil nil nil.3(nil,--nil--) is less
+choice nil nil nil nil.2(nil,--nil--) <> choice nil nil nil nil.0(nil,--nil--) is greater
+choice nil nil nil nil.2(nil,--nil--) <> choice nil nil nil nil.1(nil,--nil--) is greater
+choice nil nil nil nil.2(nil,--nil--) <> choice nil nil nil nil.2(nil,--nil--) is equal
+choice nil nil nil nil.2(nil,--nil--) <> choice nil nil nil nil.3(nil,--nil--) is less
+choice nil nil nil nil.3(nil,--nil--) <> choice nil nil nil nil.0(nil,--nil--) is greater
+choice nil nil nil nil.3(nil,--nil--) <> choice nil nil nil nil.1(nil,--nil--) is greater
+choice nil nil nil nil.3(nil,--nil--) <> choice nil nil nil nil.2(nil,--nil--) is greater
+choice nil nil nil nil.3(nil,--nil--) <> choice nil nil nil nil.3(nil,--nil--) is equal
+
+--- testing `choice.type.hash_code` ---
+
+unit                .hash_code is 14735376377346565343
+abc                 .hash_code is 13589102898995590811
+str                 .hash_code is 16841535247939514489
+-9223372036854775808.hash_code is 15287421208188976932
+9223372036854775807 .hash_code is 1733751163452121682
+true                .hash_code is 1427812633101771367
+false               .hash_code is 7935453389203769792
+--nil--             .hash_code is 2605212942874291364
+--nil--             .hash_code is 12944759582576725198
+--nil--             .hash_code is 18396550851556745122
+--nil--             .hash_code is 1911106314091315941

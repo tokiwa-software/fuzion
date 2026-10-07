@@ -933,8 +933,11 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * find redefinition of a given feature in this clazz.
    *
-   * NYI: CLEANUP: #7900 This will have to take the whole inheritance chain into
-   * account including the parent view that is being filled with live:
+   * @param f a feature declared in or inherited by an ancestor of this clazz'
+   * feature.
+   *
+   * @return the feature that redefines f in this clazz' feature, or f itself
+   * if f is not redefined.
    */
   private AbstractFeature findRedefinition(AbstractFeature f)
   {
@@ -945,31 +948,10 @@ class Clazz extends ANY implements Comparable<Clazz>
        // should be replaced by the actual type.
        !f.isTypeParameter());
 
-    var fn = f.featureName();
-    var tf = feature();
-    var chain = tf.findInheritanceChain(f.outer());
-    if (CHECKS) check
-      (chain != null || Errors.any());
-    if (f != Types.f_ERROR && tf != Types.resolved.f_void && chain != null)
-      {
-        for (var p: chain)
-          {
-            fn = f.outer().handDown(null, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
-          }
-      }
-
-    // first look in the feature itself
-    AbstractFeature result = _fuir.lookupFeature(feature(), fn);
-    if (CHECKS) check
-      (result != null);
-
-    if (!result.redefinesFull().contains(f)) // NYI: CLEANUP: #7900 this strange special handling should not be needed.
-      {
-        result = f;
-      }
+    var result = _fuir.findRedefinition(feature(), f);
 
     if (POSTCONDITIONS) ensure
-      (result != null || Errors.any());
+      (result != null);
 
     return result;
   }

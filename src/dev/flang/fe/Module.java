@@ -64,6 +64,12 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   static class FData
   {
+    /**
+     * Cache for findRedefinition: map each feature that is redefined in this
+     * feature to the redefining feature.
+     */
+    SortedMap<AbstractFeature, AbstractFeature> _redefinitions;
+
 
     /**
      * Features declared inside a feature. The inner features are mapped from
@@ -514,6 +520,41 @@ public abstract class Module extends ANY implements FeatureLookup
       {
         l.forEach(fun);
       }
+  }
+
+
+  /**
+   * Find the redefinition of feature f within heir.
+   *
+   * This does not perform a lookup by name, but uses the redefinition
+   * relation, so features in heir that have the same name as f but do not
+   * redefine f (e.g., fixed features) are ignored.
+   *
+   * @param heir a feature that inherits from f.outer(), directly or
+   *             indirectly.
+   *
+   * @param f    a feature declared in or inherited by f.outer()
+   *
+   * @return the feature in heir that redefines f, or f itself if f is not
+   *         redefined in heir.
+   */
+  @Override
+  public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
+    var d = data(heir);
+    var m = d._redefinitions;
+    if (m == null) {
+      var res = new TreeMap<AbstractFeature, AbstractFeature>();
+      forEachDeclaredOrInheritedFeature(heir, g -> {
+        for (var o : g.redefinesFull()) {
+          var prev = res.put(o, g);
+          if (CHECKS)
+            check(prev == null || prev == g || Errors.any());
+        }
+      });
+      m = res;
+      d._redefinitions = m;
+    }
+    return m.getOrDefault(f, f);
   }
 
 

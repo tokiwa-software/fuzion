@@ -6,6 +6,10 @@ formal type parameter 'T : numeric'
 actual type parameter 'void'
 assignable to constraint: 'Any',
                           'choice',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
                           'void'
 
 one error.

@@ -17,28 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature nil
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# nil -- value for options that are not present
-#
-# This is a unit type that is preferred to represent instances that are
-# not present, e.g, in an option.
-#
-#
-public nil : unit is
-
-
-  # convert this to a string.
-  #
-  public redef as_string String => "--nil--"
-
-
-  # create hash code for nil
-  #
-  public redef fixed type.hash_code(_ nil) u64
-  =>
-    0xfe6f6476106a56b6  # generated using secure random generator at https://cryptotools.dev/
+override NAME = reg_issue7900
+include ../simple.mk

@@ -140,7 +140,7 @@ clean_err(f io.path) =>
     "sed -i s|$(("$(os.cwd.or_panic.as_string.substring 1 2):$(os.cwd.or_panic.as_string.substring 2)").replace "\\" "#" .replace "/" "#")|--CURDIR--| $f".run_and_check
   "sed -i s#$(os.cwd.or_panic.as_string)#--CURDIR--# $f".run_and_check
   # line numbers
-  "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".run_and_check
+  "sed -E -i s/\\.fz:[0-9]+:[0-9]+(:?)/\\.fz:n:n\\1/g $f".run_and_check
   "sed -E -i s/\\.(fz|java):[0-9]+/\\.\\1:n/g $f".run_and_check
   "sed -E -i s/$(tokiwa.protected_space)at$(tokiwa.protected_space)-:.*/$(tokiwa.protected_space)at$(tokiwa.protected_space)-:n/g $f".run_and_check
   # replace CLASS_PREFIX_WITH_ID

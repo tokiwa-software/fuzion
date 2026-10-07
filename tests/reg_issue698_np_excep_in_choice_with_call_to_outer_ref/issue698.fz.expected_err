@@ -3,10 +3,10 @@
   tree(A type : property.orderable) : choice nil (Node A (tree A) (tree A)) is
 --^^^^
 A closure cannot be built for a choice type. Forbidden accesses occur at
---CURDIR--/issue698.fz:38:11:
+--CURDIR--/issue698.fz:38:11
       _ : Node A (tree A) (tree A) is
 ----------^^^^
---CURDIR--/issue698.fz:38:7:
+--CURDIR--/issue698.fz:38:7
       _ : Node A (tree A) (tree A) is
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         redef datum A => smart.this.datum

@@ -15,7 +15,7 @@ Number of actual value arguments is 1, while call expects no value arguments.
 Actual value arguments: ''
 Called feature: 'choice'
 Formal value arguments: --none--
-Declared at {base.fum}/choice.fz:106:8:
+Declared at {base.fum}/choice.fz:106:8
 public choice(CHOICE_ELEMENT_TYPE type...)
 -------^^^^^^
 
