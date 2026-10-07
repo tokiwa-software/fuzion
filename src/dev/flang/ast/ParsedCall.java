@@ -501,19 +501,17 @@ public class ParsedCall extends Call
   }
 
 
-  /**
-   * Checks for ambiguity between a partially applied type feature and a potential direct call.
-   * Verifies that no other type feature with the same name exists that could be called
-   * directly using the same number of actual arguments.
+    /**
+   * Checks for ambiguity between a partially applied feature and a potential
+   * direct call if the target is a type {@code t}: Candidates for a direct call
+   * are the type features of {@code t} and, if {@code t} can be called without
+   * arguments, also the inner features of {@code t}.
    *
-   * Example:
-   * For an expression like "x" |> t.of, given that t is a type:
+   * Example: For {@code "x" |> t.of}:
    *
    *   t is
-   *     type.of Unary t String => ...    # 1. Direct call (matches argument count)
-   *     type.of(s String) t    => ...    # 2. Partial application (the 'paa' target)
-   *
-   * If both exist, this method triggers an ambiguity error.
+   *     type.of Unary t String => ...   # direct call (matches argument count)
+   *     type.of(s String) t => ...      # partial application
    *
    * This corresponds to {@link #checkPartialAmbiguity} for normal features,
    * which cannot be used here since the target {@code t} is a type and the
@@ -521,8 +519,9 @@ public class ParsedCall extends Call
    *
    * @param res the resolution instance.
    *
-   * @param paa the partially applicable type feature found by
-   * partiallyApplicableAlternative.
+   * @param context the source code context where this Call is used
+   *
+   * @param expectedType the expected type, a function type for partial application
    */
   private void checkTypeFeaturePartialAmbiguity(Resolution res, Context context, AbstractType expectedType)
   {
@@ -548,6 +547,7 @@ public class ParsedCall extends Call
         if (direct != null && direct._feature != paa._feature)
           {
             AstErrors.partialApplicationAmbiguity(pos(), direct._feature, paa._feature);
+            _pendingError = null;
             _calledFeature = Types.f_ERROR;
             setToErrorState();
           }
