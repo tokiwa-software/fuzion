@@ -75,25 +75,6 @@ public Clock ref : effect is
       sleep t-just_now
 
 
-  # measure the time it takes to execute `f` using this clock
-  #
-  public stopwatch(f () -> unit) time.duration
-  =>
-    start := read
-    f()
-    read - start
-
-
-  # measure the time it takes to execute `f` using this clock,
-  # return the result of `f` and the duration.
-  #
-  public stopwatch(T type, f () -> T) (T, time.duration)
-  =>
-    start := read
-    res := f()
-    (res, read - start)
-
-
   # halt the current thread during the given period of time
   #
   public sleep(d time.duration) unit => abstract

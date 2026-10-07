@@ -10,7 +10,7 @@
 # License for more details.
 #
 # You should have received a copy of the GNU General Public License along with The
-# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/\>.
 
 
 # -----------------------------------------------------------------------
@@ -26,10 +26,27 @@
 # stopwatch measures the execution duration of f
 #
 public stopwatch(f () -> unit) time.duration ! time.Nano =>
-  time.Nano.env.stopwatch f
+  time.Nano.stopwatch f
 
 
 # stopwatch measures the execution duration of f
 #
 public stopwatch(T type, f () -> T) (T, time.duration) ! time.Nano =>
-  time.Nano.env.stopwatch T f
+  time.Nano.stopwatch T f
+
+
+# measure the execution duration of `f` using this clock
+#
+public Clock.type.stopwatch(f () -> unit) time.duration =>
+  start := Clock.this.env.read
+  f()
+  Clock.this.env.read - start
+
+
+# measure the execution duration of `f` using this clock,
+# return the result of `f` and the duration
+#
+public Clock.type.stopwatch(T type, f () -> T) (T, time.duration) =>
+  start := Clock.this.env.read
+  res := f()
+  (res, Clock.this.env.read - start)
