@@ -282,7 +282,9 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
       n.endsWith(FuzionConstants.TYPE_NAME)                            ? n.replace("." + FuzionConstants.TYPE_NAME, "") :
       n.startsWith(FuzionConstants.ITER_ARG_PREFIX_INIT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_INIT, "") :
       n.startsWith(FuzionConstants.ITER_ARG_PREFIX_NEXT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_NEXT, "") :
-      n.startsWith(FuzionConstants.AUTO_CHOICE_APPLY_CASE_FIELD_PREFIX)? n.replace(FuzionConstants.AUTO_CHOICE_APPLY_CASE_FIELD_PREFIX, "v") :
+      n.startsWith(FuzionConstants.AUTO_CHOICE_APPLY_CASE_FIELD_PREFIX    ) ? n.replace(FuzionConstants.AUTO_CHOICE_APPLY_CASE_FIELD_PREFIX    , "v") :
+      n.startsWith(FuzionConstants.AUTO_CHOICE_COMBINE_CASE_V_FIELD_PREFIX) ? n.replace(FuzionConstants.AUTO_CHOICE_COMBINE_CASE_V_FIELD_PREFIX, "v") :
+      n.startsWith(FuzionConstants.AUTO_CHOICE_COMBINE_CASE_W_FIELD_PREFIX) ? n.replace(FuzionConstants.AUTO_CHOICE_COMBINE_CASE_W_FIELD_PREFIX, "w") :
       n.startsWith(FuzionConstants.INTERNAL_NAME_SYMBOL)               ? "_" :
       n.endsWith(FuzionConstants.VALUES_OF_OPEN_TYPE_SUFFIX)           ? n.replace(FuzionConstants.VALUES_OF_OPEN_TYPE_SUFFIX, "._") :
       n;

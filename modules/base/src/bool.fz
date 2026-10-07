@@ -226,7 +226,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 # >>true_<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
 #
 #
-module:public false_ is
+module:public false_ : unit is
 
 
 # boolean value "true"
@@ -240,7 +240,7 @@ module:public false_ is
 # >>false_<< to it.  You can use >>true<< as an alternative to get type >>bool<<.
 #
 #
-module:public true_ is
+module:public true_ : unit is
 
 
 # boolean value "false" as a constant of type >>bool<<.
@@ -253,5 +253,3 @@ public false bool => false_
 #
 #
 public true bool => true_
-
-

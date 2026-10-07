@@ -29,9 +29,7 @@
 public switch(A type, B type /* NYI: B should be open generic */)
   : choice A B,
     monad A,
-    Sequence A,
-    property.hashable,
-    property.orderable
+    Sequence A
 is
 
   # Does this switch contain a value of type A?
@@ -213,10 +211,9 @@ is
 
   # converts switch to a string
   #
-  public redef as_string String =>
-    match switch.this
-      a A => $a
-      b B => $b
+  public redef as_string String
+  =>
+    choice_as_string
 
 
   # generic equality implementation for switch
@@ -226,64 +223,4 @@ is
   #
   public redef type.equality(x, y switch.this) bool
   =>
-    match x
-      ax A =>
-        match y
-          ay A =>
-            if A : property.equatable
-              ax = ay
-            else
-              compile_time_panic
-          B    => false
-      bx B =>
-        match y
-          A    => false
-          by B =>
-            if B : property.equatable
-              bx = by
-            else
-              compile_time_panic
-
-
-  # defines a generic total order for switch
-  #
-  # - switches wrapping the same type use the lteq
-  #   implementation of the corresponding type
-  # - switches wrapping an A are considered lower
-  #   than switches wrapping a B
-  #
-  public redef type.lteq(x, y switch.this) bool
-  =>
-    match x
-      ax A =>
-        match y
-          ay A =>
-            if A : property.orderable
-              A.lteq ax ay
-            else
-              compile_time_panic
-          B    => true
-      bx B =>
-        match y
-          A    => false
-          by B =>
-            if B : property.orderable
-              B.lteq bx by
-            else
-              compile_time_panic
-
-
-  # generic hash_code implementation for switch
-  #
-  public redef type.hash_code(s switch.this) u64
-  =>
-    if A : property.hashable
-      if B : property.hashable
-        match s
-          # random 64-bit values generated via https://cryptotools.dev/
-          a A => A.xxh_next 0xfc99d7cd2ae81da9 (A.hash_code a)
-          b B => B.xxh_next 0xa59ebdb824e870a7 (B.hash_code b)
-      else
-        compile_time_panic
-    else
-      compile_time_panic
+    choice_equality x y
