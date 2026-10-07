@@ -479,8 +479,6 @@ static uint64_t fzE_performance_counter_ns()
 
 /**
  * @return CPU time (kernel + user) of the current thread or process in nano seconds
- *
- *
  */
 static uint64_t fzE_cpu_time_ns(bool thread)
 {
