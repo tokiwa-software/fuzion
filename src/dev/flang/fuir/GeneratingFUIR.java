@@ -469,8 +469,6 @@ public class GeneratingFUIR extends FUIR
                      : super.compareTo(other);
                  }
                };
-             fuir.addFeatureDuringMonomorphization(currentClazz.feature(),
-                                                   vfield);
 
              var tagNumArray = new int[] { tagNum };
              var tagNumArrayCompl = new int[cgs.size()-1];
@@ -509,8 +507,6 @@ public class GeneratingFUIR extends FUIR
                            : super.compareTo(other);
                        }
                      };
-                   fuir.addFeatureDuringMonomorphization(currentClazz.feature(),
-                                                         wfield);
 
                    var tc_call = tf.lookup(new FeatureAndActuals((LibraryFeature) Types.resolved.f_Typed_Combiner_call,
                                                                  types),
