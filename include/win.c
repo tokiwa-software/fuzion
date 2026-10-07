@@ -484,10 +484,10 @@ static uint64_t fzE_performance_counter_ns()
  */
 static uint64_t fzE_cpu_time_ns(bool thread)
 {
-  FILETIME creation, exit, kernel, user;
+  FILETIME creation_time, exit_time, kernel, user;
   BOOL ok = thread
-    ? GetThreadTimes (GetCurrentThread (), &creation, &exit, &kernel, &user)
-    : GetProcessTimes(GetCurrentProcess(), &creation, &exit, &kernel, &user);
+    ? GetThreadTimes (GetCurrentThread (), &creation_time, &exit_time, &kernel, &user)
+    : GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel, &user);
   if (!ok)
   {
       fprintf(stderr, "*** GetThreadTimes/GetProcessTimes failed\n");
