@@ -542,18 +542,21 @@ public abstract class Module extends ANY implements FeatureLookup
   public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
     var d = data(heir);
     var m = d._redefinitions;
-    if (m == null) {
-      var res = new TreeMap<AbstractFeature, AbstractFeature>();
-      forEachDeclaredOrInheritedFeature(heir, g -> {
-        for (var o : g.redefinesFull()) {
-          var prev = res.put(o, g);
-          if (CHECKS)
-            check(prev == null || prev == g || Errors.any());
-        }
-      });
-      m = res;
-      d._redefinitions = m;
-    }
+    if (m == null)
+      {
+        var res = new TreeMap<AbstractFeature, AbstractFeature>();
+        forEachDeclaredOrInheritedFeature(heir, g ->
+          {
+            for (var o : g.redefinesFull())
+              {
+                var prev = res.put(o, g);
+                if (CHECKS)
+                  check(prev == null || prev == g || Errors.any());
+              }
+          });
+        m = res;
+        d._redefinitions = m;
+      }
     return m.getOrDefault(f, f);
   }
 
