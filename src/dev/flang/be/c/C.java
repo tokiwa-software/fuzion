@@ -1111,7 +1111,9 @@ public class C extends ANY
 
     cf.println("\nvoid __main__()\n{ ");
     cf.indent();
-    cf.println("if ("+ _maxTagNum + " > fzE_page_size()) { fprintf(stderr, \"*** number of choice tags exceed page size!\"); exit(EXIT_FAILURE); }");
+    // for choice of only refs and unit types, tag nums are cast to pointers. Legal pointers
+    // should not refer to the first page, so the values do not overlap. 
+    cf.println("if ("+ _maxTagNum + " >= fzE_page_size()) { fprintf(stderr, \"*** number of choice tags exceed page size!\"); exit(EXIT_FAILURE); }");
     cf.print(CStmnt.seq(
       initializeEffectsEnvironment(),
       CExpr.call(_names.function(_fuir.mainClazz()), new List<>())));
