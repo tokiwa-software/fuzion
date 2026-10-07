@@ -17,28 +17,34 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature time.cpu_time
-#
+#  Source code of Fuzion standard library feature time.Thread_Time
 #
 # -----------------------------------------------------------------------
 
-# cpu_time -- CPU time consumed, a proxy for energy use
+# time.Thread_Time -- effect providing access to the CPU time of the current thread
 #
-public cpu_time is
+# This clock advances only while the current thread is running, so it
+# cannot be used to sleep.
+#
+public Thread_Time ref : posix_clock is
 
-  # CPU time consumed by the current thread so far
-  #
-  public thread time.duration =>
-    time.duration (fzE_posix_time (id posix.clockid_t posix.clock_thread_cputime).val)
 
-  # CPU time consumed by the current process so far
+  # This clock corresponds to POSIX 1003.1's CLOCK_THREAD_CPUTIME_ID
   #
-  public process time.duration =>
-    time.duration (fzE_posix_time (id posix.clockid_t posix.clock_process_cputime).val)
+  public redef type.posix_id option posix.clockid_t
+  =>
+    posix.clock_thread_cputime
 
-  # run f and return the CPU time the current thread spent in it
+
+  # sleeping is not possible on a CPU time clock
   #
-  public measure(f ()->unit) time.duration =>
-    s := thread
-    f()
-    thread - s
+  public redef sleep(d time.duration) unit
+  =>
+    panic "time.Thread_Time cannot be used to sleep"
+
+
+  # default implementation of time.Thread_Time.
+  #
+  public redef fixed type.default_value option time.Thread_Time
+  =>
+    time.Thread_Time
