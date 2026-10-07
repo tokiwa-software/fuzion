@@ -2695,7 +2695,7 @@ public class Call extends AbstractCall
                    would always have an ambiguity when calling `as_string` */
                   && f.outer().isCotype())
                 {
-                  if (fo != null && !fo._feature.isTypeParameter())
+                  if (fo != null && !fo._feature.isTypeParameter() && tf.valueArguments().isEmpty() /* otherwise `t.f` cannot call inner `f` */)
                     {
                       AstErrors.ambiguousCall(this, fo._feature, tfo._feature);
                       setToErrorState();
