@@ -111,6 +111,8 @@ static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or
 /**
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
  *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *   - 2 for CLOCK_THREAD_CPUTIME_ID (CPU time consumed by the current thread)
+ *   - 3 for CLOCK_PROCESS_CPUTIME_ID (CPU time consumed by all threads of the process)
  */
 clockid_t get_clock_id(int clock)
 {
