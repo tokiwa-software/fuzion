@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4645.fz:24:6: error 1: Could not find called feature
+reg_issue4645.fz:24:6: error 1: Could not find called feature
 x := bla; y := array 42 i->x
 -----^^^
 Feature not found: 'bla' (no arguments)

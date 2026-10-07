@@ -31,7 +31,7 @@ call 'reg_issue2231.type.ef.type.instate#3 void' at {base.fum}/effect.fz:211:5
 call 'reg_issue2231.ef.instate_self#2 void' at {base.fum}/effect.fz:228:5
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-call 'reg_issue2231.ef.infix !#2 void' at --CURDIR--/reg_issue2231.fz:33:3
+call 'reg_issue2231.ef.infix !#2 void' at reg_issue2231.fz:33:3
   ef ! ()->
 --^^^^^^^^^
     reg_issue2231.ef.env.something

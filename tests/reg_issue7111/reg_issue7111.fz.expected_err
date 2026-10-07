@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue7111.fz:31:9: error 1: Different count of arguments needed when calling feature
+reg_issue7111.fz:31:9: error 1: Different count of arguments needed when calling feature
        .for_each kv->say "{kv.0} => {kv.1}"   # parentheses missing
 --------^^^^^^^^
 Feature not found: 'for_each' (2 arguments)

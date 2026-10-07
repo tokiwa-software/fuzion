@@ -1,5 +1,5 @@
 
---CURDIR--/issue1739.fz:28:7: error 1: Incompatible types in assignment
+issue1739.fz:28:7: error 1: Incompatible types in assignment
       nil  # should flag an error: Incompatible types in assignment
 ------^^^
 assignment to field : 'issue1739.a.type.empty.result'

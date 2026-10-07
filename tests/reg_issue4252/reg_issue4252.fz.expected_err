@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4252.fz:24:8: error 1: No type information can be inferred from a lambda expression
+reg_issue4252.fz:24:8: error 1: No type information can be inferred from a lambda expression
 say <| (-)
 -------^^^
 A lambda expression can only be used if assigned to a field or argument of type 'Function'

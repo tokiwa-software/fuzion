@@ -1,18 +1,18 @@
 
---CURDIR--/reg_issue7747.fz:41:11: error 1: Wrong number of arguments in redefined feature
+reg_issue7747.fz:41:11: error 1: Wrong number of arguments in redefined feature
     redef f(p i64) =>  # *** error ***: Wrong number of arguments in redefined feature
 ----------^
 In 'case_pre.b.f' that redefines 'case_pre.a.f' argument count is 1, argument count should be 2: one (free) type parameter 'Q' and one value argument 'p'.
-Original feature declared at --CURDIR--/reg_issue7747.fz:35:5
+Original feature declared at reg_issue7747.fz:35:5
     f (p Q)
 ----^
 
 
---CURDIR--/reg_issue7747.fz:53:11: error 2: Wrong number of arguments in redefined feature
+reg_issue7747.fz:53:11: error 2: Wrong number of arguments in redefined feature
     redef f(p i64) =>  # *** error ***: Wrong number of arguments in redefined feature
 ----------^
 In 'case_post.b.f' that redefines 'case_post.a.f' argument count is 1, argument count should be 2: one (free) type parameter 'Q' and one value argument 'p'.
-Original feature declared at --CURDIR--/reg_issue7747.fz:47:5
+Original feature declared at reg_issue7747.fz:47:5
     f (p Q)
 ----^
 

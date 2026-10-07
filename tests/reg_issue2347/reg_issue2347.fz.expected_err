@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue2347.fz:27:35: error 1: Could not find called feature
+reg_issue2347.fz:27:35: error 1: Could not find called feature
 for s := [1] : nil, s.filter x->d.bla
 ----------------------------------^^^
 Feature not found: 'bla' (no arguments)
@@ -7,7 +7,7 @@ Target feature: 'i64'
 In call: 'd.bla'
 
 
---CURDIR--/reg_issue2347.fz:27:21: error 2: Incompatible types when passing argument in a call
+reg_issue2347.fz:27:21: error 2: Incompatible types when passing argument in a call
 for s := [1] : nil, s.filter x->d.bla
 --------------------^^^^^^^^^^^^^^^^^
 Actual type for argument #1 's' does not match expected type.

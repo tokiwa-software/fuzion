@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue6379.fz:24:1: error 1: Different count of arguments needed when calling feature
+reg_issue6379.fz:24:1: error 1: Different count of arguments needed when calling feature
 ignore unit (array 3 _->1) _->
 ^^^^^^
 Feature not found: 'ignore' (3 arguments)
