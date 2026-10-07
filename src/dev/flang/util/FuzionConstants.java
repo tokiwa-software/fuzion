@@ -152,18 +152,6 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of typed_zipper feature.
-   */
-  public static final String TYPED_ZIPPER_FEAT = "typed_zipper";
-
-
-  /**
-   * Name of typed_zipper.apply feature.
-   */
-  public static final String TYPED_ZIPPER_APPLY_FEAT = "apply";
-
-
-  /**
    * Name of String feature.
    */
   public static final String STRING_NAME = "String";

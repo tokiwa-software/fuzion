@@ -240,7 +240,7 @@ public class GeneratingFUIR extends FUIR
            {
              var t = f.resultClazz()._type;
              var ta = currentClazz.actualTypeParameters()[1];
-             var apply = ta.lookup(new FeatureAndActuals((LibraryFeature)Types.resolved.f_typed_zipper_apply,
+             var apply = ta.lookup(new FeatureAndActuals((LibraryFeature) Types.resolved.f_Typed_Combiner_call,
                                                          new List<>(t)),
                                    FuzionConstants.NO_SELECT,
                                    false /* isInheritanceCall */);

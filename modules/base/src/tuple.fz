@@ -141,7 +141,12 @@ is
   #
   public redef type.equality(a, b tuple.this) bool
   =>
-    a.values.typed_zip_and_fold b.values true tuple_zip_equals
+    a.values.typed_zip_and_fold b.values true T,e,v,w->
+      if T : property.equatable then
+        e && v = w
+      else
+        compile_time_panic
+
 
 
   # A total order between two tuples `a` and `b` is defined by the total order of
@@ -152,7 +157,15 @@ is
   #
   public redef type.lteq(a, b tuple.this) bool
   =>
-    a.values.typed_zip_and_fold b.values 0 tuple_zip_lteq <= 0
+    s => a.values.typed_zip_and_fold b.values 0 T,e,v,w->
+                   if T : property.orderable then
+                     if      e != 0 then  e
+                     else if v = w  then  0
+                     else if v < w  then -1
+                     else                +1
+                   else
+                     compile_time_panic
+    s <= 0
 
 
   # create hash code for this tuple
@@ -182,34 +195,3 @@ is
       public redef apply(V type, e String, v V) String => e="" ? $v : "$e, $v"
 
     "($(values.typed_foldf "" concat))"
-
-
-# helper feature for `tuple.type.equality` to compare elements in a tuple
-#
-tuple_zip_equals : container.typed_zipper bool is
-
-  public redef apply(T type,
-                     e bool,
-                     v, w T) bool
-  =>
-    if T : property.equatable then
-      e && v = w
-    else
-      compile_time_panic
-
-
-# helper feature for `tuple.type.lteq` to compare elements in a tuple
-#
-tuple_zip_lteq : container.typed_zipper i32 is
-
-  public redef apply(T type,
-                     e i32,
-                     v, w T) i32
-  =>
-    if T : property.orderable then
-      if      e != 0 then  e
-      else if v = w  then  0
-      else if v < w  then -1
-      else                +1
-    else
-      compile_time_panic
