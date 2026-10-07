@@ -1056,6 +1056,7 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
+  CancelIoEx((HANDLE)desc, NULL /* If this parameter is NULL, all I/O requests for the hFile parameter are canceled. */);
   return CloseHandle((HANDLE)desc)
     ? 0
     : -1;
