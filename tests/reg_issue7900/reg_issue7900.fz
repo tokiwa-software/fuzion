@@ -1,0 +1,90 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7900
+#
+# -----------------------------------------------------------------------
+
+# Regression test for #7900: Clazz.findRedefinition must find the
+# redefinition of a feature in an heir clazz without relying on a lookup
+# by name, in particular when the heir declares a feature with the same
+# name that does not redefine the original one.
+#
+reg_issue7900 =>
+
+  # 1. multi-level inheritance, intermediate heir without redef
+  A ref is
+    f String => "A.f"
+  B : A is
+    redef f String => "B.f"
+  C : B is
+  D : C is
+    redef f String => "D.f"
+
+  show_f(a A) => say a.f
+  show_f A
+  show_f B
+  show_f C
+  show_f D
+
+  # 2. redefinition with actual type parameter
+  G(T type) ref is
+    h(x T) String => "G.h $x"
+  H : G i32 is
+    redef h(x i32) String => "H.h $x"
+
+  show_h(g G i32) => say (g.h 42)
+  show_h (G i32)
+  show_h H
+
+  # 3. fixed feature: heir declares feature with same name that does NOT redefine
+  X ref is
+    me String => "X.me"
+    fixed fx X => X
+  Y : X is
+    redef me String => "Y.me"
+    fixed fx X => Y
+
+  show_x(x X) => say x.fx.me
+  show_x X
+  show_x Y
+
+  # 4. overloading by argument count, only one overload redefined
+  O ref is
+    o String => "O.o"
+    o(x i32) String => "O.o $x"
+  P : O is
+    redef o(x i32) String => "P.o $x"
+
+  show_o(v O) =>
+    say v.o
+    say (v.o 7)
+  show_o O
+  show_o P
+
+  # 5. diamond: redefinition reachable via one parent only
+  Q ref is
+    q String => "Q.q"
+  R : Q is
+    redef q String => "R.q"
+  S : Q is
+  U : R, S is
+
+  show_q(v Q) => say v.q
+  show_q U
