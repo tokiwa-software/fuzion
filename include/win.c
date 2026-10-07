@@ -442,7 +442,7 @@ int fzE_munmap(void * mapped_address, const int file_size){
 }
 
 
-//**
+/**
  * convert a FILETIME (100ns units) to nano seconds
  */
 static uint64_t fzE_filetime_to_ns(FILETIME ft)
