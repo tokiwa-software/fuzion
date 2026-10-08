@@ -46,7 +46,7 @@ module:public Dynamic_Array (
 
 ) ref : Buffer T LM
   pre
-    safety: (len ≥ 0) && (len ≤ data.length.as_i64)
+    safety: (len ≥ 0) && (len ≤ data.length)
     # safety: data.length %% 2 # NYI: UNDER DEVELOPMENT: is this really required? Could odd lengths cause problems?
 is
 

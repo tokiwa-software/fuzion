@@ -27,12 +27,12 @@
 # returns an internal_array.
 #
 module internal_array_init(T type, length i64) =>
-  internal_array T (fuzion.sys.alloc T length.as_i32) length.as_i32
+  internal_array T (fuzion.sys.alloc T length.as_i32) length
 
 
 # fuzion.sys.internal_array_init -- one-dimensional low-level array
 #
-module internal_array(T type, module data Array T, module length i32 /* NYI: CLEANUP: change this to i64, backends need to be changed, see #7250 */ ) is
+module internal_array(T type, module data Array T, module length i64) is
 
   # wrap this into an immutable array.
   #
@@ -40,17 +40,17 @@ module internal_array(T type, module data Array T, module length i32 /* NYI: CLE
     array (fuzion.sys.internal_array T data length) unit unit unit unit
 
 
-  module indices => 0..length.as_i64-1
+  module indices => 0..length-1
 
   module index [ ] (I type : integer, i I) T
     pre
-      safety: 0 ≤ i.as_i64 < length.as_i64
+      safety: 0 ≤ i.as_i64 < length
   =>
     fuzion.sys.getel T data i.as_i32
 
   module set [ ] (I type : integer, i I, o T) unit
     pre
-      safety  : 0 ≤ i.as_i64 < length.as_i64
+      safety  : 0 ≤ i.as_i64 < length
   =>
     fuzion.sys.setel data i.as_i32 o
 

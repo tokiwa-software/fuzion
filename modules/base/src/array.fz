@@ -112,7 +112,7 @@ is
 
   # the length of the array
   #
-  public redef length i64 => internal_array.length.as_i64
+  public redef length i64 => internal_array.length
 
 
   # check if argument is a valid index in this array.

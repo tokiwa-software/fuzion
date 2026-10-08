@@ -933,7 +933,7 @@ public class Intrinsics extends ANY
     put("concur.sync.cnd_wait",      (c,cl,outer,in) -> CExpr.call("fzE_cnd_wait",      new List<>(A0, A1)));
     put("concur.sync.cnd_timedwait", (c,cl,outer,in) -> CExpr.call("fzE_cnd_timedwait", new List<>(A0, A1, A2)));
     put("concur.sync.cnd_destroy",   (c,cl,outer,in) -> CExpr.call("fzE_cnd_destroy",   new List<>(A0)));
-    put("native_string_length", (c,cl,outer,in) -> CExpr.call("strlen",   new List<>(A0.castTo("void *"))).ret());
+    put("native_string_length", (c,cl,outer,in) -> CExpr.call("strlen",   new List<>(A0.castTo("void *"))).castTo(CTypes.scalar(SpecialClazzes.c_i64)).ret());
     // essentially a NOP in c-backend
     put("native_array", (c,cl,outer,in) -> A0.castTo("void *" /* NYI: should be cast to array with element type cl._dfa._fuir.clazzActualGeneric(cl._cc, 0) */).ret());
   }
