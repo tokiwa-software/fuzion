@@ -526,18 +526,24 @@ public class ParsedCall extends Call
   private void checkTypeFeaturePartialAmbiguity(Resolution res, Context context, AbstractType expectedType)
   {
     var paa = partiallyApplicableAlternative(res, context, expectedType);
-    if (paa != null && paa._feature.isTypeFeature())
+    var pt = _target == null ? null : _target.asParsedType();
+    var tt = pt == null ? null : pt.resolve(res, context, true);
+    var tf = tt != null && tt != Types.t_ERROR && tt.isNormalType() ? tt.feature() : null;
+    if (paa != null && (paa._feature.isTypeFeature() || paa._feature.outer() == tf))
       {
 
         var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
         var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
-        // also look in the target type, even if the target cannot be called
-        // without arguments: only the argument count decides, see #7912
-        var pt = _target == null ? null : _target.asParsedType();
-        var tt = pt == null ? null : pt.resolve(res, context, true);
-        if (tt != null && tt != Types.t_ERROR && tt.isNormalType() && tt.feature() != paa._feature.outer())
+        // inner features of the target type are candidates only if the target
+        // can be called without arguments, otherwise `t.f` cannot call inner `f`
+        if (tf != null && tf != paa._feature.outer() && tf.valueArguments().isEmpty())
           {
-            fos.addAll(res._module.lookup(tt.feature(), _name, this, false, false));
+            fos.addAll(res._module.lookup(tf, _name, this, false, false));
+          }
+        // type features in the cotype of the target are candidates as well
+        if (tf != null && tf.hasCotype() && tf.cotype() != paa._feature.outer())
+          {
+            fos.addAll(res._module.lookup(tf.cotype(), _name, this, false, false));
           }
         var direct = FeatureAndOuter.filter(fos,
                                             pos(),
