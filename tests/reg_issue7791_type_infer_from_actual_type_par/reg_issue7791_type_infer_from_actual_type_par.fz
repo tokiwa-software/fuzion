@@ -1,0 +1,46 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7791_type_infer_from_actual_type_par
+#
+# -----------------------------------------------------------------------
+
+reg_issue7791_type_infer_from_actual_type_par =>
+
+  # code from issue #7791
+
+  f(T type, S type : Sequence T) => say $T
+  f _ (array unit)
+
+  g(T type, S type : Sequence T, v S) => say $T
+  g _ _ [unit]
+
+  # some more variants:
+
+  f1(S type : Sequence T, T type ) => say "f1: $T"
+  f1 (array unit) _
+
+  f2(T type, S type : Sequence T, v S) => say "f2: $T"
+  f2 _ _ [unit]
+
+  f3(T type, S type : Sequence T, O type : option i64) => say "f3: $T"
+  f3 _ (array i64) (option i64)
+
+  f4(T type, S type : Sequence T, O type : option T) => say "f4: $T"
+  f4 _ (array u64) (option u64)
