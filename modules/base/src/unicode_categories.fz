@@ -1,0 +1,182 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature unicode_categories
+#
+# -----------------------------------------------------------------------
+
+# unicode_categories -- unit feature to group the values of the Unicode
+# General_Category property
+#
+# Each inner feature is one value of the General_Category property, see
+# https://www.unicode.org/reports/tr44/#General_Category_Values.  The names
+# are the long property value aliases from PropertyValueAliases.txt in
+# snake_case, `as_string` gives the short alias (e.g. "Lu").
+#
+public unicode_categories is
+
+  # Lu: Letter, uppercase -- an uppercase letter
+  #
+  public uppercase_letter is
+    public redef as_string String => "Lu"
+
+  # Ll: Letter, lowercase -- a lowercase letter
+  #
+  public lowercase_letter is
+    public redef as_string String => "Ll"
+
+  # Lt: Letter, titlecase -- a digraph whose first part is uppercase
+  #
+  public titlecase_letter is
+    public redef as_string String => "Lt"
+
+  # Lm: Letter, modifier -- a modifier letter
+  #
+  public modifier_letter is
+    public redef as_string String => "Lm"
+
+  # Lo: Letter, other -- other letters, including syllables and ideographs
+  #
+  public other_letter is
+    public redef as_string String => "Lo"
+
+  # Mn: Mark, nonspacing -- a nonspacing combining mark (zero advance width)
+  #
+  public nonspacing_mark is
+    public redef as_string String => "Mn"
+
+  # Mc: Mark, spacing combining -- a spacing combining mark (positive advance width)
+  #
+  public spacing_mark is
+    public redef as_string String => "Mc"
+
+  # Me: Mark, enclosing -- an enclosing combining mark
+  #
+  public enclosing_mark is
+    public redef as_string String => "Me"
+
+  # Nd: Number, decimal digit -- a decimal digit
+  #
+  public decimal_number is
+    public redef as_string String => "Nd"
+
+  # Nl: Number, letter -- a letterlike numeric character
+  #
+  public letter_number is
+    public redef as_string String => "Nl"
+
+  # No: Number, other -- a numeric character of other type
+  #
+  public other_number is
+    public redef as_string String => "No"
+
+  # Pc: Punctuation, connector -- a connecting punctuation mark, like a tie
+  #
+  public connector_punctuation is
+    public redef as_string String => "Pc"
+
+  # Pd: Punctuation, dash -- a dash or hyphen punctuation mark
+  #
+  public dash_punctuation is
+    public redef as_string String => "Pd"
+
+  # Ps: Punctuation, open -- an opening punctuation mark (of a pair)
+  #
+  public open_punctuation is
+    public redef as_string String => "Ps"
+
+  # Pe: Punctuation, close -- a closing punctuation mark (of a pair)
+  #
+  public close_punctuation is
+    public redef as_string String => "Pe"
+
+  # Pi: Punctuation, initial quote -- an initial quotation mark
+  #
+  public initial_punctuation is
+    public redef as_string String => "Pi"
+
+  # Pf: Punctuation, final quote -- a final quotation mark
+  #
+  public final_punctuation is
+    public redef as_string String => "Pf"
+
+  # Po: Punctuation, other -- a punctuation mark of other type
+  #
+  public other_punctuation is
+    public redef as_string String => "Po"
+
+  # Sm: Symbol, math -- a symbol of mathematical use
+  #
+  public math_symbol is
+    public redef as_string String => "Sm"
+
+  # Sc: Symbol, currency -- a currency sign
+  #
+  public currency_symbol is
+    public redef as_string String => "Sc"
+
+  # Sk: Symbol, modifier -- a non-letterlike modifier symbol
+  #
+  public modifier_symbol is
+    public redef as_string String => "Sk"
+
+  # So: Symbol, other -- a symbol of other type
+  #
+  public other_symbol is
+    public redef as_string String => "So"
+
+  # Zs: Separator, space -- a space character (of various non-zero widths)
+  #
+  public space_separator is
+    public redef as_string String => "Zs"
+
+  # Zl: Separator, line -- U+2028 LINE SEPARATOR only
+  #
+  public line_separator is
+    public redef as_string String => "Zl"
+
+  # Zp: Separator, paragraph -- U+2029 PARAGRAPH SEPARATOR only
+  #
+  public paragraph_separator is
+    public redef as_string String => "Zp"
+
+  # Cc: Other, control -- a C0 or C1 control code
+  #
+  public control is
+    public redef as_string String => "Cc"
+
+  # Cf: Other, format -- a format control character
+  #
+  public format is
+    public redef as_string String => "Cf"
+
+  # Cs: Other, surrogate -- a surrogate code point
+  #
+  public surrogate is
+    public redef as_string String => "Cs"
+
+  # Co: Other, private use -- a private-use character
+  #
+  public private_use is
+    public redef as_string String => "Co"
+
+  # Cn: Other, not assigned -- a reserved unassigned code point or a noncharacter
+  #
+  public unassigned is
+    public redef as_string String => "Cn"

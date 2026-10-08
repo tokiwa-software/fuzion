@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -395,7 +396,7 @@ public class AstErrors extends ANY
           {
             var assignableTo = new TreeSet<AbstractType>();
             frmlT.isAssignableFrom(actlT, context, false, true, assignableTo);
-            for (var ts : assignableTo)
+            for (var ts : assignableTo.stream().sorted(Comparator.comparing(t->t.toString(true))).toList())
               {
                 errorOrUndefinedFound |= ts.containsUndefined();
                 assignableToSB
@@ -1584,15 +1585,6 @@ public class AstErrors extends ANY
           "Formal type parameter declared in " + tp.pos().show() + "\n");
   }
 
-  static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
-  {
-    error(pos,
-          "Actual type parameters to choice type must be disjoint types",
-          "The following types have overlapping values:\n" +
-          s(t1) + /* " at " + t1.pos().show() + */ "\n" +  // NYI: use pos before Types were interned!
-          s(t2) + /* " at " + t2.pos().show() + */ "\n");
-  }
-
   static void illegalUseOfOpenFormalGeneric(SourcePosition pos, AbstractFeature generic)
   {
     error(pos,
@@ -1938,7 +1930,7 @@ public class AstErrors extends ANY
   {
     var errorOrUndefinedFound = g.containsUndefined();
     var assignableToSB = new StringBuilder();
-    for (var ts : assignableTo)
+    for (var ts : assignableTo.stream().sorted(Comparator.comparing(t->t.toString(true))).toList())
       {
         errorOrUndefinedFound |= ts.containsUndefined();
         assignableToSB

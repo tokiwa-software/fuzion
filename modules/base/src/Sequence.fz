@@ -513,9 +513,20 @@ is
   #
   # To force printing of all elements of a finite `Sequence` for which `finite` is
   # false (which may be the case since a Sequence in general might not know that it
-  # if finite), you may use `as_string_all`.
+  # is finite), you may use `as_string_all`.
   #
   public redef as_string String =>
+    sequence_as_string
+
+
+  # Implementation of `Sequence.as_string` but under a different name such that
+  # we can use it if multiple inheritance results in clashing `as_string`
+  # implementations.
+  #
+  # NYI: UNDER DEVELOPMENT: #5801 this could be done if renaming was possible
+  # during inheritance.
+  #
+  module sequence_as_string =>
     if finite.is_yes
       as_string_all
     else
@@ -1342,3 +1353,19 @@ is
   # Sequence.
   #
   public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i64 => 10
+
+
+  # force evaluation of all elements of this (lazy) Sequence, and discard the
+  # results
+  #
+  public consume unit
+  =>
+    for_each ignore
+
+
+  # force evaluation of all elements of this Sequence, and turn the list of
+  # results into a non-lazy Sequence
+  #
+  public force Sequence T
+  =>
+    as_array

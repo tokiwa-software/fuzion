@@ -1,23 +1,31 @@
 
---CURDIR--/reg_issue3362.fz:65:8: error 1: Incompatible type parameter
-  _ := 0 = a   # 2. should flag an error: `choice i32 unit` is not assignable to `property.equatable`
--------^^^^^
-formal type parameter 'T : property.equatable'
+--CURDIR--/reg_issue3362.fz:71:8: error 1: Incompatible type parameter
+  _ := 0 === a   # 2. should flag an error: `choice i32 unit` is not assignable to `my_equatable`
+-------^^^^^^^
+formal type parameter 'T : reg_issue3362.this.my_equatable'
 actual type parameter 'reg_issue3362.this.c'
-assignable to constraint: 'choice',
-                          'void',
+assignable to constraint: 'Any',
+                          'choice',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
                           'reg_issue3362.this.c',
-                          'Any'
+                          'void'
 
 
---CURDIR--/reg_issue3362.fz:49:16: error 2: Incompatible type parameter
-            if plain_actual != plain_expected     # 1. should flag an error: `choice String (array u8)` is not assignable to `property.equatable`
----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-formal type parameter 'T : property.equatable'
+--CURDIR--/reg_issue3362.fz:55:16: error 2: Incompatible type parameter
+            if plain_actual =!= plain_expected     # 1. should flag an error: `choice String (array u8)` is not assignable to `my_equatable`
+---------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+formal type parameter 'T : reg_issue3362.this.my_equatable'
 actual type parameter 'reg_issue3362.this.my_c'
-assignable to constraint: 'choice',
-                          'void',
+assignable to constraint: 'Any',
+                          'choice',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
                           'reg_issue3362.this.my_c',
-                          'Any'
+                          'void'
 
 2 errors.

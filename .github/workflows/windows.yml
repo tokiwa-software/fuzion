@@ -51,7 +51,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: msys2/setup-msys2@5beef6d11f48bba68b9eb503e3adc60b23c0cc36 # v2
+      - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2
         with:
           update: true
           path-type: minimal
@@ -81,7 +81,7 @@ jobs:
           ln -s  /ucrt64/bin/libclang.dll /ucrt64/bin/clang.dll
           ln -s  /ucrt64/bin/libsqlite3-0.dll /ucrt64/bin/sqlite3.dll
           ln -s  /ucrt64/bin/libsodium-26.dll /ucrt64/bin/sodium.dll
-          ln -s  /ucrt64/bin/libwolfssl-45.dll /ucrt64/bin/wolfssl.dll
+          ln -s  /ucrt64/bin/libwolfssl-46.dll /ucrt64/bin/wolfssl.dll
 
       - name: echo versions
         run: |

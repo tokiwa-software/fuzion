@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of check_simple_example.fz
+#  Source code of simple_example.fz
 #
 # -----------------------------------------------------------------------
 
@@ -63,16 +63,16 @@ envir_var_kv := [
   "TMP",
   "SYSTEMROOT",
   "INFLUXDB_TOKEN"
-].map k->
-  if k="DYLD_FALLBACK_LIBRARY_PATH"||k="PATH"||k="LD_LIBRARY_PATH"
-    envir.Vars.env[k]
-      .bind v->(k,"$v$path_separator../../lib")
-      .or_else (k,"../../lib")
-  else
-    envir.Vars.env[k].bind v->
-      (k,v)
- .flat_map id
- .as_array
+  ].map k->
+    if k="DYLD_FALLBACK_LIBRARY_PATH"||k="PATH"||k="LD_LIBRARY_PATH"
+      envir.Vars.env[k]
+        .bind v->(k,"$v$path_separator../../lib")
+        .or_else (k,"../../lib")
+    else
+      envir.Vars.env[k].bind v->
+        (k,v)
+  .flat_map id
+  .as_array
 
 # envir vars as map
 #
@@ -84,7 +84,8 @@ envir_vars :=
 # Run this String as a command using `envir_vars, cpu_time_limit` and panic in case we could
 # not execute the command, but do not panic in case the command results in an error.
 #
-String.run(input0 option io.path) => String.this.execute envir_vars input0 cpu_time_limit .or_panic
+String.run(input0 option io.path) tokiwa.process_result =>
+  String.this.execute envir_vars input0 cpu_time_limit .or_panic
 
 
 # Run this String as a command using `envir_vars, cpu_time_limit` and panic in case we could
@@ -123,6 +124,8 @@ check_exit_code(run tokiwa.process_result) =>
     say "unexpected exit code $(run.exit_code)"
     Exit.env.exit 1
 
+  run
+
 
 # clean error output from random names
 # like loop4, preandcall19 etc.
@@ -137,8 +140,9 @@ clean_err(f io.path) =>
     "sed -i s|$(("$(os.cwd.or_panic.as_string.substring 1 2):$(os.cwd.or_panic.as_string.substring 2)").replace "\\" "#" .replace "/" "#")|--CURDIR--| $f".run_and_check
   "sed -i s#$(os.cwd.or_panic.as_string)#--CURDIR--# $f".run_and_check
   # line numbers
-  "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".run_and_check
+  "sed -E -i s/\\.fz:[0-9]+:[0-9]+(:?)/\\.fz:n:n\\1/g $f".run_and_check
   "sed -E -i s/\\.(fz|java):[0-9]+/\\.\\1:n/g $f".run_and_check
+  "sed -E -i s/$(tokiwa.protected_space)at$(tokiwa.protected_space)-:.*/$(tokiwa.protected_space)at$(tokiwa.protected_space)-:n/g $f".run_and_check
   # replace CLASS_PREFIX_WITH_ID
   "sed -E -i s/fzC__L[0-9]+/fzC_LXXX/g $f".run_and_check
   # replace lambda function names in Java stack traces
@@ -153,38 +157,92 @@ delete_tmp_files =>
   _ := io.file.delete exp_err_cleaned
 
 
-if envir.Args.env.count != 4
+if envir.Args.env.count != 5
+
+  # NYI: UNDER DEVELOPMENT: what should happen for check any? only jvm/int? or forbid?
   say """
-      Usage  : check_simple_example <jvm|c|int|effect> <fz+args> <test.fz>
-      Example: check_simple_example jvm "build/bin/fz -modules=nom" tests/hello/HelloWorld.fz
+      Usage  : simple_example <check|record> <any|jvm|c|int|effect> <fz+args> <test.fz>
+      Usage  : simple_example add <test_name>
+
+      Example: simple_example check jvm "build/bin/fz -modules=nom" tests/hello/HelloWorld.fz
       """
   Exit.env.exit 1
 
-
-be     := envir.Args.env[1]
+action := envir.Args.env[1]
+be     := envir.Args.env[2]
 # can not execute bash script fz on windows with CreateProcess
-fz_run := envir.Args.env[2].replace "../../bin/fz" "java $(is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : "") --enable-native-access=ALL-UNNAMED --class-path ../../classes $(envir.Vars.env["FUZION_JAVA_OPTIONS"].or_else "") -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
-file   := envir.Args.env[3]
-input  := io.path.of "$file.stdin"
-exp_out := if be = "effect"
-             io.path.of "$file.effect"
-           else
-             if io.file.exists (io.path.of "$file.expected_out_$be") then (io.path.of "$file.expected_out_$be") else (io.path.of "$file.expected_out")
-exp_err := if io.file.exists (io.path.of "$file.expected_err_$be") then (io.path.of "$file.expected_err_$be") else (io.path.of "$file.expected_err")
+fz_run := envir.Args.env[3].replace "../../bin/fz"
+                                    """
+  java \
+  $(is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : "") \
+  --enable-native-access=ALL-UNNAMED \
+  --class-path ../../classes \
+  $(envir.Vars.env["FUZION_JAVA_OPTIONS"].or_else "") \
+  -Xss5m \
+  -Dline.separator=\n \
+  -Dfile.encoding=UTF-8 \
+  -Dfuzion.home=../../ \
+  -Dfuzion.command=fz \
+  dev.flang.tools.Fuzion"""
+
+file   := envir.Args.env[4]
+input option io.path :=
+  {
+    stdin := io.path.of "$file.stdin"
+    # advent of code uses file named 'input'
+    aoc_inp := io.path.of "$file" .parent.or_panic.resolve "input"
+    if      io.file.exists stdin   then stdin
+    else if io.file.exists aoc_inp then aoc_inp
+    else                                nil
+  }
+
+
+exp_out :=
+  if be = "effect"
+    io.path.of "$file.effect"
+  else if io.file.exists (io.path.of "$file.expected_out_$be") || action = "record" && be != "any"
+    (io.path.of "$file.expected_out_$be")
+  else
+    (io.path.of "$file.expected_out")
+
+exp_err :=
+  if io.file.exists (io.path.of "$file.expected_err_$be") || action = "record" && be != "any"
+    (io.path.of "$file.expected_err_$be")
+  else
+    (io.path.of "$file.expected_err")
+
 exp_err_cleaned := io.path.of "$exp_err.cleaned"
 
-if io.file.exists (io.path.of "$file.skip") || (be = "effect" && !(io.file.exists (io.path.of "$file.effect")))
-    say "SKIP $file"
+
+backend_options(x) =>
+  s := envir.Vars.env
+            .get x
+            .or_default ""
+            .replace " " tokiwa.protected_space
+            .split "|"
+  String.join s " "
+
+if action = "check"
+
+  check_example
+
+else if action = "record"
+
+  record_example
+
 else
-    yap "RUN $file using $(be.pad_center 3) backend "
+  panic "action unknown: $action"
+
+
+run_example =>
 
     delete_tmp_files
-
 
     # NYI: UNDER DEVELOPMENT:
     # setrlimit for executed processes
     # stack_size_limit, cpu_time_limit
 
+    # NYI: UNDER DEVELOPMENT: should the cpu time limit be enforced when rerecording?
     bt := concur.Threads.env.spawn ()->
       time.Nano.env.sleep cpu_time_limit
       say "$("*** CANCELLED:".bold.red) test $file exceeded cpu time limit of $cpu_time_limit"
@@ -192,48 +250,54 @@ else
 
     concur.Threads.env.detach bt
 
-    backend_options(x) =>
-      s := envir.Vars.env
-                .get x
-                .or_default ""
-                .replace " " tokiwa.protected_space
-                .split "|"
-      String.join s " "
+    if be = "jvm" || be = "any"
+      check_exit_code <| "$fz_run -XmaxErrors=-1 -jvm $(backend_options "FUZION_JVM_BACKEND_OPTIONS") $file".run input
 
-    if be = "c"
+    else if be = "c"
       compile := "$fz_run -XmaxErrors=-1 -c $(backend_options "FUZION_C_BACKEND_OPTIONS") $file -o=testbin".run
       if compile.ok
-        run := "./testbin".run input
-
-        check_exit_code run
-
-        io.write (io.path.of "tmp_out.txt") run.out .or_panic
-        io.write (io.path.of "tmp_err.txt") run.err .or_panic
+        check_exit_code <| "./testbin".run input
       else
-        io.write (io.path.of "tmp_out.txt") compile.out .or_panic
-        io.write (io.path.of "tmp_err.txt") compile.err .or_panic
-    else if be = "jvm"
-      run := "$fz_run -XmaxErrors=-1 -jvm $(backend_options "FUZION_JVM_BACKEND_OPTIONS") $file".run input
-
-      check_exit_code run
-
-      io.write (io.path.of "tmp_out.txt") run.out .or_panic
-      io.write (io.path.of "tmp_err.txt") run.err .or_panic
+        compile
     else if be = "int"
-      run := "$fz_run -XmaxErrors=-1 -interpreter $file".run input
+      check_exit_code <| "$fz_run -XmaxErrors=-1 -interpreter $file".run input
 
-      check_exit_code run
-
-      io.write (io.path.of "tmp_out.txt") run.out .or_panic
-      io.write (io.path.of "tmp_err.txt") run.err .or_panic
     else if be = "effect"
-      run := "$fz_run -XmaxErrors=-1 -effects $file".run
-
-      check_exit_code run
-
-      io.write (io.path.of "tmp_out.txt") ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
+      check_exit_code "$fz_run -XmaxErrors=-1 -effects $file".run
     else
       panic "backend unknown: $be"
+
+
+record_example =>
+
+  run := run_example
+
+  if be != "effect"
+    io.write exp_out run.out .or_panic
+    cur_dir := os.cwd.or_panic.as_string
+    io.write exp_err (run.err.replace cur_dir "--CURDIR--") .or_panic
+  else
+    io.write exp_out ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
+
+  say "RECORDED $file"
+
+
+check_example =>
+  if ((be = "effect" && !(io.file.exists (io.path.of "$file.effect")))
+      || io.file.exists (io.path.of "$file.skip")
+      || io.file.exists (io.path.of "$file.skip_$be"))
+  then
+    say "SKIP $file"
+  else
+    yap "RUN $file using $(be.pad_center 3) backend "
+
+    run := run_example
+
+    if be = "effect"
+      io.write (io.path.of "tmp_out.txt") ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
+    else
+      io.write (io.path.of "tmp_out.txt") run.out .or_panic
+      io.write (io.path.of "tmp_err.txt") run.err .or_panic
 
     out := "diff --strip-trailing-cr $(exp_out) tmp_out.txt".run
 

@@ -3,7 +3,7 @@
   t12e1,t12e2,t12e1 := t11 7 # 21. should flag an error, repeated elements in destructuring
 --^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t12e1'
-originally declared at --CURDIR--/tuple_negative.fz:153:15:
+originally declared at --CURDIR--/tuple_negative.fz:153:15
   t12e1,t12e2,t12e1 := t11 7 # 21. should flag an error, repeated elements in destructuring
 --------------^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't12e1ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
@@ -13,7 +13,7 @@ To solve this, consider renaming one of these two features, e.g., as 't12e1ʼ' (
   t12f1,t12f1,t12f3 := t11 7 # 22. should flag an error, repeated elements in destructuring
 --------^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t12f1'
-originally declared at --CURDIR--/tuple_negative.fz:154:3:
+originally declared at --CURDIR--/tuple_negative.fz:154:3
   t12f1,t12f1,t12f3 := t11 7 # 22. should flag an error, repeated elements in destructuring
 --^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't12f1ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
@@ -23,7 +23,7 @@ To solve this, consider renaming one of these two features, e.g., as 't12f1ʼ' (
   t15a1,_,_                := (01, true, 23); # 37. should flag an error, duplicate declaration
 --^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t15a1'
-originally declared at --CURDIR--/tuple_negative.fz:183:3:
+originally declared at --CURDIR--/tuple_negative.fz:183:3
   t15a1 i64 := 42;
 --^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't15a1ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
@@ -33,7 +33,7 @@ To solve this, consider renaming one of these two features, e.g., as 't15a1ʼ' (
   _,t15a2,_                := (01, true, 23); # 38. should flag an error, duplicate declaration
 ----^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t15a2'
-originally declared at --CURDIR--/tuple_negative.fz:185:3:
+originally declared at --CURDIR--/tuple_negative.fz:185:3
   t15a2 bool := false;
 --^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't15a2ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
@@ -43,7 +43,7 @@ To solve this, consider renaming one of these two features, e.g., as 't15a2ʼ' (
   _,_,t15a3                := (01, true, 23); # 39. should flag an error, duplicate declaration
 ------^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t15a3'
-originally declared at --CURDIR--/tuple_negative.fz:184:3:
+originally declared at --CURDIR--/tuple_negative.fz:184:3
   t15a3 i64 := 42;
 --^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't15a3ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).

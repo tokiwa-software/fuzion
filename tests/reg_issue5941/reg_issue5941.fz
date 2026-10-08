@@ -45,6 +45,7 @@ reg_issue5941 =>
   # complex inheritance
   h2 : Sequence (f64,bool), h, unit is
     public redef as_string String => "h2"
+    public redef fixed type.equality(a, b h2.this) bool => panic "NYI"
   h2.f
 
   # --- same thing but with output and using actual type pars for `f`
@@ -72,6 +73,7 @@ reg_issue5941 =>
   # complex inheritance
   hq2 : Sequence (f64,bool), hq, unit is
     public redef as_string String => "hq2"
+    public redef fixed type.equality(a, b hq2.this) bool => panic "NYI"
   hq2.f
   hq2.f "hi"
   hq2.f true u8.zero "X"

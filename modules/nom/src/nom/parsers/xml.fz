@@ -223,12 +223,14 @@ public xml Parser String (Sequence codepoint) (Sequence nom.parsers.xml_node) =>
   # parser for sequence of texts/xml_nodes
   #
   xml_or_text_seq =>
-    (many0 (preceded whitespace0 (alt [
-      parser_text.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o],
-      parser_self_closing_tag.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o],
-      parser_full_tag.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o]
-    ]))).map o->
-      o.flat_map id
+    text_or_tag =>
+      alt [
+            parser_text.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o],
+            parser_self_closing_tag.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o],
+            parser_full_tag.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o]
+          ]
+    many0 (preceded whitespace0 text_or_tag)
+      .map (.flat_map id .as_array)
 
 
   # parse xml tags

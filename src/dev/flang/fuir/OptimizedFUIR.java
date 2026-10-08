@@ -64,6 +64,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
   @Override public boolean clazzIsUnitType(int cl){ return _original.clazzIsUnitType(cl); }
   @Override public int clazzOuterRef(int cl){  return _original.clazzOuterRef(cl); }
   @Override public int accessedClazz(int s){ return _original.accessedClazz(s); }
+  @Override public boolean clazzNeedsCode(int s){ return _original.clazzNeedsCode(s); }
 
 
   /*----------------------  serializing FUIR  ----------------------*/
@@ -124,7 +125,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
    */
   private int[] clazzActualGenerics(int cl)
   {
-    var cc = id2clazz(cl);
+    var cc = clazz(cl);
     var generics = cc.actualTypeParameters();
     var result = new int[generics.length];
     for (int gix = 0; gix < result.length; gix++)

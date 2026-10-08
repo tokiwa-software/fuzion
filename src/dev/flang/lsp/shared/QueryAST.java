@@ -200,30 +200,6 @@ public class QueryAST extends ANY
 
 
   /**
-   * @param params
-   * @return
-   * NYI: UNDER DEVELOPMENT: currently unused.
-   * Can we use this without being annoying?
-   */
-  public static Stream<AbstractFeature> completionsAt(SourcePosition params)
-  {
-    var tokens = LexerTool.tokensAt(params);
-    if (tokens.left().token().equals(Token.t_ws))
-      {
-        return QueryAST.featuresInScope(params);
-      }
-    else if (tokens.left().token().equals(Token.t_ident))
-      {
-        return QueryAST.featuresInScope(params)
-          .filter(f -> {
-            return f.baseName().startsWith(tokens.left().text());
-          });
-      }
-    return Stream.empty();
-  }
-
-
-  /**
    * given a TextDocumentPosition return all matching ASTItems
    * in the given file on the given line.
    * sorted by position descending.

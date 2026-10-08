@@ -29,19 +29,12 @@
 # not present, e.g, in an option.
 #
 #
-public nil : property.hashable, property.orderable is
+public nil : unit is
 
 
   # convert this to a string.
   #
   public redef as_string String => "--nil--"
-
-
-  # trivial implementation for lteq of unit value nil
-  #
-  public redef fixed type.lteq(_, _ nil) bool
-  =>
-    true
 
 
   # create hash code for nil

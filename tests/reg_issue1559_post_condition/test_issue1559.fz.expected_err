@@ -6,7 +6,7 @@ In 'a.(λ()-> _ : String is public redef utf8 l...).call.anonymous.utf8' that re
 result type is       : 'list u8'
 result type should be: 'Sequence u8'
 
-Original feature declared at {base.fum}/String.fz:47:10:
+Original feature declared at {base.fum}/String.fz:32:10
   public utf8 Sequence u8 => abstract
 ---------^^^^
 To solve this, change type of result to 'Sequence u8'

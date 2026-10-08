@@ -80,4 +80,4 @@ public try(ERROR type, F type : flow.fallible ERROR, T type, code_try ()->T) is
 
   # infix alias for catch
   #
-  infix || (code_catch ERROR->T) => catch code_catch
+  public infix || (code_catch ERROR->T) T => catch code_catch

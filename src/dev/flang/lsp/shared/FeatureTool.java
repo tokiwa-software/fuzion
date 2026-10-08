@@ -249,29 +249,6 @@ public class FeatureTool extends ANY
   }
 
   /**
-   *
-   * @param f
-   * @return
-   */
-  static Optional<AbstractFeature> topLevelFeature(AbstractFeature f)
-  {
-    if (f.isUniverse() || f.outer() == Types.f_ERROR)
-      {
-        return Optional.empty();
-      }
-    if (f.outer().isUniverse() || !inSameSourceFile(f, f.outer()))
-      {
-        return Optional.of(f);
-      }
-    return topLevelFeature(f.outer());
-  }
-
-  private static boolean inSameSourceFile(AbstractFeature a, AbstractFeature b)
-  {
-    return a.pos()._sourceFile.toString().equals(b.pos()._sourceFile.toString());
-  }
-
-  /**
    * @param feature
    * @return example: array(T type, length i32, init Function array.T i32) => array array.T
    */
@@ -324,23 +301,6 @@ public class FeatureTool extends ANY
   public static String commentOfInMarkdown(AbstractFeature f)
   {
     return MarkdownTool.italic(commentOf(f));
-  }
-
-  /**
-   *
-   * @param feature
-   * @return true iff there are no other features at same or lesser level after given feature
-   */
-  static boolean isOfLastFeature(AbstractFeature feature)
-  {
-    return !isFunctionCall(feature) && selfAndDescendants(topLevelFeature(feature).get())
-      .noneMatch(f -> f.pos().line() > feature.pos().line()
-        && f.pos().column() <= feature.pos().column());
-  }
-
-  private static boolean isFunctionCall(AbstractFeature f)
-  {
-    return f.redefines().contains(Types.resolved.f_Function_call);
   }
 
   private static Set<AbstractFeature> callers(AbstractFeature f)

@@ -38,6 +38,7 @@ public percent is
   #
   hex_char := "0123456789ABCDEF".utf8.as_array
 
+
   # is this an ascii character that is considered safe (unreserved) according to RFC 3986 section 2.3
   #
   u8.safe_char =>
@@ -45,6 +46,7 @@ public percent is
     (0x41 <= val <= 0x5A || 0x61 <= val <= 0x7A || 0x30 <= val <= 0x39
     #            -             .             _             ~
       || val = 0x2D || val = 0x2E || val = 0x5F || val = 0x7E)
+
 
   # convert a hex char into the four bit value it represents
   #
@@ -56,18 +58,12 @@ public percent is
     else # 97 <= val <= 102  # case a-f
       val - 87
 
+
   # is this a valid hexadecimal character (A-Fa-f0-9)
   #
   u8.is_hex bool =>
     # A       -      F       a      -       f       0      -       9
     0x41 <= val <= 0x46 || 0x61 <= val <= 0x66 || 0x30 <= val <= 0x39
-
-  # convert lowercase a-z to uppercase
-  #
-  u8.upper u8 =>
-    #    a              f
-    if 0x61 <= val <= 0x7A then val-32 else val
-
 
 
   # Percent encode (url encode) a Sequence of bytes, as specified in RFC 3986 section 2.1

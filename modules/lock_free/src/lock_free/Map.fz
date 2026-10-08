@@ -278,10 +278,6 @@ private:public Map(CTK type : property.hashable,
                    public read_only bool) ref : container.Mutable_Map CTK CTV
 is
 
-  # the data structure as human readable string
-  # for debugging purposes
-  as_string_internal =>
-    "Ctrie[ro=$read_only]($(root.read))"
 
   # compare and swap root of the ctrie
   cas_root(ov, nv root_node CTK CTV) =>

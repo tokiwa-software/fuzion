@@ -260,6 +260,9 @@ public class Intrinsics extends ANY
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug_level"          , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
+
+    put("choice.tag"           , (c,cl,outer,in) -> c.getTag(outer, cl));
+
     put("fuzion.sys.args.count", (c,cl,outer,in) -> CNames.GLOBAL_ARGC.ret());
     put("fuzion.sys.args.get"  , (c,cl,outer,in) ->
         {
@@ -659,9 +662,9 @@ public class Intrinsics extends ANY
           if (Arrays.binarySearch(c._effectClazzes, ecl) >= 0)
             {
               var res = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
-              res = CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr()))
-                        .castTo(c._types.clazz(ecl) + " *")
-                        .deref();
+              res = c.heapClone(res)
+                     .castTo(c._types.clazz(ecl) + " *")
+                     .deref();
               var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
               o = CStmnt.iff(evi.not(), o, c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : res.ret());
             }

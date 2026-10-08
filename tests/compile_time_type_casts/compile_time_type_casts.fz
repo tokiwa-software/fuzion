@@ -138,6 +138,8 @@ compile_time_type_casts =>
   x "F"
   x true
   x nil
+  x Any
+  x (_ : Any is public redef as_string String => "_ : Any")
   x a
   x b
   x c

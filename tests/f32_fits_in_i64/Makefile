@@ -17,12 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature concur.util
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# util -- low-level utility features for concurrency
-#
-util is
+override NAME = f32_fits_in_i64
+include ../simple.mk

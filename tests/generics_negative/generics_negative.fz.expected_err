@@ -49,7 +49,7 @@ To solve this, check the spelling of the type you have used.
 In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.
 Type used: 'A i32'
 Formal type parameter used 'A'
-Formal type parameter declared in --CURDIR--/generics_negative.fz:107:18:
+Formal type parameter declared in --CURDIR--/generics_negative.fz:107:18
   opengenerics23(A, B, C type) is
 -----------------^
 
@@ -139,10 +139,10 @@ Type inference failed for one type parameter 'T'
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'X'
 Possible features that match this type:
-'generics_negative.ambiguousTypeParameterName.outer.inner.X' defined at --CURDIR--/generics_negative.fz:191:13:
+'generics_negative.ambiguousTypeParameterName.outer.inner.X' defined at --CURDIR--/generics_negative.fz:191:13
       inner(X type, Y2 type, Z type)
 ------------^
-and 'generics_negative.ambiguousTypeParameterName.outer.X' defined at --CURDIR--/generics_negative.fz:190:11:
+and 'generics_negative.ambiguousTypeParameterName.outer.X' defined at --CURDIR--/generics_negative.fz:190:11
     outer(X, Y, Z type) is
 ----------^
 
@@ -155,10 +155,10 @@ To solve this, rename these features such that each one has a unique name.
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'Z'
 Possible features that match this type:
-'generics_negative.ambiguousTypeParameterName.outer.inner.Z' defined at --CURDIR--/generics_negative.fz:191:30:
+'generics_negative.ambiguousTypeParameterName.outer.inner.Z' defined at --CURDIR--/generics_negative.fz:191:30
       inner(X type, Y2 type, Z type)
 -----------------------------^
-and 'generics_negative.ambiguousTypeParameterName.outer.Z' defined at --CURDIR--/generics_negative.fz:190:17:
+and 'generics_negative.ambiguousTypeParameterName.outer.Z' defined at --CURDIR--/generics_negative.fz:190:17
     outer(X, Y, Z type) is
 ----------------^
 
@@ -180,7 +180,7 @@ To solve this, check the spelling of the type you have used.
 Feature not found: 'hjkl' (no arguments)
 Target feature: 'qwerty.uiop.asdfg'
 In call: 'qwert.uiop.asdfg.hjkl'
-To solve this, you might change the actual number of arguments to match the feature 'hjkl' (one value argument x) at qwerty.fz:36:14:
+To solve this, you might change the actual number of arguments to match the feature 'hjkl' (one value argument x) at qwerty.fz:36:14
       module hjkl(x T) is
 -------------^^^^
 To call 'hjkl', you must provide one argument.
@@ -194,7 +194,7 @@ Number of actual value arguments is 1, while call expects no value arguments.
 Actual value arguments: '7'
 Called feature: 'Function.call'
 Formal value arguments: --none--
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -206,7 +206,7 @@ Number of actual value arguments is 1, while call expects no value arguments.
 Actual value arguments: '7'
 Called feature: 'Function.call'
 Formal value arguments: --none--
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -218,7 +218,7 @@ Number of actual value arguments is 0, while call expects one value argument.
 Actual value arguments: --none--
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -230,7 +230,7 @@ Number of actual value arguments is 2, while call expects one value argument.
 Actual value arguments: 'true', 'false'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -242,7 +242,7 @@ Number of actual value arguments is 0, while call expects one value argument.
 Actual value arguments: --none--
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -254,7 +254,7 @@ Number of actual value arguments is 2, while call expects one value argument.
 Actual value arguments: 'true', 'false'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -266,7 +266,7 @@ Number of actual value arguments is 1, while call expects no value arguments.
 Actual value arguments: '7'
 Called feature: 'Function.call'
 Formal value arguments: --none--
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -278,7 +278,7 @@ Number of actual value arguments is 1, while call expects no value arguments.
 Actual value arguments: '7'
 Called feature: 'Function.call'
 Formal value arguments: --none--
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -290,7 +290,7 @@ Number of actual value arguments is 0, while call expects 2 value arguments.
 Actual value arguments: --none--
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -302,7 +302,7 @@ Number of actual value arguments is 1, while call expects 2 value arguments.
 Actual value arguments: '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -314,7 +314,7 @@ Number of actual value arguments is 3, while call expects 2 value arguments.
 Actual value arguments: '3', 'false', '7'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -326,7 +326,7 @@ Number of actual value arguments is 0, while call expects 2 value arguments.
 Actual value arguments: --none--
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -338,7 +338,7 @@ Number of actual value arguments is 1, while call expects 2 value arguments.
 Actual value arguments: '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -350,7 +350,7 @@ Number of actual value arguments is 3, while call expects 2 value arguments.
 Actual value arguments: '3', 'false', '7'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -432,7 +432,7 @@ Number of actual value arguments is 3, while call expects 2 value arguments.
 Actual value arguments: '3', 'true', '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -444,7 +444,7 @@ Number of actual value arguments is 1, while call expects 2 value arguments.
 Actual value arguments: '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -480,7 +480,7 @@ Number of actual value arguments is 3, while call expects 2 value arguments.
 Actual value arguments: '3', 'true', '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
@@ -492,7 +492,7 @@ Number of actual value arguments is 1, while call expects 2 value arguments.
 Actual value arguments: '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
+Declared at {base.fum}/Function.fz:35:10
   public call(a A...) R
 ---------^^^^
 
