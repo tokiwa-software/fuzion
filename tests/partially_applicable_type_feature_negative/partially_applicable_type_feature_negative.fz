@@ -21,15 +21,9 @@
 #
 # -----------------------------------------------------------------------
 
-# `t1ok` requires an argument, so `t1ok.of` can only be the type feature, the
-# inner feature requires a value, e.g., `(t1ok "y").of`
-t1ok(s String) is
-  public redef as_string String => "t1ok($s)"
-  public of(t String) t1ok => t1ok "$s/$t"
-  public type.of(s String) t1ok => t1ok s
+partially_applicable_type_feature_negative =>
 
-_ := "x" |> t1ok.of         # ok, type feature
-_ := "x" |> (t1ok "y").of   # ok, inner feature
+# partial application of type features, see #7790
 
 # `t1` can be called without arguments, so `t1.of` could be the inner feature
 # or the type feature
@@ -70,6 +64,7 @@ t5(s String) is
 
 _ := ["a"].map (t5.of "z")   # 6. should flag an error: direct call or partial application?
 
+
 # `f "x" "y"` could be a direct call to `f(a, b)` returning a function or
 # partially applied `f(a, b, c)`
 t6(s String) is
@@ -80,6 +75,7 @@ t6(s String) is
 _ := "z" |> (t6.f "x" "y")      # 7. should flag an error: direct or partial?
 _ := ["z"].map (t6.f "x" "y")   # 8. should flag an error: direct or partial?
 
+
 # `t7` can be called without arguments, so `t7.of` could be the inner feature
 # `of` returning a function or partially applied type feature `of(s)`
 t7 is
@@ -88,6 +84,7 @@ t7 is
 
 _ := "x" |> t7.of               # 9. should flag an error: inner or type?
 
+
 # same as `t7` with argument lists exchanged: type feature `of` returning a
 # function or partially applied inner feature `of(s)`
 t8 is
@@ -95,6 +92,7 @@ t8 is
   public of(s String) String => "via of(s): $s"
 
 _ := "x" |> t8.of               # 10. should flag an error: inner or type?
+
 
 # `t9` can be called without arguments, so `t9.a` could be partially applied
 # for the inner feature `a(v)` as well as for the type feature `a(v)`

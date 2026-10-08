@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-partially_applicable_type_feature_positive =>
+partially_applicable_type_feature =>
 
 # partial application of type features, see #7790
 
@@ -62,31 +62,64 @@ p5(s String) is
     y -> p5 "via type.g(a,b): $a $b $y"
   public type.g(a, b, c String) p5 => p5 "via type.g(a,b,c): $a $b $c"
 
+
 # `p7.a` is ambiguous (see partially_applicable_type_feature_negative), but the
 # type feature can be selected via `.type` and the inner feature via a value
 p7 is
   public a(v i64) bool => v > 1
   public type.a(v i64) bool => v > 2
 
+
+# `p8` requires an argument, so `p8.of` can only be the type feature, the
+# inner feature requires a value, e.g., `(p8 "y").of`
+p8(s String) is
+  public redef as_string String => "p8($s)"
+  public of(t String) p8 => p8 "$s/$t"
+  public type.of(s String) p8 => p8 s
+
+
+# same with an inner `of` without arguments that returns a function, `p9.of`
+# is still the type feature since `p9` requires an argument
+p9(s String) is
+  public redef as_string String => "p9($s)"
+  public of Unary p9 String => x -> p9 "via of: $s $x"
+  public type.of(s String) p9 => p9 "via type.of(s): $s"
+
+
+
 say ("/" |> io.path.of)
 say (io.path.of <| String.from "/".utf8)
+
 
 say ("x" |> p1.of)
 say (p1.of <| "y")
 say (["u","v"].map p1.of)
 say ("x" |> p1.type.of)
 
+
 say ("x" |> p2.of)
+
 
 say (p3.of.call "x")                # direct call, apply result
 say ("y" |> (x -> p3.of x))         # explicit lambda
 
+
 say ((p4.f "x" "y").call "z")       # direct call, apply result
 say ("z" |> (c -> p4.f "x" "y" c))  # explicit lambda
+
 
 h String -> String -> p5 := p5.g "x"
 say (h.call "1" .call "2")
 
+
 say ([1, 2, 3].filter p7.type.a)      # type feature: [3]
 p7v := p7
 say ([1, 2, 3].filter p7v.a)          # inner feature: [2, 3]
+
+
+say ("x" |> p8.of)          # type feature: p8(x)
+say ("x" |> (p8 "y").of)    # inner feature: p8(y/x)
+
+
+say ("x" |> p9.of)          # type feature: p9(via type.of(s): x)
+say ("x" |> (p9 "y").of)    # inner feature: p9(via of: y x)

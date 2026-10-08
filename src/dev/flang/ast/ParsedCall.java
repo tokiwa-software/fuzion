@@ -501,22 +501,18 @@ public class ParsedCall extends Call
   }
 
 
-    /**
-   * Checks for ambiguity between a partially applied feature and a potential
-   * direct call if the target is a type {@code t}: Candidates for a direct call
-   * are the type features of {@code t} and, if {@code t} can be called without
-   * arguments, also the inner features of {@code t}.
+ /**
+   * Check for ambiguity between partial application and a direct call if the
+   * target is a type {@code t}.
    *
-   * Example: For {@code "x" |> t.of}:
+   * Candidates for a direct call are the type features of {@code t} and, if
+   * {@code t} can be called without arguments, its inner features.
+   *
+   * Example: {@code "x" |> t.of} with
    *
    *   t is
-   *     type.of Unary t String => ...   # direct call (matches argument count)
+   *     type.of Unary t String => ...   # direct call
    *     type.of(s String) t => ...      # partial application
-   *
-   * This corresponds to {@link #checkPartialAmbiguity} for normal features,
-   * which cannot be used here since the target {@code t} is a type and the
-   * call is not resolved before partial application.
-   *
    * @param res the resolution instance.
    *
    * @param context the source code context where this Call is used

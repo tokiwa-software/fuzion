@@ -12,3 +12,7 @@ p4(via type.f(a,b,c): x y z)
 p5(via type.g(a): x 1 2)
 [3]
 [2, 3]
+p8(x)
+p8(y/x)
+p9(via type.of(s): x)
+p9(via of: y x)
