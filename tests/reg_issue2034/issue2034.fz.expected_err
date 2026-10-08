@@ -4,14 +4,14 @@
 ----^
 Value type issue2034.s.u equals type of outer feature.
 The chain of outer types that lead to this recursion is:
-1: issue2034.s.u at --CURDIR--/issue2034.fz:28:5:
+1: issue2034.s.u at --CURDIR--/issue2034.fz:28:5
     u : s is
 ----^
-2: issue2034.s.u at --CURDIR--/issue2034.fz:28:5:
+2: issue2034.s.u at --CURDIR--/issue2034.fz:28:5
     u : s is
 ----^
 
-To solve this, you could add a 'ref' after the arguments list at --CURDIR--/issue2034.fz:28:5:
+To solve this, you could add a 'ref' after the arguments list at --CURDIR--/issue2034.fz:28:5
     u : s is
 ----^
 

@@ -468,7 +468,7 @@ public class Loop extends ANY
                                NoType.INSTANCE,
                                new List<String>(loopName),
                                formalArguments,
-                               Function.NO_CALLS,
+                               AbstractCall.NO_CALLS,
                                Contract.EMPTY_CONTRACT,
                                new Impl(p, block, Impl.Kind.RoutineDef))
       {
@@ -581,7 +581,7 @@ public class Loop extends ANY
                                     NoType.INSTANCE,
                                     new List<String>(name),
                                     new List<>(),
-                                    Function.NO_CALLS,
+                                    AbstractCall.NO_CALLS,
                                     Contract.EMPTY_CONTRACT,
                                     new Impl(_elsePos, ei == 0 ? eb0 : (ei == 1 ? eb1 : eb2), Impl.Kind.RoutineDef));
       }

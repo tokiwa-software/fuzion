@@ -29,7 +29,10 @@ package dev.flang.ast;
 import static dev.flang.util.FuzionConstants.NO_SELECT;
 
 import java.util.Set;
+import java.util.TreeSet;
+
 import java.util.regex.Pattern;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -141,6 +144,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * failure due to previous errors.
    */
   public static final List<AbstractType> HAND_DOWN_FAILED = new List<AbstractType>().freeze();
+
+
+  /**
+   * An empty set of features.
+   */
+  public static final Set<AbstractFeature> EMPTY_SET = new TreeSet<>();
 
 
   /*-------------------------  static variables  ------------------------*/
@@ -2019,7 +2028,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   protected boolean mayBeNativeValue()
   {
     return kind() == Kind.Constructor
-      && (!hasOuterRef() || outerRef().resultType().feature().isUnitType())
+      && (!hasOuterRef() || outerRef().resultType().feature().isUnitTypeWithoutSideEffect())
       && typeArguments().isEmpty()
       && inherits().size() == 1
       && !Contract.hasPreConditionsFeature(this)
@@ -2209,35 +2218,41 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  private Boolean _isUnitType = null;
+  private Boolean _isUnitTypeWithoutSideEffect = null;
   /**
-   * Can this feature only ever be a unit type?
+   * Is this feature a unit type without any side effects?
    */
-  public boolean isUnitType()
+  public boolean isUnitTypeWithoutSideEffect()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.RESOLVED));
 
-    if (_isUnitType == null)
+    if (_isUnitTypeWithoutSideEffect == null)
       {
-        _isUnitType = isUnitType(false);
+        _isUnitTypeWithoutSideEffect = isUnitTypeWithoutSideEffect(false);
       }
 
-    return _isUnitType;
+    return _isUnitTypeWithoutSideEffect;
   }
 
 
-  public boolean isUnitType(boolean isInheritedFeature)
+  /**
+   * Is this feature a unit type without any side effects?
+   *
+   * @param isInheritedFeature true if we are checking an inherited feature
+   * @return
+   */
+  public boolean isUnitTypeWithoutSideEffect(boolean isInheritedFeature)
   {
     return
       isConstructor() &&
       contract().isEmpty() &&
-      valueArguments().stream().allMatch(va -> va.isUnitType()) &&
+      valueArguments().stream().allMatch(va -> va.isUnitTypeWithoutSideEffect()) &&
       (isInheritedFeature || !isRef()) &&
       code().isEmpty() &&
       // unit inheriting e.g. property.orderable is fine
-      (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitType()) &&
-      inherits().stream().allMatch(c -> c.calledFeature().isUnitType(true));
+      (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitTypeWithoutSideEffect()) &&
+      inherits().stream().allMatch(c -> c.calledFeature().isUnitTypeWithoutSideEffect(true));
   }
 
 

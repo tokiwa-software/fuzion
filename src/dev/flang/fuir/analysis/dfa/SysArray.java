@@ -75,15 +75,18 @@ class SysArray extends Value
    *
    * @param el the element values, null if not initialized
    *
-   * @param ec the type of the array elements
+   * @param ac the type of the array
    */
-  public SysArray(DFA dfa, Value el, int ec)
+  public SysArray(DFA dfa, Value el, int ac)
   {
-    super(FUIR.NO_CLAZZ);
+    super(ac);
+
+    if (PRECONDITIONS) require
+      (dfa._fuir.clazzIsArrayRef(ac));
 
     _dfa = dfa;
     _elements = el;
-    _elementClazz = ec;
+    _elementClazz = dfa._fuir.clazzActualGeneric(ac, 0);
   }
 
 
@@ -149,7 +152,7 @@ class SysArray extends Value
         Value ne =
           _elements == null ? sv._elements :
           sv._elements == null ? _elements : _elements.join(dfa, sv._elements, _elementClazz);
-        return _dfa.newSysArray(ne, _elementClazz);
+        return _dfa.newSysArray(ne, _clazz);
       }
     else
       {

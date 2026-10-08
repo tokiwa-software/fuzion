@@ -64,7 +64,7 @@ all: jvm c int
 
 fuir: $(FUZION_DEPENDENCIES)
 	rm -f *.fuir
-	@printf 'FUIR %s ' "$(FILE)" && $(ENV) dev_flang_tools_serializeFUIR=true $(FUZION_RUN) -noBackend $(FILE) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
+		@printf 'FUIR %s ' "$(FILE)" && $(ENV) dev_flang_tools_serializeFUIR=true $(FUZION_RUN) -noBackend $(FILE) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED\033[0m.\n" && cat err.txt && exit 1)
 
 int: $(FUZION_DEPENDENCIES)
 	$(ENV) ../../bin/simple_example check int "$(FUZION_RUN)" $(FILE) || exit 1

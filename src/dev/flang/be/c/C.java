@@ -463,28 +463,28 @@ public class C extends ANY
       CStmnt tdefault = null;
       for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
         {
-          var ctagNums = new List<Integer>();
-          var rtags = new List<CExpr>();
           var tags = _fuir.matchCaseTags(s, mc);
-          for (var tagNum : tags)
-            {
-              var tc = _fuir.clazzChoice(subjClazz, tagNum);
-              if (!hasTag && _fuir.clazzIsRef(tc))  // NYI: CLEANUP: do we need to check the clazzId of a ref?
-                {
-                  for (var h : _fuir.clazzInstantiatedHeirs(tc))
-                    {
-                      rtags.add(_names.clazzId(h).comment(_fuir.clazzName(h)));
-                    }
-                }
-              else if (!_fuir.clazzIsVoidType(tc))
-                {
-                   ctagNums.add(tagNum);
-                  if (CHECKS) check
-                    (hasTag || !_fuir.hasData(tc));
-                }
-            }
           if (tags.length > 0)
             {
+              var ctagNums = new List<Integer>();
+              var rtags = new List<CExpr>();
+              for (var tagNum : tags)
+                {
+                  var tc = _fuir.clazzChoice(subjClazz, tagNum);
+                  if (!hasTag && _fuir.clazzIsRef(tc))  // NYI: CLEANUP: do we need to check the clazzId of a ref?
+                    {
+                      for (var h : _fuir.clazzInstantiatedHeirs(tc))
+                        {
+                          rtags.add(_names.clazzId(h).comment(_fuir.clazzName(h)));
+                        }
+                    }
+                  else if (!_fuir.clazzIsVoidType(tc))
+                    {
+                      ctagNums.add(tagNum);
+                      if (CHECKS) check
+                                    (hasTag || !_fuir.hasData(tc));
+                    }
+                }
               var sl = new List<CStmnt>();
               var field = _fuir.matchCaseField(s, mc);
               if (field != NO_CLAZZ)
@@ -1111,7 +1111,9 @@ public class C extends ANY
 
     cf.println("\nvoid __main__()\n{ ");
     cf.indent();
-    cf.println("assert("+ _maxTagNum + " <= fzE_page_size());");
+    // for choice of only refs and unit types, tag nums are cast to pointers. Legal pointers
+    // should not refer to the first page, so the values do not overlap. 
+    cf.println("if ("+ _maxTagNum + " >= fzE_page_size()) { fprintf(stderr, \"*** number of choice tags exceed page size!\"); exit(EXIT_FAILURE); }");
     cf.print(CStmnt.seq(
       initializeEffectsEnvironment(),
       CExpr.call(_names.function(_fuir.mainClazz()), new List<>())));

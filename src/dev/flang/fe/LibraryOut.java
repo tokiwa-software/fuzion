@@ -607,26 +607,29 @@ class LibraryOut extends ANY
     else
       {
         _data.addOffset(t, _data.offset());
-        if (t.isParametricType())
+        switch (t.kind())
           {
-            _data.writeInt(-1);
-            _data.writeOffset(t.typeParameter());
-          }
-        else
-          {
-            _data.writeInt(t.isNormalType() ? t.generics().size() : 0);
-            _data.writeOffset(t.feature());
-            _data.writeByte(t.kind().num);
-            if (t.isNormalType())
-              {
-                for (var gt : t.generics())
-                  {
-                    type(gt);
-                  }
-              }
-            // NYI: CLEANUP: do not write outer for this types.
-            type(t.isThisType() ? Types.resolved.universe.selfType() : t.outer());
-          }
+          case ParametricType ->
+            {
+              _data.writeInt(-1);
+              _data.writeOffset(t.typeParameter());
+            }
+          case RefType, ValueType, ThisType ->
+            {
+              _data.writeInt(t.isNormalType() ? t.generics().size() : 0);
+              _data.writeOffset(t.feature());
+              _data.writeByte(t.kind().num);
+              if (t.isNormalType())
+                {
+                  for (var gt : t.generics())
+                    {
+                      type(gt);
+                    }
+                }
+              // NYI: CLEANUP: do not write outer for this types.
+              type(t.isThisType() ? Types.resolved.universe.selfType() : t.outer());
+            }
+          };
       }
   }
 

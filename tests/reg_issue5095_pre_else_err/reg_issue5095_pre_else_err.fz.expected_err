@@ -59,7 +59,7 @@ To solve this remove the precondition or add one to all features being redefined
       pre true          # 9. should flag an error: else missing
 ------^^^^^^^^
 Affected feature: 'test_2.child_3.bar'
-Redefines: 'test_2.parent_2.bar' from --CURDIR--/reg_issue5095_pre_else_err.fz:90:7:
+Redefines: 'test_2.parent_2.bar' from --CURDIR--/reg_issue5095_pre_else_err.fz:90:7
       pre true
 ------^^^^^^^^
 To solve this, check if you are accidentally redefining another feature or, if you intend to redefine, add the 'else' keyword 
@@ -69,7 +69,7 @@ To solve this, check if you are accidentally redefining another feature or, if y
       pre true          # 10. should flag an error: else missing
 ------^^^^^^^^
 Affected feature: 'test_2.child_5.foo'
-Redefines: 'test_2.parent_1.foo' from --CURDIR--/reg_issue5095_pre_else_err.fz:84:9:
+Redefines: 'test_2.parent_1.foo' from --CURDIR--/reg_issue5095_pre_else_err.fz:84:9
         pre else true
 --------^^^^^^^^^^^^^
 To solve this, check if you are accidentally redefining another feature or, if you intend to redefine, add the 'else' keyword 

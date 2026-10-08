@@ -477,14 +477,13 @@ void fzE_nanosleep(uint64_t n)
   uint64_t start = fzE_posix_time(-1);
   uint64_t end = start + n;
 
-  while (fzE_posix_time(-1) < end) {
-    uint64_t remaining_ns = end - fzE_posix_time(-1);
-    if (remaining_ns > 1000000ULL) {
-      Sleep((DWORD)(remaining_ns / 1000000ULL));
-    } else if (remaining_ns > 0) {
-      Sleep(1);
+  uint64_t now = fzE_posix_time(-1);
+  while (now < end)
+    {
+      uint64_t remaining_ms = (end - now) / 1000000ULL;
+      Sleep((DWORD)(remaining_ms == 0 ? 1ULL : remaining_ms));
+      now = fzE_posix_time(-1);
     }
-  }
 }
 
 
@@ -1057,6 +1056,7 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
+  CancelIoEx((HANDLE)desc, NULL /* If this parameter is NULL, all I/O requests for the hFile parameter are canceled. */);
   return CloseHandle((HANDLE)desc)
     ? 0
     : -1;
@@ -1193,7 +1193,7 @@ void fzE_cnd_wait(void *cnd, void *mtx) {
     }
 }
 
-void fzE_cnd_timedwait(void *cnd, void *mtx, int64_t time_ns) {
+void fzE_cnd_timedwait(void *cnd, void *mtx, uint64_t time_ns) {
   DWORD ms = (DWORD)(time_ns / 1000000);
   BOOL ok = SleepConditionVariableCS(
       (CONDITION_VARIABLE *)cnd,

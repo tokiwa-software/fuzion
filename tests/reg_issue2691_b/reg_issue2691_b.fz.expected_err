@@ -9,10 +9,10 @@ While parsing: implRout, parse stack: implRout, routOrField, feature, expr, expr
     pre else if x < -10 then false
 -------------^^^^^^^^^^^^^^^^^^^^^
 Incompatible result types in different branches:
-block returns value of type 'bool' at --CURDIR--/reg_issue2691_b.fz:33:30:
+block returns value of type 'bool' at --CURDIR--/reg_issue2691_b.fz:33:30
     pre else if x < -10 then false
 -----------------------------^^^^^
-block returns value of type 'unit' at --CURDIR--/reg_issue2691_b.fz:33:14:
+block returns value of type 'unit' at --CURDIR--/reg_issue2691_b.fz:33:14
     pre else if x < -10 then false
 -------------^^^^^^^^^^^^^^^^^^^^^
 

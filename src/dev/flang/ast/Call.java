@@ -474,6 +474,27 @@ public class Call extends AbstractCall
    */
   protected AbstractFeature targetFeature(Resolution res, Context context)
   {
+    return targetFeature(res, context, false);
+  }
+
+
+  /**
+   * Get the feature of the target of this call.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Call is used. For a call
+   * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
+   * feature of f.
+   *
+   * @param urgent if true run pending errors immediately and return f_ERROR instead of null
+   *
+   * @return the feature of the target of this call, null if lookup for the
+   * target feature failed, or f_ERROR on error.
+   */
+  private AbstractFeature targetFeature(Resolution res, Context context, boolean urgent)
+  {
     AbstractFeature result = null;
 
     // are we searching for features called via outer's inheritance calls?
@@ -514,6 +535,11 @@ public class Call extends AbstractCall
                   }
                 setToErrorState();
               };
+            if (urgent)
+              {
+                c._pendingError.run();
+                result = Types.f_ERROR;
+              }
           }
         else if (tt != null)
           {
@@ -524,6 +550,9 @@ public class Call extends AbstractCall
       { // search for feature in outer
         result = context.outerFeature();
       }
+
+    if (POSTCONDITIONS) ensure
+      (!urgent || result != null);
 
     return result != null && result.isField()
       ? result.resultTypeIfPresentUrgent(res, true).backingFeature()
@@ -749,11 +778,8 @@ public class Call extends AbstractCall
    */
   private void triggerFeatureNotFoundError(Resolution res, Context context)
   {
-    var tf = targetFeature(res, context);
-    if (tf != null)
-      {
-        triggerFeatureNotFoundError(res, findOnTarget(res, tf, true).v0(), tf);
-      }
+    var tf = targetFeature(res, context, true);
+    triggerFeatureNotFoundError(res, findOnTarget(res, tf, true).v0(), tf);
   }
 
 
@@ -2461,14 +2487,13 @@ public class Call extends AbstractCall
   {
     return generics
       .stream()
-      .map(g -> {
-        var result = false;
-        if (!g.isParametricType())
+      .map(g -> switch (g.kind())
+        {
+        case RefType, ValueType, ThisType ->
+          inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, g.generics(), argumentType);
+        case ParametricType ->
           {
-            result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, g.generics(), argumentType);
-          }
-        else
-          {
+            var result = false;
             var rg = g.typeParameter();
             var ri = rg.typeParameterIndex();
             if (rg.outer() == _calledFeature && foundAt.get(ri) == null)
@@ -2480,9 +2505,9 @@ public class Call extends AbstractCall
                     result = true;
                   }
               }
+            yield result;
           }
-        return result;
-      })
+        })
       .anyMatch(x->x);
   }
 

@@ -590,7 +590,7 @@ $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_jar
+run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_jar run_tests_dump_fuir
 
 TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/fuzion.jar
 
@@ -635,6 +635,10 @@ run_tests_jar: run_tests_jar_build
 		exit 1; \
 	fi
 	rm -f HelloWorld HelloWorld.jar libfuzion_rt.so libfuzion_rt.dylib fuzion_rt.dll
+
+.PHONY: run_tests_dump_fuir
+run_tests_dump_fuir: $(BUILD_DIR)/tests
+	$(MAKE) fuir -C $(BUILD_DIR)/tests/dump_fuir
 
 .PHONY: clean
 clean:

@@ -502,7 +502,7 @@ public class Feature extends AbstractFeature
                        NoType.INSTANCE,
                        new List<String>(FuzionConstants.DESTRUCTURE_PREFIX + (uniqueDestructureFeatureId++)),
                        new List<>(),
-                       Function.NO_CALLS,
+                       AbstractCall.NO_CALLS,
                        Contract.EMPTY_CONTRACT,
                        new Impl(pos, e, Impl.Kind.FieldDef));
   }
