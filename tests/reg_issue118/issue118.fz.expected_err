@@ -1,5 +1,5 @@
 
---CURDIR--/issue118.fz:55:3: error 1: Used abstract feature 'numeric.type.zero' is not implemented by 'issue118.a.type'
+issue118.fz:55:3: error 1: Used abstract feature 'numeric.type.zero' is not implemented by 'issue118.a.type'
   a : i32 3 is
 --^
 Feature 'issue118.a.type' instantiated at <source position not available>
@@ -31,7 +31,7 @@ call 'issue118.a.as_string' at {base.fum}/io/print_effect.fz:36:12
 call 'io.default_out.println#1' at {base.fum}/say.fz:31:36
 public say(s Any) unit ! io.Out => io.Out.env.println s
 -----------------------------------^^^^^^^^^^^^^^^^^^^^
-call 'say#1' at --CURDIR--/issue118.fz:56:3
+call 'say#1' at issue118.fz:56:3
   say a
 --^^^^^
 call 'issue118'

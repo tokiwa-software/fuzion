@@ -22,15 +22,15 @@ fuzion.runtime.pre_fault.cause#1 at {base.fum}/flow/fallible.fz:40:6
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56:3
   fuzion.runtime.pre_fault.env.cause msg
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-SquareRoot.pre sqrt at --CURDIR--/SquareRoot.fz:30:7
+SquareRoot.pre sqrt at SquareRoot.fz:30:7
       a ≥ 0
 ------^^^^^
-SquareRoot.precall sqrt at --CURDIR--/SquareRoot.fz:29:5
+SquareRoot.precall sqrt at SquareRoot.fz:29:5
     pre
 ----^^^
       a ≥ 0
 ------^^^^^
-SquareRoot at --CURDIR--/SquareRoot.fz:44:22
+SquareRoot at SquareRoot.fz:44:22
   say "sqrt(-16) = $(sqrt(-16))" # 1. should flag an error, precondition failed
 ---------------------^^^^^^^^^
 

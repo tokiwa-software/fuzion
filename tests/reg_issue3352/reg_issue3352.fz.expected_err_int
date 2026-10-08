@@ -30,7 +30,7 @@ fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
 ------^^^
         safety: !open || is_atomic || is_exclusive
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-universe at --CURDIR--/reg_issue3352.fz:26:6
+universe at reg_issue3352.fz:26:6
 _ := s.get
 -----^^^^^
 

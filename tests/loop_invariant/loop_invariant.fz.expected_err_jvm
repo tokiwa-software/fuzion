@@ -4,8 +4,8 @@ Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 fuzion.runtime.invariantcondition_fault#1 at {base.fum}/fuzion/runtime/invariant_fault.fz:56
-loop_invariant.loop at --CURDIR--/loop_invariant.fz:32
-loop_invariant at --CURDIR--/loop_invariant.fz:31
+loop_invariant.loop at loop_invariant.fz:32
+loop_invariant at loop_invariant.fz:31
 
 *** fatal errors encountered, stopping.
 one error.

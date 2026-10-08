@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue6024.fz:31:18: error 1: Could not find called feature
+reg_issue6024.fz:31:18: error 1: Could not find called feature
   say <| id     (_ bla "bla" [bla]) 42    #  1. should flag an error, wrong number of args
 -----------------^
 Feature not found: '_' (3 arguments)
@@ -7,7 +7,7 @@ Target feature: 'reg_issue6024'
 In call: '(_ bla "bla" [bla])'
 
 
---CURDIR--/reg_issue6024.fz:36:22: error 2: Type not found
+reg_issue6024.fz:36:22: error 2: Type not found
   say <| id     unit._        42          #  2. should flag an error, type not found `_`
 ---------------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -16,7 +16,7 @@ in feature: 'unit'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:37:23: error 3: Type not found
+reg_issue6024.fz:37:23: error 3: Type not found
   say <| id     (unit._)      42          #  3. should flag an error, type not found `_`
 ----------------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -25,7 +25,7 @@ in feature: 'unit'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:38:17: error 4: Type not found
+reg_issue6024.fz:38:17: error 4: Type not found
   say <| id     _()           42          #  4. should flag an error, type not found `_`
 ----------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -34,7 +34,7 @@ in feature: 'reg_issue6024'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:39:18: error 5: Type not found
+reg_issue6024.fz:39:18: error 5: Type not found
   say <| id     (_())         42          #  5. should flag an error, type not found `_`
 -----------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -43,7 +43,7 @@ in feature: 'reg_issue6024'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:40:18: error 6: Type not found
+reg_issue6024.fz:40:18: error 6: Type not found
   say <| id     (_ a)         42          #  6. should flag an error, type not found `_`
 -----------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -52,7 +52,7 @@ in feature: 'reg_issue6024'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:41:18: error 7: Type not found
+reg_issue6024.fz:41:18: error 7: Type not found
   say <| id     (_ (a))       42          #  7. should flag an error, type not found `_`
 -----------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -61,7 +61,7 @@ in feature: 'reg_issue6024'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:43:18: error 8: Could not find called feature
+reg_issue6024.fz:43:18: error 8: Could not find called feature
   say <| option (_ bla "bla" [bla]) 42    #  8. should flag an error, wrong number of args
 -----------------^
 Feature not found: '_' (3 arguments)
@@ -69,7 +69,7 @@ Target feature: 'reg_issue6024'
 In call: '(_ bla "bla" [bla])'
 
 
---CURDIR--/reg_issue6024.fz:46:22: error 9: Type not found
+reg_issue6024.fz:46:22: error 9: Type not found
   say <| option unit._        42          #  9. should flag an error, type not found `_`
 ---------------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -78,7 +78,7 @@ in feature: 'unit'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:47:23: error 10: Type not found
+reg_issue6024.fz:47:23: error 10: Type not found
   say <| option (unit._)      42          # 10. should flag an error, type not found `_`
 ----------------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -87,7 +87,7 @@ in feature: 'unit'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:48:17: error 11: Type not found
+reg_issue6024.fz:48:17: error 11: Type not found
   say <| option _()           42          # 11. should flag an error, type not found `_`
 ----------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -96,7 +96,7 @@ in feature: 'reg_issue6024'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:49:18: error 12: Type not found
+reg_issue6024.fz:49:18: error 12: Type not found
   say <| option (_())         42          # 12. should flag an error, type not found `_`
 -----------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -105,7 +105,7 @@ in feature: 'reg_issue6024'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:50:18: error 13: Type not found
+reg_issue6024.fz:50:18: error 13: Type not found
   say <| option (_ a)         42          # 13. should flag an error, type not found `_`
 -----------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists
@@ -114,7 +114,7 @@ in feature: 'reg_issue6024'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:51:18: error 14: Type not found
+reg_issue6024.fz:51:18: error 14: Type not found
   say <| option (_ (a))       42          # 14. should flag an error, type not found `_`
 -----------------^
 Type '_' was not found, no corresponding feature nor formal type parameter exists

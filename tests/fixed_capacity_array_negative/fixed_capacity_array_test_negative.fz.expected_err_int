@@ -28,7 +28,7 @@ fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
 (container.Fixed_Capacity_Array fixed_capacity_array_test_negative.m i64).precall add at {base.fum}/container/Dynamic_Array.fz:98:5
     pre safety : can_add
 ----^^^^^^^^^^^^^^^^^^^^
-fixed_capacity_array_test_negative.(λ()-> fca := container.Fixed_Capacity_A...).call at --CURDIR--/fixed_capacity_array_test_negative.fz:50:5
+fixed_capacity_array_test_negative.(λ()-> fca := container.Fixed_Capacity_A...).call at fixed_capacity_array_test_negative.fz:50:5
     fca.add 21 # should panic: Fixed_Capacity_Array can not grow, exceeded limit of 10 elements
 ----^^^^^^^^^^
 (instate_helper unit fixed_capacity_array_test_negative.m).call_code.call at {base.fum}/effect.fz:404:18
@@ -48,7 +48,7 @@ fixed_capacity_array_test_negative.m.instate_self#2 unit at {base.fum}/effect.fz
 fixed_capacity_array_test_negative.m.infix !#2 unit at {base.fum}/effect.fz:228:5
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-fixed_capacity_array_test_negative at --CURDIR--/fixed_capacity_array_test_negative.fz:28:3
+fixed_capacity_array_test_negative at fixed_capacity_array_test_negative.fz:28:3
   m ! ()->
 --^^^^^^^^
     fca := container.Fixed_Capacity_Array m i64 .empty 10

@@ -16,7 +16,7 @@ panic.cause#1 at {base.fum}/flow/fallible.fz:40:6
 panic#1 at {base.fum}/panic.fz:53:19
     msg String => panic.env.cause msg
 ------------------^^^^^^^^^^^^^^^^^^^
-reg_issue2307 at --CURDIR--/reg_issue2307.fz:29:9
+reg_issue2307 at reg_issue2307.fz:29:9
   _:= a (panic "hello")
 --------^^^^^^^^^^^^^^^
 

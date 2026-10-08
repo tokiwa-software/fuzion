@@ -34,7 +34,7 @@ fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       debug : from <= to
 ------^^^^^^^^^^^^^^^^^^
-reg_issue6074 at --CURDIR--/reg_issue6074.fz:26:35
+reg_issue6074 at reg_issue6074.fz:26:35
   say ((0..9).as_array.slice 1 3 .slice 1 3 .slice 1 3 .slice 1 3 .slice 1 3 .slice 1 3 .slice 1 3 .slice 1 3)
 ----------------------------------^^^^^
 

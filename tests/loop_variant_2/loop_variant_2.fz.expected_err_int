@@ -22,10 +22,10 @@ fuzion.runtime.variant_fault.cause#1 at {base.fum}/flow/fallible.fz:40:6
 fuzion.runtime.variantcondition_fault#1 at {base.fum}/fuzion/runtime/variant_fault.fz:55:3
   fuzion.runtime.variant_fault.env.cause msg
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-loop_variant_2.test_6.loop at --CURDIR--/loop_variant_2.fz:82:13
+loop_variant_2.test_6.loop at loop_variant_2.fz:82:13
     variant i64.min        # 5. should flag an error: variant violated in first iteration
 ------------^^^^^^^
-loop_variant_2.test_6 at --CURDIR--/loop_variant_2.fz:81:5
+loop_variant_2.test_6 at loop_variant_2.fz:81:5
     for i in (0..3)
 ----^^^^^^^^^^^^^^^
     variant i64.min        # 5. should flag an error: variant violated in first iteration
@@ -34,7 +34,7 @@ loop_variant_2.test_6 at --CURDIR--/loop_variant_2.fz:81:5
 ----^^
       say "i=$i"
 ------^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at --CURDIR--/loop_variant_2.fz:85:3
+(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at loop_variant_2.fz:85:3
   test_6 # no try catch, so the stacktrace gets printed
 --^^^^^^
 (flow.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/try.fz:50:7
@@ -62,7 +62,7 @@ instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm at <s
 ----^^^^^^^^^
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-loop_variant_2.test#2 at --CURDIR--/loop_variant_2.fz:32:5
+loop_variant_2.test#2 at loop_variant_2.fz:32:5
     fuzion.runtime.variant_fault
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       .try ()->
@@ -73,7 +73,7 @@ loop_variant_2.test#2 at --CURDIR--/loop_variant_2.fz:32:5
 ------^^^^^^^^^^
         say "FATAL FAULT `variant`: $s"
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at --CURDIR--/loop_variant_2.fz:78:3
+(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at loop_variant_2.fz:78:3
   test test_5 5
 --^^^^^^^^^^^^^
 (flow.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/try.fz:50:7
@@ -101,7 +101,7 @@ instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm at <s
 ----^^^^^^^^^
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-loop_variant_2.test#2 at --CURDIR--/loop_variant_2.fz:32:5
+loop_variant_2.test#2 at loop_variant_2.fz:32:5
     fuzion.runtime.variant_fault
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       .try ()->
@@ -112,7 +112,7 @@ loop_variant_2.test#2 at --CURDIR--/loop_variant_2.fz:32:5
 ------^^^^^^^^^^
         say "FATAL FAULT `variant`: $s"
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at --CURDIR--/loop_variant_2.fz:71:3
+(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at loop_variant_2.fz:71:3
   test test_4 4
 --^^^^^^^^^^^^^
 (flow.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/try.fz:50:7
@@ -140,7 +140,7 @@ instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm at <s
 ----^^^^^^^^^
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-loop_variant_2.test#2 at --CURDIR--/loop_variant_2.fz:32:5
+loop_variant_2.test#2 at loop_variant_2.fz:32:5
     fuzion.runtime.variant_fault
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       .try ()->
@@ -151,7 +151,7 @@ loop_variant_2.test#2 at --CURDIR--/loop_variant_2.fz:32:5
 ------^^^^^^^^^^
         say "FATAL FAULT `variant`: $s"
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at --CURDIR--/loop_variant_2.fz:63:3
+(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at loop_variant_2.fz:63:3
   test test_3 3
 --^^^^^^^^^^^^^
 (flow.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/try.fz:50:7
@@ -179,7 +179,7 @@ instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm at <s
 ----^^^^^^^^^
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-loop_variant_2.test#2 at --CURDIR--/loop_variant_2.fz:32:5
+loop_variant_2.test#2 at loop_variant_2.fz:32:5
     fuzion.runtime.variant_fault
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       .try ()->
@@ -190,7 +190,7 @@ loop_variant_2.test#2 at --CURDIR--/loop_variant_2.fz:32:5
 ------^^^^^^^^^^
         say "FATAL FAULT `variant`: $s"
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-loop_variant_2 at --CURDIR--/loop_variant_2.fz:55:3
+loop_variant_2 at loop_variant_2.fz:55:3
   test test_2 2
 --^^^^^^^^^^^^^
 

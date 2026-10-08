@@ -16,7 +16,7 @@ panic.cause#1 at {base.fum}/flow/fallible.fz:40:6
 panic#1 at {base.fum}/panic.fz:53:19
     msg String => panic.env.cause msg
 ------------------^^^^^^^^^^^^^^^^^^^
-test_option_void at --CURDIR--/issue1886.fz:44:10
+test_option_void at issue1886.fz:44:10
   f void (panic "test")
 ---------^^^^^^^^^^^^^^
 

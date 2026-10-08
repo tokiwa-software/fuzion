@@ -22,16 +22,16 @@ fuzion.runtime.pre_fault.cause#1 at {base.fum}/flow/fallible.fz:40:6
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56:3
   fuzion.runtime.pre_fault.env.cause msg
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-pre x at --CURDIR--/reg_issue2194.fz:25:5
+pre x at reg_issue2194.fz:25:5
 pre a < 3
 ----^^^^^
-y#1 at --CURDIR--/reg_issue2194.fz:25:1
+y#1 at reg_issue2194.fz:25:1
 pre a < 3
 ^^^^^^^^^
-loop at --CURDIR--/reg_issue2194.fz:32:3
+loop at reg_issue2194.fz:32:3
   y i
 --^^^
-universe at --CURDIR--/reg_issue2194.fz:31:1
+universe at reg_issue2194.fz:31:1
 for i in 0..10 do
 ^^^^^^^^^^^^^^^^^
   y i

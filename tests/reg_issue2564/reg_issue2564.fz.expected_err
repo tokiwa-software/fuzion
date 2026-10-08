@@ -1,22 +1,22 @@
 
---CURDIR--/reg_issue2564.fz:24:1: error 1: Cyclic field nesting is not permitted
+reg_issue2564.fz:24:1: error 1: Cyclic field nesting is not permitted
 reg_issue2564 =>
 ^^^^^^^^^^^^^
 Cyclic value field nesting would result in infinitely large objects.
 Cycle of nesting found during clazz layout:
-Layout 'reg_issue2564': --CURDIR--/reg_issue2564.fz:41:3
+Layout 'reg_issue2564': reg_issue2564.fz:41:3
   _ := do_it2 0
 --^
-Field: 'reg_issue2564.#_1' of type 'reg_issue2564.do_it2': --CURDIR--/reg_issue2564.fz:41:3
+Field: 'reg_issue2564.#_1' of type 'reg_issue2564.do_it2': reg_issue2564.fz:41:3
   _ := do_it2 0
 --^
-Layout 'reg_issue2564.do_it2': --CURDIR--/reg_issue2564.fz:38:7
+Layout 'reg_issue2564.do_it2': reg_issue2564.fz:38:7
       _ := do_it2 n+1
 ------^
-Field: 'reg_issue2564.do_it2.#_0' of type 'reg_issue2564.do_it2': --CURDIR--/reg_issue2564.fz:38:7
+Field: 'reg_issue2564.do_it2.#_0' of type 'reg_issue2564.do_it2': reg_issue2564.fz:38:7
       _ := do_it2 n+1
 ------^
-Requires layout of 'reg_issue2564.do_it2': --CURDIR--/reg_issue2564.fz:34:3
+Requires layout of 'reg_issue2564.do_it2': reg_issue2564.fz:34:3
   do_it2(n i32) is
 --^^^^^^
 

@@ -22,16 +22,16 @@ fuzion.runtime.check_fault.cause#1 at {base.fum}/flow/fallible.fz:40:6
 fuzion.runtime.checkcondition_fault#1 at {base.fum}/fuzion/runtime/check_fault.fz:56:3
   fuzion.runtime.check_fault.env.cause msg
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-reg_issue4609.s.call at --CURDIR--/reg_issue4609.fz:33:37
+reg_issue4609.s.call at reg_issue4609.fz:33:37
     public redef call unit => check false
 ------------------------------------^^^^^
-reg_issue4609.r#1 at --CURDIR--/reg_issue4609.fz:36:20
+reg_issue4609.r#1 at reg_issue4609.fz:36:20
   r(f ()->unit) => f.call
 -------------------^^^^^^
-reg_issue4609.q#1 at --CURDIR--/reg_issue4609.fz:35:20
+reg_issue4609.q#1 at reg_issue4609.fz:35:20
   q(f ()->unit) => r f
 -------------------^^^
-reg_issue4609 at --CURDIR--/reg_issue4609.fz:34:3
+reg_issue4609 at reg_issue4609.fz:34:3
   q s
 --^^^
 

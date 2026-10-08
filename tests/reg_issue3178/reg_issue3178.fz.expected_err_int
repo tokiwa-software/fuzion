@@ -32,13 +32,13 @@ i8.precall infix + at {base.fum}/num/wrap_around.fz:86:5
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       debug: !(underflow_on_add other)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(list i64).count_n_i8#1 at --CURDIR--/reg_issue3178.fz:35:43
+(list i64).count_n_i8#1 at reg_issue3178.fz:35:43
             | c Cons => c.tail.count_n_i8 n+1
 ------------------------------------------^^^
-(list i64).count_i8 at --CURDIR--/reg_issue3178.fz:27:21
+(list i64).count_i8 at reg_issue3178.fz:27:21
 list.count_i8 i8 => count_n_i8 0
 --------------------^^^^^^^^^^^^
-universe at --CURDIR--/reg_issue3178.fz:39:5
+universe at reg_issue3178.fz:39:5
 say ones.count_i8   # error: does not terminate
 ----^^^^^^^^^^^^^
 

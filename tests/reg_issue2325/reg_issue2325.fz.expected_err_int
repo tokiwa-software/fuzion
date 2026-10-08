@@ -42,7 +42,7 @@ i32.type.sum.anonymous.op#2 at {base.fum}/Monoid.fz:60:26
 (interval i32).fold#1 at {base.fum}/Sequence.fz:624:33
   public fold (m Monoid T) T => as_list.fold m.e m
 --------------------------------^^^^^^^^^^^^^^^^^^
-reg_issue2325 at --CURDIR--/reg_issue2325.fz:25:8
+reg_issue2325 at reg_issue2325.fz:25:8
   n := ((i32 0)..100000).fold i32.type.sum
 -------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

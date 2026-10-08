@@ -22,10 +22,10 @@ fuzion.runtime.invariant_fault.cause#1 at {base.fum}/flow/fallible.fz:40:6
 fuzion.runtime.invariantcondition_fault#1 at {base.fum}/fuzion/runtime/invariant_fault.fz:56:3
   fuzion.runtime.invariant_fault.env.cause msg
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-loop_invariant.loop at --CURDIR--/loop_invariant.fz:32:13
+loop_invariant.loop at loop_invariant.fz:32:13
   invariant i < 1
 ------------^^^^^
-loop_invariant at --CURDIR--/loop_invariant.fz:31:3
+loop_invariant at loop_invariant.fz:31:3
   for i in 0..1
 --^^^^^^^^^^^^^
   invariant i < 1

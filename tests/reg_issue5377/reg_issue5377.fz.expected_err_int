@@ -16,10 +16,10 @@ panic.cause#1 at {base.fum}/flow/fallible.fz:40:6
 panic#1 at {base.fum}/panic.fz:53:19
     msg String => panic.env.cause msg
 ------------------^^^^^^^^^^^^^^^^^^^
-reg_issue5377.join at --CURDIR--/reg_issue5377.fz:31:19
+reg_issue5377.join at reg_issue5377.fz:31:19
       if a=1 then panic "" else unit
 ------------------^^^^^^^^
-reg_issue5377 at --CURDIR--/reg_issue5377.fz:34:3
+reg_issue5377 at reg_issue5377.fz:34:3
   join
 --^^^^
 

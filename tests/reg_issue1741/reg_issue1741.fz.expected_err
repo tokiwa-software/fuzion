@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue1741.fz:78:3: error 1: Used abstract feature 'numeric.type.zero' is not implemented by 'reg_issue1741.two.type'
+reg_issue1741.fz:78:3: error 1: Used abstract feature 'numeric.type.zero' is not implemented by 'reg_issue1741.two.type'
   two : i8 2 is
 --^^^
 Feature 'reg_issue1741.two.type' instantiated at <source position not available>
@@ -31,7 +31,7 @@ call 'reg_issue1741.two.as_string' at {base.fum}/io/print_effect.fz:36:12
 call 'io.default_out.println#1' at {base.fum}/say.fz:31:36
 public say(s Any) unit ! io.Out => io.Out.env.println s
 -----------------------------------^^^^^^^^^^^^^^^^^^^^
-call 'say#1' at --CURDIR--/reg_issue1741.fz:81:3
+call 'say#1' at reg_issue1741.fz:81:3
   say two
 --^^^^^^^
 call 'reg_issue1741'

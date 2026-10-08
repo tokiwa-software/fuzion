@@ -16,10 +16,10 @@ panic.cause#1 at {base.fum}/flow/fallible.fz:40:6
 panic#1 at {base.fum}/panic.fz:53:19
     msg String => panic.env.cause msg
 ------------------^^^^^^^^^^^^^^^^^^^
-p at --CURDIR--/reg_issue2304.fz:24:6
+p at reg_issue2304.fz:24:6
 p => panic "bah"
 -----^^^^^^^^^^^
-(λx->p).call#1 at --CURDIR--/reg_issue2304.fz:25:20
+(λx->p).call#1 at reg_issue2304.fz:25:20
 _ := [1].filter x->p
 -------------------^
 ((list i64).filter_list#2 (Unary bool i64)).(λ(a -> !(p a))).call#1 at {base.fum}/list.fz:584:35
@@ -37,7 +37,7 @@ _ := [1].filter x->p
 (array i64).filter#1 at {base.fum}/Sequence.fz:293:6
   => as_list.filter f
 -----^^^^^^^^^^^^^^^^
-universe at --CURDIR--/reg_issue2304.fz:25:6
+universe at reg_issue2304.fz:25:6
 _ := [1].filter x->p
 -----^^^^^^^^^^^^^^^
 

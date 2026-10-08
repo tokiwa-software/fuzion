@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4988.fz:25:7: error 1: Failed to infer actual type parameters
+reg_issue4988.fz:25:7: error 1: Failed to infer actual type parameters
 a _->(true ? 3 : true)
 ------^^^^^^^^^^^^^^^
 In call to 'bool.ternary ? :', no actual type parameters are given and inference of the type parameters failed.

@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue5704.fz:25:3: error 1: Intrinsics may only be defined in the base library
+reg_issue5704.fz:25:3: error 1: Intrinsics may only be defined in the base library
   exit(bla String) void => intrinsic
 --^^^^
 Did you mean to create a native feature?
