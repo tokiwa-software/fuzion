@@ -2176,10 +2176,6 @@ public class DFA extends ANY
               throw new Error("intrinsic fuzion.sys.internal_array.gel: Expected class SysArray, found "+array.getClass()+" "+array);
             }
         });
-    put("fuzion.sys.internal_array.freeze"
-                                         , cl -> Value.UNIT);
-    put("fuzion.sys.internal_array.ensure_not_frozen"
-                                         , cl -> Value.UNIT);
     put("fuzion.sys.env_vars.has0"       , cl -> cl._dfa.bool() );
     put("fuzion.sys.env_vars.get0"       , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.thread.current"      , cl ->
