@@ -444,10 +444,15 @@ int fzE_munmap(void * mapped_address, const int file_size){
 
 /**
  * convert a FILETIME (100ns units) to nano seconds
+ *
+ * NOTE: overflows for values above ~584 years, the same limit as for
+ * nano seconds stored in u64 in `time.duration`.
  */
 static uint64_t fzE_filetime_to_ns(FILETIME ft)
 {
-  return ((((uint64_t)ft.dwHighDateTime) << 32) | ft.dwLowDateTime) * 100;
+  uint64_t t = (((uint64_t)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
+  assert(t <= UINT64_MAX / 100);
+  return t * 100;
 }
 
 
