@@ -1,0 +1,3 @@
+future: result true, ran 1, slept 5ms
+now: result true, ran 1, slept 5ms
+past: result false, ran 0, slept 5ms
