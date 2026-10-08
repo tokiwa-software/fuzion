@@ -131,7 +131,7 @@ jitter_threaded =>
             payload
             actual_finish := TIMER.env.read
             if actual_finish >= next_rel
-              err := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+              err := error "*** overrun: run started at $(actual_release-expected_rel)  and took $(actual_finish-actual_release), which is larger than period $period"
               (flow.exception jitter_too_high).env.cause err
 
       match flow.exception jitter_too_high .on ()->
