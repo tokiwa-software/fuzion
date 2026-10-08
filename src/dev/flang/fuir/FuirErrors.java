@@ -127,7 +127,7 @@ public class FuirErrors extends AstErrors
   public static void callResultsInRecursiveType(AbstractCall c, List<AbstractType> typePars)
   {
     error(c.pos(), "Call would result in a recursive type.",
-     "The resulting type would be: " + c.calledFeature().selfType().applyTypePars(c.calledFeature(), typePars));
+     "The resulting type would be: " + s(c.calledFeature().selfType().applyTypePars(c.calledFeature(), typePars)));
   }
 
 }
