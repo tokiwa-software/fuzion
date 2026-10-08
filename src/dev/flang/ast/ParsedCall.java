@@ -476,11 +476,9 @@ public class ParsedCall extends Call
       {
         checkPartialAmbiguity(res, context, expectedType);
         checkTypeFeaturePartialAmbiguity(res, context, expectedType);
-        if (isDefunct() /* checkTypeFeaturePartialAmbiguity may have set _calledFeature to error */)
-          {
-            return this;
-          }
-        if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
+        if (!isDefunct() &&/* checkTypeFeaturePartialAmbiguity may have set
+_calledFeature to error */
+          (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
             _pendingError != null                       ||
 
             // convert pre/postfix to infix, e.g., `1-` -> `x->1-x` */
@@ -492,7 +490,7 @@ public class ParsedCall extends Call
              !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.feature())
              // !typeForInferencing().isFunctionType(res)                    -- original code
              // expectedType.isAssignableFrom(typeForInferencing()).no()     -- new code, does not work, unclear why!
-            ))
+            )))
           {
             l = applyPartially(res, context, expectedType);
           }
