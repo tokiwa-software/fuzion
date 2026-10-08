@@ -96,10 +96,16 @@ public Clock ref : effect is
   # return true if the code was actually run, false if the given time `t` is already
   # in the past.
   #
-  public run_once(t instant,
+  public run_once(t time.instant,
                   code ()->unit) bool
   =>
-    abstract
+    just_now := read
+    if t >= just_now
+      sleep_until t just_now
+      code()
+      true
+    else
+      false
 
 
   # run the given `code` periodically at time `first+p*0`, `first+p*1`, `first+p*2`,
