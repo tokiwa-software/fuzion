@@ -2787,7 +2787,7 @@ public class GeneratingFUIR extends FUIR
         innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature) cf, typePars), c.select(), c.isInheritanceCall());
         if (innerClazz._type.isSelfRecursive())
           {
-            FuirErrors.callResultsInRecursiveType(c, typePars);
+            FuirErrors.callResultsInRecursiveType(c, innerClazz._type);
             innerClazz = tclazz;
           }
         if (cf == Types.resolved.f_Type_infix_colon)

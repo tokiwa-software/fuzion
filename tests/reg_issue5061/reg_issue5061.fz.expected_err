@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue5061.fz:28:12: error 1: Call would result in a recursive type.
+  b Any => a.b
+-----------^
+The resulting type would be: 'X.a.Y.a'
+
+one error.
