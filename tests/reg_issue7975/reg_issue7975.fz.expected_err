@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue7975.fz:26:3: error 1: Call would result in a recursive type.
+reg_issue7975.fz:26:3: error 1: Call would result in a recursive type.
   test i
 --^^^^^^
 The resulting type would be: 'test (test i64).i'
