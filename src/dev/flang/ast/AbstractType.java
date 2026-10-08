@@ -2910,19 +2910,13 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   private boolean isSelfRecursive(AbstractFeature feature)
   {
-    var isInnerFeature = false;
     var s = feature().outer();
-    while (s != null)
+    while (s != null && s != feature)
       {
-        if (s == feature)
-          {
-            isInnerFeature = true;
-            break;
-          }
         s = s.outer();
       }
 
-    return isInnerFeature
+    return s == feature
      || generics().stream().anyMatch(g -> g.isSelfRecursive(feature))
      || outer() != null && outer().isSelfRecursive(feature);
   }
