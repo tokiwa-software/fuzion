@@ -323,11 +323,11 @@ jitter_threaded =>
               # Attempt to set error; ignore if already set.
               _ := error_cell.compare_and_set nil (option msg)
             else
-              payload
+              cpu := (time.stopwatch time.Thread_Time unit ()->payload).1
               finish := time.Nano.env.read
               if finish >= new_expected
                 diff := finish - new_expected
-                msg := "Overrun: payload exceeded next release by $diff (period $period)"
+                msg := "Overrun: payload exceeded next release by $diff, payload used $cpu CPU time (period $period)"
                 _ := error_cell.compare_and_set nil (option msg)
               else
                 # Schedule next run only if no error (check again, may have been set by another thread)
