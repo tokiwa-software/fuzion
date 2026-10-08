@@ -271,7 +271,7 @@ public abstract class IR extends ANY
 
 
   /**
-   * IR's implementation of {@code toStackExpr}.
+   * IR's implementation of {@code toStack}.
    *
    * @param stack the work stack for the nested expressions.
    *
