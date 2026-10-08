@@ -52,8 +52,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * Pre-allocated empty type list. NOTE: There is a specific empty type List
-   * {@code Call.NO_GENERICS} which is used to distinguish {@code a.b<>()} (using {@code UnresolvedType.NONE})
-   * from {@code a.b()} (using {@code Call.NO_GENERICS}).
+   * {@code Call.NO_TYPE_ARGUMENTS} which is used to distinguish {@code a.b<>()} (using {@code UnresolvedType.NONE})
+   * from {@code a.b()} (using {@code Call.NO_TYPE_ARGUMENTS}).
    */
   public static final List<AbstractType> NONE = new List<AbstractType>().freeze();
 

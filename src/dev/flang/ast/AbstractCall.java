@@ -66,11 +66,11 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * Special value for an empty generics list to distinguish a call without
-   * generics ({@code a.b(x,y)}) from a call with an empty actual generics list
+   * Special value for an empty type arguments list to distinguish a call without
+   * type arguments ({@code a.b(x,y)}) from a call with an empty type arguments list
    * ({@code a.b<>(x,y)}).
    */
-  public static final List<AbstractType> NO_GENERICS = new List<AbstractType>().freeze();
+  public static final List<AbstractType> NO_TYPE_ARGUMENTS = new List<AbstractType>().freeze();
 
 
   /**
@@ -86,9 +86,9 @@ public abstract class AbstractCall extends Expr
    *
    * The default implementations returns an empty list.
    */
-  public List<AbstractType> actualTypeParameters()
+  public List<AbstractType> typeArguments()
   {
-    return NO_GENERICS;
+    return NO_TYPE_ARGUMENTS;
   }
 
 
@@ -242,23 +242,23 @@ public abstract class AbstractCall extends Expr
     var typeParameters = new List<AbstractType>(selfType);
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
-        typeParameters.addAll(actualTypeParameters());
+        typeParameters.addAll(typeArguments());
         cpc.whenInferredTypeParameters(() ->
           {
             if (CHECKS) check
-              (Errors.any() || actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined()));
+              (Errors.any() || typeArguments().stream().allMatch(atp -> !atp.containsUndefined()));
             if (CHECKS) check
               (Errors.any() || !typeParameters.isFrozen());
             if (!typeParameters.isFrozen())
               {
                 typeParameters.removeTail(1);
-                typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+                typeParameters.addAll(typeArguments().map(that::rebaseTypeForCotype));
               }
           });
       }
     else
       {
-        typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+        typeParameters.addAll(typeArguments().map(that::rebaseTypeForCotype));
       }
 
     return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
@@ -361,7 +361,7 @@ public abstract class AbstractCall extends Expr
                                     BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var t0 = t  == Types.t_ERROR ? Types.t_ERROR : adjustTypeForTarget(res, context, t, foundRef);
-    var t1 = t0 == Types.t_ERROR ? Types.t_ERROR : t0.applyTypePars(calledFeature(), actualTypeParameters());
+    var t1 = t0 == Types.t_ERROR ? Types.t_ERROR : t0.applyTypePars(calledFeature(), typeArguments());
 
     if (POSTCONDITIONS) ensure
       (t1 != null);
@@ -471,7 +471,7 @@ public abstract class AbstractCall extends Expr
         res.resolveTypes(frml);
       }
     return calledFeature() == Types.f_ERROR
-      ? NO_GENERICS
+      ? NO_TYPE_ARGUMENTS
       : calledFeature()
         .outer()
         .handDownListToType(new List<>(frml.resultType()), target().type())
@@ -498,7 +498,7 @@ public abstract class AbstractCall extends Expr
   {
     var f = ft.typeParameter().outer();
     return
-      calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, actualTypeParameters(), NO_SELECT)
+      calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, typeArguments(), NO_SELECT)
                            : openGenericsFor(res, context, ft, target().type());
   }
 
@@ -618,7 +618,7 @@ public abstract class AbstractCall extends Expr
             ? ""
             : StringHelpers.wrapInParentheses(target().toString()) + ".")
       + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().baseNameHuman())
-      + actualTypeParameters().toString(" ", " ", "", t -> (t == null ? "--null--" : t.toStringWrapped(true)))
+      + typeArguments().toString(" ", " ", "", t -> (t == null ? "--null--" : t.toStringWrapped(true)))
       + actuals()             .toString(" ", " ", "", e -> (e == null ? "--null--" : e.toStringWrapped()))
       + (select() < 0        ? "" : " ." + select());
   }

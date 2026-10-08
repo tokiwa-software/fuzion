@@ -125,7 +125,7 @@ public abstract class LibraryCall extends AbstractCall
   /*-----------------------------  methods  -----------------------------*/
 
 
-  @Override public List<AbstractType> actualTypeParameters() { return _generics; }
+  @Override public List<AbstractType> typeArguments() { return _generics; }
   @Override public AbstractFeature calledFeature() { return _calledFeature; }
   @Override public Expr target() { return _target; }
   @Override public List<Expr> actuals() { return _actuals; }
