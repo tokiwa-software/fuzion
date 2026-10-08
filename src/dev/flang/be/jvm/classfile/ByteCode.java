@@ -198,7 +198,9 @@ abstract class ByteCode extends ANY implements ClassFileConstants
   static final byte[] BC_LCMP        = new byte[] { O_lcmp                };
 
   static final byte[] BC_MONITORENTER = new byte[] { O_monitorenter       };
-  static final byte[] BC_MONITOREXIT = new byte[] { O_monitorexit         };
+  static final byte[] BC_MONITOREXIT = new byte[]  { O_monitorexit        };
+
+  static final byte[] BC_I2L         = new byte[]  { O_i2l                };
 
 
   /*--------------------------  constructors  ---------------------------*/
