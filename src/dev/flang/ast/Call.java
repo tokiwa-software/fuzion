@@ -1740,6 +1740,7 @@ public class Call extends AbstractCall
     do
       {
         last = next;
+        inferGenericsFromActualTypeParameters(res, context, conflict, foundAt);
         inferGenericsFromArgs(res, context, checked, conflict, foundAt);
         next = 0;
         for (var b : foundAt)
@@ -1955,6 +1956,31 @@ public class Call extends AbstractCall
           }
       }
     return actual;
+  }
+
+
+
+  private void inferGenericsFromActualTypeParameters(Resolution res,
+                                                     Context context,
+                                                     boolean[] conflict,
+                                                     List<List<Pair<SourcePosition, AbstractType>>> foundAt)
+  {
+    var formal = calledFeature().typeArguments();
+    for (var i = 0; i<Integer.min(formal.size(), _generics.size()); i++)
+      {
+        var f = formal   .get(i);
+        var g = _generics.get(i);
+
+        // NYI: What if `f` is open type parameter???
+
+         /* infer via constraint of type parameter:
+          *
+          *     a(T type, S type : Sequence T) is
+          *     _ := a _ (array i32)
+          */
+        var c = adjustTypeForTarget(res, context, f.constraint(), null);  // constraint with actual generics replaced, see #7415
+        inferGeneric(res, context, c, g, /* g. */ pos(), conflict, foundAt, -1);
+      }
   }
 
 
