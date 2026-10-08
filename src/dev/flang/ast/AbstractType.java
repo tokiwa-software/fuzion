@@ -2889,6 +2889,38 @@ there is no common super type of the two types (Types.t_ERROR)
       };
   }
 
+
+  /**
+   * Does this type refer to itself in the generics or its outer?
+   * @return
+   */
+  public boolean isSelfRecursive()
+  {
+    var feature = feature();
+    return generics().stream().anyMatch(g -> g.isSelfRecursive(feature))
+     || outer() != null && outer().isSelfRecursive(feature);
+  }
+
+
+  /**
+   * Helper is isSelfRecursive
+   *
+   * @param feature the feature we are searching for that would signal self recursion
+   * @return
+   */
+  private boolean isSelfRecursive(AbstractFeature feature)
+  {
+    var s = feature().outer();
+    while (s != null && s != feature)
+      {
+        s = s.outer();
+      }
+
+    return s == feature
+     || generics().stream().anyMatch(g -> g.isSelfRecursive(feature))
+     || outer() != null && outer().isSelfRecursive(feature);
+  }
+
 }
 
 /* end of file */

@@ -2790,6 +2790,11 @@ public class GeneratingFUIR extends FUIR
         var needsCode = !dynamic || explicitTarget != null;
         var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
         innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature) cf, typePars), c.select(), c.isInheritanceCall());
+        if (innerClazz._type.isSelfRecursive())
+          {
+            FuirErrors.callResultsInRecursiveType(c, innerClazz._type);
+            innerClazz = tclazz;
+          }
         if (cf == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
