@@ -116,7 +116,7 @@ public class Interpreter extends FUIRContext
     Instance arr = new Instance(clArr);
     var saCl = fuir().clazzFuzionSysArrayU8();
     Instance sa = new Instance(saCl);
-    setField(fuir().clazzFuzionSysArrayU8Length(), saCl, sa, new i32Value(bytes.length));
+    setField(fuir().clazzFuzionSysArrayU8Length(), saCl, sa, new i64Value(bytes.length));
     var arrayData = new ArrayData(bytes, saCl);
     setField(fuir().clazzFuzionSysArrayU8Data(), saCl, sa, arrayData);
     setField(fuir().clazzArg(clArr,0), clArr, arr, sa);
