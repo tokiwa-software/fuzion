@@ -1,5 +1,5 @@
 
---CURDIR--/anonymous_features_must_not_inherit_multiple.fz:26:10: error 1: Anonymous feature must not inherit from multiple features.
+anonymous_features_must_not_inherit_multiple.fz:26:10: error 1: Anonymous feature must not inherit from multiple features.
 say (_ : a, B is)
 ---------^^^^
 Found inheritance calls:

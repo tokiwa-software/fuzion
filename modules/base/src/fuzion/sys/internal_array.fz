@@ -34,20 +34,6 @@ module internal_array_init(T type, length i64) =>
 #
 module internal_array(T type, module data Array T, module length i32 /* NYI: CLEANUP: change this to i64, backends need to be changed, see #7250 */ ) is
 
-
-  # make sure that this internal array will no longer be modified.  This is just for
-  # debugging and will be a NOP in case internal checks are disabled or in case the
-  # backend does not support this.
-  #
-  module freeze unit => intrinsic
-
-  # check that this internal array was not frozen, i.e., `freeze` was not called.
-  # Cause a runtime error if this `freeze` was called.  Note that this is a NOP if
-  # the backend does not support these checks or internal checks are disabled.
-  #
-  module ensure_not_frozen unit => intrinsic
-
-
   # wrap this into an immutable array.
   #
   module fixed as_array =>
@@ -65,7 +51,6 @@ module internal_array(T type, module data Array T, module length i32 /* NYI: CLE
   module set [ ] (I type : integer, i I, o T) unit
     pre
       safety  : 0 ≤ i.as_i64 < length.as_i64
-      debug 2 : {ensure_not_frozen; true}
   =>
     fuzion.sys.setel data i.as_i32 o
 

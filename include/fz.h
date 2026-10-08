@@ -821,7 +821,7 @@ void fzE_cnd_wait     (void * cnd, void * mtx);
  *
  * @return -1 on error, 0 on success
  */
-void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns);
+void fzE_cnd_timedwait(void * cnd, void * mtx, uint64_t time_ns);
 
 /**
  * destroys the condition

@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue5264.fz:26:11: error 1: Different count of arguments needed when calling feature
+reg_issue5264.fz:26:11: error 1: Different count of arguments needed when calling feature
   (say <| id) <| "hi" # should flag an error: Different count of arguments needed when calling feature
 ----------^^
 Feature not found: 'id' (no arguments)

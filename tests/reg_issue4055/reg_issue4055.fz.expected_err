@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4055.fz:24:13: error 1: Incompatible types when passing argument in a call
+reg_issue4055.fz:24:13: error 1: Incompatible types when passing argument in a call
 [1].zip [2] unit
 ------------^^^^
 Actual type for argument #2 'f' does not match expected type.

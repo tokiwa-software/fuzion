@@ -1,14 +1,14 @@
 
---CURDIR--/issue1945neg.fz:52:11: error 1: Inconsistent indentation
+issue1945neg.fz:52:11: error 1: Inconsistent indentation
           i64 => () -> 4718)   # illegal, no LF allowed after -> in function result
 ----------^
-Indentation reference point is --CURDIR--/issue1945neg.fz:51:4
+Indentation reference point is issue1945neg.fz:51:4
   (l () ->
 ---^
 While parsing: exprs, parse stack: exprs, block (twice), klammer, bracketTerm, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
---CURDIR--/issue1945neg.fz:39:9: error 2: Could not find called feature
+issue1945neg.fz:39:9: error 2: Could not find called feature
   _ := (d () ->
 --------^
 Feature not found: 'd' (one argument)
@@ -16,7 +16,7 @@ Target feature: 'ambiguous_declaration'
 In call: 'd ()'
 
 
---CURDIR--/issue1945neg.fz:51:4: error 3: Could not find called feature
+issue1945neg.fz:51:4: error 3: Could not find called feature
   (l () ->
 ---^
 Feature not found: 'l' (one argument)

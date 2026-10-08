@@ -3,7 +3,7 @@
 While searching for internally used feature 'num' found 'num' defined at {base.fum}/num.fz:26:8
 public num is
 -------^^^
-and 'num' defined at --CURDIR--/reg_issue4961.fz:24:1
+and 'num' defined at reg_issue4961.fz:24:1
 num(T type : numeric, x T) T => x
 ^^^
 

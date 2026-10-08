@@ -41,8 +41,6 @@ module:public array(
   : container.abstract_array T
 is
 
-  internal_array.freeze
-
 
   # equality of two arrays is true iff `a` and `b` have the same length and for all
   # `i in indices` we have `a[i] = b[i]`.

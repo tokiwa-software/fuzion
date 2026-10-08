@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue5353.fz:26:12: error 1: Could not find called feature
+reg_issue5353.fz:26:12: error 1: Could not find called feature
   (1..100).for_each x ->
 -----------^^^^^^^^^^^^^
     if x ∈ squares

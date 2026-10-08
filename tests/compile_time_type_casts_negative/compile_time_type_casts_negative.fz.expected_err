@@ -1,5 +1,5 @@
 
---CURDIR--/compile_time_type_casts_negative.fz:48:10: error 1: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:48:10: error 1: Incompatible types when passing argument in a call
   take_A bc          #  1. should flag an error -- bc is not A
 ---------^^
 Actual type for argument #1 'v' does not match expected type.
@@ -11,7 +11,7 @@ for value assigned  : 'bc'
 To solve this, you could change the type of the target 'v' to 'compile_time_type_casts_negative.this.bc' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.A'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:52:10: error 2: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:52:10: error 2: Incompatible types when passing argument in a call
   take_B ac          #  2. should flag an error -- ac is not B
 ---------^^
 Actual type for argument #1 'v' does not match expected type.
@@ -23,7 +23,7 @@ for value assigned  : 'ac'
 To solve this, you could change the type of the target 'v' to 'compile_time_type_casts_negative.this.ac' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.B'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:56:10: error 3: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:56:10: error 3: Incompatible types when passing argument in a call
   take_C ab          #  3. should flag an error -- ab is not C
 ---------^^
 Actual type for argument #1 'v' does not match expected type.
@@ -35,7 +35,7 @@ for value assigned  : 'ab'
 To solve this, you could change the type of the target 'v' to 'compile_time_type_casts_negative.this.ab' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.C'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:107:3: error 4: Incompatible type parameter
+compile_time_type_casts_negative.fz:107:3: error 4: Incompatible type parameter
   y1 B    # 12. should flag an error -- B is not of type A
 --^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
@@ -44,7 +44,7 @@ assignable to constraint: 'Any',
                           'compile_time_type_casts_negative.this.B'
 
 
---CURDIR--/compile_time_type_casts_negative.fz:108:3: error 5: Incompatible type parameter
+compile_time_type_casts_negative.fz:108:3: error 5: Incompatible type parameter
   y1 C    # 13. should flag an error -- C is not of type A
 --^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
@@ -53,7 +53,7 @@ assignable to constraint: 'Any',
                           'compile_time_type_casts_negative.this.C'
 
 
---CURDIR--/compile_time_type_casts_negative.fz:109:3: error 6: Incompatible type parameter
+compile_time_type_casts_negative.fz:109:3: error 6: Incompatible type parameter
   y1 bc   # 14. should flag an error -- bc is not of type A
 --^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
@@ -64,7 +64,7 @@ assignable to constraint: 'Any',
                           'compile_time_type_casts_negative.this.bc'
 
 
---CURDIR--/compile_time_type_casts_negative.fz:67:12: error 7: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:67:12: error 7: Incompatible types when passing argument in a call
     take_B v         #  4. should flag an error -- v is of type : A
 -----------^
 Actual type for argument #1 'v' does not match expected type.
@@ -76,7 +76,7 @@ for value assigned  : 'v'
 To solve this, you could change the type of the target 'v' to 'T' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.B'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:68:12: error 8: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:68:12: error 8: Incompatible types when passing argument in a call
     take_C v         #  5. should flag an error -- v is of type : A
 -----------^
 Actual type for argument #1 'v' does not match expected type.
@@ -88,7 +88,7 @@ for value assigned  : 'v'
 To solve this, you could change the type of the target 'v' to 'T' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.C'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:75:14: error 9: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:75:14: error 9: Incompatible types when passing argument in a call
       take_A v       #  6. should flag an error -- v is of type : B
 -------------^
 Actual type for argument #1 'v' does not match expected type.
@@ -100,7 +100,7 @@ for value assigned  : 'v'
 To solve this, you could change the type of the target 'v' to 'T' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.A'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:77:14: error 10: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:77:14: error 10: Incompatible types when passing argument in a call
       take_C v       #  7. should flag an error -- v is of type : B
 -------------^
 Actual type for argument #1 'v' does not match expected type.
@@ -112,7 +112,7 @@ for value assigned  : 'v'
 To solve this, you could change the type of the target 'v' to 'T' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.C'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:82:16: error 11: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:82:16: error 11: Incompatible types when passing argument in a call
         take_A v     #  8. should flag an error -- v is of type : B
 ---------------^
 Actual type for argument #1 'v' does not match expected type.
@@ -124,7 +124,7 @@ for value assigned  : 'v'
 To solve this, you could change the type of the target 'v' to 'T' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.A'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:84:16: error 12: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:84:16: error 12: Incompatible types when passing argument in a call
         take_C v     #  9. should flag an error -- v is of type : B
 ---------------^
 Actual type for argument #1 'v' does not match expected type.
@@ -136,7 +136,7 @@ for value assigned  : 'v'
 To solve this, you could change the type of the target 'v' to 'T' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.C'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:89:18: error 13: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:89:18: error 13: Incompatible types when passing argument in a call
           take_A v   # 10. should flag an error -- v is of type : C
 -----------------^
 Actual type for argument #1 'v' does not match expected type.
@@ -148,7 +148,7 @@ for value assigned  : 'v'
 To solve this, you could change the type of the target 'v' to 'T' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.A'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:90:18: error 14: Incompatible types when passing argument in a call
+compile_time_type_casts_negative.fz:90:18: error 14: Incompatible types when passing argument in a call
           take_B v   # 11. should flag an error -- v is of type : C
 -----------------^
 Actual type for argument #1 'v' does not match expected type.
@@ -160,7 +160,7 @@ for value assigned  : 'v'
 To solve this, you could change the type of the target 'v' to 'T' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.B'.
 
 
---CURDIR--/compile_time_type_casts_negative.fz:111:19: error 15: Incompatible type parameter
+compile_time_type_casts_negative.fz:111:19: error 15: Incompatible type parameter
   call_y1(v U) => y1 v   # 15. should flag an error -- v is not of type A
 ------------------^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'

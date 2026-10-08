@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue5330.fz:28:3: error 1: Used abstract feature 'property.partially_orderable.type.lteq' is not implemented by 'test.x.type'
+reg_issue5330.fz:28:3: error 1: Used abstract feature 'property.partially_orderable.type.lteq' is not implemented by 'test.x.type'
   x : property.orderable is
 --^
 Feature 'test.x.type' instantiated at <source position not available>
@@ -17,10 +17,10 @@ Callchain that lead to this point:
 call 'lteq#3 test.x' at {base.fum}/operators_order.fz:55:72
 public infix <=(T type : property.partially_orderable, a, b T) bool => lteq a b
 -----------------------------------------------------------------------^^^^^^^^
-call 'infix <=#3 test.x' at --CURDIR--/reg_issue5330.fz:27:25
+call 'infix <=#3 test.x' at reg_issue5330.fz:27:25
     type.q(b a.this) => b.h <= b.h
 ------------------------^^^^^^^^^^
-call 'test.type.a.type.q#1' at --CURDIR--/reg_issue5330.fz:29:8
+call 'test.type.a.type.q#1' at reg_issue5330.fz:29:8
   _ := a.type.q a
 -------^^^^^^^^^^
 call 'test'

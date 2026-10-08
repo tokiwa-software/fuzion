@@ -1,14 +1,14 @@
 
---CURDIR--/fixed_alongside_abstract_negative.fz:31:3: error 1: Used abstract feature 'fixed_alongside_abstract_negative.a.me' is not implemented by 'fixed_alongside_abstract_negative.b'
+fixed_alongside_abstract_negative.fz:31:3: error 1: Used abstract feature 'fixed_alongside_abstract_negative.a.me' is not implemented by 'fixed_alongside_abstract_negative.b'
   b : a is
 --^
-Feature 'fixed_alongside_abstract_negative.b' instantiated at --CURDIR--/fixed_alongside_abstract_negative.fz:33:7
+Feature 'fixed_alongside_abstract_negative.b' instantiated at fixed_alongside_abstract_negative.fz:33:7
   say b.me
 ------^
-inherits or declares abstract feature 'fixed_alongside_abstract_negative.a.me' declared at --CURDIR--/fixed_alongside_abstract_negative.fz:27:5
+inherits or declares abstract feature 'fixed_alongside_abstract_negative.a.me' declared at fixed_alongside_abstract_negative.fz:27:5
     me a.this => abstract
 ----^^
-which is called at --CURDIR--/fixed_alongside_abstract_negative.fz:33:7
+which is called at fixed_alongside_abstract_negative.fz:33:7
   say b.me
 ------^^^^
 without providing an implementation
