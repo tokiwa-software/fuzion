@@ -443,11 +443,21 @@ int fzE_munmap(void * mapped_address, const int file_size){
 
 
 /**
- * @return the time of the given posix clock
+ * convert a FILETIME (100ns units) to nano seconds
  */
-uint64_t fzE_posix_time(int clockid)
+static uint64_t fzE_filetime_to_ns(FILETIME ft)
 {
-  // NYI: BUG: clockid currently ignored
+  uint64_t t = (((uint64_t)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
+  assert(t <= UINT64_MAX / 100  && "FILETIME overflows u64 nano seconds (more than ~584 years)");
+  return t * 100;
+}
+
+
+/**
+ * @return monotonic time in nano seconds using the performance counter
+ */
+static uint64_t fzE_performance_counter_ns()
+{
   static LARGE_INTEGER frequency = {0};
   if (frequency.QuadPart == 0) {
       if (!QueryPerformanceFrequency(&frequency)) {
@@ -468,6 +478,44 @@ uint64_t fzE_posix_time(int clockid)
   return (uint64_t)(counter.QuadPart * (1000000000ULL / frequency.QuadPart));
 }
 
+
+/**
+ * @return CPU time (kernel + user) of the current thread or process in nano seconds
+ */
+static uint64_t fzE_cpu_time_ns(bool thread)
+{
+  FILETIME creation_time, exit_time, kernel, user;
+  BOOL ok = thread
+    ? GetThreadTimes (GetCurrentThread (), &creation_time, &exit_time, &kernel, &user)
+    : GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel, &user);
+  if (!ok)
+  {
+      fprintf(stderr, "*** GetThreadTimes/GetProcessTimes failed\n");
+      exit(EXIT_FAILURE);
+  }
+  return fzE_filetime_to_ns(kernel) + fzE_filetime_to_ns(user);
+}
+
+
+/**
+ * @return the time of the given posix clock, see `get_clock_id` in posix.c
+ */
+uint64_t fzE_posix_time(int clockid)
+{
+  switch (clockid)
+    {
+    case 0:  // CLOCK_REALTIME, NYI: BUG: not wall clock time, uses performance counter
+    case 1:  // CLOCK_MONOTONIC
+      return fzE_performance_counter_ns();
+    case 2:  // CLOCK_THREAD_CPUTIME_ID
+      return fzE_cpu_time_ns(true);
+    case 3:  // CLOCK_PROCESS_CPUTIME_ID
+      return fzE_cpu_time_ns(false);
+    default:
+      assert(false);
+      return 0;
+    }
+}
 
 /**
  * Sleep for `n` nano seconds.

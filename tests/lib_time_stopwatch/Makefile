@@ -17,27 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature time.stopwatch
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# stopwatch measures the execution duration of f
-#
-public stopwatch(f () -> unit) time.duration ! time.Nano =>
-  (stopwatch time.Nano unit f).1
-
-
-# stopwatch measures the execution duration of f
-#
-public stopwatch(T type, f () -> T) (T, time.duration) ! time.Nano =>
-  stopwatch time.Nano T f
-
-
-# stopwatch measures the execution duration of f using clock `C`
-#
-public stopwatch(C type : time.Clock, T type, f () -> T) (T, time.duration) ! C =>
-  start := C.env.read
-  res := f()
-  (res, C.env.read - start)
+override NAME = lib_time_stopwatch
+include ../simple.mk

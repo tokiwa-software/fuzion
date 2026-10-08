@@ -74,6 +74,7 @@ public Clock ref : effect is
     if just_now < t
       sleep t-just_now
 
+
   # halt the current thread during the given period of time
   #
   public sleep(d time.duration) unit => abstract

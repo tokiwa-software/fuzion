@@ -17,27 +17,34 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature time.stopwatch
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Source code of Fuzion standard library feature time.Thread_Time
 #
 # -----------------------------------------------------------------------
 
-# stopwatch measures the execution duration of f
+# time.Thread_Time -- effect providing access to the CPU time of the current thread
 #
-public stopwatch(f () -> unit) time.duration ! time.Nano =>
-  (stopwatch time.Nano unit f).1
-
-
-# stopwatch measures the execution duration of f
+# This clock advances only while the current thread is running, so it
+# cannot be used to sleep.
 #
-public stopwatch(T type, f () -> T) (T, time.duration) ! time.Nano =>
-  stopwatch time.Nano T f
+public Thread_Time ref : posix_clock is
 
 
-# stopwatch measures the execution duration of f using clock `C`
-#
-public stopwatch(C type : time.Clock, T type, f () -> T) (T, time.duration) ! C =>
-  start := C.env.read
-  res := f()
-  (res, C.env.read - start)
+  # This clock corresponds to POSIX 1003.1's CLOCK_THREAD_CPUTIME_ID
+  #
+  public redef type.posix_id option posix.clockid_t
+  =>
+    posix.clock_thread_cputime
+
+
+  # sleeping is not possible on a CPU time clock
+  #
+  public redef sleep(d time.duration) unit
+  =>
+    panic "time.Thread_Time cannot be used to sleep"
+
+
+  # default implementation of time.Thread_Time.
+  #
+  public redef fixed type.default_value option time.Thread_Time
+  =>
+    time.Thread_Time
