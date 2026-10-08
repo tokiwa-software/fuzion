@@ -177,7 +177,6 @@ fz_run := envir.Args.env[3].replace "../../bin/fz"
   --enable-native-access=ALL-UNNAMED \
   --class-path ../../classes \
   $(envir.Vars.env["FUZION_JAVA_OPTIONS"].or_else "") \
-  -Xss5m \
   -Dline.separator=\n \
   -Dfile.encoding=UTF-8 \
   -Dfuzion.home=../../ \

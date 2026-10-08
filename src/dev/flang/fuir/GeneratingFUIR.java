@@ -28,6 +28,7 @@ package dev.flang.fuir;
 
 import java.nio.charset.StandardCharsets;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Map;
@@ -1809,7 +1810,7 @@ public class GeneratingFUIR extends FUIR
             var of = pf.outerRef();
             Clazz or = (of == null) ? null : c.lookup(of);
             var needsOuterRef = outerRefNeeded(or);
-            toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
+            toStack(code, p.target(), !needsOuterRef /* dump result if not needed */, false);
             if (needsOuterRef)
               {
                 code.add(ExprKind.Current);
@@ -2248,6 +2249,8 @@ public class GeneratingFUIR extends FUIR
    * Add entries of type ExprKind created from the given expression (and its
    * nested expressions) to list l. pop the result in case dumpResult==true.
    *
+   * @param stack the work stack for the nested expressions.
+   *
    * @param l list of ExprKind that should be extended by s's expressions
    *
    * @param e a expression.
@@ -2255,7 +2258,7 @@ public class GeneratingFUIR extends FUIR
    * @param dumpResult flag indicating that we are not interested in the result.
    */
   @Override
-  protected void toStack(List<Object> l, Expr e, boolean dumpResult)
+  protected void toStack(ArrayDeque<Runnable> stack, List<Object> l, Expr e, boolean dumpResult)
   {
     if (isConst(e) && !dumpResult)
       {
@@ -2274,7 +2277,6 @@ public class GeneratingFUIR extends FUIR
             else if (cf.isOpenTypeParameter())
               {
                 var t = call.target();
-                toStack(l, t, true);   // we must evaluate `t` since strange code structure like #5816 could have side-effects
                 var op = cf.openTypesFeature();
                 var cur = _currentClazz;
                 Expr target = new Current(call.pos(), cur._type.feature());
@@ -2293,16 +2295,19 @@ public class GeneratingFUIR extends FUIR
                   }
                 var ft = target;
                 var fcur = cur;
-                e = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
+                var replacement = new AbstractCall()   // e.g. tuple.#Values_Of_Open_Type<n>
                   {
                     @Override public SourcePosition     pos()                  { return call.pos(); }
                     @Override public Expr               target()               { return ft; }
                     @Override public AbstractFeature    calledFeature()        { return op; }
                     @Override public AbstractType       type()                 { return fcur.replaceThisType(op.resultType(), new List<>()); }
                   };
+                stack.push(() -> toStack(stack, l, replacement, dumpResult));
+                stack.push(() -> toStack(stack, l, t, true));   // we must evaluate `t` since strange code structure like #5816 could have side-effects
+                return;
               }
           }
-        super.toStack(l, e, dumpResult);
+        super.toStack(stack, l, e, dumpResult);
       }
   }
 
@@ -2373,7 +2378,7 @@ public class GeneratingFUIR extends FUIR
         if (result)
           {
             var s = new List<>();
-            super.toStack(s, ac, false);
+            toStack(s, ac, false, true);
             result = s
               .stream()
               .allMatch(x -> x == ac || isConst(x));
