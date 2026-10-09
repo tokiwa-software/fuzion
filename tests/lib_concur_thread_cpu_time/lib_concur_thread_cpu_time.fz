@@ -1,0 +1,48 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_concur_thread_cpu_time
+#
+# -----------------------------------------------------------------------
+
+# tests for concur.Thread.cpu_time
+#
+# NOTE: only success or failure is checked, not the values, since CPU time
+# clocks give no guarantees, see `time.Thread_Time`.
+#
+lib_concur_thread_cpu_time =>
+
+  done := concur.atomic bool .new false
+
+  # thread that is kept alive until `done` is set
+  #
+  t := concur.Threads.env.spawn ()->
+    while !done.read
+
+  # print whether `t.cpu_time` succeeded
+  #
+  show(name String) =>
+    match t.cpu_time
+      time.duration => say "$name: ok"
+      e error       => say "$name: $(e.msg)"
+
+  show "alive"
+  done.write true
+  t.join.or_panic
+  show "joined"
