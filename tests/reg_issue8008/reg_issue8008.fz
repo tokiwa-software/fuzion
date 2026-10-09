@@ -1,0 +1,38 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8008
+#
+# -----------------------------------------------------------------------
+
+reg_issue8008 =>
+  am : concur.atomic_mutate is
+  bm : concur.blocking_mutate is
+  cm : mutate is
+
+  am
+    .and unit _ bm
+    .and cm
+    .call ()->
+      x := am.env.var String "hello"
+      y := bm.env.var String ", world"
+      z := cm.env.var String "!"
+
+      bm.env.exclusive ()->
+        say "$(x.get)$(y.get)$(z.get)"
