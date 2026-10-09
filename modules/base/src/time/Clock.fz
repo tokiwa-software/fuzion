@@ -88,26 +88,6 @@ public Clock ref : effect is
     Nano.default_value.bind (x -> id time.Clock x)
 
 
-  # run the given code once at the provided instant within the current thread
-  #
-  # In case the instant is in the past, do not run the code. In case the instant is
-  # in the future, wait until this clock reached the time specified by instant.
-  #
-  # return true if the code was actually run, false if the given time `t` is already
-  # in the past.
-  #
-  public run_once(t time.instant,
-                  code ()->unit) bool
-  =>
-    just_now := read
-    if t >= just_now
-      sleep_until t just_now
-      code()
-      true
-    else
-      false
-
-
   # run the given `code` periodically at time `first+p*0`, `first+p*1`, `first+p*2`,
   # etc. until this clock has reached the time `last`.
   #
