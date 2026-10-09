@@ -216,6 +216,7 @@ public class JavaInterface extends FUIRContext
                     var v = switch (fuir().clazzBaseName(f))
                       {
                       case "java_ref"   -> new JavaRef(o);
+                      case "jr"   -> new JavaRef(o);
                       case "forbidden" -> Value.VOID;
                       default -> fuir().clazzIsOuterRef(f)
                         ? new Instance(fuir().clazzOuterClazz(rc))
