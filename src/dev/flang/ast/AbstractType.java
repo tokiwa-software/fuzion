@@ -2897,8 +2897,7 @@ there is no common super type of the two types (Types.t_ERROR)
   public boolean isSelfRecursive()
   {
     var feature = feature();
-    return generics().stream().anyMatch(g -> g.isSelfRecursive(feature))
-     || outer() != null && outer().isSelfRecursive(feature);
+    return generics().stream().anyMatch(g -> g.isSelfRecursive(feature));
   }
 
 
