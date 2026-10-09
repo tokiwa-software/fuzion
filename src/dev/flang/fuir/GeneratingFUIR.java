@@ -187,7 +187,7 @@ public class GeneratingFUIR extends FUIR
          for (var f : openTypeFields(currentClazz))
            {
              var t = f.resultClazz()._type;
-             var ta = currentClazz.actualTypeParameters()[1];
+             var ta = currentClazz.typeArguments()[1];
              var apply = ta.lookup(new FeatureAndActuals((LibraryFeature)Types.resolved.f_typed_applicator_apply,
                                                          new List<>(t)),
                                    FuzionConstants.NO_SELECT,
@@ -222,7 +222,7 @@ public class GeneratingFUIR extends FUIR
                  @Override public SourcePosition     pos()                  { return call.pos(); }
                  @Override public Expr               target()               { return aa; }
                  @Override public AbstractFeature    calledFeature()        { return apply.feature(); }
-                 @Override public List<AbstractType> actualTypeParameters() { return new List<>(t); }
+                 @Override public List<AbstractType> typeArguments()        { return new List<>(t); }
                  @Override public List<Expr>         actuals()              { return new List<>(fe, field); }
                  @Override public AbstractType       type()                 { return fe.type(); }
                };
@@ -240,7 +240,7 @@ public class GeneratingFUIR extends FUIR
          for (var f : openTypeFields(currentClazz))
            {
              var t = f.resultClazz()._type;
-             var ta = currentClazz.actualTypeParameters()[1];
+             var ta = currentClazz.typeArguments()[1];
              var apply = ta.lookup(new FeatureAndActuals((LibraryFeature) Types.resolved.f_Typed_Combiner_call,
                                                          new List<>(t)),
                                    FuzionConstants.NO_SELECT,
@@ -290,7 +290,7 @@ public class GeneratingFUIR extends FUIR
                  @Override public SourcePosition     pos()                  { return call.pos(); }
                  @Override public Expr               target()               { return zz; }
                  @Override public AbstractFeature    calledFeature()        { return apply.feature(); }
-                 @Override public List<AbstractType> actualTypeParameters() { return new List<>(t); }
+                 @Override public List<AbstractType> typeArguments()        { return new List<>(t); }
                  @Override public List<Expr>         actuals()              { return new List<>(fe, field, other_field); }
                  @Override public AbstractType       type()                 { return fe.type(); }
                };
@@ -322,8 +322,8 @@ public class GeneratingFUIR extends FUIR
          if (CHECKS) check
            (currentClazz.feature() == Types.resolved.f_choice_apply); // make sure noone tries to call this in a different context
 
-         var tr = currentClazz.actualTypeParameters()[0]; // result type
-         var tf = currentClazz.actualTypeParameters()[1]; // function type
+         var tr = currentClazz.typeArguments()[0]; // result type
+         var tf = currentClazz.typeArguments()[1]; // function type
 
          var cgs = currentClazz._outer._type.choiceGenerics();
 
@@ -393,7 +393,7 @@ public class GeneratingFUIR extends FUIR
                        @Override public SourcePosition     pos()                  { return call.pos(); }
                        @Override public Expr               target()               { return f; }
                        @Override public AbstractFeature    calledFeature()        { return tf_call.feature(); }
-                       @Override public List<AbstractType> actualTypeParameters() { return types; }
+                       @Override public List<AbstractType> typeArguments()        { return types; }
                        @Override public List<Expr>         actuals()              { return new List<>(call_v); }
                        @Override public AbstractType       type()                 { return tr._type; }
                      };
@@ -433,8 +433,8 @@ public class GeneratingFUIR extends FUIR
          if (CHECKS) check
            (currentClazz.feature() == Types.resolved.f_choice_combine); // make sure noone tries to call this in a different context
 
-         var tr = currentClazz.actualTypeParameters()[0]; // result type
-         var tf = currentClazz.actualTypeParameters()[1]; // function type
+         var tr = currentClazz.typeArguments()[0]; // result type
+         var tf = currentClazz.typeArguments()[1]; // function type
 
          var cgs = currentClazz._outer._type.choiceGenerics();
 
@@ -548,7 +548,7 @@ public class GeneratingFUIR extends FUIR
                              @Override public SourcePosition     pos()                  { return call.pos(); }
                              @Override public Expr               target()               { return f; }
                              @Override public AbstractFeature    calledFeature()        { return tc_call.feature(); }
-                             @Override public List<AbstractType> actualTypeParameters() { return types; }
+                             @Override public List<AbstractType> typeArguments()        { return types; }
                              @Override public List<Expr>         actuals()              { return new List<>(call_v, call_w); }
                              @Override public AbstractType       type()                 { return tr._type; }
                            };
@@ -676,7 +676,7 @@ public class GeneratingFUIR extends FUIR
     var aa = call.actuals().get(1);
     for (var t : types)
       {
-        var ta = currentClazz.actualTypeParameters()[1];
+        var ta = currentClazz.typeArguments()[1];
         var apply = ta.lookup(new FeatureAndActuals((LibraryFeature)Types.resolved.f_type_applicator_apply,
                                                     new List<>(t)),
                               FuzionConstants.NO_SELECT,
@@ -687,7 +687,7 @@ public class GeneratingFUIR extends FUIR
             @Override public SourcePosition     pos()                  { return call.pos(); }
             @Override public Expr               target()               { return aa; }
             @Override public AbstractFeature    calledFeature()        { return apply.feature(); }
-            @Override public List<AbstractType> actualTypeParameters() { return new List<>(t); }
+            @Override public List<AbstractType> typeArguments()        { return new List<>(t); }
             @Override public List<Expr>         actuals()              { return new List<>(fe); }
             @Override public AbstractType       type()                 { return fe.type(); }
           };
@@ -1089,7 +1089,7 @@ public class GeneratingFUIR extends FUIR
         var tclazz = clazz(c.target(), outerClazz, inh);
         if (!tclazz.isVoidType())
           {
-            var at = AbstractFeature.handDownListThroughInheritsCalls(c.actualTypeParameters(), inh);
+            var at = AbstractFeature.handDownListThroughInheritsCalls(c.typeArguments(), inh);
             var typePars = outerClazz.actualGenerics(at, inh);
             result = tclazz.lookupCall(c, typePars).resultClazz();
           }
@@ -2407,7 +2407,7 @@ public class GeneratingFUIR extends FUIR
   public int clazzActualGeneric(int cl, int gix)
   {
     var cc = clazz(cl);
-    return cc.actualTypeParameters()[gix]._id;
+    return cc.typeArguments()[gix]._id;
   }
 
 
@@ -2788,7 +2788,7 @@ public class GeneratingFUIR extends FUIR
         var cf      = c.calledFeature();
         var dynamic = c.isDynamic() && tclazz.isRef();
         var needsCode = !dynamic || explicitTarget != null;
-        var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
+        var typePars = outerClazz.actualGenerics(c.typeArguments(), inh);
         innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature) cf, typePars), c.select(), c.isInheritanceCall());
         if (innerClazz._type.isSelfRecursive())
           {
@@ -2797,7 +2797,7 @@ public class GeneratingFUIR extends FUIR
           }
         if (cf == Types.resolved.f_Type_infix_colon)
           {
-            var T = innerClazz.actualTypeParameters()[0];
+            var T = innerClazz.typeArguments()[0];
             if (!T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
             // NYI: CLEANUP: need to detect pre condition feature properly!
              && outerClazz.feature().featureName().isInternal())
@@ -3330,7 +3330,7 @@ public class GeneratingFUIR extends FUIR
             var outer = clazz(clazzAt(s));
             var innerClazz = calledInner(sc, outer, null, _inh.get(s - SITE_BASE));
             var tclazz = innerClazz._outer;
-            var T = innerClazz.actualTypeParameters()[0];
+            var T = innerClazz.typeArguments()[0];
             var pos = cf == Types.resolved.f_Type_infix_colon_true ||
               cf == Types.resolved.f_Type_infix_colon  &&
               T._type.constraintAssignableFrom(tclazz._type.generics().get(0));

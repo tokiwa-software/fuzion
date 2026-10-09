@@ -179,7 +179,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       case ThisType -> allowForThisType
         ? ResolvedNormalType.create(
             feature().genericsAsActuals(),
-            Call.NO_GENERICS,
+            Call.NO_TYPE_ARGUMENTS,
             feature().outer().selfType().asThis(),
             feature(),
             TypeKind.RefType)
@@ -375,7 +375,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     var g = feature().choiceGenerics();
     return g == null // might be null on previous errors, see #1587
-      ? AbstractCall.NO_GENERICS
+      ? AbstractCall.NO_TYPE_ARGUMENTS
       : isThisType()
       ? g
       : replaceGenerics(g).map(t -> t.replace_this_type_by_actual_outer(outer(), context));

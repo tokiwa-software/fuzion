@@ -118,7 +118,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public static ResolvedType create(List<AbstractType> g, AbstractType o, AbstractFeature f)
   {
-    return create(g, Call.NO_GENERICS, o, f, f.defaultTypeKind());
+    return create(g, Call.NO_TYPE_ARGUMENTS, o, f, f.defaultTypeKind());
   }
 
 
@@ -310,7 +310,7 @@ public class ResolvedNormalType extends ResolvedType
     return switch (kind())
       {
       case ValueType -> this;
-      case RefType   -> create(generics(), Call.NO_GENERICS, outer(), feature(), TypeKind.ValueType);
+      case RefType   -> create(generics(), Call.NO_TYPE_ARGUMENTS, outer(), feature(), TypeKind.ValueType);
       default        -> throw new Error("unexpected kind "+kind()+" for ResolvedNormalType");
     };
   }

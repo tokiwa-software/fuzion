@@ -96,7 +96,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    */
   public FeatureAndActuals(FuirFeature f)
   {
-    this(f, LibraryCall.NO_GENERICS);
+    this(f, LibraryCall.NO_TYPE_ARGUMENTS);
   }
 
 

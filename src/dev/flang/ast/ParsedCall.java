@@ -618,7 +618,7 @@ public class ParsedCall extends Call
     var cf = calledFeature();
     if (!isDefunct() && cf.arguments().size()!=0 && _generics.isEmpty())
       {
-        var g = NO_GENERICS;
+        var g = NO_TYPE_ARGUMENTS;
         var a = new List<Expr>();
         var ts = cf.typeArguments();
         var tn = ts.size();
@@ -728,7 +728,7 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
                   }
                 if (t != null)
                   {
-                    g = g == NO_GENERICS ? new List<AbstractType>() : g;
+                    g = g == NO_TYPE_ARGUMENTS ? new List<AbstractType>() : g;
                     g.add(t);
                   }
               }
