@@ -196,12 +196,14 @@ choice_reflection =>
       else
         say "c is of type $T value $v"
 
-  # NYI: ENHANCEMENT: #7791 better type inference should avoid the explicit types here:
-  reflect_on_choice false_ true_ bool true
+  reflect_on_choice true
+  reflect_on_choice (id (option String) "hi!")
   reflect_on_choice String nil (option String) "hi!"
-  reflect_on_choice String nil (option String) nil
-  reflect_on_choice (num.complex f64) (num.fraction i64) (choice (num.complex f64) (num.fraction i64)) (num.complex -1.0 1.0)
-  reflect_on_choice (num.complex f64) (num.fraction i64) (choice (num.complex f64) (num.fraction i64)) (3⁄4)
+  reflect_on_choice String _ (option String) "hi!"
+  reflect_on_choice _ _ (option String) "hi!"
+  reflect_on_choice _ _ (option String) nil
+  reflect_on_choice _ _ (choice (num.complex f64) (num.fraction i64)) (num.complex -1.0 1.0)
+  reflect_on_choice _ _ (choice (num.complex f64) (num.fraction i64)) (3⁄4)
 
   # helper features to create choices
   choice0(A, B, C, D type, a A) choice A B C D => a
