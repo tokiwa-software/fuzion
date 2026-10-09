@@ -2198,6 +2198,7 @@ public class DFA extends ANY
     put("fuzion.sys.thread.join0"        , cl -> genericNumResult(cl));
     put("fuzion.sys.thread.set_policy"   , cl -> genericNumResult(cl));
     put("fuzion.sys.thread.set_affinity0", cl -> genericNumResult(cl));
+    put("fuzion.sys.thread.cpu_time0"    , cl -> genericNumResult(cl));
 
     put("effect.type.set0"               , cl ->
         {
