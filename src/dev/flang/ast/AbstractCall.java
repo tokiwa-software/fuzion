@@ -325,24 +325,16 @@ public abstract class AbstractCall extends Expr
                                              AbstractType t,
                                              BiConsumer<AbstractType, AbstractType> foundRef)
   {
-    AbstractType result = t;
-    var ta = target();
-    // if (!(ta instanceof Universe))
-      {
-        var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : t;
-        var tt = target().typeForInferencing();  // when building `base.fum`, this may be null for target `universe`
-        var t1 = t0 == Types.t_ERROR              ? Types.t_ERROR :
-                 tt == null                       ? t0            : calledFeature().outer().handDownToType(t0, tt.selfOrConstraint(context));
-        var t2 = t1 == Types.t_ERROR              ? Types.t_ERROR : replace_type_parameter_used_for_relay_type_in_cotype(t1, target());
-        var t3 = t2 == Types.t_ERROR              ? Types.t_ERROR : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
-        var t4 = t3 == Types.t_ERROR              ? Types.t_ERROR : t3.applyTypePars(target().type());
-        result = t4;
-      }
+    var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : t;
+    var t1 = t0 == Types.t_ERROR              ? Types.t_ERROR : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));
+    var t2 = t1 == Types.t_ERROR              ? Types.t_ERROR : replace_type_parameter_used_for_relay_type_in_cotype(t1, target());
+    var t3 = t2 == Types.t_ERROR              ? Types.t_ERROR : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
+    var t4 = t3 == Types.t_ERROR              ? Types.t_ERROR : t3.applyTypePars(target().type());
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (t4 != null);
 
-    return result;
+    return t4;
   }
 
 
