@@ -699,7 +699,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
       && expectedType.isAssignableFromWithoutBoxing(t, context).no()
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isParametricType()
-      && allInherited(t.feature())
+      && allInherited(res, context, t.feature())
           .stream()
           .anyMatch(c ->
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
@@ -726,7 +726,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     return this != Call.ERROR && t != Types.t_ERROR
       && !t.isChoice()
       && !t.isParametricType()
-      && allInherited(t.feature())
+      && allInherited(res, context, t.feature())
           .stream()
           .anyMatch(c ->
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
@@ -742,9 +742,12 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * @return the whole tree of inherited features flattened to a list.
    */
-  private List<AbstractCall> allInherited(AbstractFeature f)
+  private List<AbstractCall> allInherited(Resolution res, Context context, AbstractFeature f)
   {
-    return f.inherits().flatMap(x -> new List<>(x, allInherited(x.calledFeature())));
+    return f.inherits().flatMap(x -> {
+      x.loadCalledFeature(res, f.outer().context());
+      return new List<>(x, allInherited(res, context, x.calledFeature()));
+    });
   }
 
 
