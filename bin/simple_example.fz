@@ -91,13 +91,13 @@ String.run(input0 option io.path) tokiwa.process_result =>
 # Run this String as a command using `envir_vars, cpu_time_limit` and panic in case we could
 # not execute the command, but do not panic in case the command results in an error.
 #
-String.run => String.this.run nil
+String.run tokiwa.process_result => String.this.run nil
 
 
 # Run this String as a command using `envir_vars, cpu_time_limit` and panic in case it
 # returns with an error.
 #
-String.run_and_check => run.panic_on_error
+String.run_and_check unit => run.panic_on_error
 
 
 ############################################################################
@@ -110,7 +110,7 @@ stack_size_limit := units.data_size.b 1024 # NYI: UNDER DEVELOPMENT: stack limit
 
 # check exit code for validity
 #
-check_exit_code(run tokiwa.process_result) =>
+check_exit_code(run tokiwa.process_result) tokiwa.process_result =>
   # 152 - 128 = 24 -> signal SIGXCPU
   if run.exit_code = 152
     say "$("*** CANCELLED:".bold.red) test $file exceeded cpu time limit of $cpu_time_limit s"
@@ -130,7 +130,7 @@ check_exit_code(run tokiwa.process_result) =>
 # clean error output from random names
 # like loop4, preandcall19 etc.
 #
-clean_err(err io.path) =>
+clean_err(err io.path) unit =>
 
   if is_windows
     "sed -i s|/|#|g $err".run_and_check
