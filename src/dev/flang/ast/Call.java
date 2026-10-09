@@ -1966,20 +1966,21 @@ public class Call extends AbstractCall
                                                      List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var formal = calledFeature().typeArguments();
-    for (var i = 0; i<Integer.min(formal.size(), _generics.size()); i++)
+    for (var i = 0; i < Integer.min(formal.size(), _generics.size()); i++)
       {
         var f = formal   .get(i);
         var g = _generics.get(i);
 
-        // NYI: What if `f` is open type parameter???
-
-         /* infer via constraint of type parameter:
-          *
-          *     a(T type, S type : Sequence T) is
-          *     _ := a _ (array i32)
-          */
-        var c = adjustTypeForTarget(res, context, f.constraint(), null);  // constraint with actual generics replaced, see #7415
-        inferGeneric(res, context, c, g, /* g. */ pos(), conflict, foundAt, -1);
+        if (!f.isOpenTypeParameter())
+          {
+            /* infer via constraint of type parameter:
+             *
+             *     a(T type, S type : Sequence T) is
+             *     _ := a _ (array i32)
+             */
+            var c = adjustTypeForTarget(res, context, f.constraint(), null);  // constraint with actual generics replaced, see #7415
+            inferGeneric(res, context, c, g, g.declarationPos(), conflict, foundAt, -1);
+          }
       }
   }
 
@@ -2296,7 +2297,7 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (actualType.compareTo(actualType.replace_type_parameters_of_cotype_origin(context.outerFeature())) == 0);
 
-    if (actualType.equals(formalType))
+    if (actualType.equals(formalType)) // NOTE: equals() and compareTo()==0 are not the same, equals just compares refs!
       { // nothing can be gained here, we typically replace type parameter `B` by type `B`...
       }
     else if (formalType.isLazyType() && !actualType.isLazyType())
@@ -2343,7 +2344,9 @@ public class Call extends AbstractCall
                                  pos, conflict, foundAt);
                   }
               }
-            if (formalType.isNormalType() && actualType.isNormalType())
+            if (!formalType.isThisType() &&
+                !actualType.isThisType() &&
+                formalType.compareTo(actualType) != 0)
               {
                 inferGeneric(res,
                              context,
