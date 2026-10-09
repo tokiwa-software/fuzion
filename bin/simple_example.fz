@@ -148,14 +148,6 @@ clean_err(err io.path) =>
   # replace lambda function names in Java stack traces
   "sed -E -i s/__INTERN_fun[0-9]+_/__fun_/g $err".run_and_check
 
-# delete temporary files
-#
-delete_tmp_files =>
-  _ := io.file.delete (io.path.of "tmp_out.txt")
-  _ := io.file.delete (io.path.of "tmp_err.txt")
-  _ := io.file.delete (io.path.of "testbin")
-  _ := io.file.delete exp_err_cleaned
-
 
 if envir.Args.env.count != 5
 
@@ -210,8 +202,6 @@ exp_err :=
   else
     (io.path.of "$file.expected_err")
 
-exp_err_cleaned := io.path.of "$exp_err.cleaned"
-
 
 backend_options(x) =>
   s := envir.Vars.env
@@ -235,8 +225,6 @@ else
 
 run_example =>
 
-    delete_tmp_files
-
     # NYI: UNDER DEVELOPMENT:
     # setrlimit for executed processes
     # stack_size_limit, cpu_time_limit
@@ -253,11 +241,16 @@ run_example =>
       check_exit_code <| "$fz_run -XmaxErrors=-1 -jvm $(backend_options "FUZION_JVM_BACKEND_OPTIONS") $file".run input
 
     else if be = "c"
-      compile := "$fz_run -XmaxErrors=-1 -c $(backend_options "FUZION_C_BACKEND_OPTIONS") $file -o=testbin".run
-      if compile.ok
-        check_exit_code <| "./testbin".run input
-      else
-        compile
+      testbin := io.path.of "$(file.stem)_bin"
+      _ := io.file.delete testbin
+      compile := "$fz_run -XmaxErrors=-1 -c $(backend_options "FUZION_C_BACKEND_OPTIONS") $file -o=$testbin".run
+      res :=
+        if compile.ok
+          check_exit_code <| "./$testbin".run input
+        else
+          compile
+      _ := io.file.delete testbin
+      res
     else if be = "int"
       check_exit_code <| "$fz_run -XmaxErrors=-1 -interpreter $file".run input
 
@@ -292,24 +285,31 @@ check_example =>
 
     run := run_example
 
-    if be = "effect"
-      io.write (io.path.of "tmp_out.txt") ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
-    else
-      io.write (io.path.of "tmp_out.txt") run.out .or_panic
-      io.write (io.path.of "tmp_err.txt") run.err .or_panic
+    tmp_out := io.path.of "$file.tmp_out"
+    tmp_err := io.path.of "$file.tmp_err"
+    exp_err_cleaned := io.path.of "$file.exp_err_cleaned"
 
-    out := "diff --strip-trailing-cr $(exp_out) tmp_out.txt".run
+    tmp_files := [tmp_out, tmp_err, exp_err_cleaned]
+    tmp_files.for_each (f->_:=io.file.delete f)
+
+    if be = "effect"
+      io.write tmp_out ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
+    else
+      io.write tmp_out run.out .or_panic
+      io.write tmp_err run.err .or_panic
+
+    out := "diff --strip-trailing-cr $(exp_out) $tmp_out".run
 
     err :=
       if be != "effect"
         io.copy exp_err exp_err_cleaned .or_panic
-        clean_err (io.path.of "tmp_err.txt")
+        clean_err tmp_err
         clean_err exp_err_cleaned
-        "diff --strip-trailing-cr $(exp_err_cleaned) tmp_err.txt".run
+        "diff --strip-trailing-cr $(exp_err_cleaned) $tmp_err".run
       else
         tokiwa.process_result.empty_success
 
-    delete_tmp_files
+    tmp_files.for_each (f->_:=io.file.delete f)
 
     if !out.ok
       say "$("*** FAILED".bold.red) out on $file"
