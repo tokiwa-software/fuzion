@@ -128,6 +128,25 @@ is
         error "fzE_thread_setaffinity error $(e)"
 
 
+  # get the CPU time this thread has consumed so far
+  #
+  # This results in an error if this thread was already joined since the
+  # underlying thread id might then be reused for a different thread.
+  #
+  # The result is not guaranteed to be monotonic, see `time.Thread_Time`.
+  #
+  public cpu_time outcome time.duration ! atomic_access
+  =>
+    if joined.read.is_no
+      ns := fuzion.sys.thread.cpu_time0 thrd
+      if ns >= 0
+        time.duration.ns ns.as_u64
+      else
+        error "failed to get CPU time of thread"
+    else
+      error "thread was already joined"
+
+
   # equality
   #
   public fixed redef type.equality(a, b Thread.this) bool
