@@ -271,7 +271,7 @@ public abstract class AbstractCall extends Expr
   @Override
   boolean isTypeAsValueCall()
   {
-    return calledFeature() == Types.resolved.f_type_as_value;
+    return Types.resolved != null && calledFeature() == Types.resolved.f_type_as_value;
   }
 
 
