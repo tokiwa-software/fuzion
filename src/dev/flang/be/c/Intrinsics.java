@@ -532,6 +532,10 @@ public class Intrinsics extends ANY
           return CExpr.call("fzE_thread_setschedparam", new List<>(A0, A1, A2))
                       .ret();
         });
+    put("fuzion.sys.thread.cpu_time0", (c,cl,outer,in) ->
+        {
+          return CExpr.call("fzE_thread_cpu_time", new List<>(A0)).ret();
+        });
     put("fuzion.sys.thread.set_affinity0", (c,cl,outer,in) ->
         {
           return CExpr.call("fzE_thread_setaffinity", new List<>(

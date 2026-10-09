@@ -503,6 +503,11 @@ public class Intrinsics extends ANY
         {
           return new i32Value(38 /* ENOSYS - Function not implemented */);
         });
+    put("fuzion.sys.thread.cpu_time0", (executor, innerClazz) -> args ->
+        {
+          var thread = ((Thread) ((JavaRef) args.get(1))._javaRef);
+          return new i64Value(java.lang.management.ManagementFactory.getThreadMXBean().getThreadCpuTime(thread.threadId()));
+        });
 
     put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));
     put("debug"                 , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionDebug()));
