@@ -1,0 +1,23 @@
+
+reg_issue8005.fz:25:8: error 1: Expected a type argument, got a value argument
+  _ := x "bla"  # 1. should flag an error: Expected a type argument, got a value argument
+-------^
+Value argument: '"bla"'
+Expected type parameter: 'T'
+
+
+reg_issue8005.fz:26:8: error 2: Expected a type argument, got a value argument
+  _ := x [i32]  # 2. should flag an error: Expected a type argument, got a value argument
+-------^
+Value argument: '[i32]'
+Expected type parameter: 'T'
+
+
+reg_issue8005.fz:27:8: error 3: Failed to infer actual type parameters
+  _ := x        # 3. should flag an error: Failed to infer actual type parameters
+-------^
+In call to 'reg_issue8005.x', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+3 errors.
