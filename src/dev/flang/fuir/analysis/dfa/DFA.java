@@ -1362,7 +1362,8 @@ public class DFA extends ANY
     _uninitializedSysArray = new IntMap<>();
     _numericValues = new List<>();
     _numericValuesAny = new List<>();
-    _preEffectValues = new TreeMap<>();
+    // set to null to detect unintentional access
+    _preEffectValues = null;
 
     _trueX = null; _falseX = null; _boolX = null;
 
