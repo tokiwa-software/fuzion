@@ -188,7 +188,7 @@ class Instance extends Value
   Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     if (PRECONDITIONS) require
-      (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)),
+      (Errors.any() || _clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)),
        site != -1);
 
     dfa.readField(field);
