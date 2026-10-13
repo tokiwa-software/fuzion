@@ -2896,29 +2896,42 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   public boolean isSelfRecursive()
   {
-    var feature = feature();
-    return generics().stream().anyMatch(g -> g.isSelfRecursive(feature))
-     || outer() != null && outer().isSelfRecursive(feature);
+    return generics().stream().anyMatch(g -> g.isSelfRecursive(this))
+      || outer() != null && outer().isSelfRecursive(this);
   }
 
 
   /**
    * Helper is isSelfRecursive
    *
-   * @param feature the feature we are searching for that would signal self recursion
-   * @return
+   * @param t the type we are searching for that would signal self recursion
    */
-  private boolean isSelfRecursive(AbstractFeature feature)
+  private boolean isSelfRecursive(AbstractType t)
   {
-    var s = feature().outer();
-    while (s != null && s != feature)
+    var s = outer();
+    return s != null && s.isEmbeddedIn(t)
+      || generics().stream().anyMatch(g -> g.isSelfRecursive(t))
+      || s != null && s.isSelfRecursive(t);
+  }
+
+
+  /**
+   * Is this type embedded in t?
+   *
+   * @param t
+   */
+  private boolean isEmbeddedIn(AbstractType t)
+  {
+    var o = this;
+    var t1 = t;
+
+    while (o != null && t1 != null && o.feature() == t1.feature())
       {
-        s = s.outer();
+        o = o.outer();
+        t1 = t1.outer();
       }
 
-    return s == feature
-     || generics().stream().anyMatch(g -> g.isSelfRecursive(feature))
-     || outer() != null && outer().isSelfRecursive(feature);
+    return o == null;
   }
 
 }
