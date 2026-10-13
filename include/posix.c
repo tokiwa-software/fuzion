@@ -698,6 +698,26 @@ int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
 }
 
 
+/*
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd)
+{
+#if defined(_POSIX_THREAD_CPUTIME) && _POSIX_THREAD_CPUTIME >= 0
+  clockid_t clk;
+  struct timespec ts;
+  if (pthread_getcpuclockid((pthread_t)thrd, &clk) != 0 ||
+      clock_gettime(clk, &ts) != 0)
+    {
+      return -1;
+    }
+  return (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+#else
+  return -1;
+#endif
+}
+
+
 /**
  * Global lock
  */
