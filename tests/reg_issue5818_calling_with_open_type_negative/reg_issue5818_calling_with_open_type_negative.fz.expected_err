@@ -23,20 +23,18 @@ Expected type parameters: 'A...'
 Type inference failed for one type parameter 'A'
 
 
-reg_issue5818_calling_with_open_type_negative.fz:53:3: error 4: Failed to infer actual type parameters
+reg_issue5818_calling_with_open_type_negative.fz:53:3: error 4: Expected a type argument, got a value argument
   f _           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  7. should flag an error: too many value arguments
 --^
-In call to 'reg_issue5818_calling_with_open_type_negative.f', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'A...'
-Type inference failed for one type parameter 'A'
+Value argument: '3.14'
+Expected type parameter: 'A...'
 
 
-reg_issue5818_calling_with_open_type_negative.fz:68:3: error 5: Failed to infer actual type parameters
+reg_issue5818_calling_with_open_type_negative.fz:68:3: error 5: Expected a type argument, got a value argument
   g             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  8. should flag an error: failed to infer type parameter T, U
 --^
-In call to 'reg_issue5818_calling_with_open_type_negative.g', no actual type parameters are given and inference of the type parameters failed.
+Value argument: '3.14'
 Expected type parameters: 'T, U, A...'
-Type inference failed for 2 type parameters 'T', 'U'
 
 
 reg_issue5818_calling_with_open_type_negative.fz:71:3: error 6: Failed to infer actual type parameters
@@ -90,7 +88,7 @@ reg_issue5818_calling_with_open_type_negative.fz:101:7: error 11: Different coun
 Feature not found: 'array' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type_negative'
 In call: '(array String)'
-To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:197:8
+To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:195:8
 public array(T type, I type : integer, length I, init I -> T) array T =>
 -------^^^^^
 To call 'array', you must provide 4 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.
@@ -116,7 +114,7 @@ reg_issue5818_calling_with_open_type_negative.fz:118:7: error 13: Different coun
 Feature not found: 'array' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type_negative'
 In call: '(array String)'
-To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:197:8
+To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:195:8
 public array(T type, I type : integer, length I, init I -> T) array T =>
 -------^^^^^
 To call 'array', you must provide 4 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.
