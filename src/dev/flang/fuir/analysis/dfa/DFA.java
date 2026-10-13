@@ -1525,6 +1525,9 @@ public class DFA extends ANY
               (r.size()>2 ? "\n\twhy are first two calls different?: " + r.get(0).compareToWhy(r.get(1)): ""));
           });
 
+        say("largest value set has " + ValueSet.largest._componentsArray.length + " entries: ");
+        say(ValueSet.largest);
+
       }
 
     if (_real)
@@ -1549,9 +1552,12 @@ public class DFA extends ANY
    */
   void showCallStatistics()
   {
-    for (var c : _calls.values())
+    if (_reportResults && _options.verbose(6))
       {
-        analyzeShowDetails(c);
+        for (var c : _calls.values())
+          {
+            analyzeShowDetails(c);
+          }
       }
 
     if (SHOW_CALLS != null)
@@ -1730,16 +1736,13 @@ public class DFA extends ANY
    */
   void analyzeShowDetails(Call c)
   {
-    if (_reportResults && _options.verbose(6))
-      {
-        say(("----------------"+c+
-             "----------------------------------------------------------------------------------------------------")
-            .substring(0,100));
+    say(("----------------"+c+
+          "----------------------------------------------------------------------------------------------------")
+        .substring(0,100));
 
-        var sb = new StringBuilder();
-        var ignore = c.showWhy(sb);
-        say(sb);
-      }
+    var sb = new StringBuilder();
+    var ignore = c.showWhy(sb);
+    say(sb);
   }
 
 
