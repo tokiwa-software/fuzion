@@ -2935,42 +2935,6 @@ there is no common super type of the two types (Types.t_ERROR)
   }
 
 
-  /**
-   */
-  public boolean containsCycle()
-  {
-    return !isRef() && (generics().stream().anyMatch(g -> g.containsCycle(this))
-      || outer() != null && outer().containsCycle(this));
-  }
-
-
-  /**
-   * Helper is isSelfReferential
-   */
-  private boolean containsCycle(AbstractType t)
-  {
-    var s = outer();
-    return s != null && s.isEmbeddedInViaRef(t)
-      || generics().stream().anyMatch(g -> g.containsCycle(t))
-      || s != null && s.containsCycle(t);
-  }
-
-
-  /**
-   */
-  private boolean isEmbeddedInViaRef(AbstractType t)
-  {
-    var o = this;
-    var t1 = t;
-
-    while (o != null && t1 != null && o.feature() == t1.feature())
-      {
-        o = o.outer();
-        t1 = t1.outer();
-      }
-
-    return o != null && t1 != null && t1.feature().inheritsFrom(o.feature());
-  }
 
 }
 
