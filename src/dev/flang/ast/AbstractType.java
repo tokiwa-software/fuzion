@@ -1419,22 +1419,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Are this and other disjoint?
-   * In other words:
-   * Do the sets these types represent not have any overlapping values?
-   *
-   * @param context the source code context where this Type is used
-   */
-  private boolean disjoint(AbstractType other, Context context)
-  {
-    return this.isVoid()
-      || other.isVoid()
-      ||    this .isAssignableFrom(other, context, false, false, null).no()
-         && other.isAssignableFrom(this , context, false, false, null).no();
-  }
-
-
-  /**
    * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
