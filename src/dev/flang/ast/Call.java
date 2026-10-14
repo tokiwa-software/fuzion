@@ -1200,7 +1200,7 @@ public class Call extends AbstractCall
       )
       {
         _pendingError = ()->
-          AstErrors.failedToInferActualGeneric(_pos, _calledFeature, missingGenerics());
+          AstErrors.failedToInferActualGeneric(_pos, _calledFeature, missingGenerics(), _actuals);
       }
 
     reportPendingError();
@@ -1897,7 +1897,7 @@ public class Call extends AbstractCall
         !isDefunct() &&
         !errorInActuals())
       {
-        AstErrors.failedToInferActualGeneric(pos(), _calledFeature, missing);
+        AstErrors.failedToInferActualGeneric(pos(), _calledFeature, missing, _actuals);
         setToErrorState();
       }
   }

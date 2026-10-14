@@ -131,7 +131,7 @@ jitter_threaded =>
             payload
             actual_finish := TIMER.env.read
             if actual_finish >= next_rel
-              err := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+              err := error "*** overrun: run started at $(actual_release-expected_rel)  and took $(actual_finish-actual_release), which is larger than period $period"
               (flow.exception jitter_too_high).env.cause err
 
       match flow.exception jitter_too_high .on ()->
@@ -323,11 +323,11 @@ jitter_threaded =>
               # Attempt to set error; ignore if already set.
               _ := error_cell.compare_and_set nil (option msg)
             else
-              payload
+              cpu := (time.stopwatch time.Thread_Time unit ()->payload).1
               finish := time.Nano.env.read
               if finish >= new_expected
                 diff := finish - new_expected
-                msg := "Overrun: payload exceeded next release by $diff (period $period)"
+                msg := "Overrun: payload exceeded next release by $diff, payload used $cpu CPU time (period $period)"
                 _ := error_cell.compare_and_set nil (option msg)
               else
                 # Schedule next run only if no error (check again, may have been set by another thread)

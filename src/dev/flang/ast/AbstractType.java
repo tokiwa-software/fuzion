@@ -64,18 +64,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private YesNo _dependsOnGenerics = YesNo.dontKnow;
 
 
-  // flag to disable applyTypePar caching, for debugging only
-  private static final boolean typeParCachingEnabled = true;
-  /**
-   * Cached results for {@code applyTypePars(t)} and {@code applyTypePars(f, List<AbstractType>)};
-   */
-  private AbstractType _appliedTypeParsCachedFor1;
-  private AbstractType _appliedTypeParsCache;
-  private AbstractFeature _appliedTypePars2CachedFor1;
-  private List<AbstractType> _appliedTypePars2CachedFor2;
-  private AbstractType _appliedTypePars2Cache;
-
-
   /**
    * Cached result of calling usedFeatures(_usedFeatures).
    */
@@ -1038,23 +1026,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.any() || !isOpenGeneric(),
        Errors.any() || target.isParametricType() || target.isThisType() || target.feature().generics().sizeMatches(target.generics()));
 
-    AbstractType result;
-    if (typeParCachingEnabled && _appliedTypeParsCachedFor1 == target)
-      {
-        result = _appliedTypeParsCache;
-      }
-    else
-      {
-        result = applyTypePars_(target);
-        if (CHECKS) check
-          (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
-
-        _appliedTypeParsCachedFor1 = target;
-        _appliedTypeParsCache = result;
-      }
+    AbstractType result = applyTypePars_(target);
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED,
+       result != null);
+
     return result;
   }
 
@@ -1115,27 +1092,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (Errors.any() || f.generics().sizeMatches(actualGenerics));
 
-    AbstractType result;
-    if (typeParCachingEnabled &&
-        _appliedTypePars2CachedFor1 == f &&
-        _appliedTypePars2CachedFor2 == actualGenerics)
-      {
-        result = _appliedTypePars2Cache;
-      }
-    else
-      {
-        result = applyTypePars(f, actualGenerics, NO_SELECT);
+    AbstractType result = applyTypePars(f, actualGenerics, NO_SELECT);;
 
-        if (!actualGenerics.contains(Types.t_UNDEFINED))
-          {
-            if (CHECKS) check
-              (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
+    if (!actualGenerics.contains(Types.t_UNDEFINED))
+      {
+        if (CHECKS) check
+          (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
 
-            _appliedTypePars2CachedFor1 = f;
-            _appliedTypePars2CachedFor2 = actualGenerics;
-            actualGenerics.freeze();
-            _appliedTypePars2Cache = result;
-          }
+        actualGenerics.freeze();
       }
 
     if (POSTCONDITIONS) ensure
@@ -1415,22 +1379,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType actualType(AbstractType t)
   {
     return actualType(t, Context.NONE);
-  }
-
-
-  /**
-   * Are this and other disjoint?
-   * In other words:
-   * Do the sets these types represent not have any overlapping values?
-   *
-   * @param context the source code context where this Type is used
-   */
-  private boolean disjoint(AbstractType other, Context context)
-  {
-    return this.isVoid()
-      || other.isVoid()
-      ||    this .isAssignableFrom(other, context, false, false, null).no()
-         && other.isAssignableFrom(this , context, false, false, null).no();
   }
 
 
@@ -2887,6 +2835,51 @@ there is no common super type of the two types (Types.t_ERROR)
           ? postFeature.typeArguments().get(typeParameter().typeParameterIndex()).asParametricType()
           : this;
       };
+  }
+
+
+  /**
+   * Does this type refer to itself in the generics or its outer?
+   * @return
+   */
+  public boolean isSelfRecursive()
+  {
+    return generics().stream().anyMatch(g -> g.isSelfRecursive(this))
+      || outer() != null && outer().isSelfRecursive(this);
+  }
+
+
+  /**
+   * Helper is isSelfRecursive
+   *
+   * @param t the type we are searching for that would signal self recursion
+   */
+  private boolean isSelfRecursive(AbstractType t)
+  {
+    var s = outer();
+    return s != null && s.isEmbeddedIn(t)
+      || generics().stream().anyMatch(g -> g.isSelfRecursive(t))
+      || s != null && s.isSelfRecursive(t);
+  }
+
+
+  /**
+   * Is this type embedded in t?
+   *
+   * @param t
+   */
+  private boolean isEmbeddedIn(AbstractType t)
+  {
+    var o = this;
+    var t1 = t;
+
+    while (o != null && t1 != null && o.feature() == t1.feature())
+      {
+        o = o.outer();
+        t1 = t1.outer();
+      }
+
+    return o == null;
   }
 
 }

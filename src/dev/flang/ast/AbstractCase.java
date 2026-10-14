@@ -99,6 +99,7 @@ public abstract class AbstractCase extends ANY implements HasSourcePosition
   public abstract List<AbstractType> types();
 
 
+  private int[] _tags = null;
   /**
    * The tags that are matched by this case.
    *
@@ -111,33 +112,36 @@ public abstract class AbstractCase extends ANY implements HasSourcePosition
    */
   public int[] tags(AbstractMatch m)
   {
-    var ts = types();
-    var f = field();
-    int nt = f != null ? 1 : ts.size();
-    var resultL = new List<Integer>();
-    int tag = 0;
-    for (var cg : m.subject().type().choiceGenerics())
+    if (_tags == null)
       {
-        for (int tix = 0; tix < nt; tix++)
+        var ts = types();
+        var f = field();
+        int nt = f != null ? 1 : ts.size();
+        var resultL = new List<Integer>();
+        int tag = 0;
+        for (var cg : m.subject().type().choiceGenerics())
           {
-            var t = f != null ? f.resultType() : ts.get(tix);
-            if (t.isAssignableFromWithoutTagging(cg).yes())
+            for (int tix = 0; tix < nt; tix++)
               {
-                resultL.add(tag);
+                var t = f != null ? f.resultType() : ts.get(tix);
+                if (t.isAssignableFromWithoutTagging(cg).yes())
+                  {
+                    resultL.add(tag);
+                  }
               }
+            tag++;
           }
-        tag++;
-      }
-    var result = new int[resultL.size()];
-    for (int i = 0; i < result.length; i++)
-      {
-        result[i] = resultL.get(i);
-      }
+        _tags = new int[resultL.size()];
+        for (int i = 0; i < _tags.length; i++)
+          {
+            _tags[i] = resultL.get(i);
+          }
 
-    if (POSTCONDITIONS) ensure
-      (result.length > 0);
+        if (POSTCONDITIONS) ensure
+          (_tags.length > 0);
 
-    return result;
+      }
+    return _tags;
   }
 
 

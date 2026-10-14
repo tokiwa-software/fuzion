@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue6817.fz:32:24: error 1: Incompatible types in assignment
+reg_issue6817.fz:32:24: error 1: Incompatible types in assignment
       say <| v.or_else false
 -----------------------^^^^^
 assignment to field : 'reg_issue6817.h.(λfalse).call.result'

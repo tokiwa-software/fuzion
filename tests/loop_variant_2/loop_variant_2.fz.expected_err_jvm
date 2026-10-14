@@ -4,9 +4,9 @@ Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 fuzion.runtime.variantcondition_fault#1 at {base.fum}/fuzion/runtime/variant_fault.fz:55
-loop_variant_2.test_6.loop at --CURDIR--/loop_variant_2.fz:82
-loop_variant_2.test_6 at --CURDIR--/loop_variant_2.fz:81
-loop_variant_2 at --CURDIR--/loop_variant_2.fz:85
+loop_variant_2.test_6.loop at loop_variant_2.fz:82
+loop_variant_2.test_6 at loop_variant_2.fz:81
+loop_variant_2 at loop_variant_2.fz:85
 
 *** fatal errors encountered, stopping.
 one error.

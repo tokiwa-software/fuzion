@@ -1,42 +1,42 @@
 
---CURDIR--/strings_multiline_negative.fz:28:8: error 1: Expected multiline string to start in first line following fat quotation '"""'
+strings_multiline_negative.fz:28:8: error 1: Expected multiline string to start in first line following fat quotation '"""'
   _ := """"""    #  1. should flag an error: Expected multiline string to start in first line following fat quotation
 -------^
-Found start at --CURDIR--/strings_multiline_negative.fz:28:11
+Found start at strings_multiline_negative.fz:28:11
   _ := """"""    #  1. should flag an error: Expected multiline string to start in first line following fat quotation
 ----------^ instead.
 
 
---CURDIR--/strings_multiline_negative.fz:29:8: error 2: Expected multiline string to start in first line following fat quotation '"""'
+strings_multiline_negative.fz:29:8: error 2: Expected multiline string to start in first line following fat quotation '"""'
   _ := """ """   #  2. should flag an error: Expected multiline string to start in first line following fat quotation
 -------^
-Found start at --CURDIR--/strings_multiline_negative.fz:29:12
+Found start at strings_multiline_negative.fz:29:12
   _ := """ """   #  2. should flag an error: Expected multiline string to start in first line following fat quotation
 -----------^ instead.
 
 
---CURDIR--/strings_multiline_negative.fz:33:2: error 3: Found codepoint at less indentation than expected in multiline string.
+strings_multiline_negative.fz:33:2: error 3: Found codepoint at less indentation than expected in multiline string.
  d              #  3. should flag an error: Found codepoint at less indentation than expected in multiline string.
 -^
 To solve this, indent offending line by at least 2 spaces.
 Alternatively decrease indentation of first line. One way to do this is by using the \s escape code which equals a space.
 
 
---CURDIR--/strings_multiline_negative.fz:37:76: error 4: Illegal trailing whitespace in multiline string.
+strings_multiline_negative.fz:37:76: error 4: Illegal trailing whitespace in multiline string.
   4. should flag an error: Illegal trailing whitespace in multiline string. 
 ---------------------------------------------------------------------------^
 To solve this, remove this whitespace or replace it by escape codes.
 
 
---CURDIR--/strings_multiline_negative.fz:43:75: error 5: Unexpected control sequence in constant string.
+strings_multiline_negative.fz:43:75: error 5: Unexpected control sequence in constant string.
   """"  # 5. should flag an error: Found unexpected control sequence 'LF '
 --------------------------------------------------------------------------^
-Found unexpected control sequence 'LF ' (0xa) in constant string starting at --CURDIR--/strings_multiline_negative.fz:43:6
+Found unexpected control sequence 'LF ' (0xa) in constant string starting at strings_multiline_negative.fz:43:6
   """"  # 5. should flag an error: Found unexpected control sequence 'LF '
 -----^
 
 
---CURDIR--/strings_multiline_negative.fz:47:4: error 6: Illegal trailing whitespace in multiline string.
+strings_multiline_negative.fz:47:4: error 6: Illegal trailing whitespace in multiline string.
     
 ---^
 To solve this, remove this whitespace or replace it by escape codes.

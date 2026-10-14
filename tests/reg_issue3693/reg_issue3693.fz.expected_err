@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue3693.fz:24:6: error 1: Illegal '.this' type: 'a.this'
+reg_issue3693.fz:24:6: error 1: Illegal '.this' type: 'a.this'
 A (b a.this) ref is
 -----^
 To solve this, either

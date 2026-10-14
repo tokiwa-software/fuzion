@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue5556.fz:30:10: error 1: Could not find called feature
+reg_issue5556.fz:30:10: error 1: Could not find called feature
   say <| bla    # this should produce only a single error about `bla`
 ---------^^^
 Feature not found: 'bla' (no arguments)

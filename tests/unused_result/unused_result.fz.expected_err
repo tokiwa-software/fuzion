@@ -1,5 +1,5 @@
 
---CURDIR--/unused_result.fz:34:3: error 1: Incompatible types in cases of match expression
+unused_result.fz:34:3: error 1: Incompatible types in cases of match expression
   match true # should flag an error: incompatible branches
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     f false_ => f
@@ -7,33 +7,33 @@
     t true_  => t
 ----^^^^^^^^^^^^^
 Incompatible result types in different branches:
-block returns value of type 'false_' at --CURDIR--/unused_result.fz:35:17
+block returns value of type 'false_' at unused_result.fz:35:17
     f false_ => f
 ----------------^
-block returns value of type 'true_' at --CURDIR--/unused_result.fz:36:17
+block returns value of type 'true_' at unused_result.fz:36:17
     t true_  => t
 ----------------^
 
 
---CURDIR--/unused_result.fz:29:3: error 2: Expression produces result of type 'unused_result.this.a' but result is not used.
+unused_result.fz:29:3: error 2: Expression produces result of type 'unused_result.this.a' but result is not used.
   a # should flag an error
 --^
 To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'unused_result.a' from constructor to routine by replacing 'is' by '=>'.
 
 
---CURDIR--/unused_result.fz:30:3: error 3: Expression produces result of type 'i64' but result is not used.
+unused_result.fz:30:3: error 3: Expression produces result of type 'i64' but result is not used.
   b # should flag an error
 --^
 To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'i64' from constructor to routine by replacing 'is' by '=>'.
 
 
---CURDIR--/unused_result.fz:32:3: error 4: Expression produces result of type 'i64' but result is not used.
+unused_result.fz:32:3: error 4: Expression produces result of type 'i64' but result is not used.
   if true then 42 else -1 # should flag an error
 --^^^^^^^^^^^^^^^^^^^^^^^
 To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'i64' from constructor to routine by replacing 'is' by '=>'.
 
 
---CURDIR--/unused_result.fz:38:3: error 5: Expression produces result of type 'bool' but result is not used.
+unused_result.fz:38:3: error 5: Expression produces result of type 'bool' but result is not used.
   match true # should flag an error
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     false_ => true

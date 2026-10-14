@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue3502.fz:25:34: error 1: Incompatible types in assignment
+reg_issue3502.fz:25:34: error 1: Incompatible types in assignment
   incompatible_type(a i32) i32 =>
 ---------------------------------^
 assignment to field : 'reg_issue3502.incompatible_type.result'

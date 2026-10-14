@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue6012.fz:26:14: error 1: Incompatible types when passing argument in a call
+reg_issue6012.fz:26:14: error 1: Incompatible types when passing argument in a call
   ignore i32 "abcd$(unit)efgt"
 -------------^^^^^^^^^^^^^^^^^
 Actual type for argument #1 'x' does not match expected type.

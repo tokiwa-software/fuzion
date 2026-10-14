@@ -2238,8 +2238,8 @@ stringTermB : ')any chars&quot;'
               {
                 var old = setMinIndent(-1);
                 var b = block();
-                setMinIndent(old);
                 result = stringTerm(concatString(tokenSourcePos(), result, b), ps.v1());
+                setMinIndent(old);
               }
           }
         else

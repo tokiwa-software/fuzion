@@ -456,14 +456,6 @@ public class Intrinsics extends ANY
                               /* type  */ et);
           return Value.UNIT;
         });
-    put("fuzion.sys.internal_array.freeze", (executor, innerClazz) -> args ->
-        {
-          return Value.UNIT;
-        });
-    put("fuzion.sys.internal_array.ensure_not_frozen", (executor, innerClazz) -> args ->
-        {
-          return Value.UNIT;
-        });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.boxedConstString(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
     put("fuzion.sys.thread.current", (executor, innerClazz) -> args ->

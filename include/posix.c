@@ -111,6 +111,8 @@ static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or
 /**
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
  *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *   - 2 for CLOCK_THREAD_CPUTIME_ID (CPU time consumed by the current thread)
+ *   - 3 for CLOCK_PROCESS_CPUTIME_ID (CPU time consumed by all threads of the process)
  */
 clockid_t get_clock_id(int clock)
 {
@@ -120,6 +122,10 @@ clockid_t get_clock_id(int clock)
         return CLOCK_REALTIME;
       case 1:
         return CLOCK_MONOTONIC;
+      case 2:
+        return CLOCK_THREAD_CPUTIME_ID;
+      case 3:
+        return CLOCK_PROCESS_CPUTIME_ID;
       default:
         assert(false);
         return -1;
@@ -1057,9 +1063,9 @@ void fzE_cnd_wait(void * cnd, void * mtx) {
   ASSERT_SUCCESS(pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx));
 }
 
-void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
+void fzE_cnd_timedwait(void * cnd, void * mtx, uint64_t time_ns)
 {
-  int64_t  s  =                   time_ns / 1000000000;
+  uint64_t  s  =                   time_ns / 1000000000;
   long     ns = (long) (time_ns - s       * 1000000000);
   const struct timespec abstime = { s, ns };
   // NYI: BUG: we need sth. like this on macOS:

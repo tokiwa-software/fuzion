@@ -4,11 +4,11 @@ Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 fuzion.runtime.postcondition_fault#1 at {base.fum}/fuzion/runtime/post_fault.fz:56
-(catch_postcondition.test#1 i32).post double at --CURDIR--/catch_postcondition.fz:38
-(catch_postcondition.test#1 i32).double#1 at --CURDIR--/catch_postcondition.fz:37
-(catch_postcondition.test#1 i32).loop at --CURDIR--/catch_postcondition.fz:43
-catch_postcondition.test#1 i32 at --CURDIR--/catch_postcondition.fz:43
-catch_postcondition at --CURDIR--/catch_postcondition.fz:291
+(catch_postcondition.test#1 i32).post double at catch_postcondition.fz:38
+(catch_postcondition.test#1 i32).double#1 at catch_postcondition.fz:37
+(catch_postcondition.test#1 i32).loop at catch_postcondition.fz:43
+catch_postcondition.test#1 i32 at catch_postcondition.fz:43
+catch_postcondition at catch_postcondition.fz:291
 
 *** fatal errors encountered, stopping.
 one error.

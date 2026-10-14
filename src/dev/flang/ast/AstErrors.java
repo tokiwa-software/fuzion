@@ -1901,15 +1901,32 @@ public class AstErrors extends ANY
       }
   }
 
-  static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<AbstractFeature> missing)
+  static void failedToInferActualGeneric(SourcePosition pos,
+                                         AbstractFeature cf,
+                                         List<AbstractFeature> missing,
+                                         List<Expr> actuals)
   {
     if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
       {
-        error(pos,
-              "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
-              "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
-              "Expected type parameters: " + s(cf.generics()) + "\n"+
-              "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
+        var actualValueArgument = actuals.stream()
+          .filter(a -> a.asType() != Types.t_UNDEFINED)
+          .findFirst();
+        if (cf.valueArguments().isEmpty() && actualValueArgument.isPresent())
+          {
+            error(pos,
+                  "Expected a type argument, got a value argument",
+                  "Value argument: " + s(actualValueArgument.get()) + "\n" +
+                  "Expected " + StringHelpers.plural(cf.typeArguments().size(), "type parameter") +
+                  ": " + s(cf.generics()));
+          }
+        else
+          {
+            error(pos,
+                  "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
+                  "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
+                  "Expected type parameters: " + s(cf.generics()) + "\n"+
+                  "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
+          }
       }
   }
 

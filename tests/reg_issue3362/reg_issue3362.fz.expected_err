@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue3362.fz:71:8: error 1: Incompatible type parameter
+reg_issue3362.fz:71:8: error 1: Incompatible type parameter
   _ := 0 === a   # 2. should flag an error: `choice i32 unit` is not assignable to `my_equatable`
 -------^^^^^^^
 formal type parameter 'T : reg_issue3362.this.my_equatable'
@@ -14,7 +14,7 @@ assignable to constraint: 'Any',
                           'void'
 
 
---CURDIR--/reg_issue3362.fz:55:16: error 2: Incompatible type parameter
+reg_issue3362.fz:55:16: error 2: Incompatible type parameter
             if plain_actual =!= plain_expected     # 1. should flag an error: `choice String (array u8)` is not assignable to `my_equatable`
 ---------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 formal type parameter 'T : reg_issue3362.this.my_equatable'

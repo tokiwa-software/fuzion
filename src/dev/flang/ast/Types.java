@@ -194,7 +194,6 @@ public class Types extends ANY
     public final AbstractFeature f_fuzion_lambda_target;
     public final AbstractFeature f_fuzion_sys;
     public final AbstractFeature f_fuzion_sys_array;
-    public final AbstractFeature f_fuzion_sys_array_length;
     public final AbstractFeature f_fuzion_sys_array_data;
     public final AbstractFeature f_flow;
     public final AbstractFeature f_flow_fallible;
@@ -281,7 +280,6 @@ public class Types extends ANY
       f_fuzion_sys              = f_fuzion.get(mod, "sys", 0);
       f_fuzion_sys_array        = f_fuzion_sys.get(mod, "internal_array", 3);
       f_fuzion_sys_array_data   = f_fuzion_sys_array.get(mod, "data", 0);
-      f_fuzion_sys_array_length = f_fuzion_sys_array.get(mod, "length", 0);
       f_flow                     = universe.get(mod, "flow", 0);
       f_flow_fallible            = f_flow.get(mod, "fallible", 2);
       f_flow_fallible_cause      = f_flow_fallible.get(mod, "cause", 1);

@@ -385,10 +385,6 @@ public class CFG extends ANY
     put("fuzion.sys.type.alloc"          , (cfg, cl) -> { } );
     put("fuzion.sys.type.setel"          , (cfg, cl) -> { } );
     put("fuzion.sys.type.getel"          , (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.freeze"
-                                         , (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.ensure_not_frozen"
-                                         , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.has0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.get0"       , (cfg, cl) -> { } );
     put("fuzion.sys.thread.current"      , (cfg, cl) -> { } );

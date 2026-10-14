@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue5955.fz:54:5: error 1: Incompatible types in assignment
+reg_issue5955.fz:54:5: error 1: Incompatible types in assignment
     array_cons as.this
 ----^^^^^^^^^^
 assignment to field : 'as.as_list.result'

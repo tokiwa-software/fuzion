@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4457.fz:26:3: error 1: Different count of arguments needed when calling feature
+reg_issue4457.fz:26:3: error 1: Different count of arguments needed when calling feature
   say "hi" x->x+1
 --^^^
 Feature not found: 'say' (2 arguments)

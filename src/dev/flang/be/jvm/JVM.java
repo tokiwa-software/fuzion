@@ -1604,6 +1604,7 @@ should be avoided as much as possible.
       .andThen(Expr.DUP_X1)                           //        cs, cs, arr, arr, fsa, byt, fsa
       .andThen(Expr.SWAP)                             //        cs, cs, arr, arr, fsa, fsa, byt
       .andThen(Expr.ARRAYLENGTH)                      //        cs, cs, arr, arr, fsa, fsa, len
+      .andThen(Expr.I2L)
       .andThen(putfield(length))                      //        cs, cs, arr, arr, fsa
       .andThen(putfield(internalArray))               //        cs, cs, arr
       .andThen(putfield(cs_utf8_data))                //        cs
@@ -1664,7 +1665,7 @@ should be avoided as much as possible.
   {
     return const_array(arrayCl,
                        bytesArrayAsString(bytes)
-                       .andThen(Expr.iconst(bytes.length))
+                       .andThen(Expr.lconst(bytes.length))
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8_SIG,
@@ -1794,7 +1795,7 @@ should be avoided as much as possible.
       .andThen(arr)                                   //        cs, cs, fsa, fsa, arr
       .andThen(putfield(data))                        //        cs, cs, fsa
       .andThen(Expr.DUP)                              //        cs, cs, fsa, fsa
-      .andThen(Expr.iconst(len))                      //        cs, cs, fsa, fsa, len
+      .andThen(Expr.lconst(len))                      //        cs, cs, fsa, fsa, len
       .andThen(putfield(length))                      //        cs, cs, fsa
       .andThen(putfield(internalArray))               //        cs
       .is(_types.resultType(arrayCl));                //        -

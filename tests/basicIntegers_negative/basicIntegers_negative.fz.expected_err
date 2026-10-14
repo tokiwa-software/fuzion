@@ -1,5 +1,5 @@
 
---CURDIR--/basicIntegers_negative.fz:150:6: error 1: Numeric literal used for integer type is not a whole number
+basicIntegers_negative.fz:150:6: error 1: Numeric literal used for integer type is not a whole number
   sa 123.456       # 53. should flag an error, must be integer
 -----^^^^^^^
 Type propagation results in integer type 'i32' that cannot hold the value '123.456' since it is not a whole number.
@@ -7,7 +7,7 @@ Numeric literal: '123.456'
 Assigned to type: 'i32'
 
 
---CURDIR--/basicIntegers_negative.fz:151:6: error 2: Numeric literal used for integer type is not a whole number
+basicIntegers_negative.fz:151:6: error 2: Numeric literal used for integer type is not a whole number
   sa 123456.789    # 54. should flag an error, must be integer
 -----^^^^^^^^^^
 Type propagation results in integer type 'i32' that cannot hold the value '123456.789' since it is not a whole number.
@@ -15,7 +15,7 @@ Numeric literal: '123456.789'
 Assigned to type: 'i32'
 
 
---CURDIR--/basicIntegers_negative.fz:153:6: error 3: Numeric literal used for integer type is not a whole number
+basicIntegers_negative.fz:153:6: error 3: Numeric literal used for integer type is not a whole number
   sa 123456.789E2  # 55. should flag an error, must be integer
 -----^^^^^^^^^^^^
 Type propagation results in integer type 'i32' that cannot hold the value '123456.789E2' since it is not a whole number.
@@ -23,7 +23,7 @@ Numeric literal: '123456.789E2'
 Assigned to type: 'i32'
 
 
---CURDIR--/basicIntegers_negative.fz:157:6: error 4: Numeric literal used for integer type is not a whole number
+basicIntegers_negative.fz:157:6: error 4: Numeric literal used for integer type is not a whole number
   sa 123456780E-2  # 56. should flag an error, must be integer
 -----^^^^^^^^^^^^
 Type propagation results in integer type 'i32' that cannot hold the value '123456780E-2' since it is not a whole number.
@@ -31,7 +31,7 @@ Numeric literal: '123456780E-2'
 Assigned to type: 'i32'
 
 
---CURDIR--/basicIntegers_negative.fz:158:6: error 5: Numeric literal used for integer type is not a whole number
+basicIntegers_negative.fz:158:6: error 5: Numeric literal used for integer type is not a whole number
   sa 123456780E-3  # 57. should flag an error, must be integer
 -----^^^^^^^^^^^^
 Type propagation results in integer type 'i32' that cannot hold the value '123456780E-3' since it is not a whole number.
@@ -39,7 +39,7 @@ Numeric literal: '123456780E-3'
 Assigned to type: 'i32'
 
 
---CURDIR--/basicIntegers_negative.fz:30:13: error 6: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:30:13: error 6: Integer constant value outside of allowed range for target type
     _ i8 := 128     # 1. should flag an error, constant out of range
 ------------^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -48,7 +48,7 @@ Assigned to type: 'i8'
 Acceptable range of values: '-128' .. '127'
 
 
---CURDIR--/basicIntegers_negative.fz:34:13: error 7: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:34:13: error 7: Integer constant value outside of allowed range for target type
     _ i8 := -129    # 2. should flag an error, constant out of range
 ------------^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -57,7 +57,7 @@ Assigned to type: 'i8'
 Acceptable range of values: '-128' .. '127'
 
 
---CURDIR--/basicIntegers_negative.fz:35:5: error 8: Incompatible types in assignment
+basicIntegers_negative.fz:35:5: error 8: Incompatible types in assignment
     _ i8 := - -1   # 3. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -68,7 +68,7 @@ for value assigned  : '- -1'
 To solve this, you could convert the value using + '.as_i8'.
 
 
---CURDIR--/basicIntegers_negative.fz:36:5: error 9: Incompatible types in assignment
+basicIntegers_negative.fz:36:5: error 9: Incompatible types in assignment
     _ i8 := - - 1  # 4. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -79,7 +79,7 @@ for value assigned  : '- - 1'
 To solve this, you could convert the value using + '.as_i8'.
 
 
---CURDIR--/basicIntegers_negative.fz:42:13: error 10: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:42:13: error 10: Integer constant value outside of allowed range for target type
     _ u8 := 256     # 5. should flag an error, constant out of range
 ------------^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -88,7 +88,7 @@ Assigned to type: 'u8'
 Acceptable range of values: '0' .. '255'
 
 
---CURDIR--/basicIntegers_negative.fz:44:13: error 11: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:44:13: error 11: Integer constant value outside of allowed range for target type
     _ u8 := -1      # 6. should flag an error, constant out of range
 ------------^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -97,7 +97,7 @@ Assigned to type: 'u8'
 Acceptable range of values: '0' .. '255'
 
 
---CURDIR--/basicIntegers_negative.fz:45:5: error 12: Incompatible types in assignment
+basicIntegers_negative.fz:45:5: error 12: Incompatible types in assignment
     _ u8 := - -1   # 7. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -108,7 +108,7 @@ for value assigned  : '- -1'
 To solve this, you could convert the value using + '.as_u8'.
 
 
---CURDIR--/basicIntegers_negative.fz:46:5: error 13: Incompatible types in assignment
+basicIntegers_negative.fz:46:5: error 13: Incompatible types in assignment
     _ u8 := - - 1  # 8. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -119,7 +119,7 @@ for value assigned  : '- - 1'
 To solve this, you could convert the value using + '.as_u8'.
 
 
---CURDIR--/basicIntegers_negative.fz:52:14: error 14: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:52:14: error 14: Integer constant value outside of allowed range for target type
     _ i16 := 0x8000               # 9. should flag an error, constant out of range
 -------------^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -128,7 +128,7 @@ Assigned to type: 'i16'
 Acceptable range of values: '-0x8000' .. '0x7fff'
 
 
---CURDIR--/basicIntegers_negative.fz:54:14: error 15: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:54:14: error 15: Integer constant value outside of allowed range for target type
     _ i16 := 0b1111111111111111   # 10. should flag an error, constant out of range
 -------------^^^^^^^^^^^^^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -137,7 +137,7 @@ Assigned to type: 'i16'
 Acceptable range of values: '-0b1000000000000000' .. '0b111111111111111'
 
 
---CURDIR--/basicIntegers_negative.fz:57:5: error 16: Incompatible types in assignment
+basicIntegers_negative.fz:57:5: error 16: Incompatible types in assignment
     _ i16 := -(32768)            # 11. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -148,7 +148,7 @@ for value assigned  : '-(32768)'
 To solve this, you could convert the value using + '.as_i16'.
 
 
---CURDIR--/basicIntegers_negative.fz:58:5: error 17: Incompatible types in assignment
+basicIntegers_negative.fz:58:5: error 17: Incompatible types in assignment
     _ i16 := -(-32768)           # 12. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -159,7 +159,7 @@ for value assigned  : '-(-32768)'
 To solve this, you could convert the value using + '.as_i16'.
 
 
---CURDIR--/basicIntegers_negative.fz:59:5: error 18: Incompatible types in assignment
+basicIntegers_negative.fz:59:5: error 18: Incompatible types in assignment
     _ i16 := -(-(-32768))        # 13. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -170,7 +170,7 @@ for value assigned  : '-(-(-32768))'
 To solve this, you could convert the value using + '.as_i16'.
 
 
---CURDIR--/basicIntegers_negative.fz:60:14: error 19: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:60:14: error 19: Integer constant value outside of allowed range for target type
     _ i16 := -32769              # 14. should flag an error, constant out of range
 -------------^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -179,7 +179,7 @@ Assigned to type: 'i16'
 Acceptable range of values: '-32768' .. '32767'
 
 
---CURDIR--/basicIntegers_negative.fz:61:5: error 20: Incompatible types in assignment
+basicIntegers_negative.fz:61:5: error 20: Incompatible types in assignment
     _ i16 := -(-(-(32769)))     # 15. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -190,7 +190,7 @@ for value assigned  : '-(-(-(32769)))'
 To solve this, you could convert the value using + '.as_i16'.
 
 
---CURDIR--/basicIntegers_negative.fz:62:5: error 21: Incompatible types in assignment
+basicIntegers_negative.fz:62:5: error 21: Incompatible types in assignment
     _ i16 := +(-(+(32769)))     # 16. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -201,7 +201,7 @@ for value assigned  : '+(-(+(32769)))'
 To solve this, you could convert the value using + '.as_i16'.
 
 
---CURDIR--/basicIntegers_negative.fz:66:14: error 22: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:66:14: error 22: Integer constant value outside of allowed range for target type
     _ u16 := 65536                # 17. should flag an error, constant out of range
 -------------^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -210,7 +210,7 @@ Assigned to type: 'u16'
 Acceptable range of values: '0' .. '65535'
 
 
---CURDIR--/basicIntegers_negative.fz:68:14: error 23: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:68:14: error 23: Integer constant value outside of allowed range for target type
     _ u16 := 0x10000              # 18. should flag an error, constant out of range
 -------------^^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -219,7 +219,7 @@ Assigned to type: 'u16'
 Acceptable range of values: '0x0' .. '0xffff'
 
 
---CURDIR--/basicIntegers_negative.fz:70:14: error 24: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:70:14: error 24: Integer constant value outside of allowed range for target type
     _ u16 := 0b10000000000000000  # 19. should flag an error, constant out of range
 -------------^^^^^^^^^^^^^^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -228,7 +228,7 @@ Assigned to type: 'u16'
 Acceptable range of values: '0b0' .. '0b1111111111111111'
 
 
---CURDIR--/basicIntegers_negative.fz:72:14: error 25: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:72:14: error 25: Integer constant value outside of allowed range for target type
     _ u16 := -1                   # 20. should flag an error, constant out of range
 -------------^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -237,7 +237,7 @@ Assigned to type: 'u16'
 Acceptable range of values: '0' .. '65535'
 
 
---CURDIR--/basicIntegers_negative.fz:73:5: error 26: Incompatible types in assignment
+basicIntegers_negative.fz:73:5: error 26: Incompatible types in assignment
     _ u16 := - - 1               # 21. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -248,7 +248,7 @@ for value assigned  : '- - 1'
 To solve this, you could convert the value using + '.as_u16'.
 
 
---CURDIR--/basicIntegers_negative.fz:76:14: error 27: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:76:14: error 27: Integer constant value outside of allowed range for target type
     _ i64 := 9223372036854775808  # 22. should flag an error, constant out of range
 -------------^^^^^^^^^^^^^^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -257,7 +257,7 @@ Assigned to type: 'i64'
 Acceptable range of values: '-9223372036854775808' .. '9223372036854775807'
 
 
---CURDIR--/basicIntegers_negative.fz:81:14: error 28: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:81:14: error 28: Integer constant value outside of allowed range for target type
     _ u64 := 18446744073709551616 # 23. should flag an error, constant out of range
 -------------^^^^^^^^^^^^^^^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -266,7 +266,7 @@ Assigned to type: 'u64'
 Acceptable range of values: '0' .. '18446744073709551615'
 
 
---CURDIR--/basicIntegers_negative.fz:82:5: error 29: Incompatible types in assignment
+basicIntegers_negative.fz:82:5: error 29: Incompatible types in assignment
     _ u64 := - 0                  # 24. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -277,7 +277,7 @@ for value assigned  : '- 0'
 To solve this, you could convert the value using + '.as_u64'.
 
 
---CURDIR--/basicIntegers_negative.fz:83:14: error 30: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:83:14: error 30: Integer constant value outside of allowed range for target type
     _ u64 := -1                   # 25. should flag an error, constant out of range
 -------------^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -286,7 +286,7 @@ Assigned to type: 'u64'
 Acceptable range of values: '0' .. '18446744073709551615'
 
 
---CURDIR--/basicIntegers_negative.fz:84:5: error 31: Incompatible types in assignment
+basicIntegers_negative.fz:84:5: error 31: Incompatible types in assignment
     _ u64 := - -1                 # 26. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignConstants._'
@@ -297,7 +297,7 @@ for value assigned  : '- -1'
 To solve this, you could convert the value using + '.as_u64'.
 
 
---CURDIR--/basicIntegers_negative.fz:90:13: error 32: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:90:13: error 32: Integer constant value outside of allowed range for target type
     _ := i8 128       # 27. should flag an error, constant out of range
 ------------^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -306,7 +306,7 @@ Assigned to type: 'i8'
 Acceptable range of values: '-128' .. '127'
 
 
---CURDIR--/basicIntegers_negative.fz:94:13: error 33: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:94:13: error 33: Integer constant value outside of allowed range for target type
     _ := i8 -129      # 28. should flag an error, constant out of range
 ------------^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -315,7 +315,7 @@ Assigned to type: 'i8'
 Acceptable range of values: '-128' .. '127'
 
 
---CURDIR--/basicIntegers_negative.fz:95:5: error 34: Incompatible types in assignment
+basicIntegers_negative.fz:95:5: error 34: Incompatible types in assignment
     _ := i8 (- -1)   # 29. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -326,7 +326,7 @@ for value assigned  : '(- -1)'
 To solve this, you could convert the value using + '.as_i8'.
 
 
---CURDIR--/basicIntegers_negative.fz:96:5: error 35: Incompatible types in assignment
+basicIntegers_negative.fz:96:5: error 35: Incompatible types in assignment
     _ := i8 (- - 1)  # 30. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -337,7 +337,7 @@ for value assigned  : '(- - 1)'
 To solve this, you could convert the value using + '.as_i8'.
 
 
---CURDIR--/basicIntegers_negative.fz:102:13: error 36: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:102:13: error 36: Integer constant value outside of allowed range for target type
     _ := u8 256       # 31. should flag an error, constant out of range
 ------------^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -346,7 +346,7 @@ Assigned to type: 'u8'
 Acceptable range of values: '0' .. '255'
 
 
---CURDIR--/basicIntegers_negative.fz:104:13: error 37: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:104:13: error 37: Integer constant value outside of allowed range for target type
     _ := u8 -1        # 32. should flag an error, constant out of range
 ------------^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -355,7 +355,7 @@ Assigned to type: 'u8'
 Acceptable range of values: '0' .. '255'
 
 
---CURDIR--/basicIntegers_negative.fz:105:5: error 38: Incompatible types in assignment
+basicIntegers_negative.fz:105:5: error 38: Incompatible types in assignment
     _ := u8 (- -1)   # 33. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -366,7 +366,7 @@ for value assigned  : '(- -1)'
 To solve this, you could convert the value using + '.as_u8'.
 
 
---CURDIR--/basicIntegers_negative.fz:106:5: error 39: Incompatible types in assignment
+basicIntegers_negative.fz:106:5: error 39: Incompatible types in assignment
     _ := u8 (- - 1)  # 34. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -377,7 +377,7 @@ for value assigned  : '(- - 1)'
 To solve this, you could convert the value using + '.as_u8'.
 
 
---CURDIR--/basicIntegers_negative.fz:112:14: error 40: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:112:14: error 40: Integer constant value outside of allowed range for target type
     _ := i16 0x8000               # 35. should flag an error, constant out of range
 -------------^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -386,7 +386,7 @@ Assigned to type: 'i16'
 Acceptable range of values: '-0x8000' .. '0x7fff'
 
 
---CURDIR--/basicIntegers_negative.fz:114:14: error 41: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:114:14: error 41: Integer constant value outside of allowed range for target type
     _ := i16 0b1111111111111111   # 36. should flag an error, constant out of range
 -------------^^^^^^^^^^^^^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -395,7 +395,7 @@ Assigned to type: 'i16'
 Acceptable range of values: '-0b1000000000000000' .. '0b111111111111111'
 
 
---CURDIR--/basicIntegers_negative.fz:117:5: error 42: Incompatible types in assignment
+basicIntegers_negative.fz:117:5: error 42: Incompatible types in assignment
     _ := i16 -(32768)            # 37. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -406,7 +406,7 @@ for value assigned  : '-(32768)'
 To solve this, you could convert the value using + '.as_i16'.
 
 
---CURDIR--/basicIntegers_negative.fz:118:5: error 43: Incompatible types in assignment
+basicIntegers_negative.fz:118:5: error 43: Incompatible types in assignment
     _ := i16 -(-32768)           # 38. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -417,7 +417,7 @@ for value assigned  : '-(-32768)'
 To solve this, you could convert the value using + '.as_i16'.
 
 
---CURDIR--/basicIntegers_negative.fz:119:5: error 44: Incompatible types in assignment
+basicIntegers_negative.fz:119:5: error 44: Incompatible types in assignment
     _ := i16 -(-(-32768))        # 39. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -428,7 +428,7 @@ for value assigned  : '-(-(-32768))'
 To solve this, you could convert the value using + '.as_i16'.
 
 
---CURDIR--/basicIntegers_negative.fz:120:14: error 45: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:120:14: error 45: Integer constant value outside of allowed range for target type
     _ := i16 -32769              # 40. should flag an error, constant out of range
 -------------^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -437,7 +437,7 @@ Assigned to type: 'i16'
 Acceptable range of values: '-32768' .. '32767'
 
 
---CURDIR--/basicIntegers_negative.fz:121:5: error 46: Incompatible types in assignment
+basicIntegers_negative.fz:121:5: error 46: Incompatible types in assignment
     _ := i16 -(-(-(32769)))     # 41. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -448,7 +448,7 @@ for value assigned  : '-(-(-(32769)))'
 To solve this, you could convert the value using + '.as_i16'.
 
 
---CURDIR--/basicIntegers_negative.fz:122:5: error 47: Incompatible types in assignment
+basicIntegers_negative.fz:122:5: error 47: Incompatible types in assignment
     _ := i16 +(-(+(32769)))     # 42. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -459,7 +459,7 @@ for value assigned  : '+(-(+(32769)))'
 To solve this, you could convert the value using + '.as_i16'.
 
 
---CURDIR--/basicIntegers_negative.fz:126:14: error 48: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:126:14: error 48: Integer constant value outside of allowed range for target type
     _ := u16 65536                # 43. should flag an error, constant out of range
 -------------^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -468,7 +468,7 @@ Assigned to type: 'u16'
 Acceptable range of values: '0' .. '65535'
 
 
---CURDIR--/basicIntegers_negative.fz:128:14: error 49: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:128:14: error 49: Integer constant value outside of allowed range for target type
     _ := u16 0x10000              # 44. should flag an error, constant out of range
 -------------^^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -477,7 +477,7 @@ Assigned to type: 'u16'
 Acceptable range of values: '0x0' .. '0xffff'
 
 
---CURDIR--/basicIntegers_negative.fz:130:14: error 50: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:130:14: error 50: Integer constant value outside of allowed range for target type
     _ := u16 0b10000000000000000  # 45. should flag an error, constant out of range
 -------------^^^^^^^^^^^^^^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -486,7 +486,7 @@ Assigned to type: 'u16'
 Acceptable range of values: '0b0' .. '0b1111111111111111'
 
 
---CURDIR--/basicIntegers_negative.fz:132:14: error 51: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:132:14: error 51: Integer constant value outside of allowed range for target type
     _ := u16 -1                   # 46. should flag an error, constant out of range
 -------------^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -495,7 +495,7 @@ Assigned to type: 'u16'
 Acceptable range of values: '0' .. '65535'
 
 
---CURDIR--/basicIntegers_negative.fz:133:5: error 52: Incompatible types in assignment
+basicIntegers_negative.fz:133:5: error 52: Incompatible types in assignment
     _ := u16 (- - 1)             # 47. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -506,7 +506,7 @@ for value assigned  : '(- - 1)'
 To solve this, you could convert the value using + '.as_u16'.
 
 
---CURDIR--/basicIntegers_negative.fz:136:14: error 53: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:136:14: error 53: Integer constant value outside of allowed range for target type
     _ := i64 9223372036854775808  # 48. should flag an error, constant out of range
 -------------^^^^^^^^^^^^^^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -515,7 +515,7 @@ Assigned to type: 'i64'
 Acceptable range of values: '-9223372036854775808' .. '9223372036854775807'
 
 
---CURDIR--/basicIntegers_negative.fz:141:14: error 54: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:141:14: error 54: Integer constant value outside of allowed range for target type
     _ := u64 18446744073709551616 # 49. should flag an error, constant out of range
 -------------^^^^^^^^^^^^^^^^^^^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -524,7 +524,7 @@ Assigned to type: 'u64'
 Acceptable range of values: '0' .. '18446744073709551615'
 
 
---CURDIR--/basicIntegers_negative.fz:142:5: error 55: Incompatible types in assignment
+basicIntegers_negative.fz:142:5: error 55: Incompatible types in assignment
     _ := u64 (- 0)                # 50. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'
@@ -535,7 +535,7 @@ for value assigned  : '(- 0)'
 To solve this, you could convert the value using + '.as_u64'.
 
 
---CURDIR--/basicIntegers_negative.fz:143:14: error 56: Integer constant value outside of allowed range for target type
+basicIntegers_negative.fz:143:14: error 56: Integer constant value outside of allowed range for target type
     _ := u64 -1                   # 51. should flag an error, constant out of range
 -------------^^
 Type propagation results in a type that is too small for the value represented by the given constant.
@@ -544,7 +544,7 @@ Assigned to type: 'u64'
 Acceptable range of values: '0' .. '18446744073709551615'
 
 
---CURDIR--/basicIntegers_negative.fz:144:5: error 57: Incompatible types in assignment
+basicIntegers_negative.fz:144:5: error 57: Incompatible types in assignment
     _ := u64 (- -1)               # 52. should flag an error, constant out of range
 ----^
 assignment to field : 'basicIntegers_negative.assignToConstructur._'

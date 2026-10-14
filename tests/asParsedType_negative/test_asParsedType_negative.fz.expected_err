@@ -1,21 +1,19 @@
 
---CURDIR--/test_asParsedType_negative.fz:136:3: error 1: Failed to infer actual type parameters
+test_asParsedType_negative.fz:136:3: error 1: Expected a type argument, got a value argument
   x 3.14                        # 1. should flag an error: numeric literal is not a type
 --^
-In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T'
-Type inference failed for one type parameter 'T'
+Value argument: '3.14'
+Expected type parameter: 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:137:3: error 2: Failed to infer actual type parameters
+test_asParsedType_negative.fz:137:3: error 2: Expected a type argument, got a value argument
   x "hello"                     # 2. should flag an error: string literal is not a type
 --^
-In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T'
-Type inference failed for one type parameter 'T'
+Value argument: '"hello"'
+Expected type parameter: 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:138:5: error 3: Type not found
+test_asParsedType_negative.fz:138:5: error 3: Type not found
   x true                        # 3. should flag an error: true is not a type
 ----^^^^
 Type 'true' was not found, no corresponding feature nor formal type parameter exists
@@ -29,67 +27,66 @@ public true bool => true_
 To solve this, remove the return type (or replace it by 'ref') of this feature.
 
 
---CURDIR--/test_asParsedType_negative.fz:139:3: error 4: Failed to infer actual type parameters
+test_asParsedType_negative.fz:139:3: error 4: Expected a type argument, got a value argument
   x true?1:2                    # 4. should flag an error: ? :  is not a type
 --^
-In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T'
-Type inference failed for one type parameter 'T'
+Value argument: 'true?1:2'
+Expected type parameter: 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:140:3: error 5: Failed to infer actual type parameters
+test_asParsedType_negative.fz:140:3: error 5: Expected a type argument, got a value argument
   x (3=4 ? true_  => "a"        # 5. should flag an error: ?-match is not a type
 --^
-In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T'
-Type inference failed for one type parameter 'T'
+Value argument: 
+(3=4 ? true_  => "a"        # 5. should flag an error: ?-match is not a type
+         | false_ => "b")
+
+Expected type parameter: 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:142:3: error 6: Failed to infer actual type parameters
+test_asParsedType_negative.fz:142:3: error 6: Expected a type argument, got a value argument
   x (match 3=4                  # 6. should flag an error: match is not a type
 --^
-In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T'
-Type inference failed for one type parameter 'T'
+Value argument: 
+(match 3=4                  # 6. should flag an error: match is not a type
+       true_  => "a"
+       false_ => "b")
+
+Expected type parameter: 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:145:3: error 7: Failed to infer actual type parameters
+test_asParsedType_negative.fz:145:3: error 7: Expected a type argument, got a value argument
   x (if 3=4 then "a" else "b")  # 7. should flag an error: if is not a type
 --^
-In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T'
-Type inference failed for one type parameter 'T'
+Value argument: '(if 3=4 then "a" else "b")'
+Expected type parameter: 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:146:3: error 8: Failed to infer actual type parameters
+test_asParsedType_negative.fz:146:3: error 8: Expected a type argument, got a value argument
   x (io.Out.env)                # 8. should flag an error: env is not a type
 --^
-In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T'
-Type inference failed for one type parameter 'T'
+Value argument: '(io.Out.env)'
+Expected type parameter: 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:147:3: error 9: Failed to infer actual type parameters
+test_asParsedType_negative.fz:147:3: error 9: Expected a type argument, got a value argument
   x (io.Out.type)               # 9. should flag an error: type instance is not a type
 --^
-In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T'
-Type inference failed for one type parameter 'T'
+Value argument: '(io.Out.type)'
+Expected type parameter: 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:149:3: error 10: Failed to infer actual type parameters
+test_asParsedType_negative.fz:149:3: error 10: Expected a type argument, got a value argument
   x t.values.0                  # 10. should flag an error: select is not a type
 --^
-In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T'
-Type inference failed for one type parameter 'T'
+Value argument: 't.values.0'
+Expected type parameter: 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:150:3: error 11: Failed to infer actual type parameters
+test_asParsedType_negative.fz:150:3: error 11: Expected a type argument, got a value argument
   x t.values.2                  # 11. should flag an error: select is not a type
 --^
-In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T'
-Type inference failed for one type parameter 'T'
+Value argument: 't.values.2'
+Expected type parameter: 'T'
 
 11 errors.

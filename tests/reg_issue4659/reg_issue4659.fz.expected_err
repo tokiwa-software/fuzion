@@ -1,8 +1,8 @@
 
---CURDIR--/reg_issue4659.fz:25:1: error 1: Inconsistent indentation
+reg_issue4659.fz:25:1: error 1: Inconsistent indentation
 do
 ^
-Indentation reference point is --CURDIR--/reg_issue4659.fz:24:2
+Indentation reference point is reg_issue4659.fz:24:2
  for
 -^
 While parsing: loop, parse stack: loop, term, opExpr, operatorExpr, expr, exprs, block (twice), unit

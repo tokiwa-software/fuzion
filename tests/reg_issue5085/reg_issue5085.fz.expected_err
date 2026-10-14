@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue5085.fz:24:27: error 1: reading uninitialized field 'x' from instance of 'universe'
+reg_issue5085.fz:24:27: error 1: reading uninitialized field 'x' from instance of 'universe'
 x i64 := [1,2].fold1 a,b->x
 --------------------------^
 Callchain that lead to this point:
@@ -21,7 +21,7 @@ call '(array i64).fold1#1' at {base.fum}/Sequence.fz:632:3
 --^^^
     debug: !is_empty
 ----^^^^^^^^^^^^^^^^
-call '(array i64).precall fold1' at --CURDIR--/reg_issue5085.fz:24:10
+call '(array i64).precall fold1' at reg_issue5085.fz:24:10
 x i64 := [1,2].fold1 a,b->x
 ---------^^^^^^^^^^^^^^^^^^
 call 'universe'

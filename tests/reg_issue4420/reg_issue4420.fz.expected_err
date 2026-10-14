@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4420.fz:24:23: error 1: Wrong number of actual value arguments in call
+reg_issue4420.fz:24:23: error 1: Wrong number of actual value arguments in call
 [""].reduce unit unit id
 ----------------------^^
 Number of actual value arguments is 2, while call expects one value argument.

@@ -373,7 +373,8 @@ bool fzE_bitwise_compare_float(float f1, float f2);
 bool fzE_bitwise_compare_double(double d1, double d2);
 
 /**
- * @return the time of the given posix clock
+ * @return the time of the given posix clock in nano seconds,
+ * for supported clock ids see `posix.clockid_t.val` in base.
  */
 uint64_t fzE_posix_time(int clockid);
 
@@ -821,7 +822,7 @@ void fzE_cnd_wait     (void * cnd, void * mtx);
  *
  * @return -1 on error, 0 on success
  */
-void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns);
+void fzE_cnd_timedwait(void * cnd, void * mtx, uint64_t time_ns);
 
 /**
  * destroys the condition
