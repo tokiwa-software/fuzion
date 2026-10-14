@@ -818,12 +818,12 @@ public class DFA extends ANY
    * performance?  This is used to avoid large number of instances of, e.g.,
    * {@code array u8} where tracking the individual instances gives no benefit.
    *
-   * To disable, use fz with
+   * To enable, use fz with
    *
-   *   dev_flang_fuir_analysis_dfa_DFA_ONLY_ONE_INSTANCE=false
+   *   dev_flang_fuir_analysis_dfa_DFA_ONLY_ONE_INSTANCE=true
    */
   static final boolean ONLY_ONE_INSTANCE  =
-    FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.ONLY_ONE_INSTANCE", true);
+    FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.ONLY_ONE_INSTANCE", false);
 
 
   /**
