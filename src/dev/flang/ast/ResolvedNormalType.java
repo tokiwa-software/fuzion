@@ -169,7 +169,8 @@ public class ResolvedNormalType extends ResolvedType
        || generics().isEmpty() /* e.g. an incomplete type in a match case */,
         generics().stream().allMatch(x -> !x.isCotypeType()),
         // the outer of a cotype must be a parametric type or a cotype
-        o == null || o.backingFeature().isUniverse() || _feature == null || !_feature.isCotype() || o.isParametricType() || o.isCotypeType());
+        o == null || o.backingFeature().isUniverse() || _feature == null || !_feature.isCotype() || o.isParametricType() || o.isCotypeType(),
+       Errors.any() || _outer == null || _outer.isParametricType() || _outer.feature().inheritsFrom(_feature.outer()));
   }
 
   /**
