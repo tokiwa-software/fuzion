@@ -1023,13 +1023,6 @@ public class DFA extends ANY
 
 
   /**
-   * During first phase that determined CallGroups, this will collect the
-   * effects that each clazz requires
-   */
-  TreeMap<Integer, TreeSet<Integer>> _clazzesThatRequireEffect = new TreeMap<>();
-
-
-  /**
    * During first phase that determined CallGroups, this will collect what
    * clazzes each effect is required by.
    */

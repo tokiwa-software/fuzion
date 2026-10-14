@@ -224,7 +224,6 @@ class CallGroup extends ANY implements Comparable<CallGroup>
 
     for (var e : _usedEffects)
       {
-        _dfa._clazzesThatRequireEffect.computeIfAbsent(e  , k->new TreeSet<>()).add(_cc);
         _dfa._effectsRequiredByClazz  .computeIfAbsent(_cc, k->new TreeSet<>()).add(e  );
       }
   }
