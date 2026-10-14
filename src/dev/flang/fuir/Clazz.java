@@ -2100,6 +2100,29 @@ class Clazz extends ANY implements Comparable<Clazz>
     return _asValue;
   }
 
+
+  /**
+   * see #5061 why this is required
+   *
+   * e.g., when Y inherits from X:
+   *
+   * X.a.Y.a
+   *
+   * we collapse to X.a, to prevent endless recursion
+   * in calledInner
+   */
+  public Clazz collapseReferenceCyle(Clazz target)
+  {
+    var i = _outer;
+    while (i != null && i.feature() != feature())
+      {
+        i = i._outer;
+      }
+    return i != null && target.feature().inheritsFrom(i.feature().outer())
+      ? i
+      : this;
+  }
+
 }
 
 /* end of file */

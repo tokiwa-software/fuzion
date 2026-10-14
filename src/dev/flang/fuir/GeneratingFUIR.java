@@ -2795,6 +2795,9 @@ public class GeneratingFUIR extends FUIR
             FuirErrors.callResultsInRecursiveType(c, innerClazz._type);
             innerClazz = tclazz;
           }
+        innerClazz = dynamic
+          ? innerClazz.collapseReferenceCyle(tclazz)
+          : innerClazz;
         if (cf == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
