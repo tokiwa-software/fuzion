@@ -1009,7 +1009,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         // errors (building base.fum). Apparently, there is some code that
         // re-uses these without proper freezing/cloning.  A solution would be
         // to change `List.map` to always clone the original List.
-        i.actualTypeParameters().freeze();
+        i.typeArguments().freeze();
       }
     var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.baseName()));
     return t.applyTypePars(this, tl)
@@ -1312,8 +1312,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (f.outer() == p.calledFeature())
       {
-        // NYI: BUG: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
-        fn = f.effectiveName(res, p.actualTypeParameters());
+        // NYI: BUG: This might be incorrect in case p.typeArguments() is inferred but not set yet.
+        fn = f.effectiveName(res, p.typeArguments());
       }
 
     return fn;
@@ -1551,7 +1551,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
              ? t
              : t.applyTypePars(c.target().type()))
           // then apply type pars using the call
-          .applyTypeParsMaybeOpen(c.calledFeature(), c.actualTypeParameters(), select)
+          .applyTypeParsMaybeOpen(c.calledFeature(), c.typeArguments(), select)
         );
   }
 

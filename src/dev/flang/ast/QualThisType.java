@@ -58,7 +58,7 @@ public class QualThisType extends UnresolvedType
     _qual = qual;
     super(SourcePosition.range(qual),
           qual.getLast()._name,
-          Call.NO_GENERICS, null, Optional.of(TypeKind.ThisType));
+          Call.NO_TYPE_ARGUMENTS, null, Optional.of(TypeKind.ThisType));
   }
 
 

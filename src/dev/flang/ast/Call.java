@@ -111,13 +111,13 @@ public class Call extends AbstractCall
   List<AbstractType> _splitOffGenerics;
 
   /**
-   * actual generic arguments, set by parser
+   * type arguments, set by parser
    */
   /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
-  public List<AbstractType> actualTypeParameters()
+  public List<AbstractType> typeArguments()
   {
     var res = _generics;
-    if (_generics == NO_GENERICS && needsToInferTypeParametersFromArgs())
+    if (_generics == NO_TYPE_ARGUMENTS && needsToInferTypeParametersFromArgs())
       {
         res = new List<>();
         for (var g : _calledFeature.typeArguments())
@@ -286,7 +286,7 @@ public class Call extends AbstractCall
    */
   Call(SourcePosition pos, Expr t, String n, List<Expr> la)
   {
-    this(pos, t, n, FuzionConstants.NO_SELECT, NO_GENERICS, la, null);
+    this(pos, t, n, FuzionConstants.NO_SELECT, NO_TYPE_ARGUMENTS, la, null);
 
     if (PRECONDITIONS) require
       (la != null);
@@ -306,7 +306,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, AbstractFeature calledFeature)
   {
-    this(pos, t, calledFeature.baseName(), FuzionConstants.NO_SELECT, NO_GENERICS, Expr.NO_EXPRS, calledFeature);
+    this(pos, t, calledFeature.baseName(), FuzionConstants.NO_SELECT, NO_TYPE_ARGUMENTS, Expr.NO_EXPRS, calledFeature);
   }
 
 
@@ -1567,7 +1567,7 @@ public class Call extends AbstractCall
         else if (tt.isThisType())
           {
             // NYI: UNDER DEVELOPMENT: better error for this-type target
-            AstErrors.selectorRange(pos(), 0, _calledFeature, _name, _select, AbstractCall.NO_GENERICS);
+            AstErrors.selectorRange(pos(), 0, _calledFeature, _name, _select, AbstractCall.NO_TYPE_ARGUMENTS);
           }
         else if (tt.generics().stream().anyMatch(g -> g.isOpenGeneric()))
           {
@@ -1733,7 +1733,7 @@ public class Call extends AbstractCall
         foundAt.add(null);
       }
 
-    _generics = actualTypeParameters();
+    _generics = typeArguments();
     var va = _calledFeature.valueArguments();
     var checked = new boolean[va.size()];
     int last, next = 0;
@@ -2054,7 +2054,7 @@ public class Call extends AbstractCall
                                  *     _ := a %%2
                                  */
                                 actual = propagateForPartial(res, context, argnum, c);
-                                var ac = c.applyTypePars(calledFeature(), actualTypeParameters());
+                                var ac = c.applyTypePars(calledFeature(), typeArguments());
                                 /* ac may contain undefined for code from #6849 as follows
 
                                      x(F type : ()->unit, G type : F, f G) => {}
@@ -2584,7 +2584,7 @@ public class Call extends AbstractCall
     return
       _calledFeature != null                                       &&
       !_calledFeature.typeArguments().isEmpty()                    &&
-      (_generics == NO_GENERICS                                ||
+      (_generics == NO_TYPE_ARGUMENTS                                ||
        _generics.stream().anyMatch(g -> g.containsUndefined()) ||
        _generics.size() < _calledFeature.typeArguments().size()  );
   }
@@ -3327,7 +3327,7 @@ public class Call extends AbstractCall
    */
   public void notifyInferred()
   {
-    if (!actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined()))
+    if (!typeArguments().stream().anyMatch(atp -> atp.containsUndefined()))
       {
         for (var r : _whenInferredTypeParameters)
           {
@@ -3359,7 +3359,7 @@ public class Call extends AbstractCall
             ? ""
             : StringHelpers.wrapInParentheses(target().toString()) + ".")
       + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().baseNameHuman())
-      + actualTypeParameters().toString(" ", " ", "", t -> (t == null ? "--null--" : t.toStringWrapped(true)))
+      + typeArguments().toString(" ", " ", "", t -> (t == null ? "--null--" : t.toStringWrapped(true)))
       + actuals()             .toString(" ", " ", "", e -> (e == null ? "--null--" : e.toStringWrapped()))
       + (select() < 0        ? "" : " ." + select());
   }

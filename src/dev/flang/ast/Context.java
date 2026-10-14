@@ -129,7 +129,7 @@ abstract class Context extends ANY
                       isClone(typeParameter, tc.calledFeature()))
                     {
                       return cc
-                        .actualTypeParameters()
+                        .typeArguments()
                         .get(0)
                         /**
                          * replace type parameters that come from pre feature
@@ -223,7 +223,7 @@ abstract class Context extends ANY
             {
               if (isClone(t.calledFeature(), typeParameter))
                 {
-                  return infix_colon_call.actualTypeParameters().get(0);
+                  return infix_colon_call.typeArguments().get(0);
                 }
               return super.constraintFor(typeParameter);
             }

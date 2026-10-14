@@ -296,7 +296,7 @@ public class SourceModule extends Module implements SrcModule
        feature.outer().isUniverse());
     return new AbstractCall() {
       @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
-      @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
+      @Override public List<AbstractType> typeArguments() { return NO_TYPE_ARGUMENTS; }
       @Override public AbstractFeature calledFeature() { return feature; }
       @Override public Expr target() { return Universe.instance; }
       @Override public AbstractType type() { return calledFeature().resultType(); }

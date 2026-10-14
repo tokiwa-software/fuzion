@@ -838,18 +838,18 @@ class LibraryOut extends ANY
           }
         if (cf.generics().isOpen())
           {
-            n = c.actualTypeParameters().size();
+            n = c.typeArguments().size();
             _data.writeInt(n);
           }
         else
           {
             n = cf.typeArguments().size();
             if (CHECKS) check
-              (c.actualTypeParameters().size() == n);
+              (c.typeArguments().size() == n);
           }
         for (int i = 0; i < n; i++)
           {
-            type(c.actualTypeParameters().get(i));
+            type(c.typeArguments().get(i));
           }
         if (CHECKS) check
           (cf.resultType().isOpenGeneric() == (c.select() >= 0));

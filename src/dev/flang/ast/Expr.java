@@ -703,8 +703,8 @@ public abstract class Expr extends ANY implements HasSourcePosition
           .stream()
           .anyMatch(c ->
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
-            && !c.actualTypeParameters().isEmpty()
-                    && expectedType.isAssignableFromWithoutBoxing(c.actualTypeParameters().get(0).applyTypePars(t), context).yes())
+            && !c.typeArguments().isEmpty()
+                    && expectedType.isAssignableFromWithoutBoxing(c.typeArguments().get(0).applyTypePars(t), context).yes())
       ? new ParsedCall(this, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context)
       : this;
   }
@@ -730,8 +730,8 @@ public abstract class Expr extends ANY implements HasSourcePosition
           .stream()
           .anyMatch(c ->
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
-            && !c.actualTypeParameters().isEmpty()
-                    && c.actualTypeParameters().get(0).applyTypePars(t).isChoice())
+            && !c.typeArguments().isEmpty()
+                    && c.typeArguments().get(0).applyTypePars(t).isChoice())
       ? new ParsedCall(this, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context)
       : this;
   }
