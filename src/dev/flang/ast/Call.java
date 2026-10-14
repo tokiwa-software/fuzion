@@ -2362,7 +2362,7 @@ public class Call extends AbstractCall
           }
         else if (formalType.isChoice() &&
                  actualType.isNormalType() &&
-                 !aft.inheritsFrom(fft) && pass>0)
+                 !aft.inheritsFrom(fft) && pass>=0)
           {
             /**
              * example:
