@@ -2438,9 +2438,13 @@ public class Call extends AbstractCall
                               ||
                               (// second, this is needed for `x(T type, v option T)` calles via, e.g., `x 3.14`.
                                x.isParametricType()
-                               && x.typeParameter().outer() == calledFeature()
-                               && x.typeParameter().typeParameterIndex() < _generics.size()
-                               && _generics.get(x.typeParameter().typeParameterIndex()) == Types.t_UNDEFINED)
+                               && x.typeParameter() instanceof AbstractFeature tp  // always true
+                               && tp.outer() == calledFeature()
+                            // && tp.typeParameterIndex() instanceof int ti  // NYI: UNDER DEVELOPMENT:  preview feature, use when available
+                               && /* ti */ tp.typeParameterIndex() < _generics.size()
+                               && _generics.get(/* ti */ tp.typeParameterIndex()) instanceof AbstractType gt  // always true
+                               && (gt == Types.t_UNDEFINED || gt.commonSupertype(actualType, context) != Types.t_ERROR)
+                              )
                              )
                       .forEachOrdered(ct -> inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt));
                   }
