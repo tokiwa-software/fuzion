@@ -2373,27 +2373,25 @@ public class Call extends AbstractCall
             AstErrors.incompatibleArgumentTypeInCall(_calledFeature, actualArgIndex, formalType, _actuals.get(actualArgIndex), Context.NONE);
             setToErrorState();
           }
-        else
+        else if  (aft != null)
           {
-            if  (aft != null)
+            for (var p: aft.inherits())
               {
-                for (var p: aft.inherits())
+                if (p instanceof Call pc)
                   {
-                    if (p instanceof Call pc)
+                    pc.resolveTypes(res, aft.context());
+                  }
+                var pt = p.type();
+                if (pt != Types.t_ERROR)
+                  {
+                    var apt = actualType.actualType(pt, context);
+                    if (apt.feature().inheritsFrom(formalType.feature()))
                       {
-                        pc.resolveTypes(res, aft.context());
-                      }
-                    var pt = p.type();
-                    if (pt != Types.t_ERROR)
-                      {
-                        var apt = actualType.actualType(pt, context);
-                        if (apt.feature().inheritsFrom(formalType.feature()))
-                          {
-                            inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt);
-                          }
+                        inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt);
                       }
                   }
               }
+
             if (formalType.isChoice() && !(formalTypeIsConstraint && formalType.constraintAssignableFrom(actualType)))
               {
                 /**
@@ -2415,41 +2413,47 @@ public class Call extends AbstractCall
                 var directlyAssignable = formalType
                   .choiceGenerics(context)
                   .stream()
-                  .filter(x -> !x.dependsOnGenerics())
-                  .anyMatch(x -> x.isAssignableFromWithoutBoxing(actualType, context).yes());
+                  .filter(x -> !x.dependsOnGenerics() // why without generics?
+                         )
+                  .anyMatch(x -> // NYI: why without boxing?
+                            x.isAssignableFromWithoutBoxing(actualType, context).yes());
 
                 if (!directlyAssignable)
                   {
                     // if actualType is `Branch String`
                     // we only consider `Branch T` and not `T`.
-                    var matchingFeature = formalType
-                      .choiceGenerics(context)
-                      .stream()
-                      .filter(x -> x.dependsOnGenerics()
-                              && !x.isParametricType()
-                              && !actualType.isParametricType()
-                              && x.feature() == actualType.feature())
-                      .toList();
-                    for (var ct : matchingFeature)
-                      {// NYI: needed?
-                        inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt);
-                      }
+
                     formalType
                       .choiceGenerics(context)
                       .stream()
-                      .filter(x -> x.isParametricType()
-                              && x.typeParameter().outer() == calledFeature()
-                              && x.typeParameter().typeParameterIndex() < _generics.size()
-                              && _generics.get(x.typeParameter().typeParameterIndex()) == Types.t_UNDEFINED
+                      .filter(x ->
+                              (// first, this is needed for NYI: WHY? (lock_free/Map.fz:512):
+                               x.dependsOnGenerics()
+                               && !x.isParametricType()
+                               && !actualType.isParametricType()
+                               && x.feature() == actualType.feature())
+                              ||
+                              (// second, this is needed for `x(T type, v option T)` calles via, e.g., `x 3.14`.
+                               x.isParametricType()
+                               && x.typeParameter().outer() == calledFeature()
+                               && x.typeParameter().typeParameterIndex() < _generics.size()
+                               && _generics.get(x.typeParameter().typeParameterIndex()) == Types.t_UNDEFINED)
                              )
-                      .forEachOrdered(ct ->
-                                      inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt)
-                                     );
+                      .forEachOrdered(ct -> inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt));
                   }
               }
-            else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
-              { // NYI: needed?
-                AstErrors.incompatibleArgumentTypeInCall(_calledFeature, actualArgIndex, formalType, _actuals.get(actualArgIndex), Context.NONE);
+            else if (actualArgIndex != -1 && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
+              { // if actual and formal types clearly do not match as in
+                //
+                //     say <| [1,2,3].map "bla"
+                //
+                // then create an error here instead of an error that type
+                // inference failed that would be just confusing:
+                AstErrors.incompatibleArgumentTypeInCall(_calledFeature,
+                                                         actualArgIndex,
+                                                         formalType,
+                                                         _actuals.get(actualArgIndex),
+                                                         Context.NONE);
                 setToErrorState();
               }
           }
