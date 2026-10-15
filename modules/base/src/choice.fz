@@ -320,7 +320,7 @@ is
   #
   #   (T.equality a b) : (T.hash_code a = T.hash_code b)
   #
-  # This will result in a compile-time `panic` in case any element type is not
+  # This will result in a  `compile_time_panic` in case any element type is not
   # hashable.
   #
   public redef type.hash_code(a choice.this) u64
