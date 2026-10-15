@@ -512,17 +512,19 @@ public String ref : property.hashable, property.orderable is
 
   # replace all occurrences of old by new
   #
-  public replace (old, new String) String => String.from_bytes (utf8.replace old.utf8 new.utf8)
+  public replace (old, new String) String =>
+    String.from_bytes (utf8.replace old.utf8 new.utf8)
 
 
   # replace the first n occurrences of old by new
   #
-  public replace(old, new String, n u64) String => String.from_bytes (utf8.replace old.utf8 new.utf8 n)
+  public replace(old, new String, n u64) String =>
+    String.from_bytes (utf8.replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
   #
-  public contains (substring String) bool => find(substring).ok
+  public contains (substring String) bool => find substring .ok
 
 
   # count number of occurrences of given 'substring' in this string
@@ -642,7 +644,7 @@ public String ref : property.hashable, property.orderable is
   # lambda testing if byte is is_ascii_white_space
   #
   is_ascii_white_space =>
-    (id (u8->bool) (.is_ascii_white_space))
+    id (u8->bool) (.is_ascii_white_space)
 
 
   # remove leading and trailing white space from this string

@@ -195,15 +195,15 @@ exp_out :=
   if be = "effect"
     io.path.of "$file.effect"
   else if io.file.exists (io.path.of "$file.expected_out_$be") || action = "record" && be != "any"
-    (io.path.of "$file.expected_out_$be")
+    io.path.of "$file.expected_out_$be"
   else
-    (io.path.of "$file.expected_out")
+    io.path.of "$file.expected_out"
 
 exp_err :=
   if io.file.exists (io.path.of "$file.expected_err_$be") || action = "record" && be != "any"
-    (io.path.of "$file.expected_err_$be")
+    io.path.of "$file.expected_err_$be"
   else
-    (io.path.of "$file.expected_err")
+    io.path.of "$file.expected_err"
 
 
 backend_options(x) =>
