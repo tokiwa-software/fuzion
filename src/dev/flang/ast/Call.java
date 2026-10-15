@@ -1979,7 +1979,7 @@ public class Call extends AbstractCall
              *     _ := a _ (array i32)
              */
             var c = adjustTypeForTarget(res, context, f.constraint(), null);  // constraint with actual generics replaced, see #7415
-            inferGeneric(res, context, c, g, g.declarationPos(), conflict, foundAt, -1);
+            inferGeneric(res, context, c, true, g, pos(), conflict, foundAt, -1);
           }
       }
   }
@@ -2071,7 +2071,7 @@ public class Call extends AbstractCall
                                  *     a(T type, S type : array T, s S) is
                                  *     _ := a [32]
                                  */
-                                inferGeneric(res, context, c, actualType, actual.pos(), conflict, foundAt, argnum);
+                                inferGeneric(res, context, c, true, actualType, actual.pos(), conflict, foundAt, argnum);
                               }
                             else if (c.isLambdaTargetButNotLazy(res))
                               { /* propagate constraint for partial or lambda:
@@ -2110,7 +2110,7 @@ public class Call extends AbstractCall
                           }
                         if (actualType != null)
                           {
-                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, argnum);
+                            inferGeneric(res, context, t, false, actualType, actual.pos(), conflict, foundAt, argnum);
                             checked[vai] = true;
                           }
                         if (resultExpression(actual) instanceof AbstractLambda al)
@@ -2227,11 +2227,17 @@ public class Call extends AbstractCall
    */
   private void addPair(List<List<Pair<SourcePosition, AbstractType>>> foundAt, int i, SourcePosition pos, AbstractType t)
   {
-    if (foundAt.get(i) == null)
+    var l = foundAt.get(i);
+    if (l == null)
       {
-        foundAt.set(i, new List<>());
+        l = new List<>();
+        foundAt.set(i, l);
       }
-    foundAt.get(i).add(new Pair<SourcePosition, AbstractType>(pos, t));
+    var p = new Pair<SourcePosition, AbstractType>(pos, t);
+    if (!l.contains(p))
+      {
+        l.add(p);
+      }
   }
 
 
@@ -2256,12 +2262,13 @@ public class Call extends AbstractCall
   private void inferGeneric(Resolution res,
                             Context context,
                             AbstractType formalType,
+                            boolean formalTypeIsConstraint,
                             AbstractType actualType,
                             SourcePosition pos,
                             boolean[] conflict,
                             List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
-    inferGeneric(res, context, formalType, actualType, pos, conflict, foundAt, -1);
+    inferGeneric(res, context, formalType, formalTypeIsConstraint , actualType, pos, conflict, foundAt, -1);
   }
 
 
@@ -2288,6 +2295,7 @@ public class Call extends AbstractCall
   private void inferGeneric(Resolution res,
                             Context context,
                             AbstractType formalType,
+                            boolean formalTypeIsConstraint,
                             AbstractType actualType,
                             SourcePosition pos,
                             boolean[] conflict,
@@ -2305,7 +2313,7 @@ public class Call extends AbstractCall
       }
     else if (formalType.isLazyType() && !actualType.isLazyType())
       {
-        inferGeneric(res, context, formalType.generics().get(0), actualType, pos, conflict, foundAt);
+        inferGeneric(res, context, formalType.generics().get(0), false, actualType, pos, conflict, foundAt);
       }
     else if (formalType.isParametricType())
       {
@@ -2343,6 +2351,7 @@ public class Call extends AbstractCall
                     inferGeneric(res,
                                  context,
                                  formalType.actualGenerics().get(i),
+                                 false,
                                  g.get(i),
                                  pos, conflict, foundAt);
                   }
@@ -2354,81 +2363,94 @@ public class Call extends AbstractCall
                 inferGeneric(res,
                              context,
                              formalType.outer(),
+                             false,
                              actualType.outer(),
                              pos, conflict, foundAt);
               }
           }
-        else if (formalType.isChoice())
-          {
-            /**
-             * example:
-             *
-             *   tree(T type) : choice nil T (Branch T) is
-             *
-             *   Branch(T type, left, right tree T) ref is
-             *
-             *   tree := (Branch
-             *             (Branch
-             *               (Branch $"A" "B")
-             *               (Branch $"C" "D"))
-             *             (Branch
-             *               (Branch $"E" "F")
-             *               (Branch $"G" nil)))
-             */
-
-            var directlyAssignable = formalType
-              .choiceGenerics(context)
-              .stream()
-              .filter(x -> !x.dependsOnGenerics())
-              .anyMatch(x -> x.isAssignableFromWithoutBoxing(actualType, context).yes());
-
-            if (!directlyAssignable)
-              {
-                // if actualType is `Branch String`
-                // we only consider `Branch T` and not `T`.
-                var matchingFeature = formalType
-                  .choiceGenerics(context)
-                  .stream()
-                  .filter(x -> x.dependsOnGenerics()
-                           && !x.isParametricType()
-                           && !actualType.isParametricType()
-                           && x.feature() == actualType.feature())
-                  .toList();
-                for (var ct : matchingFeature)
-                  {
-                    inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
-                  }
-                if (matchingFeature.size() == 0)
-                  {
-                    for (var ct : formalType.choiceGenerics(context))
-                      {
-                        inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
-                      }
-                  }
-              }
-          }
-        else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
+        else if (false && actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
           {
             AstErrors.incompatibleArgumentTypeInCall(_calledFeature, actualArgIndex, formalType, _actuals.get(actualArgIndex), Context.NONE);
             setToErrorState();
           }
-        else if (aft != null)
+        else
           {
-            for (var p: aft.inherits())
+            if  (aft != null)
               {
-                if (p instanceof Call pc)
+                for (var p: aft.inherits())
                   {
-                    pc.resolveTypes(res, aft.context());
-                  }
-                var pt = p.type();
-                if (pt != Types.t_ERROR)
-                  {
-                    var apt = actualType.actualType(pt, context);
-                    if (apt.feature().inheritsFrom(formalType.feature()))
+                    if (p instanceof Call pc)
                       {
-                        inferGeneric(res, context, formalType, apt, pos, conflict, foundAt);
+                        pc.resolveTypes(res, aft.context());
+                      }
+                    var pt = p.type();
+                    if (pt != Types.t_ERROR)
+                      {
+                        var apt = actualType.actualType(pt, context);
+                        if (apt.feature().inheritsFrom(formalType.feature()))
+                          {
+                            inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt);
+                          }
                       }
                   }
+              }
+            if (formalType.isChoice() && !(formalTypeIsConstraint && formalType.constraintAssignableFrom(actualType)))
+              {
+                /**
+                 * example:
+                 *
+                 *   tree(T type) : choice nil T (Branch T) is
+                 *
+                 *   Branch(T type, left, right tree T) ref is
+                 *
+                 *   tree := (Branch
+                 *             (Branch
+                 *               (Branch $"A" "B")
+                 *               (Branch $"C" "D"))
+                 *             (Branch
+                 *               (Branch $"E" "F")
+                 *               (Branch $"G" nil)))
+                 */
+
+                var directlyAssignable = formalType
+                  .choiceGenerics(context)
+                  .stream()
+                  .filter(x -> !x.dependsOnGenerics())
+                  .anyMatch(x -> x.isAssignableFromWithoutBoxing(actualType, context).yes());
+
+                if (!directlyAssignable)
+                  {
+                    // if actualType is `Branch String`
+                    // we only consider `Branch T` and not `T`.
+                    var matchingFeature = formalType
+                      .choiceGenerics(context)
+                      .stream()
+                      .filter(x -> x.dependsOnGenerics()
+                              && !x.isParametricType()
+                              && !actualType.isParametricType()
+                              && x.feature() == actualType.feature())
+                      .toList();
+                    for (var ct : matchingFeature)
+                      {// NYI: needed?
+                        inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt);
+                      }
+                    formalType
+                      .choiceGenerics(context)
+                      .stream()
+                      .filter(x -> x.isParametricType()
+                              && x.typeParameter().outer() == calledFeature()
+                              && x.typeParameter().typeParameterIndex() < _generics.size()
+                              && _generics.get(x.typeParameter().typeParameterIndex()) == Types.t_UNDEFINED
+                             )
+                      .forEachOrdered(ct ->
+                                      inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt)
+                                     );
+                  }
+              }
+            else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
+              { // NYI: needed?
+                AstErrors.incompatibleArgumentTypeInCall(_calledFeature, actualArgIndex, formalType, _actuals.get(actualArgIndex), Context.NONE);
+                setToErrorState();
               }
           }
       }
@@ -2533,7 +2555,7 @@ public class Call extends AbstractCall
                 var rt = al.inferLambdaResultType(res, context, argumentType);
                 if (rt != null)
                   {
-                    inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
+                    inferGeneric(res, context, lambdaResultType, false, rt, pos, conflict, foundAt);
                     result = true;
                   }
               }
