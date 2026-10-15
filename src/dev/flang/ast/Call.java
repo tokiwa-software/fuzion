@@ -2373,21 +2373,24 @@ public class Call extends AbstractCall
             AstErrors.incompatibleArgumentTypeInCall(_calledFeature, actualArgIndex, formalType, _actuals.get(actualArgIndex), Context.NONE);
             setToErrorState();
           }
-        else if  (aft != null)
+        else
           {
-            for (var p: aft.inherits())
+            if  (aft != null)
               {
-                if (p instanceof Call pc)
+                for (var p: aft.inherits())
                   {
-                    pc.resolveTypes(res, aft.context());
-                  }
-                var pt = p.type();
-                if (pt != Types.t_ERROR)
-                  {
-                    var apt = actualType.actualType(pt, context);
-                    if (apt.feature().inheritsFrom(formalType.feature()))
+                    if (p instanceof Call pc)
                       {
-                        inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt);
+                        pc.resolveTypes(res, aft.context());
+                      }
+                    var pt = p.type();
+                    if (pt != Types.t_ERROR)
+                      {
+                        var apt = actualType.actualType(pt, context);
+                        if (apt.feature().inheritsFrom(formalType.feature()))
+                          {
+                            inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt);
+                          }
                       }
                   }
               }
@@ -2442,7 +2445,7 @@ public class Call extends AbstractCall
                       .forEachOrdered(ct -> inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt));
                   }
               }
-            else if (actualArgIndex != -1 && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
+            else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
               { // if actual and formal types clearly do not match as in
                 //
                 //     say <| [1,2,3].map "bla"
