@@ -306,7 +306,7 @@ is
   # create hash code for this choice
   #
   # This can be used for child types like `option i64` as well. Note that the
-  # result of of children wil be the same, i.e.,
+  # result of of children will be the same, i.e.,
   #
   #     (choice i64 nil).hash_code 42
   #
