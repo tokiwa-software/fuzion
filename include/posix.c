@@ -927,6 +927,11 @@ int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
   errno = 0;
   ssize_t result;
   FZ_RETRY_ON_EINTR(result, read((int) desc, buf, nbytes));
+  if (result < 0 && (errno == EBADF || errno == EIO))
+    {
+      // pipe was closed while reading (EBADF: descriptor closed, EIO: pipe broken)
+      return 0;
+    }
   // NYI: UNDER DEVELOPMENT: this assertion will probably fail some time
   assert(result > 0 || (errno != EAGAIN && errno != EWOULDBLOCK));
   return result;
