@@ -48,7 +48,7 @@ public Map(K type : property.equatable, V type) ref is
   # get a sequence of all keys in this map
   #
   public keys Sequence K =>
-    items.map K (t -> k, _ := t; k)
+    items.map (.0)
 
 
   # check if key k exists in this map
@@ -59,7 +59,7 @@ public Map(K type : property.equatable, V type) ref is
   # get a sequence of all values in this map
   #
   public values Sequence V =>
-    items.map V (t -> _, v := t; v)
+    items.map (.1)
 
 
   # is this an empty Map?
