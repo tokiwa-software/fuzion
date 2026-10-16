@@ -59,7 +59,13 @@ lsp =>
 
   # helper to get out, err, exit_code from started process
   #
-  record_process(
+  # This can not be replaced by tokiwa.record_process: the LSP
+  # requires a request/response dialogue, i.e. each request is written to stdin
+  # and its responses are read from stdout before the next request is sent,
+  # while tokiwa.record_process writes all of feed_stdin before reading stdout
+  # to the end. The LSP server does not shut down when stdin is closed.
+  #
+  record_lsp_process(
         p os.process,
         # the command, for error messages
         cmd String,
@@ -236,9 +242,8 @@ lsp =>
   seq := "java -Dfuzion.home=$(fuzion_home) -Dfile.encoding=UTF-8 -cp $(fuzion_home)/fuzion.jar dev.flang.lsp.Main -stdio".split
   pr := os.process.start seq.first.or_panic (seq.drop 1) envir_vars .or_panic
 
-  res := record_process pr "" test_def .out
+  res := record_lsp_process pr "" test_def .out
 
   # logMessages contain unstable data like dates and "finished in Xms"
   # NYI: UNDER DEVELOPMENT: unclear where error "CompletableFuture is expected..." originates
   say <| String.join_lines (res.lines.filter (str -> !(str.contains "logMessage" || str.contains "Local endpoint returned null from its request method, whereas an instance of CompletableFuture is expected" || str.is_blank)))
-
