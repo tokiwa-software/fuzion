@@ -1832,35 +1832,36 @@ operatorExpr: opExpr
 exprNoColon : operatorExpr          // may not contain {@code :} unless enclosed in { }, [ ], or ( ).
             ;
   */
-  Expr operatorExpr()
-  {
-    Expr result = opExpr();
-    if (current() == Token.t_question)
-      {
-        SourcePosition pos = tokenSourcePos();
-        var i = new Indentation("operatorExpr");
-        skip(Token.t_question);
-        var f0 = fork();
-        if (f0.isCasesAndNotExpr())
-          {
-            result = new Match(pos, result, casesBars(i));
-          }
-        else
-          {
-            i.ok();
-            var eac = endAtColon(true);
-            Expr f = operatorExpr();
-            endAtColon(eac);
-            i.next();
-            i.ok();
-            matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = operatorExpr();
-            i.end();
-            result = f == Call.ERROR || g == Call.ERROR ? Call.ERROR : new ParsedCall(result, new ParsedName(result.pos().rangeTo(g.pos().byteEndPos()), "ternary ? :"), new List<>(f, g));
-          }
-      }
-    return result;
-  }
+   Expr operatorExpr()
+   {
+     Expr result = opExpr();
+     if (current(true) == Token.t_question)  // use currentAtMinIndent to allow ? at min indent
+       {
+         SourcePosition pos = tokenSourcePos();
+         var questionIndent = indent(pos.bytePos());  // track ? indentation as reference
+         var i = new Indentation("operatorExpr");
+         skip(Token.t_question);
+         var f0 = fork();
+         if (f0.isCasesAndNotExpr())
+           {
+             result = new Match(pos, result, casesBars(i));
+           }
+         else
+           {
+             sameLine(-1);  // allow ternary expression to span multiple lines
+             i.next();  // may start indentation tracking, but don't call ok()
+             var eac = endAtColon(true);
+             Expr f = operatorExpr();
+             endAtColon(eac);
+             i.next();
+             matchOperator(true, ":", "expr of the form >>a ? b : c<<");
+             Expr g = operatorExpr();
+             i.end();
+             result = f == Call.ERROR || g == Call.ERROR ? Call.ERROR : new ParsedCall(result, new ParsedName(result.pos().rangeTo(g.pos().byteEndPos()), "ternary ? :"), new List<>(f, g));
+           }
+       }
+     return result;
+   }
 
 
   /**
