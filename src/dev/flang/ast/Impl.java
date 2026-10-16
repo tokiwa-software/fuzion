@@ -679,20 +679,6 @@ public class Impl extends ANY
 
 
   /**
-   * Perform type checking and produce errors. In particular, this reports
-   * errors when type inference for FieldActual fails due to incompatible types
-   * or no actuals found.
-   */
-  public void checkTypes(AbstractFeature f)
-  {
-    if (_kind == Kind.FieldActual)
-      {
-        var ignore = typeFromInitialValues(null, f, true);
-      }
-  }
-
-
-  /**
    * toString
    *
    * @return
