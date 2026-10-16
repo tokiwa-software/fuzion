@@ -1959,26 +1959,31 @@ public class Call extends AbstractCall
   }
 
 
-
+  /**
+   * Infer type parameters from their use in constraints of other type
+   * parameters.  This requires the other type parameter to be specified
+   * explicitly or inferred.
+   *
+   * If an actual type parameter is known, the type parameters used
+   * in its constraints can be inferred:
+   *
+   *     a(T type, S type : Sequence T, v option S) => say T
+   *     a _ (array i32) nil   # S is given, `T` is inferred as `i32`
+   *     a [true, false]       # S is inferred from v, then used to infer `T` as `bool`
+   */
   private void inferGenericsFromActualTypeParameters(Resolution res,
                                                      Context context,
                                                      boolean[] conflict,
                                                      List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
-    var formal = calledFeature().typeArguments();
-    for (var i = 0; i < Integer.min(formal.size(), _generics.size()); i++)
+    for (var f : calledFeature().typeArguments())
       {
-        var f = formal   .get(i);
-        var g = _generics.get(i);
-
-        if (!f.isOpenTypeParameter())
+        var i = f.typeParameterIndex();
+        if (!f.isOpenTypeParameter() && i < _generics.size())
           {
-            /* infer via constraint of type parameter:
-             *
-             *     a(T type, S type : Sequence T) is
-             *     _ := a _ (array i32)
-             */
+            var g = _generics.get(i);
             var c = adjustTypeForTarget(res, context, f.constraint(), null);  // constraint with actual generics replaced, see #7415
+
             inferGeneric(res, context, c, true, g, pos(), conflict, foundAt, -1);
           }
       }
