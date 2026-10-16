@@ -1984,6 +1984,10 @@ public class Call extends AbstractCall
             var g = _generics.get(i);
             var c = adjustTypeForTarget(res, context, f.constraint(), null);  // constraint with actual generics replaced, see #7415
 
+            if (g.isParametricType())
+              {
+                g = g.typeParameter().constraint();
+              }
             inferGeneric(res, context, c, true, g, pos(), conflict, foundAt, -1);
           }
       }
@@ -2312,8 +2316,8 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (actualType.compareTo(actualType.replace_type_parameters_of_cotype_origin(context.outerFeature())) == 0);
 
-    if (actualType.equals(formalType)) // NOTE: equals() and compareTo()==0 are not the same, equals just compares refs!
-      { // nothing can be gained here, we typically replace type parameter `B` by type `B`...
+    if (!formalType.dependsOnGenerics())
+      { // no type parameters used, so nothing to be gained here.
       }
     else if (actualType == Types.t_UNDEFINED)
       { // nothing to be gained here

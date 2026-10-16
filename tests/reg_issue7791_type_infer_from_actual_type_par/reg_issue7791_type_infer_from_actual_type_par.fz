@@ -44,3 +44,33 @@ reg_issue7791_type_infer_from_actual_type_par =>
 
   f4(T type, S type : Sequence T, O type : option T) => say "f4: $T"
   f4 _ (array u64) (option u64)
+
+  # an interesting case that occured applying this to `list.map_to_list`:
+
+  # recursive call requiring `B` to be inferred from `F`'s constraint `A -> B`:
+  list.m2la(B type, F type : A -> B, f F) list B =>
+    match list.this
+      nil    => nil
+      c Cons => f c.head : c.tail.m2la f
+
+  # same, but type parameter order inversed
+  list.m2lb(F type : A -> B, B type, f F) list B =>
+    match list.this
+      nil    => nil
+      c Cons => f c.head : c.tail.m2lb f
+
+  # same, but using double-recursion between `m2lc`/`m2ld`
+  list.m2lc(B type, F type : A -> B, f F) list B =>
+    match list.this
+      nil    => nil
+      c Cons => f c.head : c.tail.m2ld f
+
+  list.m2ld(F type : A -> B, B type, f F) list B =>
+    match list.this
+      nil    => nil
+      c Cons => f c.head : c.tail.m2lc f
+
+  say ([1,2,3].as_list.m2la *2)
+  say ([1,2,3].as_list.m2lb *11)
+  say ([1,2,3].as_list.m2lc *3)
+  say ([1,2,3].as_list.m2ld +10)
