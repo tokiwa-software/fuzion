@@ -1740,6 +1740,7 @@ public class Call extends AbstractCall
     do
       {
         last = next;
+        inferGenericsFromActualTypeParameters(res, context, conflict, foundAt);
         inferGenericsFromArgs(res, context, checked, conflict, foundAt);
         next = 0;
         for (var b : foundAt)
@@ -1959,6 +1960,41 @@ public class Call extends AbstractCall
 
 
   /**
+   * Infer type parameters from their use in constraints of other type
+   * parameters.  This requires the other type parameter to be specified
+   * explicitly or inferred.
+   *
+   * If an actual type parameter is known, the type parameters used
+   * in its constraints can be inferred:
+   *
+   *     a(T type, S type : Sequence T, v option S) => say T
+   *     a _ (array i32) nil   # S is given, `T` is inferred as `i32`
+   *     a [true, false]       # S is inferred from v, then used to infer `T` as `bool`
+   */
+  private void inferGenericsFromActualTypeParameters(Resolution res,
+                                                     Context context,
+                                                     boolean[] conflict,
+                                                     List<List<Pair<SourcePosition, AbstractType>>> foundAt)
+  {
+    for (var f : calledFeature().typeArguments())
+      {
+        var i = f.typeParameterIndex();
+        if (!f.isOpenTypeParameter() && i < _generics.size())
+          {
+            var g = _generics.get(i);
+            var c = adjustTypeForTarget(res, context, f.constraint(), null);  // constraint with actual generics replaced, see #7415
+
+            if (g.isParametricType())
+              {
+                g = g.typeParameter().constraint();
+              }
+            inferGeneric(res, context, c, true, g, pos(), conflict, foundAt, -1);
+          }
+      }
+  }
+
+
+  /**
    * infer the missing generic arguments to this call by inspecting the types of
    * the actual arguments.
    *
@@ -2044,7 +2080,7 @@ public class Call extends AbstractCall
                                  *     a(T type, S type : array T, s S) is
                                  *     _ := a [32]
                                  */
-                                inferGeneric(res, context, c, actualType, actual.pos(), conflict, foundAt, argnum);
+                                inferGeneric(res, context, c, true, actualType, actual.pos(), conflict, foundAt, argnum);
                               }
                             else if (c.isLambdaTargetButNotLazy(res))
                               { /* propagate constraint for partial or lambda:
@@ -2083,7 +2119,7 @@ public class Call extends AbstractCall
                           }
                         if (actualType != null)
                           {
-                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, argnum);
+                            inferGeneric(res, context, t, false, actualType, actual.pos(), conflict, foundAt, argnum);
                             checked[vai] = true;
                           }
                         if (resultExpression(actual) instanceof AbstractLambda al)
@@ -2200,11 +2236,17 @@ public class Call extends AbstractCall
    */
   private void addPair(List<List<Pair<SourcePosition, AbstractType>>> foundAt, int i, SourcePosition pos, AbstractType t)
   {
-    if (foundAt.get(i) == null)
+    var l = foundAt.get(i);
+    if (l == null)
       {
-        foundAt.set(i, new List<>());
+        l = new List<>();
+        foundAt.set(i, l);
       }
-    foundAt.get(i).add(new Pair<SourcePosition, AbstractType>(pos, t));
+    var p = new Pair<SourcePosition, AbstractType>(pos, t);
+    if (!l.contains(p))
+      {
+        l.add(p);
+      }
   }
 
 
@@ -2215,7 +2257,8 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    *
-   * @param formalType the (possibly generic) formal type
+   * @param formalType the (possibly generic) formal type, must not be a
+   * constraint of a type parameter! (@see inferGenerics with 9 arguments below)
    *
    * @param actualType the actual type
    *
@@ -2234,7 +2277,7 @@ public class Call extends AbstractCall
                             boolean[] conflict,
                             List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
-    inferGeneric(res, context, formalType, actualType, pos, conflict, foundAt, -1);
+    inferGeneric(res, context, formalType, false, actualType, pos, conflict, foundAt, -1);
   }
 
 
@@ -2246,6 +2289,8 @@ public class Call extends AbstractCall
    * @param context the source code context where this Call is used
    *
    * @param formalType the (possibly generic) formal type
+   *
+   * @param formalTypeIsConstraint true iff formalType is a type parameter constraint.
    *
    * @param actualType the actual type
    *
@@ -2261,6 +2306,7 @@ public class Call extends AbstractCall
   private void inferGeneric(Resolution res,
                             Context context,
                             AbstractType formalType,
+                            boolean formalTypeIsConstraint,
                             AbstractType actualType,
                             SourcePosition pos,
                             boolean[] conflict,
@@ -2270,8 +2316,11 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (actualType.compareTo(actualType.replace_type_parameters_of_cotype_origin(context.outerFeature())) == 0);
 
-    if (actualType.equals(formalType))
-      { // nothing can be gained here, we typically replace type parameter `B` by type `B`...
+    if (!formalType.dependsOnGenerics())
+      { // no type parameters used, so nothing to be gained here.
+      }
+    else if (actualType == Types.t_UNDEFINED)
+      { // nothing to be gained here
       }
     else if (formalType.isLazyType() && !actualType.isLazyType())
       {
@@ -2317,7 +2366,9 @@ public class Call extends AbstractCall
                                  pos, conflict, foundAt);
                   }
               }
-            if (formalType.isNormalType() && actualType.isNormalType())
+            if (!formalType.isThisType() &&
+                !actualType.isThisType() &&
+                formalType.compareTo(actualType) != 0)
               {
                 inferGeneric(res,
                              context,
@@ -2326,77 +2377,119 @@ public class Call extends AbstractCall
                              pos, conflict, foundAt);
               }
           }
-        else if (formalType.isChoice())
+        else
           {
-            /**
-             * example:
-             *
-             *   tree(T type) : choice nil T (Branch T) is
-             *
-             *   Branch(T type, left, right tree T) ref is
-             *
-             *   tree := (Branch
-             *             (Branch
-             *               (Branch $"A" "B")
-             *               (Branch $"C" "D"))
-             *             (Branch
-             *               (Branch $"E" "F")
-             *               (Branch $"G" nil)))
-             */
-
-            var directlyAssignable = formalType
-              .choiceGenerics(context)
-              .stream()
-              .filter(x -> !x.dependsOnGenerics())
-              .anyMatch(x -> x.isAssignableFromWithoutBoxing(actualType, context).yes());
-
-            if (!directlyAssignable)
+            if  (aft != null)
               {
-                // if actualType is `Branch String`
-                // we only consider `Branch T` and not `T`.
-                var matchingFeature = formalType
-                  .choiceGenerics(context)
-                  .stream()
-                  .filter(x -> x.dependsOnGenerics()
-                           && !x.isParametricType()
-                           && !actualType.isParametricType()
-                           && x.feature() == actualType.feature())
-                  .toList();
-                for (var ct : matchingFeature)
+                for (var p: aft.inherits())
                   {
-                    inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
-                  }
-                if (matchingFeature.size() == 0)
-                  {
-                    for (var ct : formalType.choiceGenerics(context))
+                    if (p instanceof Call pc)
                       {
-                        inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
+                        pc.resolveTypes(res, aft.context());
+                      }
+                    var pt = p.type();
+                    if (pt != Types.t_ERROR)
+                      {
+                        var apt = actualType.actualType(pt, context);
+                        if (apt.feature().inheritsFrom(formalType.feature()))
+                          {
+                            inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt, actualArgIndex);
+                          }
                       }
                   }
               }
-          }
-        else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
-          {
-            AstErrors.incompatibleArgumentTypeInCall(_calledFeature, actualArgIndex, formalType, _actuals.get(actualArgIndex), Context.NONE);
-            setToErrorState();
-          }
-        else if (aft != null)
-          {
-            for (var p: aft.inherits())
+
+            if (formalType.isChoice())
               {
-                if (p instanceof Call pc)
+                /**
+                 * example:
+                 *
+                 *   tree(T type) : choice nil T (Branch T) is
+                 *
+                 *   Branch(T type, left, right tree T) ref is
+                 *
+                 *   tree := (Branch
+                 *             (Branch
+                 *               (Branch $"A" "B")
+                 *               (Branch $"C" "D"))
+                 *             (Branch
+                 *               (Branch $"E" "F")
+                 *               (Branch $"G" nil)))
+                 */
+
+                var cg = formalType.choiceGenerics(context);
+                var directlyAssignable = formalTypeIsConstraint && formalType.constraintAssignableFrom(actualType)
+                  || cg.stream().anyMatch(x -> !x.dependsOnGenerics() && x.isAssignableFrom(actualType).yes());
+
+                if (!directlyAssignable)
                   {
-                    pc.resolveTypes(res, aft.context());
-                  }
-                var pt = p.type();
-                if (pt != Types.t_ERROR)
-                  {
-                    var apt = actualType.actualType(pt, context);
-                    if (apt.feature().inheritsFrom(formalType.feature()))
+                    var checkCase2 = true;
+
+                    // first case: if actualType is `Branch String`
+                    // we only consider `Branch T` and not `T`.
+                    for (var ct : cg)
                       {
-                        inferGeneric(res, context, formalType, apt, pos, conflict, foundAt);
+                        if (// first we handle a choice variant type that is assignable from the actual type like
+                            //
+                            //     f (Branch "bla")
+                            //
+                            // in a acall to
+                            //
+                            //     f(T type, v choice T (Branch T))
+                            //
+                            // Here, we want to infer `T` to be `String` via the second choice generic `Branch T`
+                            //
+                               !ct        .isParametricType()
+                            && !actualType.isParametricType()
+                            && (ct.isRef() ? actualType.feature().inheritsFrom(ct.feature())
+                                           : actualType.feature() == ct.feature()           ))
+                          {
+                            inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
+                            checkCase2 = false;
+                          }
+                      }
+                    if (checkCase2)
+                      {
+                        for (var ct: cg)
+                          {
+                            // if the first case did not find any candidates, we try assignability to choice types, i.e.,
+                            //
+                            //     f 3.14
+                            //
+                            // in a acall to
+                            //
+                            //     f(T type, v choice T (Branch T))
+                            //
+                            // Here, we want to infer `T` to be `f64` via the first choice generic `T`
+                            //
+                            if (ct.isParametricType()
+                                && ct.typeParameter() instanceof AbstractFeature tp  // always true
+                                && tp.outer() == calledFeature()
+                             // && tp.typeParameterIndex() instanceof int ti  // always true, NYI: UNDER DEVELOPMENT:  preview feature, use when available
+                                && /* ti */ tp.typeParameterIndex() < _generics.size()
+                                && _generics.get(/* ti */ tp.typeParameterIndex()) instanceof AbstractType gt  // always true
+                                && (gt == Types.t_UNDEFINED || gt.commonSupertype(actualType, context) != Types.t_ERROR)
+                               )
+                              {
+                                inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
+                              }
+                          }
                       }
                   }
+              }
+            else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
+              { // if actual and formal types clearly do not match as in
+                //
+                //     say <| [1,2,3].map "bla"
+                //
+                // then create an error here instead of an error that type
+                // inference failed (which would be just confusing):
+                AstErrors.incompatibleArgumentTypeInCall(_calledFeature,
+                                                         actualArgIndex,
+                                                         formalType,
+                                                         _actuals.get(actualArgIndex),
+                                                         Context.NONE);
+                setToErrorState();
               }
           }
       }
@@ -2483,7 +2576,7 @@ public class Call extends AbstractCall
    */
   private boolean inferGenericLambdaResult(Resolution res, Context context, AbstractLambda al, SourcePosition pos, boolean[] conflict,
     List<List<Pair<SourcePosition, AbstractType>>> foundAt, AbstractType lambdaResultType, List<AbstractType> generics,
-    AbstractType argumentType)
+                                           AbstractType argumentType)
   {
     return generics
       .stream()
