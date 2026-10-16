@@ -122,7 +122,7 @@ and at typeinference_for_args_negative.fz:44:11
 
 
 typeinference_for_args_negative.fz:31:9: error 13: Type inference from actual arguments failed due to incompatible types of actual arguments
-  a4(a, b) => a+b    # *** error ***, mixes String, i32, f64 and bool in arg `b`
+  a4(a, b) => a+b    # *** error ***, mixes String, i64, f64 and bool in arg `b`
 --------^
 For the formal argument 'typeinference_for_args_negative.a4.b' the following incompatible actual arguments where found for type inference:
 actual is value of type 'String' at typeinference_for_args_negative.fz:46:23

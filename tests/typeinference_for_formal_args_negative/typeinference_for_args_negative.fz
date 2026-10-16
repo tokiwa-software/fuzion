@@ -25,10 +25,10 @@
 
 typeinference_for_args_negative is
 
-  a1(a, b) => a+b    # ok, only i32
+  a1(a, b) => a+b    # ok, only i64
   a2(a, b) => a+b    # ok, only String
   a3(a, b) => a+b    # *** error ***, mixes String and f64 in arg `a`
-  a4(a, b) => a+b    # *** error ***, mixes String, i32, f64 and bool in arg `b`
+  a4(a, b) => a+b    # *** error ***, mixes String, i64, f64 and bool in arg `b`
   a5(a, b) => a+b    # *** error ***, never called
 
   say (a1 32 64)
