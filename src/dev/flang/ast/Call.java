@@ -1350,7 +1350,11 @@ public class Call extends AbstractCall
       (res != null);
 
     AbstractType result;
-    if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
+    if (_type != null)
+      {
+        result = _type;
+      }
+    else if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
       {
         result = Types.resolved.t_void; // a recursive call will not return and execute further
       }
