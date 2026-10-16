@@ -2427,11 +2427,20 @@ public class Call extends AbstractCall
                     var checkCase2 = true;
                     for (var ct : cg)
                       {
-                        if (// first, this is needed for NYI: WHY? (lock_free/Map.fz:512):
-                            ct.dependsOnGenerics()
-                            && !ct.isParametricType()
+                        if (// first we handle a choice variant type that is assignable from the actual type like
+                            //
+                            //     f (Branch "bla")
+                            //
+                            // in a acall to
+                            //
+                            //     f(T type, v choice T (Branch T))
+                            //
+                            // Here, we want to infer `T` to be `String` via the second choice generic `Branch T`
+                            //
+                               !ct        .isParametricType()
                             && !actualType.isParametricType()
-                            && ct.feature() == actualType.feature())
+                            && (ct.isRef() ? actualType.feature().inheritsFrom(ct.feature())
+                                           : actualType.feature() == ct.feature()           ))
                           {
                             inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt);
                             checkCase2 = false;
@@ -2439,12 +2448,22 @@ public class Call extends AbstractCall
                       }
                     if (checkCase2)
                       {
-                        for(var ct: cg)
+                        for (var ct: cg)
                           {
+                            // if the first case did not find any candidates, we try assignability to choice types, i.e.,
+                            //
+                            //     f 3.14
+                            //
+                            // in a acall to
+                            //
+                            //     f(T type, v choice T (Branch T))
+                            //
+                            // Here, we want to infer `T` to be `f64` via the first choice generic `T`
+                            //
                             if (ct.isParametricType()
                                 && ct.typeParameter() instanceof AbstractFeature tp  // always true
                                 && tp.outer() == calledFeature()
-                             // && tp.typeParameterIndex() instanceof int ti  // NYI: UNDER DEVELOPMENT:  preview feature, use when available
+                             // && tp.typeParameterIndex() instanceof int ti  // always true, NYI: UNDER DEVELOPMENT:  preview feature, use when available
                                 && /* ti */ tp.typeParameterIndex() < _generics.size()
                                 && _generics.get(/* ti */ tp.typeParameterIndex()) instanceof AbstractType gt  // always true
                                 && (gt == Types.t_UNDEFINED || gt.commonSupertype(actualType, context) != Types.t_ERROR)
