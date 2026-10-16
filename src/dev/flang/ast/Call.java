@@ -2253,7 +2253,8 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    *
-   * @param formalType the (possibly generic) formal type
+   * @param formalType the (possibly generic) formal type, must not be a
+   * constraint of a type parameter! (@see inferGenerics with 9 arguments below)
    *
    * @param actualType the actual type
    *
@@ -2267,13 +2268,12 @@ public class Call extends AbstractCall
   private void inferGeneric(Resolution res,
                             Context context,
                             AbstractType formalType,
-                            boolean formalTypeIsConstraint,
                             AbstractType actualType,
                             SourcePosition pos,
                             boolean[] conflict,
                             List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
-    inferGeneric(res, context, formalType, formalTypeIsConstraint , actualType, pos, conflict, foundAt, -1);
+    inferGeneric(res, context, formalType, false, actualType, pos, conflict, foundAt, -1);
   }
 
 
@@ -2285,6 +2285,8 @@ public class Call extends AbstractCall
    * @param context the source code context where this Call is used
    *
    * @param formalType the (possibly generic) formal type
+   *
+   * @param formalTypeIsConstraint true iff formalType is a type parameter constraint.
    *
    * @param actualType the actual type
    *
@@ -2318,7 +2320,7 @@ public class Call extends AbstractCall
       }
     else if (formalType.isLazyType() && !actualType.isLazyType())
       {
-        inferGeneric(res, context, formalType.generics().get(0), false, actualType, pos, conflict, foundAt);
+        inferGeneric(res, context, formalType.generics().get(0), actualType, pos, conflict, foundAt);
       }
     else if (formalType.isParametricType())
       {
@@ -2356,7 +2358,6 @@ public class Call extends AbstractCall
                     inferGeneric(res,
                                  context,
                                  formalType.actualGenerics().get(i),
-                                 false,
                                  g.get(i),
                                  pos, conflict, foundAt);
                   }
@@ -2368,15 +2369,9 @@ public class Call extends AbstractCall
                 inferGeneric(res,
                              context,
                              formalType.outer(),
-                             false,
                              actualType.outer(),
                              pos, conflict, foundAt);
               }
-          }
-        else if (false && actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
-          {
-            AstErrors.incompatibleArgumentTypeInCall(_calledFeature, actualArgIndex, formalType, _actuals.get(actualArgIndex), Context.NONE);
-            setToErrorState();
           }
         else
           {
@@ -2394,13 +2389,13 @@ public class Call extends AbstractCall
                         var apt = actualType.actualType(pt, context);
                         if (apt.feature().inheritsFrom(formalType.feature()))
                           {
-                            inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt);
+                            inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt, actualArgIndex);
                           }
                       }
                   }
               }
 
-            if (formalType.isChoice() && !(formalTypeIsConstraint && formalType.constraintAssignableFrom(actualType)))
+            if (formalType.isChoice())
               {
                 /**
                  * example:
@@ -2419,17 +2414,15 @@ public class Call extends AbstractCall
                  */
 
                 var cg = formalType.choiceGenerics(context);
-                var directlyAssignable = cg.stream()
-                                           .anyMatch(x -> !x.dependsOnGenerics() // why without generics?
-                                                       &&  x.isAssignableFromWithoutBoxing(actualType, context).yes() // NYI: why without boxing?
-                                                    );
+                var directlyAssignable = formalTypeIsConstraint && formalType.constraintAssignableFrom(actualType)
+                  || cg.stream().anyMatch(x -> !x.dependsOnGenerics() && x.isAssignableFrom(actualType).yes());
 
                 if (!directlyAssignable)
                   {
-                    // if actualType is `Branch String`
-                    // we only consider `Branch T` and not `T`.
-
                     var checkCase2 = true;
+
+                    // first case: if actualType is `Branch String`
+                    // we only consider `Branch T` and not `T`.
                     for (var ct : cg)
                       {
                         if (// first we handle a choice variant type that is assignable from the actual type like
@@ -2447,7 +2440,7 @@ public class Call extends AbstractCall
                             && (ct.isRef() ? actualType.feature().inheritsFrom(ct.feature())
                                            : actualType.feature() == ct.feature()           ))
                           {
-                            inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt);
+                            inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
                             checkCase2 = false;
                           }
                       }
@@ -2474,7 +2467,7 @@ public class Call extends AbstractCall
                                 && (gt == Types.t_UNDEFINED || gt.commonSupertype(actualType, context) != Types.t_ERROR)
                                )
                               {
-                                inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt);
+                                inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
                               }
                           }
                       }
@@ -2486,7 +2479,7 @@ public class Call extends AbstractCall
                 //     say <| [1,2,3].map "bla"
                 //
                 // then create an error here instead of an error that type
-                // inference failed that would be just confusing:
+                // inference failed (which would be just confusing):
                 AstErrors.incompatibleArgumentTypeInCall(_calledFeature,
                                                          actualArgIndex,
                                                          formalType,
@@ -2597,7 +2590,7 @@ public class Call extends AbstractCall
                 var rt = al.inferLambdaResultType(res, context, argumentType);
                 if (rt != null)
                   {
-                    inferGeneric(res, context, lambdaResultType, false, rt, pos, conflict, foundAt);
+                    inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
                     result = true;
                   }
               }
