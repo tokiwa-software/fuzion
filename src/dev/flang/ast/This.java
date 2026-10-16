@@ -147,12 +147,21 @@ public class This extends ExprWithPos
 
     var outer = context.outerFeature();
 
-    var result = new This(pos, outer, f);
+    Expr result;
+    if (Types.resolved != null && f == Types.resolved.universe)
+      {
+        result = Universe.instance;
+      }
+    else
+      {
+        var thiz = new This(pos, outer, f);
 
-    return res.state(outer) != State.RESOLVING_INHERITANCE &&
-           res.state(outer) != State.RESOLVING
-      ? result.resolveTypes(res, context)
-      : result;
+        result = res.state(outer) != State.RESOLVING_INHERITANCE &&
+                 res.state(outer) != State.RESOLVING
+          ? thiz.resolveTypes(res, context)
+          : thiz;
+      }
+    return result;
   }
 
 

@@ -429,7 +429,7 @@ public String ref : property.hashable, property.orderable is
     codepoints
       .slice from to
       # we need to box codepoint to String first
-      .map String c->c
+      .map ($)
       .fold String.concat
 
 
