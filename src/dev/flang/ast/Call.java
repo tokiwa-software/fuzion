@@ -2413,40 +2413,47 @@ public class Call extends AbstractCall
                  *               (Branch $"G" nil)))
                  */
 
-                var directlyAssignable = formalType
-                  .choiceGenerics(context)
-                  .stream()
-                  .filter(x -> !x.dependsOnGenerics() // why without generics?
-                         )
-                  .anyMatch(x -> // NYI: why without boxing?
-                            x.isAssignableFromWithoutBoxing(actualType, context).yes());
+                var cg = formalType.choiceGenerics(context);
+                var directlyAssignable = cg.stream()
+                                           .anyMatch(x -> !x.dependsOnGenerics() // why without generics?
+                                                       &&  x.isAssignableFromWithoutBoxing(actualType, context).yes() // NYI: why without boxing?
+                                                    );
 
                 if (!directlyAssignable)
                   {
                     // if actualType is `Branch String`
                     // we only consider `Branch T` and not `T`.
 
-                    formalType
-                      .choiceGenerics(context)
-                      .stream()
-                      .filter(x ->
-                              (// first, this is needed for NYI: WHY? (lock_free/Map.fz:512):
-                               x.dependsOnGenerics()
-                               && !x.isParametricType()
-                               && !actualType.isParametricType()
-                               && x.feature() == actualType.feature())
-                              ||
-                              (// second, this is needed for `x(T type, v option T)` calles via, e.g., `x 3.14`.
-                               x.isParametricType()
-                               && x.typeParameter() instanceof AbstractFeature tp  // always true
-                               && tp.outer() == calledFeature()
-                            // && tp.typeParameterIndex() instanceof int ti  // NYI: UNDER DEVELOPMENT:  preview feature, use when available
-                               && /* ti */ tp.typeParameterIndex() < _generics.size()
-                               && _generics.get(/* ti */ tp.typeParameterIndex()) instanceof AbstractType gt  // always true
-                               && (gt == Types.t_UNDEFINED || gt.commonSupertype(actualType, context) != Types.t_ERROR)
-                              )
-                             )
-                      .forEachOrdered(ct -> inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt));
+                    var checkCase2 = true;
+                    for (var ct : cg)
+                      {
+                        if (// first, this is needed for NYI: WHY? (lock_free/Map.fz:512):
+                            ct.dependsOnGenerics()
+                            && !ct.isParametricType()
+                            && !actualType.isParametricType()
+                            && ct.feature() == actualType.feature())
+                          {
+                            inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt);
+                            checkCase2 = false;
+                          }
+                      }
+                    if (checkCase2)
+                      {
+                        for(var ct: cg)
+                          {
+                            if (ct.isParametricType()
+                                && ct.typeParameter() instanceof AbstractFeature tp  // always true
+                                && tp.outer() == calledFeature()
+                             // && tp.typeParameterIndex() instanceof int ti  // NYI: UNDER DEVELOPMENT:  preview feature, use when available
+                                && /* ti */ tp.typeParameterIndex() < _generics.size()
+                                && _generics.get(/* ti */ tp.typeParameterIndex()) instanceof AbstractType gt  // always true
+                                && (gt == Types.t_UNDEFINED || gt.commonSupertype(actualType, context) != Types.t_ERROR)
+                               )
+                              {
+                                inferGeneric(res, context, ct, false, actualType, pos, conflict, foundAt);
+                              }
+                          }
+                      }
                   }
               }
             else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
