@@ -300,7 +300,7 @@ is
   renew(cn container_node CTK CTV, new_gen uid) =>
     copy => cn
       .array
-      .map (branch CTK CTV) _ x->
+      .map (branch CTK CTV) x->
         match x
           i Indirection_Node =>
             copy_to_gen i new_gen

@@ -235,7 +235,7 @@ is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  public map_to_list(B type, F type : A -> B, f F) list B =>
+  public map_to_list(B type, f _ : A -> B) list B =>
     match list.this
       nil    => nil
       c Cons =>
