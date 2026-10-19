@@ -2546,7 +2546,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
             result = result.resolve(res, outer().context());
           }
 
-        if (result != null && impl()._kind != Impl.Kind.FieldActual)
+        if (result != null && (urgent || impl()._kind != Impl.Kind.FieldActual))
           {
             // FORWARD_CYCLIC should be returned only once.
             // We then want to return t_ERROR.
