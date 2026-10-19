@@ -111,8 +111,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   justify-content: space-between;
 }
 
-.word-break-break-word{
-  word-break: break-word;
+.overflow-wrap-break-word{
+  overflow-wrap: break-word;
 }
 
 .white-space-no-wrap{
@@ -165,13 +165,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .fd details{
   margin: 1em;
+  
   /* marker needs more space */
   margin-left: 2em;
-  border: 2px outset rgba(0,0,0,0.1);
+  border: 2px outset rgb(0 0 0 / 10%);
 }
 
 .fd-comment details, .fd-contract details{
-  margin: 0em;
+  margin: 0;
   margin-bottom: 1em;
 }
 
@@ -181,20 +182,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .fd summary{
   list-style-position: outside;
-  background-color: rgba(0,0,0,0.02);
+  background-color: rgb(0 0 0 / 2%);
 }
 
 .fd-anchor-sign{
   color: #535353;
-  margin-left: 0.3em;
   position: absolute;
   width: 1px;
   height: 1px;
   margin: -1px;
+  margin-left: 0.3em;
   padding: 0;
   overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(100%);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
 }
@@ -206,7 +206,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   height: auto;
   margin: 0 0 0 0.3em;
   overflow: visible;
-  clip: auto;
   clip-path: none;
   white-space: normal;
   border: none;
@@ -220,6 +219,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .fd .sidenav{
   padding-right: 15px;
+}
+
+.toggle-nav {
+  all: unset; /* removes default button styles */
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 0.5em;
 }
 
 .fd .sidenav .toggle-nav{
@@ -240,6 +246,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   padding-left: 0;
 }
 
+.fd-contract a, .fd-comment a, .fd-parent a{
+  color: unset;
+}
+
 .fd a:hover{
   text-decoration: underline;
 }
@@ -251,9 +261,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   justify-content: center;
   align-items: center;
 }
-.fd-contract a, .fd-comment a, .fd-parent a{
-  color: unset;
-}
+
 .fd-contract a:hover, .fd-comment a:hover, .fd-parent a:hover{
   color: #795e26;
 }
@@ -268,7 +276,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd-contract {
-  font-family: 'Fira';
+  font-family: Fira, sans-serif;
 }
 
 /* Version hash at the bottom of api docs */
@@ -297,13 +305,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   font-size: 120%;
   margin-bottom: 0.5em;
   font-weight: 700;
-}
-
-.toggle-nav {
-  all: unset; /* removes default button styles */
-  cursor: pointer;
-  font-size: 1.2em;
-  padding: 0.5em;
 }
 
 .f-category {
