@@ -942,8 +942,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param res Resolution instance used to resolve types in this call.
    *
-   * @param that the original feature that is used to lookup types.
-   *
    * @param target the target of this typeCall, null for recursive calls for
    * outer typeCalls of to this method.
    *

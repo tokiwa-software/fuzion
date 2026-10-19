@@ -231,8 +231,6 @@ public abstract class AbstractCall extends Expr
    *
    * @param res Resolution instance used to resolve types in this call.
    *
-   * @param that the original feature that is used to lookup types.
-   *
    * @return instance of Call to be used for the parent call in cotype().
    */
   Call cotypeInheritanceCall(Resolution res)
