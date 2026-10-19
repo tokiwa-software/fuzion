@@ -2347,12 +2347,11 @@ public class Call extends AbstractCall
               }
           }
       }
-    else
+    else if (actualType != Types.t_ERROR)
       {
         var fft = formalType.feature();
         res.resolveTypes(fft);
-        var aft = actualType.isParametricType() ? null : actualType.feature();
-        if (fft == aft)
+        if (!actualType.isParametricType() && actualType.feature() == fft)
           {
             for (int i=0; i < formalType.actualGenerics().size(); i++)
               {
@@ -2377,13 +2376,13 @@ public class Call extends AbstractCall
           }
         else
           {
-            if  (aft != null)
+            if  (!actualType.isParametricType())
               {
-                for (var p: aft.inherits())
+                for (var p: actualType.feature().inherits())
                   {
                     if (p instanceof Call pc)
                       {
-                        pc.resolveTypes(res, aft.context());
+                        pc.resolveTypes(res, actualType.feature().context());
                       }
                     var pt = p.type();
                     if (pt != Types.t_ERROR)
@@ -2475,7 +2474,7 @@ public class Call extends AbstractCall
                       }
                   }
               }
-            else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
+            else if (actualArgIndex != -1 && !actualType.isParametricType() && !actualType.feature().inheritsFrom(fft) && !fft.typeArguments().isEmpty())
               { // if actual and formal types clearly do not match as in
                 //
                 //     say <| [1,2,3].map "bla"
