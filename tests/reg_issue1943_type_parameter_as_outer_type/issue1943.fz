@@ -52,6 +52,6 @@ test_outer_as_type_parameter is
   mm ! ()->
     {
       cnt := mm.env.var 100
-      cnt1 := count mm i64 cnt [1,2,3]
+      cnt1 := count cnt [1,2,3]
       say cnt1
     }

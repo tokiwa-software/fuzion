@@ -16,7 +16,7 @@ call '(reg_issue2231.type.ef.type.instate#3 void).(λ(_ -> compile_time_panic)).
       set res := def cur_e
 -----------------^^^
 call '(instate_helper void reg_issue2231.ef).call_def.call#1'
-call 'reg_issue2231.type.ef.type.instate0#5 (instate_helper void reg_issue2231.ef).call_code (instate_helper void reg_issue2231.ef).call_def' at {base.fum}/effect.fz:399:3
+call 'reg_issue2231.type.ef.type.instate0#3 (instate_helper void reg_issue2231.ef).call_code (instate_helper void reg_issue2231.ef).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 call 'instate_helper void reg_issue2231.ef' at {base.fum}/effect.fz:170:10

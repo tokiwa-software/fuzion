@@ -14,7 +14,7 @@ effect environment 'test_effect_neg.f, test_effect_neg.g' for call to 'test_effe
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.f, test_effect_neg.g' for call to '(instate_helper unit test_effect_neg.g).call_code.call'
-install effect 'test_effect_neg.g', old environment was 'test_effect_neg.f' for call to 'test_effect_neg.type.g.type.instate0#5 (instate_helper unit test_effect_neg.g).call_code (instate_helper unit test_effect_neg.g).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.g', old environment was 'test_effect_neg.f' for call to 'test_effect_neg.type.g.type.instate0#3 (instate_helper unit test_effect_neg.g).call_code (instate_helper unit test_effect_neg.g).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment 'test_effect_neg.f' for call to 'instate_helper unit test_effect_neg.g' at {base.fum}/effect.fz:170:10
@@ -38,7 +38,7 @@ effect environment 'test_effect_neg.f' for call to 'test_effect_neg.(λ()-> g ! 
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.f' for call to '(instate_helper unit test_effect_neg.f).call_code.call'
-install effect 'test_effect_neg.f', old environment was '--empty--' for call to 'test_effect_neg.type.f.type.instate0#5 (instate_helper unit test_effect_neg.f).call_code (instate_helper unit test_effect_neg.f).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.f', old environment was '--empty--' for call to 'test_effect_neg.type.f.type.instate0#3 (instate_helper unit test_effect_neg.f).call_code (instate_helper unit test_effect_neg.f).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'instate_helper unit test_effect_neg.f' at {base.fum}/effect.fz:170:10
@@ -77,7 +77,7 @@ effect environment 'test_effect_neg.e, test_effect_neg.g' for call to 'test_effe
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.e, test_effect_neg.g' for call to '(instate_helper unit test_effect_neg.g).call_code.call'
-install effect 'test_effect_neg.g', old environment was 'test_effect_neg.e' for call to 'test_effect_neg.type.g.type.instate0#5 (instate_helper unit test_effect_neg.g).call_code (instate_helper unit test_effect_neg.g).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.g', old environment was 'test_effect_neg.e' for call to 'test_effect_neg.type.g.type.instate0#3 (instate_helper unit test_effect_neg.g).call_code (instate_helper unit test_effect_neg.g).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment 'test_effect_neg.e' for call to 'instate_helper unit test_effect_neg.g' at {base.fum}/effect.fz:170:10
@@ -101,7 +101,7 @@ effect environment 'test_effect_neg.e' for call to 'test_effect_neg.(λ()-> g ! 
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.e' for call to '(instate_helper unit test_effect_neg.e).call_code.call'
-install effect 'test_effect_neg.e', old environment was '--empty--' for call to 'test_effect_neg.type.e.type.instate0#5 (instate_helper unit test_effect_neg.e).call_code (instate_helper unit test_effect_neg.e).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.e', old environment was '--empty--' for call to 'test_effect_neg.type.e.type.instate0#3 (instate_helper unit test_effect_neg.e).call_code (instate_helper unit test_effect_neg.e).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'instate_helper unit test_effect_neg.e' at {base.fum}/effect.fz:170:10
@@ -140,7 +140,7 @@ effect environment 'test_effect_neg.e, test_effect_neg.f' for call to 'test_effe
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.e, test_effect_neg.f' for call to '(instate_helper unit test_effect_neg.f).call_code.call'
-install effect 'test_effect_neg.f', old environment was 'test_effect_neg.e' for call to 'test_effect_neg.type.f.type.instate0#5 (instate_helper unit test_effect_neg.f).call_code (instate_helper unit test_effect_neg.f).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.f', old environment was 'test_effect_neg.e' for call to 'test_effect_neg.type.f.type.instate0#3 (instate_helper unit test_effect_neg.f).call_code (instate_helper unit test_effect_neg.f).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment 'test_effect_neg.e' for call to 'instate_helper unit test_effect_neg.f' at {base.fum}/effect.fz:170:10
@@ -164,7 +164,7 @@ effect environment 'test_effect_neg.e' for call to 'test_effect_neg.(λ()-> f ! 
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.e' for call to '(instate_helper unit test_effect_neg.e).call_code.call'
-install effect 'test_effect_neg.e', old environment was '--empty--' for call to 'test_effect_neg.type.e.type.instate0#5 (instate_helper unit test_effect_neg.e).call_code (instate_helper unit test_effect_neg.e).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.e', old environment was '--empty--' for call to 'test_effect_neg.type.e.type.instate0#3 (instate_helper unit test_effect_neg.e).call_code (instate_helper unit test_effect_neg.e).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'instate_helper unit test_effect_neg.e' at {base.fum}/effect.fz:170:10
@@ -203,7 +203,7 @@ effect environment 'test_effect_neg.a' for call to 'test_effect_neg.(λ()->use_b
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.a' for call to '(instate_helper unit test_effect_neg.a).call_code.call'
-install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#5 (instate_helper unit test_effect_neg.a).call_code (instate_helper unit test_effect_neg.a).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#3 (instate_helper unit test_effect_neg.a).call_code (instate_helper unit test_effect_neg.a).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'instate_helper unit test_effect_neg.a' at {base.fum}/effect.fz:170:10
@@ -239,7 +239,7 @@ effect environment 'test_effect_neg.b' for call to 'test_effect_neg.(λ()->use_c
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.b' for call to '(instate_helper unit test_effect_neg.b).call_code.call'
-install effect 'test_effect_neg.b', old environment was '--empty--' for call to 'test_effect_neg.type.b.type.instate0#5 (instate_helper unit test_effect_neg.b).call_code (instate_helper unit test_effect_neg.b).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.b', old environment was '--empty--' for call to 'test_effect_neg.type.b.type.instate0#3 (instate_helper unit test_effect_neg.b).call_code (instate_helper unit test_effect_neg.b).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'instate_helper unit test_effect_neg.b' at {base.fum}/effect.fz:170:10
@@ -275,7 +275,7 @@ effect environment 'test_effect_neg.c' for call to 'test_effect_neg.(λ()->use_a
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.c' for call to '(instate_helper unit test_effect_neg.c).call_code.call'
-install effect 'test_effect_neg.c', old environment was '--empty--' for call to 'test_effect_neg.type.c.type.instate0#5 (instate_helper unit test_effect_neg.c).call_code (instate_helper unit test_effect_neg.c).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.c', old environment was '--empty--' for call to 'test_effect_neg.type.c.type.instate0#3 (instate_helper unit test_effect_neg.c).call_code (instate_helper unit test_effect_neg.c).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'instate_helper unit test_effect_neg.c' at {base.fum}/effect.fz:170:10
@@ -311,7 +311,7 @@ effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to '(instate_helper unit test_effect_neg.c).call_code.call'
-install effect 'test_effect_neg.c', old environment was 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate0#5 (instate_helper unit test_effect_neg.c).call_code (instate_helper unit test_effect_neg.c).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.c', old environment was 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.type.c.type.instate0#3 (instate_helper unit test_effect_neg.c).call_code (instate_helper unit test_effect_neg.c).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'instate_helper unit test_effect_neg.c' at {base.fum}/effect.fz:170:10
@@ -339,7 +339,7 @@ effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effe
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(instate_helper unit test_effect_neg.b).call_code.call'
-install effect 'test_effect_neg.b', old environment was 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate0#5 (instate_helper unit test_effect_neg.b).call_code (instate_helper unit test_effect_neg.b).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.b', old environment was 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.instate0#3 (instate_helper unit test_effect_neg.b).call_code (instate_helper unit test_effect_neg.b).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment 'test_effect_neg.a' for call to 'instate_helper unit test_effect_neg.b' at {base.fum}/effect.fz:170:10
@@ -369,7 +369,7 @@ effect environment 'test_effect_neg.a' for call to 'test_effect_neg.(λ()-> b ! 
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.a' for call to '(instate_helper unit test_effect_neg.a).call_code.call'
-install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#5 (instate_helper unit test_effect_neg.a).call_code (instate_helper unit test_effect_neg.a).call_def' at {base.fum}/effect.fz:399:3
+install effect 'test_effect_neg.a', old environment was '--empty--' for call to 'test_effect_neg.type.a.type.instate0#3 (instate_helper unit test_effect_neg.a).call_code (instate_helper unit test_effect_neg.a).call_def' at {base.fum}/effect.fz:399:3
   ET.instate0 e call_code call_def
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'instate_helper unit test_effect_neg.a' at {base.fum}/effect.fz:170:10

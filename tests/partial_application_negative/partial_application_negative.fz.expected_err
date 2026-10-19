@@ -2,7 +2,7 @@
 partial_application_negative.fz:49:19: error 1: Could not find called feature
   _ := data.map 3.prefix*    # 4. should flag an error, do not change named prefix call to infix call
 ------------------^^^^^^^
-Feature not found: 'prefix *' (no arguments)
+Feature not found: 'prefix *' (one argument)
 Target feature: 'i64'
 In call: '3.prefix*'
 
@@ -10,9 +10,10 @@ In call: '3.prefix*'
 partial_application_negative.fz:50:19: error 2: Could not find called feature
   _ := data.map 3.postfix*   # 5. should flag an error, do not change named postfix call to infix call
 ------------------^^^^^^^^
-Feature not found: 'postfix *' (no arguments)
+Feature not found: 'postfix *' (one argument)
 Target feature: 'i64'
 In call: '3.postfix*'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 
 partial_application_negative.fz:60:13: error 3: Ambiguity between direct and partially applied call target
@@ -54,7 +55,7 @@ To solve this, rename one of the ambiguous features.
 partial_application_negative.fz:42:47: error 6: Could not find called feature
   test "data.map 3.prefix*   " (data.map    3.prefix* ) "[3,6,9,12,15,18,21,24,27,30]"  # 1. should flag an error, do not change named prefix call to infix call
 ----------------------------------------------^^^^^^^
-Feature not found: 'prefix *' (no arguments)
+Feature not found: 'prefix *' (one argument)
 Target feature: 'i64'
 In call: '3.prefix*'
 
@@ -64,19 +65,20 @@ partial_application_negative.fz:43:45: error 7: Incompatible types when passing 
 --------------------------------------------^^^^^^^^^
 Actual type for argument #1 'f' does not match expected type.
 In call to          : 'Sequence.map'
-expected formal type: 'Unary B T'
+expected formal type: 'Unary B i64'
 actual type found   : 'i64'
 assignable to       : 'i64'
 for value assigned  : '3.prefix-'
-To solve this, you could change the type of the target 'f' to 'i64' or convert the type of the assigned value to 'Unary B T'.
+To solve this, you could change the type of the target 'f' to 'i64' or convert the type of the assigned value to 'Unary B i64'.
 
 
 partial_application_negative.fz:44:47: error 8: Could not find called feature
   test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  # 3. should flag an error, do not change named prefix call to infix call
 ----------------------------------------------^^^^^^^^
-Feature not found: 'postfix *' (no arguments)
+Feature not found: 'postfix *' (one argument)
 Target feature: 'i64'
 In call: '3.postfix*'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 
 partial_application_negative.fz:77:38: error 9: Different count of arguments needed when calling feature
@@ -86,7 +88,7 @@ Feature not found: 'map' (no arguments)
 Target feature: 'interval'
 In call: 'map'
 To solve this, you might change the actual number of arguments to match the feature 'map' (one type parameter B, one value argument f) at {base.fum}/Sequence.fz:566:10
-  public map(B type, f T->B) Sequence B
+  public map(B type, f _ : T->B) Sequence B
 ---------^^^
 To call 'map', you must provide 2 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.
 
