@@ -32,6 +32,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.ResolvedType;
 import dev.flang.ast.TypeKind;
 
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 
@@ -94,6 +95,10 @@ class NormalType extends LibraryType
     this._generics = generics;
     this._generics.freeze();
     this._outer = outer;
+
+    if (POSTCONDITIONS) ensure
+      (feature().generics().sizeMatches(generics()),
+       Errors.any() || _outer == null || _outer.isParametricType() || _outer.selfOrConstraint().feature().inheritsFrom(_feature.outer()));
   }
 
 
