@@ -226,7 +226,7 @@ public class AstErrors extends ANY
   private static String argCountStr(AbstractFeature f)
   {
     var msg = new List<String>();
-    var ta = f.typeArguments();
+    var ta = f.typeArguments().filter(a->!a.isFreeTypeParameter());;
     var va = f.valueArguments();
     var typeCount  = ta.size();
     var valueCount = va.size();

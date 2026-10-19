@@ -181,7 +181,7 @@ public class FeatureAndOuter extends ANY
         var fn = f.featureName();
         // NYI: CLEANUP: hack due to featureName not being updated on free types
         fn = (f instanceof Feature ff)
-          ? FeatureName.get(fn.baseName(), fn.argCount() + ff.freeTypesCount())
+          ? FeatureName.get(fn.baseName(), fn.argCount())
           : fn;
         if (isExact.test(fn))  /* an exact match, so use it: */
           {

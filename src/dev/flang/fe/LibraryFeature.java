@@ -479,7 +479,7 @@ public class LibraryFeature extends FuirFeature
 
 
   /**
-   * resultType returns the result type of this feature using.
+   * resultType returns the result type of this feature.
    *
    * @return the result type. Never null.
    */
@@ -489,7 +489,8 @@ public class LibraryFeature extends FuirFeature
     {
       case Constructor, RefConstructor -> selfType();
       case Choice -> Types.resolved.t_void;
-      case TypeParameter -> Types.resolved.f_Type.resultType();
+      case ExplicitTypeParameter,
+           FreeTypeParameter      -> Types.resolved.f_Type.resultType();
       case OpenTypeParameter -> Types.resolved.f_Open_Types.resultType();
       default -> _libModule.type(_libModule.featureResultTypePos(_index));
     };
@@ -533,7 +534,7 @@ public class LibraryFeature extends FuirFeature
     if (result == null)
       {
         var bytes = _libModule.featureName(_index);
-        var ac = _libModule.featureArgCount(_index);
+        var ac = (int) arguments().stream().filter(a -> !a.isFreeTypeParameter()).count();
         var id = _libModule.featureId(_index);
         if (bytes.length == 0)
           {

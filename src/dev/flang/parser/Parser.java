@@ -926,7 +926,7 @@ typeType    : "type"
   {
     match(Token.t_type, "argType");
     return splitSkip("...") ? Impl.TYPE_PARAMETER_OPEN
-                            : Impl.TYPE_PARAMETER;
+                            : Impl.EXPLICIT_TYPE_PARAMETER;
   }
 
 

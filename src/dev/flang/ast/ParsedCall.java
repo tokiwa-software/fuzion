@@ -708,9 +708,11 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             // only the last type parameter may be open
             if (CHECKS) check
               (ti >= tn-1 ||
-               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter    ,
+               ts.get(ti).kind() == AbstractFeature.Kind.ExplicitTypeParameter ||
+               ts.get(ti).kind() == AbstractFeature.Kind.FreeTypeParameter        ,
                ti != tn-1 ||
-               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
+               ts.get(ti).kind() == AbstractFeature.Kind.ExplicitTypeParameter ||
+               ts.get(ti).kind() == AbstractFeature.Kind.FreeTypeParameter     ||
                ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
 
             var t = ti < tn &&

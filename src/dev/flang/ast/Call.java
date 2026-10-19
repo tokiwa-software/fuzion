@@ -117,16 +117,14 @@ public class Call extends AbstractCall
   public List<AbstractType> actualTypeParameters()
   {
     var res = _generics;
-    if (_generics == NO_GENERICS && needsToInferTypeParametersFromArgs())
+
+    if (needsToInferTypeParametersFromArgs() && _generics.size() < _calledFeature.typeArguments().size())
       {
-        res = new List<>();
-        for (var g : _calledFeature.typeArguments())
-          {
-            if (!g.isOpenTypeParameter())
-              {
-                res.add(Types.t_UNDEFINED);
-              }
-          }
+        res = new List<>(_generics);
+        var fres = res;
+        _calledFeature.typeArguments()
+          .filter(g -> _generics == NO_GENERICS && g.isExplicitTypeParameter() || g.isFreeTypeParameter())
+          .forEach(g -> fres.add(Types.t_UNDEFINED));
       }
     // res.freeze();  -- NYI: res.freeze not possible here since Function.propagateTypeAndInferResult performs gs.set
 
@@ -1104,7 +1102,8 @@ public class Call extends AbstractCall
   {
     var asz = _actuals.size() + (addOne ? 1 : 0);
     var fvsz = ff.valueArguments().size();
-    var ftsz = ff.typeArguments().size();
+    var ft = ff.typeArguments();
+    var ftsz = ft.stream().filter(a->!a.isFreeTypeParameter()).count();
 
     var result = fvsz == asz ||
       _generics.isEmpty() && (fvsz + ftsz == asz) ||
@@ -1418,9 +1417,10 @@ public class Call extends AbstractCall
   {
     return switch (cf.kind())
       {
-        case OpenTypeParameter -> cf.openTypesFeature(res).resultTypeIfPresentUrgent(res, urgent);
-        case TypeParameter     -> cf.constraint(res, context);
-        default                -> cf.resultTypeIfPresentUrgent(res, urgent);
+        case OpenTypeParameter      -> cf.openTypesFeature(res).resultTypeIfPresentUrgent(res, urgent);
+        case ExplicitTypeParameter,
+             FreeTypeParameter      -> cf.constraint(res, context);
+        default                     -> cf.resultTypeIfPresentUrgent(res, urgent);
       };
   }
 

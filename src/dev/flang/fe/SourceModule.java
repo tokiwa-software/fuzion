@@ -1818,7 +1818,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     return switch (f.kind())
       {
         case Function, Field, Intrinsic, Abstract, Native -> true;
-        case TypeParameter, OpenTypeParameter, Choice, Constructor, RefConstructor -> false;
+        case ExplicitTypeParameter, FreeTypeParameter, OpenTypeParameter, Choice, Constructor, RefConstructor -> false;
       };
   }
 

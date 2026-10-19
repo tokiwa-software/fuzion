@@ -67,7 +67,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     Constructor,
     RefConstructor,
     Field,
-    TypeParameter,
+    ExplicitTypeParameter,
+    FreeTypeParameter,
     OpenTypeParameter,
     Intrinsic,
     Abstract,
@@ -94,16 +95,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     {
       return switch (this)
         {
-          case Function          -> "function";
-          case Constructor       -> "constructor";
-          case RefConstructor    -> "ref-constructor";
-          case Field             -> "field";
-          case TypeParameter     -> "type parameter";
-          case OpenTypeParameter -> "open type parameter";
-          case Intrinsic         -> "intrinsic";
-          case Abstract          -> "abstract";
-          case Choice            -> "choice";
-          case Native            -> "native";
+          case Function              -> "function";
+          case Constructor           -> "constructor";
+          case RefConstructor        -> "ref-constructor";
+          case Field                 -> "field";
+          case ExplicitTypeParameter -> "type parameter";
+          case FreeTypeParameter      -> "free type parameter";
+          case OpenTypeParameter     -> "open type parameter";
+          case Intrinsic             -> "intrinsic";
+          case Abstract              -> "abstract";
+          case Choice                -> "choice";
+          case Native                -> "native";
         };
     }
 
@@ -445,9 +447,20 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isIntrinsic() { return kind() == Kind.Intrinsic; }
   public boolean isNative() { return kind() == Kind.Native; }
   public boolean isChoice() { return kind() == Kind.Choice; }
-  public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
-  public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
-  public boolean isConstructor() { return switch (kind()) { case RefConstructor, Constructor -> true; default -> false; }; }
+  public boolean isTypeParameter() { return switch (kind()) { case ExplicitTypeParameter,
+                                                                   FreeTypeParameter,
+                                                                   OpenTypeParameter -> true;
+                                                              default -> false;
+                                                            };
+                                   }
+  public boolean isExplicitTypeParameter() { return kind() == Kind.ExplicitTypeParameter; }
+  public boolean isFreeTypeParameter()     { return kind() == Kind.FreeTypeParameter; }
+  public boolean isOpenTypeParameter()     { return kind() == Kind.OpenTypeParameter; }
+  public boolean isConstructor()   { return switch (kind()) { case RefConstructor,
+                                                                   Constructor -> true;
+                                                              default -> false;
+                                                            };
+                                   }
   public boolean isRef() { return kind() == Kind.RefConstructor; }
 
 
@@ -2015,7 +2028,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           case Abstract,Intrinsic,Native,Function -> "=> " + kind();
           case Choice,Constructor,RefConstructor -> "is";
           case Field -> state().atLeast(State.FINDING_DECLARATIONS) && isArgument() ? "" : ":= ...";
-          case OpenTypeParameter, TypeParameter -> "(type parameter)";
+          case OpenTypeParameter, ExplicitTypeParameter, FreeTypeParameter -> "(type parameter)";
         })).trim();
 
   }
