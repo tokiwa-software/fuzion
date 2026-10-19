@@ -1,11 +1,4 @@
-ex =>
-
-  a(T type, S type : array T, s S) is
-
-    public redef as_string String =>
-      s.as_string
-
-  say (a [32])# This file is part of the Fuzion language implementation.
+# This file is part of the Fuzion language implementation.
 #
 # The Fuzion language implementation is free software: you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as published
@@ -24,15 +17,9 @@ ex =>
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test infer_via_contraints_type_parameter
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-infer_via_contraints_type_parameter =>
-
-  a(T type, S type : array T, s S) is
-
-    public redef as_string String =>
-      s.as_string
-
-  say (a [32])
+override NAME = infer_via_constraints_type_parameter
+include ../simple.mk

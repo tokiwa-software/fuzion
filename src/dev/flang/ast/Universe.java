@@ -76,6 +76,16 @@ public class Universe extends ExprWithPos
   }
 
 
+  @Override
+  public AbstractType type()
+  {
+    if (PRECONDITIONS) require
+      (Types.resolved != null);
+
+    return typeForInferencing();
+  }
+
+
   /**
    * visit all the expressions within this feature.
    *
