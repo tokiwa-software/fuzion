@@ -279,8 +279,12 @@ record_example =>
 
 check_example =>
   if ((be = "effect" && !(io.file.exists (io.path.of "$file.effect")))
+         # flang_dev appends 'skip' to the example file name
       || io.file.exists (io.path.of "$file.skip")
-      || io.file.exists (io.path.of "$file.skip_$be"))
+      || io.file.exists (io.path.of "$file.skip_$be")
+         # Fuzion tests each have their own directory, so skip files omit the test name
+      || file.parent.bind (p->io.file.exists (p.resolve "skip"    )) .or_default false
+      || file.parent.bind (p->io.file.exists (p.resolve "skip_$be")) .or_default false)
   then
     say "SKIP $file"
   else
