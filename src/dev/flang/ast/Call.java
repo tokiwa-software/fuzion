@@ -2366,9 +2366,7 @@ public class Call extends AbstractCall
                                  pos, conflict, foundAt);
                   }
               }
-            if (!formalType.isThisType() &&
-                !actualType.isThisType() &&
-                formalType.compareTo(actualType) != 0)
+            if (!formalType.isThisType() && !actualType.isThisType())
               {
                 inferGeneric(res,
                              context,
