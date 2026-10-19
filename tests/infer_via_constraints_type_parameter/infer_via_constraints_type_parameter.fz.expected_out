@@ -1,0 +1,3 @@
+[32]
+b i32 array i32 --nil--
+b bool array bool [true, false]
