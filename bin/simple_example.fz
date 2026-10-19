@@ -100,6 +100,21 @@ String.run tokiwa.process_result => String.this.run nil
 String.run_and_check unit => run.panic_on_error
 
 
+# If the test file starts with a comment of the form `# fuzion.debugLevel=N`,
+# return `-debug=N`; otherwise, return an empty string.
+#
+# This is used in some flang_dev examples.
+#
+debug_options(f io.path) String =>
+  dbg_opt := "# fuzion.debugLevel="
+  txt := (io.file.read f).or_panic
+  first_line := txt.lines.first.or_panic
+  if first_line.starts_with dbg_opt
+    "-debug=$((first_line.substring dbg_opt.byte_count).split[0].parse_i64.or_panic)"
+  else
+    ""
+
+
 ############################################################################
 
 
@@ -165,9 +180,10 @@ if envir.Args.env.count != 5
 
 action := envir.Args.env[1]
 be     := envir.Args.env[2]
+file   := io.path.of envir.Args.env[4]
 # can not execute bash script fz on windows with CreateProcess
-fz_run := envir.Args.env[3].replace "../../bin/fz"
-                                    """
+fz_run := "$(envir.Args.env[3]) $(debug_options file)" .replace "../../bin/fz"
+                                                                """
   java \
   $(is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : "") \
   --enable-native-access=ALL-UNNAMED \
@@ -179,7 +195,6 @@ fz_run := envir.Args.env[3].replace "../../bin/fz"
   -Dfuzion.command=fz \
   dev.flang.tools.Fuzion"""
 
-file   := io.path.of envir.Args.env[4]
 input option io.path :=
   {
     stdin := io.path.of "$file.stdin"
