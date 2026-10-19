@@ -490,7 +490,7 @@ public class Html extends ANY
   {
     // Type Parameters
     var typeParameters = new List<AbstractFeature>();
-    typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.TypeParameter, new TreeSet<AbstractFeature>()));
+    typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.ExplicitTypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.OpenTypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(outer.typeArguments());
 
