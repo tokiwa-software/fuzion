@@ -2743,14 +2743,13 @@ public class GeneratingFUIR extends FUIR
     var outerClazz = clazz(cl);
     var e = getExpr(s);
 
-    var innerClazz = switch (e)
+    return switch (e)
       {
       case AbstractCall   call -> calledInner(call, outerClazz, tclazz, _inh.get(s - SITE_BASE));
       case AbstractAssign a    -> assignedField(outerClazz, tclazz, a, _inh.get(s - SITE_BASE));
       case Clazz          fld  -> fld;
       default                  -> { throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
       };
-    return innerClazz == null ? null : innerClazz;
   }
 
 
