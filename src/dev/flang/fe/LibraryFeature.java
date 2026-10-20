@@ -688,7 +688,6 @@ public class LibraryFeature extends FuirFeature
                 {
                   @Override public AbstractType type() { return t; }
                   @Override public byte[] data() { return d; }
-                  @Override public Expr visit(FeatureVisitor v, AbstractFeature af) { v.action(this); return this; };
                   @Override public String toString() { return "LibraryFeature.Constant of type "+type(); }
                   @Override public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); }
                 };

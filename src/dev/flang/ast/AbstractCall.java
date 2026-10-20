@@ -144,25 +144,6 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // visit should be only required by the `Call` or `ParsedCall`, not by `LibraryCall`
-    throw new Error("AbstractCall.visit on implemented by " + getClass());
-  }
-
-
-
-  /**
    * Does this call use dynamic binding.  Dynamic binding is used if the target
    * is not Current (either explicitly or in an inheritance call).  In case the
    * target is current, this call will be specialized to avoid dynamic binding.
@@ -212,7 +193,7 @@ public abstract class AbstractCall extends Expr
       }
 
       @Override
-      public Expr visit(FeatureVisitor v, AbstractFeature outer)
+      protected Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
       }
@@ -231,11 +212,9 @@ public abstract class AbstractCall extends Expr
    *
    * @param res Resolution instance used to resolve types in this call.
    *
-   * @param that the original feature that is used to lookup types.
-   *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call cotypeInheritanceCall(Resolution res, AbstractFeature that)
+  Call cotypeInheritanceCall(Resolution res)
   {
     var selfType = new ParsedType(pos(),
                                   FuzionConstants.COTYPE_RELAY_TYPE);
@@ -252,16 +231,16 @@ public abstract class AbstractCall extends Expr
             if (!typeParameters.isFrozen())
               {
                 typeParameters.removeTail(1);
-                typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+                typeParameters.addAll(actualTypeParameters());
               }
           });
       }
     else
       {
-        typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+        typeParameters.addAll(actualTypeParameters());
       }
 
-    return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
+    return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, target());
   }
 
 

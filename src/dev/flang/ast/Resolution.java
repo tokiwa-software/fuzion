@@ -639,9 +639,8 @@ public class Resolution extends ANY
                 var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN :
                         t.isFreeTypeParameter() ? Impl.FREE_TYPE_PARAMETER
                                                 : Impl.EXPLICIT_TYPE_PARAMETER;
-                var constraint0 = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
+                var constraint = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
                   .resolve(this, af.context());
-                var constraint = af.rebaseTypeForCotype(constraint0);
                 var ta = new Feature(
                     p,
                     Visi.UNSPECIFIED,
@@ -678,7 +677,7 @@ public class Resolution extends ANY
     return af.inherits()
       .stream()
       .filter(pc -> pc.calledFeature() != Types.f_ERROR)
-      .map(pc -> pc.cotypeInheritanceCall(this, af))
+      .map(pc -> pc.cotypeInheritanceCall(this))
       .collect(List.collector());
   }
 

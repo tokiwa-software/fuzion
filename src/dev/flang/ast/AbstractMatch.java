@@ -102,7 +102,7 @@ public abstract class AbstractMatch extends ExprWithPos
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var ns = subject().visit(v, outer);
     if (CHECKS) check

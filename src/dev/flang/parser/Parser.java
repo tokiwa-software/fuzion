@@ -1627,7 +1627,7 @@ actualArgs  : actualSpaces
     return
       // The `.` in `f a b c .xyz` ends actuals `a b c` immediately;
       //
-      current() == Token.t_period ||
+      current(atMinIndent) == Token.t_period ||
 
       // the multi-line case
       //

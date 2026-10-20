@@ -535,7 +535,7 @@ public class Function extends AbstractLambda
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (this._call != null)
       {

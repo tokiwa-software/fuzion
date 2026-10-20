@@ -61,7 +61,7 @@ public class Call extends AbstractCall
           @Override public AbstractFeature calledFeature() { return Types.resolved.f_true; }
           @Override public Expr target() { return Universe.instance; }
           @Override public AbstractType typeForInferencing() { return calledFeature().resultType(); }
-          @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
+          @Override protected Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
         };
 
 
@@ -70,7 +70,7 @@ public class Call extends AbstractCall
           @Override public AbstractFeature calledFeature() { return Types.resolved.f_false; }
           @Override public Expr target() { return Universe.instance; }
           @Override public AbstractType typeForInferencing() { return calledFeature().resultType(); }
-          @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
+          @Override protected Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
         };
 
 
@@ -1224,7 +1224,7 @@ public class Call extends AbstractCall
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this);
     _generics = _generics.map(g -> g.visit(v, outer));
@@ -3393,7 +3393,7 @@ public class Call extends AbstractCall
       public void setSourceRange(SourceRange r)
       { // do not change the source position if there was an error.
       }
-      public Expr visit(FeatureVisitor v, AbstractFeature outer)
+      protected Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         return this;
       }

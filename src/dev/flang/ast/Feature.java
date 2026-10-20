@@ -2333,7 +2333,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     // impl.initialValue is code executed by outer, not by this. So we visit it
     // here, while impl.code is visited when impl.visit is called with this as
