@@ -22,14 +22,4 @@ reg_issue4912.fz:30:9: error 3: Type inference from actual arguments failed sinc
 --------^
 For the formal argument 'Any.f.a' the type can only be derived if there is a call to 'Any.f'.
 
-
-reg_issue4912.fz:31:3: error 4: Duplicate feature declaration
-  f(x)       => "(f $x)"
---^
-Feature that was declared repeatedly: 'Any.f'
-originally declared at reg_issue4912.fz:30:7
-  Any.f(a)   => "($(Any.this).f $a)"
-------^
-To solve this, consider renaming one of these two features, e.g., as 'fʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
-
-4 errors.
+3 errors.
