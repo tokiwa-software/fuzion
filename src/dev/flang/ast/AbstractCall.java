@@ -231,11 +231,9 @@ public abstract class AbstractCall extends Expr
    *
    * @param res Resolution instance used to resolve types in this call.
    *
-   * @param that the original feature that is used to lookup types.
-   *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call cotypeInheritanceCall(Resolution res, AbstractFeature that)
+  Call cotypeInheritanceCall(Resolution res)
   {
     var selfType = new ParsedType(pos(),
                                   FuzionConstants.COTYPE_RELAY_TYPE);
@@ -252,16 +250,16 @@ public abstract class AbstractCall extends Expr
             if (!typeParameters.isFrozen())
               {
                 typeParameters.removeTail(1);
-                typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+                typeParameters.addAll(actualTypeParameters());
               }
           });
       }
     else
       {
-        typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+        typeParameters.addAll(actualTypeParameters());
       }
 
-    return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
+    return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, target());
   }
 
 

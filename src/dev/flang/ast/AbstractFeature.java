@@ -942,22 +942,20 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param res Resolution instance used to resolve types in this call.
    *
-   * @param that the original feature that is used to lookup types.
-   *
    * @param target the target of this typeCall, null for recursive calls for
    * outer typeCalls of to this method.
    *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call cotypeInheritanceCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that, Expr target)
+  Call cotypeInheritanceCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, Expr target)
   {
     var o = outer();
     var oc = o == null || o.isUniverse()                            ? Universe.instance
       : target instanceof AbstractCall ac && !ac.isCallToOuterRef() && ! ac.calledFeature().isField()
-      ? ac.cotypeInheritanceCall(res, that)
+      ? ac.cotypeInheritanceCall(res)
       : o.cotypeInheritanceCall(p, new List<>(o.selfType(),
-                                              o.genericsAsActuals().map(that::rebaseTypeForCotype)),
-                                res, that, null);
+                                              o.genericsAsActuals()),
+                                res, null);
 
     var tf = res.cotype(this);
     return new Call(p,
@@ -989,31 +987,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         first = false;
       }
     return t0.applyTypePars(this, tl);
-  }
-
-
-  /**
-   * For a given type t that was declared in the context of a non-type feature
-   * 'this', rebase this type to be used in 'this.cotype()'.  This means
-   * that generics used in t that are generics from 'this' have to be replaced
-   * by generics from 'this.cotype()'. Furthermore, resolution of
-   * non-generic types used in 't' has to be performed relative to 'this' even
-   * when the outer feature is 'this.cotype()'.
-   *
-   * @param t the type to be moved to the type feature.
-   */
-  AbstractType rebaseTypeForCotype(AbstractType t)
-  {
-    for (var i : inherits())
-      { // NYI: CLEANUP: If we do not freeze the type parameters, we run into
-        // errors (building base.fum). Apparently, there is some code that
-        // re-uses these without proper freezing/cloning.  A solution would be
-        // to change `List.map` to always clone the original List.
-        i.actualTypeParameters().freeze();
-      }
-    var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.baseName()));
-    return t.applyTypePars(this, tl)
-            .clone(this);
   }
 
 
