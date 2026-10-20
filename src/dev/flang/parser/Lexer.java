@@ -3186,7 +3186,7 @@ PIPE        : "|"
           )
             {
               Errors.unexpectedControlCodeInString(sourcePos(), _asciiControlName[p], p, sourcePos(_stringStart));
-              t = Token.t_error;
+              t = Token.t_stringQQ;
             }
           else
             {
