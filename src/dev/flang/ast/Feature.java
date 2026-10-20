@@ -923,8 +923,7 @@ public class Feature extends AbstractFeature
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS),
-      !isFreeTypeParameter() || _outer.arguments().contains(this));
+      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
 
     return _outer;
   }
