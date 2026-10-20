@@ -1878,23 +1878,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this or an alternative Expr if the action performed during the
-   * visit replaces this by the alternative.
-   */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    throw new Error("not meant to be used...");
-  }
-
-
-  /**
    * Is this feature an argument of its outer feature?
    */
   public boolean isArgument()

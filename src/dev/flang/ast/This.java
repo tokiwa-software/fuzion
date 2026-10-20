@@ -201,7 +201,7 @@ public class This extends ExprWithPos
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     return v.action(this);
   }

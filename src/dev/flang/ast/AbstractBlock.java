@@ -64,28 +64,6 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  public AbstractBlock visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    ListIterator<Expr> i = _expressions.listIterator();
-    while (i.hasNext())
-      {
-        Expr e = i.next();
-        i.set(e.visit(v, outer));
-      }
-    return this;
-  }
-
-
-  /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.

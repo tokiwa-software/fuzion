@@ -96,7 +96,7 @@ public class Universe extends ExprWithPos
    *
    * @return this.
    */
-  public Universe visit(FeatureVisitor v, AbstractFeature outer)
+  protected Universe visit(FeatureVisitor v, AbstractFeature outer)
   {
     return this;
   }

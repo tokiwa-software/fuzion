@@ -144,25 +144,6 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // visit should be only required by the `Call` or `ParsedCall`, not by `LibraryCall`
-    throw new Error("AbstractCall.visit on implemented by " + getClass());
-  }
-
-
-
-  /**
    * Does this call use dynamic binding.  Dynamic binding is used if the target
    * is not Current (either explicitly or in an inheritance call).  In case the
    * target is current, this call will be specialized to avoid dynamic binding.
@@ -212,7 +193,7 @@ public abstract class AbstractCall extends Expr
       }
 
       @Override
-      public Expr visit(FeatureVisitor v, AbstractFeature outer)
+      protected Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
       }

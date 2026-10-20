@@ -107,14 +107,6 @@ public class Tag extends Expr
   }
 
 
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visit'");
-  }
-
-
   /**
    * The number to be used for tagging this value.
    */
