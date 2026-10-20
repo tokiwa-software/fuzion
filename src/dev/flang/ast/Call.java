@@ -2115,6 +2115,16 @@ public class Call extends AbstractCall
                                     _actuals = _actuals.setOrClone(argnum, actual);
                                   }
                                 actualType = typeFromActual(res, context, actual, false);
+                                if (actualType != null && !c.constraintAssignableFrom(actualType))
+                                  { // in case actual is not assignabnle, not a lambda or partially applied call,
+                                    // ignore this for type inference to avoid a bigger mess for code like
+                                    //
+                                    //    x := [0,1,2].map 42
+                                    //
+                                    // That would otherwise infer `i64` as the function type
+                                    //
+                                    actualType = null;
+                                  }
                               }
                           }
                         if (actualType != null)
