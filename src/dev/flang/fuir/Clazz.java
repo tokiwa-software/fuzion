@@ -611,6 +611,8 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   void doesNeedCode()
   {
+    if (CHECKS) check
+      (!_type.feature().isTypeParameter());
     if (!_needsCode && !_fuir._lookupDone)
       {
         _needsCode = true;
