@@ -2102,14 +2102,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
                   { // NYI: Should be ok if existing or f is abstract.
                     AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, f1, f2);
                   }
-                else
-                  {
-                    // NYI: if (!isInherited && !sameModule(f, outer))
-                    if (!Feature.isAbstractAndFixedPair(f1, f2))
-                      {
-                        AstErrors.duplicateFeatureDeclaration(f1, f2);
-                      }
-                  }
               }
           }
       }

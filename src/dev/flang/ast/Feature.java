@@ -2411,30 +2411,11 @@ A pre-condition of a feature that does not redefine an inherited feature must st
     var tas = typeArguments();
     _arguments.add(tas.size(), ta);
 
-    checkDuplicateFeature(res);
-
     res._module.findDeclarations(ta, this);
 
     res._module.addTypeParameter(this, ta);
 
     return ta;
-  }
-
-
-  /**
-   * check if outer already contains a feature with
-   * the feature name of this feature
-   *
-   * @param res the current Resolution instance
-   */
-  private void checkDuplicateFeature(Resolution res)
-  {
-    var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
-    var existing = res._module.lookupFeature(_outer, newFeatureName);
-    if (existing != null && !isAbstractAndFixedPair(existing, this))
-      {
-        AstErrors.duplicateFeatureDeclaration(existing, this);
-      }
   }
 
 
