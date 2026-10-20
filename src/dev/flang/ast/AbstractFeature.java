@@ -727,6 +727,20 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * Number of free types among the type parameters of this feature.
+   *
+   * This returns the number of FreeTypeParameters in this.arguments().
+   */
+  public int freeTypesCount()
+  {
+    return (int) arguments()
+      .stream()
+      .filter(tp -> tp.isFreeTypeParameter())
+      .count();
+  }
+
+
+  /**
    * Check if this features argument list contains arguments of open generic
    * type. If this is the case, then the argCount of the feature name may change
    * when inherited.
@@ -1813,10 +1827,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return the generic instance for ta
    */
-  AbstractFeature addTypeParameter(Resolution res, Feature ta)
+  AbstractFeature addTypeParameter(Resolution res, AbstractFeature ta)
   {
     if (PRECONDITIONS) require
-      (ta.isFreeType());
+      (ta.isFreeTypeParameter());
 
     throw new Error("addTypeArgument only possible for Feature, not for "+getClass());
   }

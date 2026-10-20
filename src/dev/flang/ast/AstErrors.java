@@ -248,8 +248,8 @@ public class AstErrors extends ANY
       + (f.arguments().isEmpty()
           ? ", you must not provide arguments."
           : ", you must provide "
-            + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
-            + (f.typeArguments().size() > 0
+            + StringHelpers.singularOrPlural(f.featureName().argCount(), "argument") + "."
+            + (f.typeArguments().size() - f.freeTypesCount() > 0
                 ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments."
                 : ""));
   }
