@@ -924,7 +924,7 @@ public class Feature extends AbstractFeature
   {
     if (PRECONDITIONS) require
       (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS),
-      !isFreeType() || _outer.arguments().contains(this));
+      !isFreeTypeParameter() || _outer.arguments().contains(this));
 
     return _outer;
   }
@@ -2416,7 +2416,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   AbstractFeature addTypeParameter(Resolution res, Feature ta)
   {
     if (PRECONDITIONS) require
-      (ta.isFreeType());
+      (ta.isFreeTypeParameter());
 
     // A call to generics() has the side effects of setting _generics,
     // _arguments
@@ -2453,15 +2453,6 @@ A pre-condition of a feature that does not redefine an inherited feature must st
       {
         AstErrors.duplicateFeatureDeclaration(existing, this);
       }
-  }
-
-
-  /**
-   * Is this a type parameter created for a free type?
-   */
-  boolean isFreeType()
-  {
-    return false;
   }
 
 
@@ -2640,20 +2631,6 @@ A pre-condition of a feature that does not redefine an inherited feature must st
        arguments().size() == _featureName.argCount() + freeTypesCount());
 
     return _featureName;
-  }
-
-
-  /**
-   * Number of free types among the type parameters.
-   */
-  public int freeTypesCount()
-  {
-    var result = 0;
-    for (var tp : _arguments)
-      {
-        result += ((Feature) tp).isFreeType() ? 1 : 0;
-      }
-    return result;
   }
 
 

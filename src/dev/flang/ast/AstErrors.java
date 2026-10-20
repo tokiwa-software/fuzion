@@ -1371,9 +1371,9 @@ public class AstErrors extends ANY
     if (target            instanceof Call    c                                  &&
         c.calledFeature() instanceof Feature cf                                 &&
         cf.state().atLeast(State.RESOLVED_TYPES)                                &&
-        cf.resultType().isParametricType()                                     &&
-        cf.resultType().typeParameter() instanceof Feature tp                 &&
-        tp.isFreeType()                                                         &&
+        cf.resultType().isParametricType()                                      &&
+        cf.resultType().typeParameter() instanceof Feature tp                   &&
+        tp.isFreeTypeParameter()                                                &&
         tp.constraint().compareTo(Types.resolved.t_Any) == 0)
       {
         solution = "To solve this, you might replace the free type " + s(tp) + " by a different type.  " +

@@ -1818,25 +1818,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * During type resolution, add a type parameter created for a free type like
-   * {@code T} in {@code f(x T) is ...}.
-   *
-   * @param res the resolution instance.
-   *
-   * @param ta the newly created type parameter feature.
-   *
-   * @return the generic instance for ta
-   */
-  AbstractFeature addTypeParameter(Resolution res, AbstractFeature ta)
-  {
-    if (PRECONDITIONS) require
-      (ta.isFreeTypeParameter());
-
-    throw new Error("addTypeArgument only possible for Feature, not for "+getClass());
-  }
-
-
-  /**
    * The formal generic arguments of this feature
    */
   public FormalGenerics generics()
