@@ -73,6 +73,24 @@ public abstract class FeatureVisitor extends ANY
   public AbstractType action      (AbstractType     t                       ) { return t; }
 
   /**
+   * Visit expression e with this visitor.
+   *
+   * Expr.visit is protected since it is not needed after the front end phase;
+   * this method gives code outside the ast package access to it.
+   *
+   * @param e the expression to visit.
+   *
+   * @param outer the feature surrounding e.
+   *
+   * @return e or an alternative Expr if the action performed during the visit
+   * replaces e by the alternative.
+   */
+  public Expr visit(Expr e, AbstractFeature outer)
+  {
+    return e.visit(this, outer);
+  }
+
+  /**
    * Visitors that want a different treatment for visiting actual arguments of a
    * call can redefine this method to return false when visiting actuals is not
    * desired, but, e.g., done later manually.
