@@ -2882,6 +2882,51 @@ there is no common super type of the two types (Types.t_ERROR)
     return o == null;
   }
 
+
+  protected boolean isLegalNormalRelayType() {
+    return Errors.any()
+       || isArtificialType()
+       || !feature().isCotype()
+       || generics().get(0).isParametricType()
+       || legalRelayTypeFeature(generics().get(0).feature());
+  }
+
+
+  protected boolean isLegalParametricRelayType() {
+    return Errors.any()
+       || isArtificialType()
+       || !feature().isCotype()
+       || !generics().get(0).isParametricType()
+       // the RELAY#TYPE parameter is a RELAY#TYPE of another feature
+       || generics().get(0).typeParameter().isCoTypesRelayTypeParameter()
+         && legalRelayTypeFeature(generics().get(0).typeParameter().outer().cotypeOrigin());
+  }
+
+
+  private boolean legalRelayTypeFeature(AbstractFeature rtf) {
+    return rtf.inheritsFrom(feature().cotypeOrigin())
+      // we might deal with the target of an inheritance call
+      // e.g.:
+      // ip_address : property.orderable is
+      // in this case `property` will have ip_address as the relay#type
+         || inOuters(rtf, feature().cotypeOrigin());
+  }
+
+
+  private boolean inOuters(AbstractFeature f, AbstractFeature f2) {
+    var o = f;
+    while (o != null)
+      {
+        if (o == f)
+          {
+            return true;
+          }
+        o = o.outer();
+      }
+    return false;
+  }
+
+
 }
 
 /* end of file */
