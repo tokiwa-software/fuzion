@@ -2625,9 +2625,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   public FeatureName featureName()
   {
     if (CHECKS) check
-      (// the feature name is currently not changed in addTypeParameter, so
-       // we add freeTypesCount() here.
-       arguments().size() == _featureName.argCount() + freeTypesCount());
+      (arguments().size() == _featureName.argCount());
 
     return _featureName;
   }
