@@ -78,7 +78,7 @@ In call: 'f64'
 To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8
 public f64(public val f64) : float, java_primitive is
 -------^^^
-To call 'f64', you must provide one argument.
+To call 'f64', you must provide one argument 'val'.
 
 
 
@@ -91,7 +91,7 @@ In call: '(array String)'
 To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:195:8
 public array(T type, I type : integer, length I, init I -> T) array T =>
 -------^^^^^
-To call 'array', you must provide 4 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.
+To call 'array', you must provide 4 arguments 'T', 'I', 'length', 'init'. The 2 type parameters 'T', 'I' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
 
 
@@ -104,7 +104,7 @@ In call: 'f64'
 To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8
 public f64(public val f64) : float, java_primitive is
 -------^^^
-To call 'f64', you must provide one argument.
+To call 'f64', you must provide one argument 'val'.
 
 
 
@@ -117,7 +117,7 @@ In call: '(array String)'
 To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:195:8
 public array(T type, I type : integer, length I, init I -> T) array T =>
 -------^^^^^
-To call 'array', you must provide 4 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.
+To call 'array', you must provide 4 arguments 'T', 'I', 'length', 'init'. The 2 type parameters 'T', 'I' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
 
 
@@ -130,7 +130,7 @@ In call: 'f64'
 To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8
 public f64(public val f64) : float, java_primitive is
 -------^^^
-To call 'f64', you must provide one argument.
+To call 'f64', you must provide one argument 'val'.
 
 
 
@@ -163,7 +163,7 @@ In call: 'f64'
 To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8
 public f64(public val f64) : float, java_primitive is
 -------^^^
-To call 'f64', you must provide one argument.
+To call 'f64', you must provide one argument 'val'.
 
 
 
@@ -196,7 +196,7 @@ In call: 'f64'
 To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8
 public f64(public val f64) : float, java_primitive is
 -------^^^
-To call 'f64', you must provide one argument.
+To call 'f64', you must provide one argument 'val'.
 
 
 
@@ -229,7 +229,7 @@ In call: 'f64'
 To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8
 public f64(public val f64) : float, java_primitive is
 -------^^^
-To call 'f64', you must provide one argument.
+To call 'f64', you must provide one argument 'val'.
 
 
 
@@ -282,7 +282,7 @@ In call: 'f64'
 To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8
 public f64(public val f64) : float, java_primitive is
 -------^^^
-To call 'f64', you must provide one argument.
+To call 'f64', you must provide one argument 'val'.
 
 
 
@@ -335,7 +335,7 @@ In call: 'f64'
 To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8
 public f64(public val f64) : float, java_primitive is
 -------^^^
-To call 'f64', you must provide one argument.
+To call 'f64', you must provide one argument 'val'.
 
 
 
@@ -388,7 +388,7 @@ In call: 'g _'
 To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type parameter A (no arguments)) at reg_issue5818_calling_with_open_type_negative.fz:61:3
   g(T,U type, A type ...) =>
 --^
-To call 'g', you must provide 3 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.
+To call 'g', you must provide 3 arguments 'T', 'U', 'A'. The 3 type parameters 'T', 'U', 'A' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
 
 
@@ -401,7 +401,7 @@ In call: 'g _'
 To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type parameter A (no arguments)) at reg_issue5818_calling_with_open_type_negative.fz:61:3
   g(T,U type, A type ...) =>
 --^
-To call 'g', you must provide 3 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.
+To call 'g', you must provide 3 arguments 'T', 'U', 'A'. The 3 type parameters 'T', 'U', 'A' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
 
 
