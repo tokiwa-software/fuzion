@@ -2230,8 +2230,11 @@ stringTermB : ')any chars&quot;'
         var t = current();
         if (isString(t))
           {
+            var end = tokenEndPos();
             var ps = string(multiLineIndentation);
-            var str = new StrConst(tokenSourcePos().rangeTo(tokenEndPos()), ps.v0());
+            var str = Errors.isSyntaxErrorPosition(sourcePos(end))
+              ? Call.ERROR
+              : new StrConst(tokenSourcePos().rangeTo(end), ps.v0());
             result = concatString(tokenSourcePos(), leftString, str);
             next();
             if (isPartialString(t))
