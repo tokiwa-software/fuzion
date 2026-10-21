@@ -16,3 +16,7 @@ test false_ true_ bool true
 test false_ true_ bool true
 test false_ true_ bool true
 test false_ true_ bool true
+test void ok 1
+test void ok 2
+test void ok 3
+test void ok 4
