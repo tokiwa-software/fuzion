@@ -2682,7 +2682,12 @@ exprs       : expr semiOrFlatLF exprs
       if (ok && firstIndent != -1)
         {
           ok = firstIndent > indent(oldIndentPos); // new indentation must be deeper
-          if (ok && okLineNum != lineNum(okPos))
+          // Check indentation once per line: okLineNum is the line of the last
+          // ok() call. Also treat a token as a continuation, not a new line, if
+          // it starts on the line where the previous token ended, even if that
+          // previous token started on an earlier line (e.g. a multiline string).
+          if (ok && okLineNum != lineNum(okPos)
+                 && lineNum(okPos) != lineNum(lastTokenEndPos()))
             { // a new line, so check its indentation:
               var curIndent = indent(okPos);
               if (firstIndent != curIndent)
