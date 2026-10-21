@@ -484,7 +484,8 @@ public class ParsedCall extends Call
             // otherwise, try to solve inconsistent type
             paa != null                              &&
             (typeForInferencing() == null                             ||
-             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.feature())
+             typeForInferencing() != Types.t_ERROR &&
+             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.selfOrConstraint().feature())
              // !typeForInferencing().isFunctionType(res)                    -- original code
              // expectedType.isAssignableFrom(typeForInferencing()).no()     -- new code, does not work, unclear why!
             ))
@@ -707,9 +708,11 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             // only the last type parameter may be open
             if (CHECKS) check
               (ti >= tn-1 ||
-               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter    ,
+               ts.get(ti).kind() == AbstractFeature.Kind.ExplicitTypeParameter ||
+               ts.get(ti).kind() == AbstractFeature.Kind.FreeTypeParameter        ,
                ti != tn-1 ||
-               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
+               ts.get(ti).kind() == AbstractFeature.Kind.ExplicitTypeParameter ||
+               ts.get(ti).kind() == AbstractFeature.Kind.FreeTypeParameter     ||
                ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
 
             var t = ti < tn &&
