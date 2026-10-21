@@ -2786,7 +2786,7 @@ public class GeneratingFUIR extends FUIR
       {
         var cf      = c.calledFeature();
         var dynamic = c.isDynamic() && tclazz.isRef();
-        var needsCode = !dynamic || explicitTarget != null;
+        var needsCode = (!dynamic || explicitTarget != null) && !c.calledFeature().isTypeParameter();
         var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
         innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature) cf, typePars), c.select(), c.isInheritanceCall());
         if (innerClazz._type.isSelfRecursive())
