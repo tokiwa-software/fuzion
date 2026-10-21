@@ -193,7 +193,7 @@ public class GeneratingFUIR extends FUIR
                                    FuzionConstants.NO_SELECT,
                                    false /* isInheritanceCall */);
              var cur = new Current(call.pos(),                     // e.g. tuple.#Values_Of_Open_Type<n>.typed_foldf
-                                   currentClazz._type.feature());
+                                   currentClazz.feature());
              var openTypeInstance = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
@@ -246,7 +246,7 @@ public class GeneratingFUIR extends FUIR
                                    FuzionConstants.NO_SELECT,
                                    false /* isInheritanceCall */);
              var cur = new Current(call.pos(),                     // e.g. tuple.#Values_Of_Open_Type<n>.typed_foldf
-                                   currentClazz._type.feature());
+                                   currentClazz.feature());
              var openTypeInstance = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
@@ -911,9 +911,9 @@ public class GeneratingFUIR extends FUIR
             // the convenience of the backend.
             //
             // So instead of testing !o.isRef() we use
-            // !o._type.feature().isThisRef().
-            !o._type.feature().isRef() &&
-            !o._type.feature().isIntrinsic())
+            // !o.feature().isThisRef().
+            !o.feature().isRef() &&
+            !o.feature().isIntrinsic())
           {  // but a recursive chain of value types is not permitted
 
             // NYI: recursive chain of value types should be detected during
@@ -934,7 +934,7 @@ public class GeneratingFUIR extends FUIR
                          "Value type " + actualType + " equals type of outer feature.\n"+
                          "The chain of outer types that lead to this recursion is:\n"+
                          chain + "\n" +
-                         "To solve this, you could add a 'ref' after the arguments list at "+o._type.feature().pos().show());
+                         "To solve this, you could add a 'ref' after the arguments list at "+o.feature().pos().show());
           }
         o = o._outer;
       }
@@ -2279,8 +2279,8 @@ public class GeneratingFUIR extends FUIR
                 var t = call.target();
                 var op = cf.openTypesFeature();
                 var cur = _currentClazz;
-                Expr target = new Current(call.pos(), cur._type.feature());
-                while (!cur._type.feature().inheritsFrom(cf.outer()))
+                Expr target = new Current(call.pos(), cur.feature());
+                while (!cur.feature().inheritsFrom(cf.outer()))
                   {
                     var ft = target;
                     var fcur = cur;
