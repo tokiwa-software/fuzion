@@ -711,70 +711,56 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       this  .compareTo(actual               ) == 0 ||
       this  .compareTo(Types.resolved.t_Any ) == 0;
 
-    if (!result && !isParametricType())
+    if (!result)
       {
-        // NYI: BUG: #4756, #5002, likely unsound
-        result = switch (actual.kind())
+        result = switch (kind())
           {
             /**
-             * e.g.:
-             *
-             * this: 'T : property.orderable'
-             * actual: 'I : integer'
+             * we do not support parametric type constraints and this-types
              */
-          case ParametricType -> !isThisType() && constraintAssignableFrom(context, actual.typeParameter().constraint(context), assignableTo);
-            /**
-             * e.g.:
-             *
-             * this: 'TP : concur.thread_pool'
-             * actual: 'concur.thread_pool.this'
-             */
-            case ThisType -> {
-              yield actual.feature() == feature()
-              ||
-                constraintAssignableViaInherits(context, actual, assignableTo);
-            }
-            /**
-             * e.g.:
-             *
-             * this: 'TP : concur.thread_pool'
-             * actual: 'concur.thread_pool'
-             */
-            case RefType, ValueType -> {
-              yield actual.feature() == feature() &&
-                genericsAssignable(actual, context) &&
-                // NYI: BUG: isThisType logic certainly wrong...
-                (isThisType() || outer() == null && actual.outer() == null || outer().isAssignableFromDirectly(actual.outer()).yes())
-              ||
-                constraintAssignableViaInherits(context, actual, assignableTo);
-            }
+            case ParametricType, ThisType -> false;
+            case ValueType, RefType ->
+              switch (actual.kind())
+                {
+                /**
+                 * e.g.:
+                 *
+                 * this: 'T : property.orderable'
+                 * actual: 'I : integer'
+                 */
+                case ParametricType ->
+                  constraintAssignableFrom(context, actual.typeParameter().constraint(context), assignableTo);
+                /**
+                 * e.g.:
+                 *
+                 * this: 'TP : concur.thread_pool'
+                 * actual: 'concur.thread_pool'
+                 */
+                case ValueType, RefType ->
+                  // either directly
+                  actual.feature() == feature() &&
+                    genericsAssignable(actual, context) &&
+                    (outer() == null && actual.outer() == null ||
+                     outer().isAssignableFromDirectly(actual.outer()).yes())
+                  ||
+                  // or via some feature that actual inherits
+                  actual.feature().inherits().stream().anyMatch(p ->
+                    {
+                      var pa = actual.actualType(p.type());
+                      return pa!=actual && constraintAssignableFrom(context, pa, assignableTo);
+                    });
+                /**
+                 * e.g.:
+                 *
+                 * this: 'TP : concur.thread_pool'
+                 * actual: 'my_thread_pool.this'
+                 */
+                // NYI: BUG:  #4756, #5002, likely unsound
+                case ThisType -> actual.feature().inheritsFrom(feature());
+                };
           };
       }
     return result;
-  }
-
-
-  /**
-   * Check if actual can be assigned to a type parameter with
-   * constraint this via the feature that actual.feature inherits from.
-   *
-   * @param context the source code context where this Type is used
-   *
-   * @param actual the actual type.
-   *
-   * @param assignableTo if non-null, this will collect all constraint types
-   * that `actual` is assignable to. Use for error messages.
-   */
-  private boolean constraintAssignableViaInherits(Context context,
-                                                  AbstractType actual,
-                                                  Set<AbstractType> assignableTo)
-  {
-    return actual.feature().inherits().stream().anyMatch(p ->
-      {
-        var pa = actual.actualType(p.type());
-        return pa!=actual && constraintAssignableFrom(context, pa, assignableTo);
-      }
-    );
   }
 
 
