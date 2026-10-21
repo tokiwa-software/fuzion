@@ -3030,8 +3030,8 @@ public class GeneratingFUIR extends FUIR
           {
             innerClazz = switch (clazzKind(innerClazz))
               {
-              case Routine, Intrinsic, Native, Field, TypeParameter -> innerClazz;
-              case Abstract, Choice -> NO_CLAZZ;
+              case Routine, Intrinsic, Native, Field -> innerClazz;
+              case Abstract, Choice, TypeParameter -> NO_CLAZZ;
               };
           }
         if (innerClazz != NO_CLAZZ && codeAt(s) == ExprKind.Call)
