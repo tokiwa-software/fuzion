@@ -1,0 +1,11 @@
+
+counterexample_12_overloading_and_polymorphism.fz:30:3: error 1: Duplicate feature declaration
+  compare_to(o String) i32 => 0  # 1. should flag an error: no overloading by argument type
+--^^^^^^^^^^
+Feature that was declared repeatedly: 'counterexample_12_overloading_and_polymorphism.compare_to'
+originally declared at counterexample_12_overloading_and_polymorphism.fz:29:3
+  compare_to(o Any) i32 => 0
+--^^^^^^^^^^
+To solve this, consider renaming one of these two features, e.g., as 'compare_toʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
+
+one error.

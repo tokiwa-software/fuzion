@@ -1,0 +1,38 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test counterexample_05_currys_paradox
+#
+# -----------------------------------------------------------------------
+
+# This is the type-level Curry paradox: `F` is a `Curry` whose `r` applies its
+# argument to itself.  Fuzion is not a total language, so it accepts this
+# recursive type and program; evaluating `go` would diverge.  The test is
+# compile-only so the recursion is not executed.
+counterexample_05_currys_paradox is
+
+  Curry ref is
+    r(c Curry) i32 => abstract
+
+  F ref : Curry is
+    redef r(c Curry) i32 => c.r c
+
+  go i32 =>
+    c := F
+    c.r c
