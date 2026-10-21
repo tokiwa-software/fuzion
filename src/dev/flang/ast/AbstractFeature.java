@@ -100,7 +100,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           case RefConstructor        -> "ref-constructor";
           case Field                 -> "field";
           case ExplicitTypeParameter -> "type parameter";
-          case FreeTypeParameter      -> "free type parameter";
+          case FreeTypeParameter     -> "free type parameter";
           case OpenTypeParameter     -> "open type parameter";
           case Intrinsic             -> "intrinsic";
           case Abstract              -> "abstract";
@@ -727,16 +727,39 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * List of all explicit type arguments, i.e., explicit type parameters and
+   * open type parameters.
+   */
+  public List<AbstractFeature> explicitOrOpenTypeParameters()
+  {
+    return arguments()
+      .filter(tp -> tp.isExplicitTypeParameter() ||
+                    tp.isOpenTypeParameter()        );
+  }
+
+
+  /**
    * Number of free types among the type parameters of this feature.
    *
    * This returns the number of FreeTypeParameters in this.arguments().
    */
   public int freeTypesCount()
   {
-    return (int) arguments()
-      .stream()
+    return arguments()
       .filter(tp -> tp.isFreeTypeParameter())
-      .count();
+      .size();
+  }
+
+
+  /**
+   * List of all explicit arguments, i.e., explicit type parameters, open type
+   * parameters and value arguments.  This excludes free type parameters since
+   * they are not given explicitly in a call but inferred.
+   */
+  public List<AbstractFeature> explicitArguments()
+  {
+    return arguments()
+      .filter(tp -> !tp.isFreeTypeParameter());
   }
 
 

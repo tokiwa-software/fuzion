@@ -534,7 +534,7 @@ public class LibraryFeature extends FuirFeature
     if (result == null)
       {
         var bytes = _libModule.featureName(_index);
-        var ac = (int) arguments().stream().filter(a -> !a.isFreeTypeParameter()).count();
+        var ac = explicitArgumentCount();
         var id = _libModule.featureId(_index);
         if (bytes.length == 0)
           {

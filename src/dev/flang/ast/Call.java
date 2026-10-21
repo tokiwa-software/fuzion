@@ -120,11 +120,19 @@ public class Call extends AbstractCall
 
     if (needsToInferTypeParametersFromArgs() && _generics.size() < _calledFeature.typeArguments().size())
       {
-        res = new List<>(_generics);
-        var fres = res;
-        _calledFeature.typeArguments()
-          .filter(g -> _generics == NO_GENERICS && g.isExplicitTypeParameter() || g.isFreeTypeParameter())
-          .forEach(g -> fres.add(Types.t_UNDEFINED));
+        if (_generics == NO_GENERICS)
+          {
+            res = _calledFeature.typeArguments()
+                                .filter(g -> g.isExplicitTypeParameter() || g.isFreeTypeParameter())
+                                .map2(g -> Types.t_UNDEFINED);
+          }
+        else
+          {
+            res = new List<>(_generics);
+            res.addAll(_calledFeature.typeArguments()
+                                     .filter(g ->  g.isFreeTypeParameter())
+                                     .map2(g -> Types.t_UNDEFINED));
+          }
       }
     // res.freeze();  -- NYI: res.freeze not possible here since Function.propagateTypeAndInferResult performs gs.set
 
@@ -1102,8 +1110,7 @@ public class Call extends AbstractCall
   {
     var asz = _actuals.size() + (addOne ? 1 : 0);
     var fvsz = ff.valueArguments().size();
-    var ft = ff.typeArguments();
-    var ftsz = ft.stream().filter(a->!a.isFreeTypeParameter()).count();
+    var ftsz = ff.explicitOrOpenTypeParameters().size();
 
     var result = fvsz == asz ||
       _generics.isEmpty() && (fvsz + ftsz == asz) ||

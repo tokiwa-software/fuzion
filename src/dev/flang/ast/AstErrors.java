@@ -226,7 +226,7 @@ public class AstErrors extends ANY
   private static String argCountStr(AbstractFeature f)
   {
     var msg = new List<String>();
-    var ta = f.typeArguments().filter(a->!a.isFreeTypeParameter());;
+    var ta = f.explicitOrOpenTypeParameters();
     var va = f.valueArguments();
     var typeCount  = ta.size();
     var valueCount = va.size();
@@ -244,24 +244,22 @@ public class AstErrors extends ANY
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
-    var argCount = f.explicitArgumentCount();
-    var typeArgCount = f.typeArguments().size() - f.freeTypesCount();
-    var args     = f.arguments().filter(a->!a.isFreeTypeParameter());
-    var argsStr  = args.map2(a->sbnf(a))
-                       .toString("", ", ", "");
-    var tArgsStr = args.filter(a->a.isTypeParameter() || a.isOpenTypeParameter()).map2(a->sbnf(a))
-                       .toString("", ", ", "");
+    var args         = f.explicitArguments();
+    var typeArgs     = f.explicitOrOpenTypeParameters();
+    var typeArgCount = typeArgs.size();
+    var argsStr      = args    .map2(a->sbnf(a)).toString("", ", ", "");
+    var tArgsStr     = typeArgs.map2(a->sbnf(a)).toString("", ", ", "");
     return "To call " + sbn(f.baseName())
-      + (f.arguments().isEmpty()
+      + (args.isEmpty()
           ? ", you must not provide arguments."
           : ", you must provide "
-            + StringHelpers.singularOrPlural(argCount, "argument") + " " + argsStr + "."
-            + (typeArgCount > 0
-               ? " The " + StringHelpers.singularOrPlural(typeArgCount, "type parameter") + " " + tArgsStr +
+            + StringHelpers.singularOrPlural(args.size(), "argument") + " " + argsStr + "."
+            + (typeArgs.isEmpty()
+               ? ""
+               : " The " + StringHelpers.singularOrPlural(typeArgCount, "type parameter") + " " + tArgsStr +
                  " may be omitted or `_` may be used in place of " +
                  (typeArgCount==1 ? "it"
-                                  : "a type parameter") + " if it can be inferred from other arguments."
-                : ""));
+                                  : "a type parameter") + " if it can be inferred from other arguments."));
   }
 
 
