@@ -158,7 +158,8 @@ public class CTypes extends ANY
   {
     return switch (_fuir.clazzKind(cl))
       {
-      case Choice, Routine -> true;
+      case Routine         -> !_fuir.clazzIsUnitType(cl);
+      case Choice          -> true;
       default              -> false;
       };
 
@@ -300,7 +301,10 @@ public class CTypes extends ANY
           {
             var vcl = _fuir.clazzAsValue(cl);
             els.add(CStmnt.decl(typeClazzID, CNames.CLAZZ_ID));
-            els.add(CStmnt.decl(clazz(vcl), CNames.FIELDS_IN_REF_CLAZZ));
+            if (needsTypeDeclaration(vcl))
+              {
+                els.add(CStmnt.decl(clazz(vcl), CNames.FIELDS_IN_REF_CLAZZ));
+              }
           }
         else if (_fuir.clazzIsChoice(cl))
           {
@@ -312,7 +316,7 @@ public class CTypes extends ANY
             for (int i = 0; i < _fuir.clazzChoiceCount(cl); i++)
               {
                 var cc = _fuir.clazzChoice(cl, i);
-                if (!_fuir.clazzIsVoidType(cc) && !_fuir.clazzIsRef(cc))
+                if (!_fuir.clazzIsVoidType(cc) && !_fuir.clazzIsRef(cc) && needsTypeDeclaration(cc))
                   {
                     uls.add(CStmnt.decl(clazz(cc), CIdent.choiceEntry(i)));
                   }
