@@ -1656,7 +1656,6 @@ A post-condition of a feature that does not redefine an inherited feature must s
    */
   public void checkTypes(Feature f)
   {
-    f.impl().checkTypes(f);
     var args = f.arguments();
     var fixed = f.isFixed();
     for (var o : f.redefines())

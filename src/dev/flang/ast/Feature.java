@@ -2496,7 +2496,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
         else if (_impl.typeInferable())
           {
             if (CHECKS) check
-              (!state().atLeast(State.TYPES_INFERENCED));
+              (!state().atLeast(State.TYPES_INFERENCED) || _impl._kind == Impl.Kind.FieldActual);
             result = _impl.inferredType(res, this, urgent);
           }
         else if (_returnType.isConstructorType())
@@ -2546,7 +2546,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
             result = result.resolve(res, outer().context());
           }
 
-        if (result != null)
+        if (result != null && (urgent || impl()._kind != Impl.Kind.FieldActual))
           {
             // FORWARD_CYCLIC should be returned only once.
             // We then want to return t_ERROR.
