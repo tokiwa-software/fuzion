@@ -107,6 +107,13 @@ public abstract class IR extends ANY
     Abstract,
     Choice,
     Native,
+    /**
+     * A type parameter should always be a unit type and
+     * not need any code to be created. Furthermore it
+     * should only be used during DFA/monomorphization for compile time type
+     * casts via e.g. `if T :  String`. later these should
+     * not be necessary anymore.
+     */
     TypeParameter;
 
 
