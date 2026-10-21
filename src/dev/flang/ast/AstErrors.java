@@ -244,13 +244,23 @@ public class AstErrors extends ANY
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
+    var argCount = f.explicitArgumentCount();
+    var typeArgCount = f.typeArguments().size() - f.freeTypesCount();
+    var args     = f.arguments().filter(a->!a.isFreeTypeParameter());
+    var argsStr  = args.map2(a->sbnf(a))
+                       .toString("", ", ", "");
+    var tArgsStr = args.filter(a->a.isTypeParameter() || a.isOpenTypeParameter()).map2(a->sbnf(a))
+                       .toString("", ", ", "");
     return "To call " + sbn(f.baseName())
       + (f.arguments().isEmpty()
           ? ", you must not provide arguments."
           : ", you must provide "
-            + StringHelpers.singularOrPlural(f.featureName().argCount(), "argument") + "."
-            + (f.typeArguments().size() - f.freeTypesCount() > 0
-                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments."
+            + StringHelpers.singularOrPlural(argCount, "argument") + " " + argsStr + "."
+            + (typeArgCount > 0
+               ? " The " + StringHelpers.singularOrPlural(typeArgCount, "type parameter") + " " + tArgsStr +
+                 " may be omitted or `_` may be used in place of " +
+                 (typeArgCount==1 ? "it"
+                                  : "a type parameter") + " if it can be inferred from other arguments."
                 : ""));
   }
 

@@ -741,6 +741,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * Number of arguments that are non-inferred, i.e., excluding free types.
+   * This is the number of arguments used in `FeatureName` and the number to be
+   * usedin a call to get an exact match withing type parameter inference or
+   * partial application.
+   */
+  public int explicitArgumentCount()
+  {
+    return arguments().size() - freeTypesCount();
+  }
+
+
+  /**
    * Check if this features argument list contains arguments of open generic
    * type. If this is the case, then the argCount of the feature name may change
    * when inherited.
