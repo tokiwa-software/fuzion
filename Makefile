@@ -621,10 +621,7 @@ run_tests_fuir: $(TEST_DEPENDENCIES)
 .PHONY: run_tests_jar_build
 run_tests_jar_build: $(FZ_JVM) $(BUILD_DIR)/tests
 	$(FZ) -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
-	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(BUILD_DIR)/lib" \
-	PATH="$(PATH):$(BUILD_DIR)/lib" \
-	DYLD_FALLBACK_LIBRARY_PATH="$(DYLD_FALLBACK_LIBRARY_PATH):$(BUILD_DIR)/lib" \
-		$(JAVA) -jar HelloWorld.jar > /dev/null
+	$(JAVA) -jar HelloWorld.jar > /dev/null
 
 .PHONY: run_tests_jar
 run_tests_jar: run_tests_jar_build

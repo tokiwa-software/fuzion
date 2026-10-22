@@ -29,6 +29,7 @@ package dev.flang.be.jvm.runtime;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.lang.foreign.AddressLayout;
@@ -57,6 +58,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -1360,6 +1364,37 @@ public class Runtime extends ANY
 
 
   /**
+   * Extract the fuzion runtime native library that may be bundled in the JAR
+   * file, so that it can be loaded from there.
+   *
+   * @return the path to the extracted library or {@code null} if no bundled
+   * library was found.
+   */
+  @SuppressWarnings("restricted")
+  private static Path extractFuzionRt()
+  {
+    var lib = System.mapLibraryName("fuzion_rt");
+    try (InputStream in = Runtime.class.getResourceAsStream("/" + lib))
+      {
+        if (in != null)
+          {
+            var dot = lib.lastIndexOf('.');
+            var suffix = dot < 0 ? "" : lib.substring(dot);
+            var file = Files.createTempFile("fuzion_rt_", suffix);
+            file.toFile().deleteOnExit();
+            Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
+            return file;
+          }
+      }
+    catch (IOException e)
+      {
+        Errors.error("Failed to extract native library '" + lib + "' from JAR: " + e.getMessage());
+      }
+    return null;
+  }
+
+
+  /**
    * @return SymbolLookup for fuzion_rt and libmath
    */
   @SuppressWarnings("restricted")
@@ -1368,7 +1403,10 @@ public class Runtime extends ANY
     SymbolLookup result = null;
     try
       {
-        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
+        var fuzionRt = extractFuzionRt();
+        result = fuzionRt == null
+          ? SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena)
+          : SymbolLookup.libraryLookup(fuzionRt, arena);
         try
           {
             result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"), arena));
