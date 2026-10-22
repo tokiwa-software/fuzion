@@ -844,9 +844,7 @@ argument    : visibility
               argNames
               argType
             ;
-argType     : type
-            | type "..."
-            | typeType
+argType     : typeType
             | typeType COLON type
             |
             ;
