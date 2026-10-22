@@ -160,8 +160,6 @@ ctrie_threads is
 
   test1
   test2 false
-  # NYI: BUG: snapshot do not work yet
-  # test2 true
-  # NYI: BUG: snapshot do not work yet
-  # test3
-  # NYI: BUG: test4 # this tests fails almost reliably
+  test2 true
+  test3
+  test4
