@@ -563,7 +563,7 @@ is
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
-  public map(B type, f T->B) Sequence B
+  public map(B type, f _ : T->B) Sequence B
     # NYI: BUG: count = result.count sometimes recursive
     # post
       # NYI: BUG: debug: finite = result.finite
