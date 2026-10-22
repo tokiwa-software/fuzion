@@ -67,7 +67,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     Constructor,
     RefConstructor,
     Field,
-    TypeParameter,
+    ExplicitTypeParameter,
+    FreeTypeParameter,
     OpenTypeParameter,
     Intrinsic,
     Abstract,
@@ -94,16 +95,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     {
       return switch (this)
         {
-          case Function          -> "function";
-          case Constructor       -> "constructor";
-          case RefConstructor    -> "ref-constructor";
-          case Field             -> "field";
-          case TypeParameter     -> "type parameter";
-          case OpenTypeParameter -> "open type parameter";
-          case Intrinsic         -> "intrinsic";
-          case Abstract          -> "abstract";
-          case Choice            -> "choice";
-          case Native            -> "native";
+          case Function              -> "function";
+          case Constructor           -> "constructor";
+          case RefConstructor        -> "ref-constructor";
+          case Field                 -> "field";
+          case ExplicitTypeParameter -> "type parameter";
+          case FreeTypeParameter     -> "free type parameter";
+          case OpenTypeParameter     -> "open type parameter";
+          case Intrinsic             -> "intrinsic";
+          case Abstract              -> "abstract";
+          case Choice                -> "choice";
+          case Native                -> "native";
         };
     }
 
@@ -445,9 +447,20 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isIntrinsic() { return kind() == Kind.Intrinsic; }
   public boolean isNative() { return kind() == Kind.Native; }
   public boolean isChoice() { return kind() == Kind.Choice; }
-  public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
-  public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
-  public boolean isConstructor() { return switch (kind()) { case RefConstructor, Constructor -> true; default -> false; }; }
+  public boolean isTypeParameter() { return switch (kind()) { case ExplicitTypeParameter,
+                                                                   FreeTypeParameter,
+                                                                   OpenTypeParameter -> true;
+                                                              default -> false;
+                                                            };
+                                   }
+  public boolean isExplicitTypeParameter() { return kind() == Kind.ExplicitTypeParameter; }
+  public boolean isFreeTypeParameter()     { return kind() == Kind.FreeTypeParameter; }
+  public boolean isOpenTypeParameter()     { return kind() == Kind.OpenTypeParameter; }
+  public boolean isConstructor()   { return switch (kind()) { case RefConstructor,
+                                                                   Constructor -> true;
+                                                              default -> false;
+                                                            };
+                                   }
   public boolean isRef() { return kind() == Kind.RefConstructor; }
 
 
@@ -710,6 +723,55 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           }
       }
     return result;
+  }
+
+
+  /**
+   * List of all explicit type arguments, i.e., explicit type parameters and
+   * open type parameters.
+   */
+  public List<AbstractFeature> explicitOrOpenTypeParameters()
+  {
+    return arguments()
+      .filter(tp -> tp.isExplicitTypeParameter() ||
+                    tp.isOpenTypeParameter()        );
+  }
+
+
+  /**
+   * Number of free types among the type parameters of this feature.
+   *
+   * This returns the number of FreeTypeParameters in this.arguments().
+   */
+  public int freeTypesCount()
+  {
+    return arguments()
+      .filter(tp -> tp.isFreeTypeParameter())
+      .size();
+  }
+
+
+  /**
+   * List of all explicit arguments, i.e., explicit type parameters, open type
+   * parameters and value arguments.  This excludes free type parameters since
+   * they are not given explicitly in a call but inferred.
+   */
+  public List<AbstractFeature> explicitArguments()
+  {
+    return arguments()
+      .filter(tp -> !tp.isFreeTypeParameter());
+  }
+
+
+  /**
+   * Number of arguments that are non-inferred, i.e., excluding free types.
+   * This is the number of arguments used in `FeatureName` and the number to be
+   * usedin a call to get an exact match withing type parameter inference or
+   * partial application.
+   */
+  public int explicitArgumentCount()
+  {
+    return arguments().size() - freeTypesCount();
   }
 
 
@@ -1791,25 +1853,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * During type resolution, add a type parameter created for a free type like
-   * {@code T} in {@code f(x T) is ...}.
-   *
-   * @param res the resolution instance.
-   *
-   * @param ta the newly created type parameter feature.
-   *
-   * @return the generic instance for ta
-   */
-  AbstractFeature addTypeParameter(Resolution res, Feature ta)
-  {
-    if (PRECONDITIONS) require
-      (ta.isFreeType());
-
-    throw new Error("addTypeArgument only possible for Feature, not for "+getClass());
-  }
-
-
-  /**
    * The formal generic arguments of this feature
    */
   public FormalGenerics generics()
@@ -1874,23 +1917,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   @Override public boolean producesResult()
   {
     return false;
-  }
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this or an alternative Expr if the action performed during the
-   * visit replaces this by the alternative.
-   */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    throw new Error("not meant to be used...");
   }
 
 
@@ -1988,7 +2014,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           case Abstract,Intrinsic,Native,Function -> "=> " + kind();
           case Choice,Constructor,RefConstructor -> "is";
           case Field -> state().atLeast(State.FINDING_DECLARATIONS) && isArgument() ? "" : ":= ...";
-          case OpenTypeParameter, TypeParameter -> "(type parameter)";
+          case OpenTypeParameter, ExplicitTypeParameter, FreeTypeParameter -> "(type parameter)";
         })).trim();
 
   }

@@ -209,29 +209,25 @@
 ---
 >               push(stack, rc, r);
 600c588
-<             ? new Pair<>(_processor.unitValue(), _processor.drop(tvalue, tc))
----
->             ? _processor.unitValue()
-602c590
 <           if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
 ---
 >           if (r == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
-609c597
+607c595
 <               push(stack, rt, r.v0());
 ---
 >               push(stack, rt, r);
-611d598
+609d596
 <           res = r.v1();
-616c603
+614c601
 <           res = _processor.comment(_fuir.comment(s));
 ---
 >           _processor.comment(_fuir.comment(s));
-623,624c610
+621,622c608
 <           push(stack, cl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, cl, r);
-633,638c619
+631,636c617
 <           if (CHECKS) check
 <             // check that constant creation has no side effects.
 <             (r.v1() == _processor.nop());
@@ -240,29 +236,29 @@
 <           res = r.v1();
 ---
 >           push(stack, constCl, r);
-645,646c626,627
+643,644c624,625
 <           res = _processor.match(s, this, subv);
 <           if (_fuir.alwaysResultsInVoid(s))
 ---
 >           var r = _processor.match(s, this, subv);
 >           if (r == null)
-649a631,632
+647a629,630
 >           if (CHECKS) check
 >             (r == null || r == _processor.unitValue());
-661,662c644
+659,660c642
 <           push(stack, newcl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, newcl, r);
-676c658
+674c656
 <           res = _processor.drop(v, rt);
 ---
 >           _processor.drop(v, rt);
-682d663
+680d661
 <           res = null;
-691c672
+689c670
 <         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack+" RES "+res);
 ---
 >         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
-693d673
+691d671
 <     return res;

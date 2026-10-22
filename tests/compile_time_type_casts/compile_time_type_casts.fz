@@ -101,8 +101,8 @@ compile_time_type_casts =>
       for_String
       uselambda ()->(say "lambda : codepoint len $(v.codepoint_count)")
       uselambda     (say "partial: codepoint len $(v.codepoint_count)")   # partial using constraint in args
-      uselazy         v
-      uselazy_num i64 v.codepoint_count
+      uselazy     v
+      uselazy_num v.codepoint_count
     else if T : bool
       # note that `T` is not of type `bool` but of any type that inherits from `bool`. This is why built-in
       # operation like `prefix !`, `infix &&` and `infix ||` that are compiled into `if-then-else` expressions
@@ -120,8 +120,8 @@ compile_time_type_casts =>
       uselambda   ()->v.do_b_thing_from_lambda
       uselambda       v.do_b_thing_from_partial1       # partial using constraint in target
       uselambda  (say v.do_b_thing_from_partial2)      # partial using constraint in args
-      uselazy         v.do_b_thing_lazy1
-      uselazy_num f64 v.do_b_thing_lazy2
+      uselazy     v.do_b_thing_lazy1
+      uselazy_num v.do_b_thing_lazy2
 
     else if T : c
       v.do_c_thing

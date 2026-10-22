@@ -612,6 +612,16 @@ should be avoided as much as possible.
               }
             jvm._jos.putNextEntry(new JarEntry(Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME));
             jvm._jos.write(jvm._names.methodNameToFuzionClazzNames().getBytes(StandardCharsets.UTF_8));
+            for (String str : new List<>("libfuzion_rt.so", "libfuzion_rt.dylib", "fuzion_rt.dll"))
+              {
+                var file = jvm._options.fuzionHome().resolve("lib/" + str);
+                if (file.toFile().exists())
+                  {
+                    jvm._options.verbosePrintln(2, " + " + str);
+                    jvm._jos.putNextEntry(new JarEntry(str));
+                    jvm._jos.write(Files.readAllBytes(file));
+                  }
+              }
           }
         catch (IOException io)
           {
@@ -879,14 +889,17 @@ should be avoided as much as possible.
                                       args));
           }
         f.setExecutable(true);
-        for (String str : new List<>("libfuzion_rt.so", "libfuzion_rt.dylib", "fuzion_rt.dll"))
+        if (!_options._saveJAR)
           {
-            var file = Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY)).resolve("lib/" + str);
-            if (file.toFile().exists())
+            for (String str : new List<>("libfuzion_rt.so", "libfuzion_rt.dylib", "fuzion_rt.dll"))
               {
-                Files.copy(file,
-                           executableName.toAbsolutePath().getParent().resolve(str),
-                           StandardCopyOption.REPLACE_EXISTING);
+                var file = Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY)).resolve("lib/" + str);
+                if (file.toFile().exists())
+                  {
+                    Files.copy(file,
+                               executableName.toAbsolutePath().getParent().resolve(str),
+                               StandardCopyOption.REPLACE_EXISTING);
+                  }
               }
           }
       }

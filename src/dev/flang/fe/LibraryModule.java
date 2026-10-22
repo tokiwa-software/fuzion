@@ -1171,8 +1171,9 @@ Feature
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return
-      (k == AbstractFeature.Kind.TypeParameter    .ordinal() ||
-       k == AbstractFeature.Kind.OpenTypeParameter.ordinal()    );
+      (k == AbstractFeature.Kind.ExplicitTypeParameter.ordinal() ||
+       k == AbstractFeature.Kind.FreeTypeParameter    .ordinal() ||
+       k == AbstractFeature.Kind.OpenTypeParameter    .ordinal()    );
   }
   int featureInheritsCountPos(int at)
   {

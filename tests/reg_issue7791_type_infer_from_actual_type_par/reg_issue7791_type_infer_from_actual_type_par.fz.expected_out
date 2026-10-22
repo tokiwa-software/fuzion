@@ -8,3 +8,15 @@ f4: u64
 [11, 22, 33]
 [3, 6, 9]
 [11, 12, 13]
+test false_ true_ bool true
+test false_ true_ bool true
+test false_ true_ bool true
+test false_ true_ bool true
+test false_ true_ bool true
+test false_ true_ bool true
+test false_ true_ bool true
+test false_ true_ bool true
+test void ok 1
+test void ok 2
+test void ok 3
+test void ok 4

@@ -79,24 +79,6 @@ public class FList extends Expr
     return _list.getFirst().pos();
   }
 
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return nothing.
-   *
-   * @throws Error
-   */
-  public FList visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    throw new Error("FList must be used only during parsing");
-  }
-
   /**
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.

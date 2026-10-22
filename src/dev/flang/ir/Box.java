@@ -101,14 +101,6 @@ public class Box extends Expr
   }
 
 
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visit'");
-  }
-
-
   /**
    * toString
    *

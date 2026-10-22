@@ -444,7 +444,7 @@ public class Feature extends AbstractFeature
   {
     this();
     _state = State.ERROR;
-    _featureName = FeatureName.get(Types.ERROR_NAME, arguments().size());
+    _featureName = FeatureName.get(Types.ERROR_NAME, explicitArgumentCount());
   }
 
 
@@ -804,14 +804,15 @@ public class Feature extends AbstractFeature
       }
     this._qname     = qname;
     this._arguments = a;
-    this._featureName = FeatureName.get(n, arguments().size());
+    this._featureName = FeatureName.get(n, explicitArgumentCount());
     this._inherits   = (i.isEmpty() &&
                         (p._kind != Impl.Kind.FieldActual) &&
                         (p._kind != Impl.Kind.FieldDef   ) &&
                         (p._kind != Impl.Kind.FieldInit  ) &&
                         (p._kind != Impl.Kind.Field      ) &&
-                        (p._kind != Impl.Kind.TypeParameter ) &&
-                        (p._kind != Impl.Kind.TypeParameterOpen ) &&
+                        (p._kind != Impl.Kind.ExplicitTypeParameter) &&
+                        (p._kind != Impl.Kind.FreeTypeParameter    ) &&
+                        (p._kind != Impl.Kind.TypeParameterOpen    ) &&
                         (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.ANY_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
       ? new List<>(new Call(_pos, FuzionConstants.ANY_NAME))
@@ -906,8 +907,7 @@ public class Feature extends AbstractFeature
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS),
-      !isFreeType() || _outer.arguments().contains(this));
+      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
 
     return _outer;
   }
@@ -957,7 +957,8 @@ public class Feature extends AbstractFeature
               case FieldInit, FieldDef,
                    FieldActual, FieldIter,
                    Field                     -> Kind.Field;
-              case TypeParameter             -> Kind.TypeParameter;
+              case ExplicitTypeParameter     -> Kind.ExplicitTypeParameter;
+              case FreeTypeParameter         -> Kind.FreeTypeParameter;
               case TypeParameterOpen         -> Kind.OpenTypeParameter;
               case Routine, RoutineDef       ->
                 _returnType == RefType.INSTANCE
@@ -2315,7 +2316,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     // impl.initialValue is code executed by outer, not by this. So we visit it
     // here, while impl.code is visited when impl.visit is called with this as
@@ -2398,7 +2399,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   AbstractFeature addTypeParameter(Resolution res, Feature ta)
   {
     if (PRECONDITIONS) require
-      (ta.isFreeType());
+      (ta.isFreeTypeParameter());
 
     // A call to generics() has the side effects of setting _generics,
     // _arguments
@@ -2416,15 +2417,6 @@ A pre-condition of a feature that does not redefine an inherited feature must st
     res._module.addTypeParameter(this, ta);
 
     return ta;
-  }
-
-
-  /**
-   * Is this a type parameter created for a free type?
-   */
-  boolean isFreeType()
-  {
-    return false;
   }
 
 
@@ -2598,25 +2590,9 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   public FeatureName featureName()
   {
     if (CHECKS) check
-      (// the feature name is currently not changed in addTypeParameter, so
-       // we add freeTypesCount() here.
-       arguments().size() == _featureName.argCount() + freeTypesCount());
+      (_featureName.argCount() == explicitArgumentCount());
 
     return _featureName;
-  }
-
-
-  /**
-   * Number of free types among the type parameters.
-   */
-  public int freeTypesCount()
-  {
-    var result = 0;
-    for (var tp : _arguments)
-      {
-        result += ((Feature) tp).isFreeType() ? 1 : 0;
-      }
-    return result;
   }
 
 

@@ -74,3 +74,26 @@ reg_issue7791_type_infer_from_actual_type_par =>
   say ([1,2,3].as_list.m2lb *11)
   say ([1,2,3].as_list.m2lc *3)
   say ([1,2,3].as_list.m2ld +10)
+
+  # the test case that was added to #7791 on 2026-10-01:
+
+  test(X, Y type,
+       C type : choice X Y,
+       c C)
+  =>
+    say "test $X $Y $C $c"
+
+  test false_ true_ bool true  # works
+  test false_ _     bool true
+  test _      true_ bool true
+  test _      _     bool true
+  test false_ _     _    true
+  test _      true_ _    true
+  test _      _     _    true
+  test                   true
+
+  # check if inference works if value argument `c` is `void`
+  panic.try (test false_ true_ bool (panic "test void ok 1")) .catch say
+  panic.try (test false_ _     bool (panic "test void ok 2")) .catch say
+  panic.try (test _      true_ bool (panic "test void ok 3")) .catch say
+  panic.try (test _      _     bool (panic "test void ok 4")) .catch say

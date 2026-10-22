@@ -226,7 +226,7 @@ public class AstErrors extends ANY
   private static String argCountStr(AbstractFeature f)
   {
     var msg = new List<String>();
-    var ta = f.typeArguments();
+    var ta = f.explicitOrOpenTypeParameters();
     var va = f.valueArguments();
     var typeCount  = ta.size();
     var valueCount = va.size();
@@ -244,14 +244,22 @@ public class AstErrors extends ANY
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
+    var args         = f.explicitArguments();
+    var typeArgs     = f.explicitOrOpenTypeParameters();
+    var typeArgCount = typeArgs.size();
+    var argsStr      = args    .map2(a->sbnf(a)).toString("", ", ", "");
+    var tArgsStr     = typeArgs.map2(a->sbnf(a)).toString("", ", ", "");
     return "To call " + sbn(f.baseName())
-      + (f.arguments().isEmpty()
+      + (args.isEmpty()
           ? ", you must not provide arguments."
           : ", you must provide "
-            + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
-            + (f.typeArguments().size() > 0
-                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments."
-                : ""));
+            + StringHelpers.singularOrPlural(args.size(), "argument") + " " + argsStr + "."
+            + (typeArgs.isEmpty()
+               ? ""
+               : " The " + StringHelpers.singularOrPlural(typeArgCount, "type parameter") + " " + tArgsStr +
+                 " may be omitted or `_` may be used in place of " +
+                 (typeArgCount==1 ? "it"
+                                  : "a type parameter") + " if it can be inferred from other arguments."));
   }
 
 
@@ -1371,9 +1379,9 @@ public class AstErrors extends ANY
     if (target            instanceof Call    c                                  &&
         c.calledFeature() instanceof Feature cf                                 &&
         cf.state().atLeast(State.RESOLVED_TYPES)                                &&
-        cf.resultType().isParametricType()                                     &&
-        cf.resultType().typeParameter() instanceof Feature tp                 &&
-        tp.isFreeType()                                                         &&
+        cf.resultType().isParametricType()                                      &&
+        cf.resultType().typeParameter() instanceof Feature tp                   &&
+        tp.isFreeTypeParameter()                                                &&
         tp.constraint().compareTo(Types.resolved.t_Any) == 0)
       {
         solution = "To solve this, you might replace the free type " + s(tp) + " by a different type.  " +

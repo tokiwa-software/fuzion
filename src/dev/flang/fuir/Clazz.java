@@ -611,6 +611,8 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   void doesNeedCode()
   {
+    if (CHECKS) check
+      (!_type.feature().isTypeParameter());
     if (!_needsCode && !_fuir._lookupDone)
       {
         _needsCode = true;
@@ -713,8 +715,9 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
       case Function,RefConstructor,Constructor -> IR.FeatureKind.Routine;
       case Field             -> IR.FeatureKind.Field;
-      case TypeParameter     -> IR.FeatureKind.TypeParameter;
-      case OpenTypeParameter -> IR.FeatureKind.TypeParameter;
+      case ExplicitTypeParameter,
+           FreeTypeParameter    ,
+           OpenTypeParameter      -> IR.FeatureKind.TypeParameter;
       case Intrinsic         -> IR.FeatureKind.Intrinsic;
       case Abstract          -> IR.FeatureKind.Abstract;
       case Choice            -> IR.FeatureKind.Choice;

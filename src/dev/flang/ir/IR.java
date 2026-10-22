@@ -107,6 +107,13 @@ public abstract class IR extends ANY
     Abstract,
     Choice,
     Native,
+    /**
+     * A type parameter should always be a unit type and
+     * not need any code to be created. Furthermore it
+     * should only be used during DFA/monomorphization for compile time type
+     * casts via e.g. `if T :  String`. later these should
+     * not be necessary anymore.
+     */
     TypeParameter;
 
 
@@ -335,18 +342,28 @@ public abstract class IR extends ANY
       }
     else if (e instanceof AbstractCall c)
       {
-        if (dumpResult)
+        // NYI: CLEANUP: we may be able to remove type parameter
+        // calls even earlier
+        if (!c.calledFeature().isTypeParameter())
           {
-            stack.push(() -> l.add(ExprKind.Pop));
+            if (dumpResult)
+              {
+                stack.push(() -> l.add(ExprKind.Pop));
+              }
+            stack.push(() -> l.add(c));
+            var fat = c.formalArgumentTypes();
+            for (int i = c.actuals().size()-1; i>=0; i--)
+              {
+                var actual = boxAndTag(c.actuals().get(i), fat[i]);
+                stack.push(() -> toStack(stack, l, actual, false));
+              }
+            stack.push(() -> toStack(stack, l, c.target(), false));
           }
-        stack.push(() -> l.add(c));
-        var fat = c.formalArgumentTypes();
-        for (int i = c.actuals().size()-1; i>=0; i--)
+        else
           {
-            var actual = boxAndTag(c.actuals().get(i), fat[i]);
-            stack.push(() -> toStack(stack, l, actual, false));
+            // target is still needed for its side effects
+            stack.push(() -> toStack(stack, l, c.target(), true));
           }
-        stack.push(() -> toStack(stack, l, c.target(), false));
       }
     else if (e instanceof AbstractMatch m)
       {

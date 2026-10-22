@@ -218,6 +218,8 @@ public class TailCall extends ANY
         {
           var cc = _fuir.accessedClazz(cls);
           yield mustAssignTo == NO_CLAZZ &&
+            // if cc is NO_CLAZZ we are at a dead end, return false.
+            cc != NO_CLAZZ &&
             (// we found call c/ix and we do not need to assign any variable, so we have a success!
              cls == s ||
 

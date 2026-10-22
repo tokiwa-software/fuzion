@@ -24,7 +24,7 @@
 reg_issue1781 =>
 
 
-  f(a i32) => a
+  f(a i32) => a+1
   f(a T) => a            # 1. should flag an error: (duplicate feature)
 
   p1 is

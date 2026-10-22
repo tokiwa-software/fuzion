@@ -479,6 +479,19 @@ public class Errors extends ANY
 
 
   /**
+   * Check if a syntax error was recorded at the given position.
+   *
+   * @param pos the source position to check
+   *
+   * @return true iff a syntax error was recorded at {@code pos}
+   */
+  public static synchronized boolean isSyntaxErrorPosition(SourcePosition pos)
+  {
+    return _syntaxErrorPositions_.contains(pos);
+  }
+
+
+  /**
    * print the given error or warning found during compilation.
    *
    * @param pos source code position where this error occurred, may be null

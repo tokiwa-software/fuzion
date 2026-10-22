@@ -3177,7 +3177,7 @@ PIPE        : "|"
           if (p == END_OF_FILE)
             {
               Errors.unterminatedString(sourcePos(), Lexer.this.sourcePos(_stringStart));
-              t = Token.t_error;
+              t = Token.t_stringQQ;
             }
           else if (
                 p < _asciiControlName.length
@@ -3186,7 +3186,7 @@ PIPE        : "|"
           )
             {
               Errors.unexpectedControlCodeInString(sourcePos(), _asciiControlName[p], p, sourcePos(_stringStart));
-              t = Token.t_error;
+              t = Token.t_stringQQ;
             }
           else
             {

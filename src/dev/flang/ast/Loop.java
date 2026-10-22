@@ -371,7 +371,7 @@ public class Loop extends ANY
           }
 
           @Override
-          public Expr visit(FeatureVisitor v, AbstractFeature outer)
+          protected Expr visit(FeatureVisitor v, AbstractFeature outer)
           {
             v0 = v0.visit(v, outer);
             return replace ? v0 : this;

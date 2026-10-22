@@ -91,7 +91,7 @@ public abstract class AbstractCurrent extends Expr
    * @return this.
    */
   @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _type = _type.visit(v, outer);
     if (CHECKS) check

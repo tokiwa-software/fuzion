@@ -2743,14 +2743,13 @@ public class GeneratingFUIR extends FUIR
     var outerClazz = clazz(cl);
     var e = getExpr(s);
 
-    var innerClazz = switch (e)
+    return switch (e)
       {
       case AbstractCall   call -> calledInner(call, outerClazz, tclazz, _inh.get(s - SITE_BASE));
       case AbstractAssign a    -> assignedField(outerClazz, tclazz, a, _inh.get(s - SITE_BASE));
       case Clazz          fld  -> fld;
       default                  -> { throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
       };
-    return innerClazz == null ? null : innerClazz;
   }
 
 
@@ -2787,7 +2786,7 @@ public class GeneratingFUIR extends FUIR
       {
         var cf      = c.calledFeature();
         var dynamic = c.isDynamic() && tclazz.isRef();
-        var needsCode = !dynamic || explicitTarget != null;
+        var needsCode = (!dynamic || explicitTarget != null) && !c.calledFeature().isTypeParameter();
         var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
         innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature) cf, typePars), c.select(), c.isInheritanceCall());
         if (innerClazz._type.isSelfRecursive())
@@ -3031,8 +3030,8 @@ public class GeneratingFUIR extends FUIR
           {
             innerClazz = switch (clazzKind(innerClazz))
               {
-              case Routine, Intrinsic, Native, Field, TypeParameter -> innerClazz;
-              case Abstract, Choice -> NO_CLAZZ;
+              case Routine, Intrinsic, Native, Field -> innerClazz;
+              case Abstract, Choice, TypeParameter -> NO_CLAZZ;
               };
           }
         if (innerClazz != NO_CLAZZ && codeAt(s) == ExprKind.Call)
@@ -3315,32 +3314,7 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Match);
 
-    var me = getExpr(s);
     var e = getExpr(s + 1 + cix);
-
-    if (me instanceof AbstractMatch m &&
-        m.subject() instanceof AbstractCall sc)
-      {
-        var c = m.cases().get(cix);
-        var cf = sc.calledFeature();
-        if (cf == Types.resolved.f_Type_infix_colon_true  ||
-            cf == Types.resolved.f_Type_infix_colon_false ||
-            cf == Types.resolved.f_Type_infix_colon          )
-          {
-            var outer = clazz(clazzAt(s));
-            var innerClazz = calledInner(sc, outer, null, _inh.get(s - SITE_BASE));
-            var tclazz = innerClazz._outer;
-            var T = innerClazz.actualTypeParameters()[0];
-            var pos = cf == Types.resolved.f_Type_infix_colon_true ||
-              cf == Types.resolved.f_Type_infix_colon  &&
-              T._type.constraintAssignableFrom(tclazz._type.generics().get(0));
-            var tf = pos ? Types.resolved.f_TRUE : Types.resolved.f_FALSE;
-            if (!c.types().stream().anyMatch(x->x.compareTo(tf.selfType())==0))
-              {
-                return NO_SITE;
-              }
-          }
-      }
 
     return ((NumLiteral) e).intValue().intValueExact();
   }
