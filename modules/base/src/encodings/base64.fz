@@ -24,7 +24,7 @@
 # Base64 encoding and decoding as defined in RFC 4648
 #
 private:public base64(alphabet array u8, encoding_name String)
-pre debug: (container.set_of_ordered alphabet).count = 64
+pre debug: ((container.ps_set u8).new alphabet).count = 64
 is
 
   # checks if a character is valid in the encoding

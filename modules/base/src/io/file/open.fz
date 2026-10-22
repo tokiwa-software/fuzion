@@ -53,7 +53,7 @@ module:public open(fd File_Descriptor,
   # example usage:
   #
   #     _ := io.file.use unit "/some_file" io.file.mode.append ()->
-  #       io.file.open.mmap (i64 0) (i64 100) ()->
+  #       io.file.open.env.mmap (i64 0) (i64 100) ()->
   #         io.file.mapped_buffer.env[99] := 42
   #
   public mmap(R type, offset i64, size i64, code ()->R) outcome R

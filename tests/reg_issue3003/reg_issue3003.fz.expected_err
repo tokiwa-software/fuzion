@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue3003.fz:27:5: error 1: Explicit type required
+reg_issue3003.fz:27:5: error 1: Explicit type required
     f => abstract
 ----^
 Feature 'reg_issue3003.a.f' is 'abstract', but has no type specified.

@@ -1,4 +1,3 @@
-AAA_builtin_atomic_mutate (concur.atomic bool)
 AAA_builtin_atomic_mutate (concur.atomic trit)
 Ignored_Failure
 Unique_Id

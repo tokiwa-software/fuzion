@@ -76,6 +76,16 @@ public class Universe extends ExprWithPos
   }
 
 
+  @Override
+  public AbstractType type()
+  {
+    if (PRECONDITIONS) require
+      (Types.resolved != null);
+
+    return typeForInferencing();
+  }
+
+
   /**
    * visit all the expressions within this feature.
    *
@@ -86,7 +96,7 @@ public class Universe extends ExprWithPos
    *
    * @return this.
    */
-  public Universe visit(FeatureVisitor v, AbstractFeature outer)
+  protected Universe visit(FeatureVisitor v, AbstractFeature outer)
   {
     return this;
   }

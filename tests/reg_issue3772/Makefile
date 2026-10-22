@@ -42,25 +42,25 @@ all: jvm c int
 fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
 
 int: clean modules/mod.fum
-	$(ENV) ../../bin/check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/simple_example check int "$(FUZION_RUN)" $(FILE) || exit 1
 
 jvm: clean modules/mod.fum
-	$(ENV) ../../bin/check_simple_example jvm "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/simple_example check jvm "$(FUZION_RUN)" $(FILE) || exit 1
 
 c: clean modules/mod.fum
-	$(ENV) ../../bin/check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/simple_example check c "$(FUZION_RUN)" $(FILE) || exit 1
 
 record: clean modules/mod.fum
-	$(ENV) ../../bin/record_simple_example any "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/simple_example record any "$(FUZION_RUN)" $(FILE)
 
 record_int: clean modules/mod.fum
-	$(ENV) ../../bin/record_simple_example int "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/simple_example record int "$(FUZION_RUN)" $(FILE)
 
 record_jvm: clean modules/mod.fum
-	$(ENV) ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/simple_example record jvm "$(FUZION_RUN)" $(FILE)
 
 record_c: clean modules/mod.fum
-	$(ENV) ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/simple_example record c "$(FUZION_RUN)" $(FILE)
 
 
 # compile mod into mod.fum

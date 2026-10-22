@@ -46,7 +46,6 @@ import dev.flang.util.FuzionOptions;
 public class Config
 {
 
-  public static final boolean ComputeAsync = true;
   public static final long DIAGNOSTICS_DEBOUNCE_DELAY_MS = 1000;
   private static LanguageClient _languageClient;
   private static Transport _transport;
@@ -92,16 +91,6 @@ public class Config
     _transport = transport;
   }
 
-  public static boolean DEBUG()
-  {
-    var debug = System.getenv("DEBUG");
-    if (debug == null)
-      {
-        return false;
-      }
-    return debug.toLowerCase().equals("true");
-  }
-
   public static void setConfiguration(List<Object> configuration)
   {
     var json = (JsonObject) configuration.get(0);
@@ -111,14 +100,7 @@ public class Config
     setModules(json);
     setFuzionOptions(json);
     setCodeLensOptions(json);
-    setFuirEnabled(json);
   }
-
-  private static void setFuirEnabled(JsonObject json)
-  {
-    Context.middleEndEnabled = ErrorHandling.resultOrDefault(() -> json.get("middle_end_enabled").getAsBoolean(), false);
-  }
-
 
   private static void setCodeLensOptions(JsonObject json)
   {
@@ -192,11 +174,6 @@ public class Config
   public static void setTrace(String value)
   {
     _trace = value;
-  }
-
-  public static String getTrace()
-  {
-    return _trace;
   }
 
   public static void setClientCapabilities(ClientCapabilities capabilities)

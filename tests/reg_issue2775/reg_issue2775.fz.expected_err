@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue2775.fz:28:22: error 1: Incompatible types in assignment
+reg_issue2775.fz:28:22: error 1: Incompatible types in assignment
 a (match (v) unit => 4711)
 ---------------------^^^^
 assignment to field : 'result'

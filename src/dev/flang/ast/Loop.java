@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
@@ -257,8 +256,7 @@ public class Loop extends ANY
    *
    * @param iv index vars of this loop
    *
-   * @param nv next values for index variables, may contain null for index
-   * variables that do not get update
+   * @param nv next values for index variables
    *
    * @param variant loop variant or null
    *
@@ -289,8 +287,8 @@ public class Loop extends ANY
               Expr eb2)
   {
     if (PRECONDITIONS) require
-      (iv != null,
-       nv != null,
+      (iv != null && iv.stream().allMatch(x -> x != null),
+       nv != null && nv.stream().allMatch(x -> x != null),
        iv.size() == nv.size(),
        sb == null || untilCond != null,
        eb0 == null || eb0 instanceof Block || eb0 instanceof Match);
@@ -373,7 +371,7 @@ public class Loop extends ANY
           }
 
           @Override
-          public Expr visit(FeatureVisitor v, AbstractFeature outer)
+          protected Expr visit(FeatureVisitor v, AbstractFeature outer)
           {
             v0 = v0.visit(v, outer);
             return replace ? v0 : this;
@@ -470,7 +468,7 @@ public class Loop extends ANY
                                NoType.INSTANCE,
                                new List<String>(loopName),
                                formalArguments,
-                               Function.NO_CALLS,
+                               AbstractCall.NO_CALLS,
                                Contract.EMPTY_CONTRACT,
                                new Impl(p, block, Impl.Kind.RoutineDef))
       {
@@ -583,7 +581,7 @@ public class Loop extends ANY
                                     NoType.INSTANCE,
                                     new List<String>(name),
                                     new List<>(),
-                                    Function.NO_CALLS,
+                                    AbstractCall.NO_CALLS,
                                     Contract.EMPTY_CONTRACT,
                                     new Impl(_elsePos, ei == 0 ? eb0 : (ei == 1 ? eb1 : eb2), Impl.Kind.RoutineDef));
       }
@@ -656,13 +654,14 @@ public class Loop extends ANY
                                 List<Expr> initialActuals,
                                 List<Expr> nextActuals)
   {
-    int i = -1;
     int iteratorCount = 0;
-    Iterator<Feature> ivi = _indexVars.iterator();
+    var ivi = _indexVars .iterator();
+    var nvi = _nextValues.iterator();
+
     while (ivi.hasNext())
       {
-        i++;
         Feature f = ivi.next();
+        Feature n = nvi.next();
 
         // iterators should have been replaced by FieldDef in `addIterators`
         if (CHECKS) check
@@ -670,10 +669,10 @@ public class Loop extends ANY
 
         var p = f.pos();
         var ia = iterArgActual(f                 , FuzionConstants.ITER_ARG_PREFIX_INIT, f.baseName(), p);
-        var na = iterArgActual(_nextValues.get(i), FuzionConstants.ITER_ARG_PREFIX_NEXT, f.baseName(), p);
+        var na = iterArgActual(n                 , FuzionConstants.ITER_ARG_PREFIX_NEXT, f.baseName(), p);
         var type = (f.impl()._kind == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
-          : _indexVars.get(i).returnType().functionReturnType();
+          : f.returnType().functionReturnType();
         var arg = new Feature(p,
                               Visi.PRIV,
                               type,

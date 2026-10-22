@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 reg_issue3749 =>
-  A : choice i32 i32 is
+  A : choice i32 i32 is  # this is no longer forbidden

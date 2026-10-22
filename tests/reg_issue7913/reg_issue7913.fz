@@ -1,0 +1,62 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7913
+#
+# -----------------------------------------------------------------------
+
+# Test that space separated actual arguments must be separated by white space
+#
+reg_issue7913 =>
+
+  # the example from the issue
+#
+say <| tuple 4711 "a" (((("b")))) () (3,4) 42 "c"
+
+# plain separated actuals
+#
+say <| tuple 1 2 3
+
+# a field access, an index call and a call on a parenthesized actual are part of
+# one actual, no white space is expected before `.` or `[`
+#
+tp := tuple 10 20
+arr := [1, 2, 3]
+say <| tuple tp.values.0 tp.values.1 30
+say <| tuple arr[0] arr[1] arr[2]
+say <| tuple (tuple 7 8).values.1 9
+
+# a prefix operator after white space starts a new actual
+#
+say <| tuple 1 -2 3
+
+# string interpolation: the continued string must not be taken as an actual
+#
+n := 42
+say "n=$n m=$(n+1) end"
+
+# actuals on separate lines: a line break is white space
+#
+say <| tuple 1
+             2
+             3
+
+# actuals followed by `;`
+#
+say <| tuple 1 2; say <| tuple 3 4

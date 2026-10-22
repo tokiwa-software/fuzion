@@ -102,7 +102,7 @@ is
   # equality
   #
   public fixed redef type.equality(a, b num.fraction B) bool =>
-    (a - b).numerator.is_zero
+    (a - b).numerator = B.zero
 
 
   # total order

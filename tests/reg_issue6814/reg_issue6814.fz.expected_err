@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue6814.fz:24:14: error 1: Could not find called feature
+reg_issue6814.fz:24:14: error 1: Could not find called feature
 say <| match choice
 -------------^^^^^^
 Feature not found: 'choice' (no arguments)

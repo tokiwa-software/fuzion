@@ -1,12 +1,12 @@
 
---CURDIR--/reg_issue3576.fz:24:16: error 1: Argument name expected in left hand side (before '->') of lambda expression
+reg_issue3576.fz:24:16: error 1: Argument name expected in left hand side (before '->') of lambda expression
 _ ()->i32 :=  (a b)->
 ---------------^
 Instead, found expression: 'a b'
 To solve this, replace the expression with an argument name like 'x' and use that variable in the implementation of the right hand side of the lambda expression.
 
 
---CURDIR--/reg_issue3576.fz:24:22: error 2: Incompatible types in assignment
+reg_issue3576.fz:24:22: error 2: Incompatible types in assignment
 _ ()->i32 :=  (a b)->
 ---------------------^
 assignment to field : '(λ(a b)->).call.result'

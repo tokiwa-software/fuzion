@@ -54,7 +54,7 @@ reg_issue5967 =>
       a.index_pairs.flat_map number ij->
         i,j := ij
         (!(at i j-1).is_ascii_digit &&
-          (at i j  ).is_ascii_digit   ).as_option number (number i j)
+          (at i j  ).is_ascii_digit   ).as_option (number i j)
 
     parts =>
       numbers.map (x -> if x?? then x.val else 0)

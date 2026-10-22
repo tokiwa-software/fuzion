@@ -77,18 +77,10 @@ void fzE_mem_zero_secure(void *dest, size_t sz)
   SecureZeroMemory(dest, sz);
 }
 
-// thread local to hold the last
-// error that occurred in fuzion runtime.
-_Thread_local int64_t last_error = 0;
-
-
 // returns the latest error number of
 // the current thread
 int64_t fzE_last_error(void){
-  // NYI: CLEANUP:
-  return last_error == 0
-    ? GetLastError()
-    : last_error;
+  return GetLastError();
 }
 
 // make directory, return zero on success
@@ -266,13 +258,13 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, AI_PASSIVE, host, port, &addr_info);
   if (addrRes != 0)
   {
-    last_error = fzE_net_error();
+    SetLastError(fzE_net_error());
     return -1;
   }
   int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
   if (bind_res != 0)
     {
-      last_error = fzE_net_error();
+      SetLastError(fzE_net_error());
     }
   freeaddrinfo(addr_info);
   return bind_res;
@@ -302,13 +294,13 @@ int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host,
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, 0, host, port, &addr_info);
   if (addrRes != 0)
   {
-    last_error = fzE_net_error();
+    SetLastError(fzE_net_error());
     return -1;
   }
   int con_res = connect(sockfd, addr_info->ai_addr, addr_info->ai_addrlen);
   if (con_res != 0)
     {
-      last_error = fzE_net_error();
+      SetLastError(fzE_net_error());
     }
   freeaddrinfo(addr_info);
   return con_res;
@@ -470,6 +462,9 @@ uint64_t fzE_posix_time(int clockid)
       exit(EXIT_FAILURE);
   }
 
+  // assert that this division will not be rounded to zero
+  assert( 1000000000ULL / frequency.QuadPart != 0ULL );
+
   return (uint64_t)(counter.QuadPart * (1000000000ULL / frequency.QuadPart));
 }
 
@@ -482,14 +477,13 @@ void fzE_nanosleep(uint64_t n)
   uint64_t start = fzE_posix_time(-1);
   uint64_t end = start + n;
 
-  while (fzE_posix_time(-1) < end) {
-    uint64_t remaining_ns = end - fzE_posix_time(-1);
-    if (remaining_ns > 1000000ULL) {
-      Sleep((DWORD)(remaining_ns / 1000000ULL));
-    } else if (remaining_ns > 0) {
-      Sleep(1);
+  uint64_t now = fzE_posix_time(-1);
+  while (now < end)
+    {
+      uint64_t remaining_ms = (end - now) / 1000000ULL;
+      Sleep((DWORD)(remaining_ms == 0 ? 1ULL : remaining_ms));
+      now = fzE_posix_time(-1);
     }
-  }
 }
 
 
@@ -635,6 +629,8 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
     metadata[7] = 0; /* NYI: UNDER DEVELOPMENT: uid  */
     metadata[8] = 0; /* NYI: UNDER DEVELOPMENT: gid  */
 
+    CloseHandle(hFile);
+
     result = 0;
   }
   else {
@@ -645,7 +641,6 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
     result = -1;
   }
 
-  CloseHandle(hFile);
 
   return result;
 }
@@ -671,7 +666,11 @@ void fzE_init()
   }
   // NYI: UNDER DEVELOPMENT: WSACleanup
 
-  InitializeCriticalSection(&fzE_global_mutex);
+  if (!InitializeCriticalSectionEx(&fzE_global_mutex, 0, 0))
+  {
+    fprintf(stderr, "*** InitializeCriticalSectionEx failed\n");
+    exit(EXIT_FAILURE);
+  }
   // NYI: UNDER DEVELOPMENT: DeleteCriticalSection(&fzE_global_mutex);
 
   GC_INIT();
@@ -893,7 +892,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   );
   free(app);
   if (spw == 0) {
-    last_error = ERROR_FILE_NOT_FOUND;
+    SetLastError(ERROR_FILE_NOT_FOUND);
     return -1;
   }
 
@@ -901,7 +900,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   wchar_t *envBlock = build_unicode_environment_block(env, envLen);
 
   if (!args_w) {
-    last_error = ERROR_INVALID_NAME;
+    SetLastError(ERROR_INVALID_NAME);
     return -1;
   }
 
@@ -934,7 +933,6 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   free(envBlock);
 
   if (!success) {
-    last_error = GetLastError();
     return -1;
   }
 
@@ -957,21 +955,30 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 //   -2  : an error occurred when calling waitpid, check errno
 int64_t fzE_process_poll(int64_t p){
 
-    assert(p != 0);
+  assert(p != 0);
 
-    DWORD status;
+  HANDLE h = (HANDLE)p;
 
-    if (!GetExitCodeProcess((HANDLE)p, &status)) {
-        // Error calling GetExitCodeProcess()
-        return -2;
+  DWORD result = WaitForSingleObject(h, 0);
+
+  if (result == WAIT_TIMEOUT)
+    {
+      return -1; // still running
     }
 
-    if (status == STILL_ACTIVE) {
-        // Process is still running.
-        return -1;
+  if (result == WAIT_FAILED)
+    {
+      return -2;
     }
 
-    return (int64_t)status;
+  DWORD status;
+
+  if (!GetExitCodeProcess(h, &status))
+    {
+      return -2;
+    }
+
+  return (int64_t)status;
 }
 
 /**
@@ -1029,7 +1036,7 @@ int fzE_pipe_create(int64_t *fds)
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
   DWORD bytesRead;
   if (!ReadFile((HANDLE)desc, buf, nbytes, &bytesRead, NULL)){
-    return GetLastError() == ERROR_BROKEN_PIPE
+    return GetLastError() == ERROR_BROKEN_PIPE || GetLastError() == ERROR_OPERATION_ABORTED /* canceled by CancelIoEx in fzE_pipe_close */
       ? 0
       : -1;
   }
@@ -1049,6 +1056,7 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
+  CancelIoEx((HANDLE)desc, NULL /* If this parameter is NULL, all I/O requests for the hFile parameter are canceled. */);
   return CloseHandle((HANDLE)desc)
     ? 0
     : -1;
@@ -1119,7 +1127,8 @@ void * fzE_mtx_init() {
   if (!InitializeCriticalSectionEx(mtx, 0, 0))
   {
     fzE_free(mtx);
-    return NULL;
+    fprintf(stderr, "*** InitializeCriticalSectionEx failed\n");
+    exit(EXIT_FAILURE);
   }
   return (void *)mtx;
 }
@@ -1184,7 +1193,7 @@ void fzE_cnd_wait(void *cnd, void *mtx) {
     }
 }
 
-void fzE_cnd_timedwait(void *cnd, void *mtx, int64_t time_ns) {
+void fzE_cnd_timedwait(void *cnd, void *mtx, uint64_t time_ns) {
   DWORD ms = (DWORD)(time_ns / 1000000);
   BOOL ok = SleepConditionVariableCS(
       (CONDITION_VARIABLE *)cnd,

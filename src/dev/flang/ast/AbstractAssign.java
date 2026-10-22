@@ -118,7 +118,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @return this
    */
-  public AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
+  protected AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
     if (_target != null)

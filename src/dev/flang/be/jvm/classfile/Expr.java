@@ -408,6 +408,12 @@ public abstract class Expr extends ByteCode
             stack.pop();
             break;
           }
+        case O_i2l :
+          {
+            stack.pop();
+            stack.push(VerificationType.Long);
+            break;
+          }
         default:
           throw new UnsupportedOperationException("Unimplemented method");
         }
@@ -577,6 +583,7 @@ public abstract class Expr extends ByteCode
 
   public static final Expr MONITORENTER = new Simple("MONITORENTER", PrimitiveType.type_void, BC_MONITORENTER);
   public static final Expr MONITOREXIT = new Simple("MONITOREXIT", PrimitiveType.type_void, BC_MONITOREXIT);
+  public static final Expr I2L         = new Simple("I2L", PrimitiveType.type_long, BC_I2L);
 
 
   /**

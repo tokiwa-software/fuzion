@@ -278,7 +278,7 @@ public class InlineArray extends ExprWithPos
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
@@ -361,7 +361,7 @@ public class InlineArray extends ExprWithPos
       }
 
       @Override
-      public Expr visit(FeatureVisitor v, AbstractFeature outer)
+      protected Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
       }

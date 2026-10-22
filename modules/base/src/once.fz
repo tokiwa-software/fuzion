@@ -35,11 +35,11 @@ once_mutate : racy_mutate is
 #
 public once(T type, f Lazy T) : auto_unwrap T once_mutate is
 
-  cache := once_mutate.env.new (option T) nil
+  cache := once_mutate.env.var (option T) nil
 
   # get the result of `f`
   #
   public redef unwrap T ! once_mutate =>
-    if cache.get.is_nil
+    if cache.get = nil
       cache <- f()
     cache.get.or_panic

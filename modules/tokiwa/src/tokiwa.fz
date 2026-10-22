@@ -45,10 +45,12 @@ public tokiwa is
     timeout option time.duration
   ) outcome tokiwa.process_result =>
     seq := map (.as_string)
-    env_vars.bind    (v -> os.process.start seq.first.or_panic (seq.drop 1) v)
-            .or_else (     os.process.start seq.first.or_panic (seq.drop 1)  )
-            .bind p->
-              tokiwa.record_process p Sequence.this.as_string timeout feed_stdin
+    ( if env_vars??
+        os.process.start seq.first.or_panic (seq.drop 1) env_vars.or_panic
+      else
+        os.process.start seq.first.or_panic (seq.drop 1)
+    ).bind p->
+      tokiwa.record_process p (Sequence.this.as_string " ") timeout feed_stdin
 
   # execute this string by splitting at all whitespaces
   #
@@ -90,8 +92,8 @@ public tokiwa is
       net.family.ipv4
       "https://influxdb.tokiwa.software:8086/api/v2/write?org=$(org)&bucket=$(bucket)&precision=s"
       str.utf8
-      (container.map_of [("Authorization", "Token $(token)"),
-                         ("Content-Type", "text/plain")])
+      (container.ps_map String String .of [("Authorization", "Token $(token)"),
+                                           ("Content-Type", "text/plain")])
 
 
   # stores the results of a process
@@ -134,22 +136,21 @@ public tokiwa is
           lm ! ()->
             p.with_err String lm (() -> (io.buffered lm).read_fully.bind String.from)
 
-        match feed_stdin
-          nil =>
-          stdin_file io.path =>
-            if io.file.exists stdin_file
-              lm ! ()->
-                (p.with_in unit lm ()->
-                  (io.buffered lm).Writer.env.write (io.slurp stdin_file).or_panic .or_panic).or_panic
+        _ := feed_stdin.bind input->
+          lm ! ()->
+            (p.with_in unit lm ()->
+              (io.buffered lm).Writer.env.write (io.slurp input).or_panic .or_panic).or_panic
 
         p.close_in.or_panic
 
         match p.wait (timeout.or_default time.duration.max)
           e error =>
+            # closing out and err to (potentially) unblock synchronous reads
             p.close_out.or_panic
             p.close_err.or_panic
             p.kill     .or_else (say "sending kill signal to $p failed")
-            process_result "" "failed waiting for $cmd, error is: $e" 1
+            err := ferr.get.or_default "" .is_empty ? "" : "$(ferr.get)\n\n"
+            process_result $(fout.get) "$(err)failed waiting for '$cmd', error is: $e" 1
           ec u32 =>
             o := fout.get
             e := ferr.get

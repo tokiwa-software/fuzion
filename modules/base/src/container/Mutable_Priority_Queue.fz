@@ -73,7 +73,7 @@ public Mutable_Priority_Queue(T type) ref is
 
   # is this queue empty?
   #
-  public is_empty bool => peek.is_nil
+  public is_empty bool => peek = nil
 
 
   # number of elements in this queue

@@ -1,12 +1,12 @@
 
---CURDIR--/test_issue1559.fz:27:20: error 1: Wrong result type in redefined feature
+test_issue1559.fz:27:20: error 1: Wrong result type in redefined feature
       public redef utf8 list u8 => (list u8).empty
 -------------------^^^^
 In 'a.(λ()-> _ : String is public redef utf8 l...).call.anonymous.utf8' that redefines 'String.utf8'
 result type is       : 'list u8'
 result type should be: 'Sequence u8'
 
-Original feature declared at {base.fum}/String.fz:47:10:
+Original feature declared at {base.fum}/String.fz:32:10
   public utf8 Sequence u8 => abstract
 ---------^^^^
 To solve this, change type of result to 'Sequence u8'

@@ -131,7 +131,8 @@ jitter =>
           h .add_instant actual_release
           h2.add_instant actual_release
           expected_rel := state_get next_release .t
-          next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
+          _            := state_modify next_release (x -> next_release x.t+period)
+          next_rel     := state_get next_release .t
           if actual_release >= next_rel
             (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
 

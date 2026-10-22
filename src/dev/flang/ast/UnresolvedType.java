@@ -33,6 +33,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 
 
@@ -690,8 +691,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                 generics = res.resolveTypes(generics, context);
                 if (!f.generics().errorIfSizeDoesNotMatch(generics,
                                                           pos.pos(),
-                                                          "type",
-                                                          "Type: " + thiz.toString(true) + "\n"))
+                                                          ()-> new Pair<>("type", "Type: " + thiz.toString(true) + "\n")))
                   {
                     f = Types.f_ERROR;
                   }
@@ -874,23 +874,24 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     if (CHECKS) check
       (outer.isValueArgument());
 
-    var tp = new Feature(pos(),
-                         Visi.UNSPECIFIED,
-                         0,
-                         freeTypeConstraint().resolve(res, context),
-                         _name,
-                         Contract.EMPTY_CONTRACT,
-                         _followedByDots ? Impl.TYPE_PARAMETER_OPEN
-                                         : Impl.TYPE_PARAMETER)
+    if (outer.outer() instanceof Feature oof)
       {
-        /**
-         * Is this type a free type?
-         */
-        public boolean isFreeType() { return true; }
-      };
-    var g = outer.outer().addTypeParameter(res, tp);
-    tp.scheduleForResolution(res);
-    return g.asParametricType();
+        var tp = new Feature(pos(),
+                             Visi.UNSPECIFIED,
+                             0,
+                             freeTypeConstraint().resolve(res, context),
+                             _name,
+                             Contract.EMPTY_CONTRACT,
+                             _followedByDots ? Impl.TYPE_PARAMETER_OPEN
+                                             : Impl.FREE_TYPE_PARAMETER);
+        var g = oof.addTypeParameter(res, tp);
+        tp.scheduleForResolution(res);
+        return g.asParametricType();
+      }
+    else
+      {
+        throw new Error("fz bug: free type added to "+outer.outer().getClass());
+      }
   }
 
 

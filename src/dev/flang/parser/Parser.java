@@ -844,9 +844,7 @@ argument    : visibility
               argNames
               argType
             ;
-argType     : type
-            | type "..."
-            | typeType
+argType     : typeType
             | typeType COLON type
             |
             ;
@@ -926,7 +924,7 @@ typeType    : "type"
   {
     match(Token.t_type, "argType");
     return splitSkip("...") ? Impl.TYPE_PARAMETER_OPEN
-                            : Impl.TYPE_PARAMETER;
+                            : Impl.EXPLICIT_TYPE_PARAMETER;
   }
 
 
@@ -1115,7 +1113,7 @@ returnType  : boundType
   /**
    * Parse effects
    *
-effects     : EXCLAMATION typeList
+effects     : EXCLAMATION oneTypeList
             |
             ;
 EXCLAMATION : "!"
@@ -1126,7 +1124,7 @@ EXCLAMATION : "!"
     var result = UnresolvedType.NONE;
     if (skip('!'))
       {
-        result = typeList();
+        result = oneTypeList();
       }
     return result;
   }
@@ -1141,7 +1139,7 @@ EXCLAMATION : "!"
    */
   boolean skipEffects()
   {
-    return skip('!') && skipSimpleTypeList();
+    return skip('!') && skipOneTypeList();
   }
 
 
@@ -1526,6 +1524,26 @@ typeList    : type ( COMMA typeList
   }
 
 
+
+  /**
+   * Parse oneTypeList
+   *
+oneTypeList : onetype ( COMMA oneTypeList
+                      |
+                      )
+            ;
+   */
+  List<AbstractType> oneTypeList()
+  {
+    List<AbstractType> result = new List<>(onetype());
+    while (skipComma())
+      {
+        result.add(onetype());
+      }
+    return result;
+  }
+
+
   /**
    * Check if the current position has typeList and skip it.
    *
@@ -1549,12 +1567,12 @@ typeList    : type ( COMMA typeList
    * @return true iff the next token(s) form typeList, otherwise no typeList was
    * found and the parser/lexer is at an undefined position.
    */
-  boolean skipSimpleTypeList()
+  boolean skipOneTypeList()
   {
-    boolean result = skipSimpletype();
+    boolean result = skipOneType(true, true);
     while (skipComma())
       {
-        result = result && skipSimpletype();
+        result = result && skipOneType(true, true);
       }
     return result;
   }
@@ -1607,7 +1625,7 @@ actualArgs  : actualSpaces
     return
       // The `.` in `f a b c .xyz` ends actuals `a b c` immediately;
       //
-      current() == Token.t_period ||
+      current(atMinIndent) == Token.t_period ||
 
       // the multi-line case
       //
@@ -1729,6 +1747,10 @@ actualSpaces: actualSpace actualSpaces
         result = new List<>();
         while (!endsActuals(!result.isEmpty()) && in.ok())
           {
+            if (!result.isEmpty() && !ignoredTokenBefore())
+              {
+                syntaxError(tokenPos(), "white space between space separated actual arguments", "actualSpaces");
+              }
             result.add(actualSpace());
             in.next();
           }
@@ -2206,16 +2228,19 @@ stringTermB : ')any chars&quot;'
         var t = current();
         if (isString(t))
           {
+            var end = tokenEndPos();
             var ps = string(multiLineIndentation);
-            var str = new StrConst(tokenSourcePos().rangeTo(tokenEndPos()), ps.v0());
+            var str = Errors.isSyntaxErrorPosition(sourcePos(end))
+              ? Call.ERROR
+              : new StrConst(tokenSourcePos().rangeTo(end), ps.v0());
             result = concatString(tokenSourcePos(), leftString, str);
             next();
             if (isPartialString(t))
               {
                 var old = setMinIndent(-1);
                 var b = block();
-                setMinIndent(old);
                 result = stringTerm(concatString(tokenSourcePos(), result, b), ps.v1());
+                setMinIndent(old);
               }
           }
         else
@@ -2655,7 +2680,12 @@ exprs       : expr semiOrFlatLF exprs
       if (ok && firstIndent != -1)
         {
           ok = firstIndent > indent(oldIndentPos); // new indentation must be deeper
-          if (ok && okLineNum != lineNum(okPos))
+          // Check indentation once per line: okLineNum is the line of the last
+          // ok() call. Also treat a token as a continuation, not a new line, if
+          // it starts on the line where the previous token ended, even if that
+          // previous token started on an earlier line (e.g. a multiline string).
+          if (ok && okLineNum != lineNum(okPos)
+                 && lineNum(okPos) != lineNum(lastTokenEndPos()))
             { // a new line, so check its indentation:
               var curIndent = indent(okPos);
               if (firstIndent != curIndent)

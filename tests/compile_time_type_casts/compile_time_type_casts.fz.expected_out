@@ -40,7 +40,8 @@ lazy i64 1
 matched String 'F' type codepoint len 1
 String 'F' type codepoint len 1
 bool true bool false
-other type --nil-- type nil
+other type instance[Any] type Any
+other type _ : Any type Any
 a!
 b!
 b -- from lambda!!

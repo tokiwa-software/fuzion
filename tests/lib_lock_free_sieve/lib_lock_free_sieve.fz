@@ -35,4 +35,4 @@ lib_lock_free_sieve =>
 
   test (lock_free.Map String (lock_free.Node String i32))
   test (container.Mutable_Hash_Map mutate String (lock_free.Node String i32))
-  test (container.mutable_tree_map mutate String (lock_free.Node String i32))
+  test (container.Mutable_Tree_Map mutate String (lock_free.Node String i32))

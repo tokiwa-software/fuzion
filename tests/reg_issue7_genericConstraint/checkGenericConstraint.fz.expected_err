@@ -1,10 +1,10 @@
 
---CURDIR--/checkGenericConstraint.fz:41:8: error 1: Incompatible type parameter
+checkGenericConstraint.fz:41:8: error 1: Incompatible type parameter
   _ := hm m32 m32     # should produce error, m32 is not compatible to H
 -------^^
 formal type parameter 'T : checkGenericConstraint.this.H'
 actual type parameter 'checkGenericConstraint.this.m32'
-assignable to constraint: 'checkGenericConstraint.this.m32',
-                          'Any'
+assignable to constraint: 'Any',
+                          'checkGenericConstraint.this.m32'
 
 one error.

@@ -28,7 +28,7 @@
 # This effect is typically used to work with mutable values. You can create
 # a mutable value as follows
 #
-#     v := mutate.env.new i32 42
+#     v := mutate.env.var i32 42
 #
 # and then modify it using
 #
@@ -223,10 +223,10 @@ public mutate : effect is
     intrinsic
 
 
-  # create a new mutable value with the given initial value and update the
+  # create a var mutable value with the given initial value and update the
   # 'mutate' effect in the current environment
   #
-  public new (
+  public var (
     T type,
 
     # initial value, will be updated by 'put' or 'infix <-'.
@@ -532,8 +532,8 @@ public mutate : effect is
 
     # creates a copy of the mutable field
     #
-    public copy new T =>
-      new get
+    public copy var T =>
+      var get
 
 
     # unwrap this mutable value
@@ -644,6 +644,6 @@ public mutate : effect is
 
 # create a new mutable value of type T with initial value v
 #
-public mut(T type, v T) mutate.new T ! mutate
+public mut(T type, v T) mutate.var T ! mutate
 =>
-  mutate.env.new v
+  mutate.env.var v

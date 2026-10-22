@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue6540.fz:24:11: error 1: Incompatible types in assignment
+reg_issue6540.fz:24:11: error 1: Incompatible types in assignment
 x bool => do until true
 ----------^^^^^^^^^^^^^
 assignment to field : 'x.result'

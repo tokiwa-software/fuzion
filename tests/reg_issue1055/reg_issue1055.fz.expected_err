@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue1055.fz:84:14: error 1: Wrong number of type parameters
+reg_issue1055.fz:84:14: error 1: Wrong number of type parameters
   c(T type : float T) is
 -------------^^^^^
 Wrong number of actual type parameters in type:

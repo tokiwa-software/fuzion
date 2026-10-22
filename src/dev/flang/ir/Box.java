@@ -73,7 +73,8 @@ public class Box extends Expr
     if (PRECONDITIONS) require
       (value != null,
        !frmlT.containsUndefined(),
-       frmlT.isParametricType() || frmlT.isThisType() || !value.type().isRef(),
+       frmlT.isParametricType() || frmlT.isThisType() || frmlT.isRef(),
+       !value.type().isRef(),
        !(value instanceof Box));
 
     this._value = value;
@@ -97,14 +98,6 @@ public class Box extends Expr
   public AbstractType type()
   {
     return _type;
-  }
-
-
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visit'");
   }
 
 

@@ -23,7 +23,7 @@
 
 test_unwrap =>
 
-  a := mutate.env.new 3
+  a := mutate.env.var 3
   b := concur.atomic i64 .new 5
 
   say2(v i64) => say v

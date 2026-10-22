@@ -65,7 +65,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LibraryFeature extends AbstractFeature
+public class LibraryFeature extends FuirFeature
 {
 
 
@@ -102,7 +102,7 @@ public class LibraryFeature extends AbstractFeature
   /**
    * cached result of innerFeatures()
    */
-  List<AbstractFeature> _innerFeatures;
+  List<FuirFeature> _innerFeatures;
 
 
   /**
@@ -132,13 +132,13 @@ public class LibraryFeature extends AbstractFeature
   /**
    * cached result of resultField()
    */
-  private AbstractFeature _resultField;
+  private FuirFeature _resultField;
 
 
   /**
    * cached result of outerRef()
    */
-  private AbstractFeature _outerRef;
+  private FuirFeature _outerRef;
 
   /**
    * cached result of modulesOfInnerFeatures()
@@ -231,7 +231,7 @@ public class LibraryFeature extends AbstractFeature
   /**
    * The inner features declared within this feature's module file.
    */
-  List<AbstractFeature> innerFeatures()
+  List<FuirFeature> innerFeatures()
   {
     var result = _innerFeatures;
     if (result == null)
@@ -247,7 +247,7 @@ public class LibraryFeature extends AbstractFeature
   /**
    * The features declared within this feature.
    */
-  List<AbstractFeature> declaredFeatures()
+  List<FuirFeature> declaredFeatures()
   {
     return innerFeatures();
   }
@@ -277,9 +277,9 @@ public class LibraryFeature extends AbstractFeature
    *
    * @return the result or null if this does not have a result field.
    */
-  public AbstractFeature resultField()
+  public FuirFeature resultField()
   {
-    AbstractFeature result = _resultField;
+    var result = _resultField;
     if (result == null && hasResultField())
       {
         var i = innerFeatures();
@@ -300,9 +300,9 @@ public class LibraryFeature extends AbstractFeature
    *
    * @return the outer ref or null if this does not have an outer ref.
    */
-  public AbstractFeature outerRef()
+  @Override public FuirFeature outerRef()
   {
-    AbstractFeature result = _outerRef;
+    var result = _outerRef;
     if (result == null && hasOuterRef())
       {
         var i = innerFeatures();
@@ -479,7 +479,7 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * resultType returns the result type of this feature using.
+   * resultType returns the result type of this feature.
    *
    * @return the result type. Never null.
    */
@@ -489,7 +489,8 @@ public class LibraryFeature extends AbstractFeature
     {
       case Constructor, RefConstructor -> selfType();
       case Choice -> Types.resolved.t_void;
-      case TypeParameter -> Types.resolved.f_Type.resultType();
+      case ExplicitTypeParameter,
+           FreeTypeParameter      -> Types.resolved.f_Type.resultType();
       case OpenTypeParameter -> Types.resolved.f_Open_Types.resultType();
       default -> _libModule.type(_libModule.featureResultTypePos(_index));
     };
@@ -533,7 +534,7 @@ public class LibraryFeature extends AbstractFeature
     if (result == null)
       {
         var bytes = _libModule.featureName(_index);
-        var ac = _libModule.featureArgCount(_index);
+        var ac = explicitArgumentCount();
         var id = _libModule.featureId(_index);
         if (bytes.length == 0)
           {
@@ -687,7 +688,6 @@ public class LibraryFeature extends AbstractFeature
                 {
                   @Override public AbstractType type() { return t; }
                   @Override public byte[] data() { return d; }
-                  @Override public Expr visit(FeatureVisitor v, AbstractFeature af) { v.action(this); return this; };
                   @Override public String toString() { return "LibraryFeature.Constant of type "+type(); }
                   @Override public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); }
                 };
@@ -822,12 +822,6 @@ public class LibraryFeature extends AbstractFeature
     return _libModule.pos(pos, posEnd);
   }
 
-
-  public Contract contract()
-  {
-    return Contract.EMPTY_CONTRACT;
-  }
-
   @Override
   public AbstractFeature preFeature()
   {
@@ -875,25 +869,27 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * Constant result value for `LibraryFeature.comparisonId`
+   */
+  static int _comparisonId_ = (_comparisonIds_++);
+
+
+  @Override public int comparisonId()
+  {
+    return _comparisonId_;
+  }
+
+
+  /**
    * Compare this to other for sorting Features
    */
   public int compareTo(AbstractFeature other)
   {
-    int result;
-    if (other instanceof Feature)
-      {
-        result = -1;
-      }
-    else if (other instanceof LibraryFeature lf)
-      {
-        result = globalIndex() - lf.globalIndex();
-      }
-    else
-      {
-        throw new Error("LibraryFeature.compareTo expects that there are only two subclasses: Feature and LibraryFeature.");
-      }
-    return result;
+    return (other instanceof LibraryFeature lf)
+      ? globalIndex() - lf.globalIndex()
+      : super.compareTo(other) /* comparing against dev.flang.ast.Feature or other type */;
   }
+
 
   /**
    * Union of the library modules of all inner features. Checks inner features recursively.

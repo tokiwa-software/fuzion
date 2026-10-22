@@ -193,11 +193,9 @@ public class Lexer extends SourceFile
     t_pre("pre"),
     t_post("post"),
     t_invariant("invariant"),
-    t_var("var"),                     // unused
     t_match("match"),
     t_ref("ref"),
     t_redef("redef"),
-    t_const("const"),                 // unused
     t_leaf("leaf"),                   // unused
     t_infix("infix"),
     t_infix_right("infix_right"),
@@ -3179,7 +3177,7 @@ PIPE        : "|"
           if (p == END_OF_FILE)
             {
               Errors.unterminatedString(sourcePos(), Lexer.this.sourcePos(_stringStart));
-              t = Token.t_error;
+              t = Token.t_stringQQ;
             }
           else if (
                 p < _asciiControlName.length
@@ -3188,7 +3186,7 @@ PIPE        : "|"
           )
             {
               Errors.unexpectedControlCodeInString(sourcePos(), _asciiControlName[p], p, sourcePos(_stringStart));
-              t = Token.t_error;
+              t = Token.t_stringQQ;
             }
           else
             {

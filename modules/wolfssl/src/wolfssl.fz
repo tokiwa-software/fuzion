@@ -37,6 +37,12 @@ wolfssl_verify_default => i32 1 << 9
 wolfssl_sni_host_name => u8 0
 
 
+
+# the mutate that is used for reading/writing the raw network connection
+#
+private:public wolfssl_lm : mutate is
+
+
 # NYI: UNDER DEVELOPMENT: define effect
 #
 # Open a TLS connection using wolfSSL and run `code` within its context.
@@ -45,7 +51,60 @@ wolfssl_sni_host_name => u8 0
 # enable peer certificate verification and, subsequently, to check the
 # certificate's domain name against the expected host.
 #
-public wolfssl(T type, LM type : mutate, LM2 type: mutate, host String, code ()->T) T ! LM, LM2 =>
+public wolfssl(
+
+    # the result type of the code run when using wolfssl
+    #
+    T type,
+
+    # the mutate to use for reading/writing the raw network connection
+    #
+    NET_LM type : mutate,
+
+    # the host we are connected to, used for verification
+    #
+    host String,
+
+    # the lambda to run, use SSL_LM to read/write
+    #
+    code ()->T
+  ) T ! NET_LM =>
+  wolfssl_lm ! ()->
+    wolfssl _ NET_LM wolfssl_lm host code
+
+
+# NYI: UNDER DEVELOPMENT: define effect
+#
+# Open a TLS connection using wolfSSL and run `code` within its context.
+#
+# `host` is the name the server's certificate must be valid for.  It is used to
+# enable peer certificate verification and, subsequently, to check the
+# certificate's domain name against the expected host.
+#
+public wolfssl(
+
+    # the result type of the code run when using wolfssl
+    #
+    T type,
+
+    # the mutate to use for reading/writing the raw network connection
+    #
+    NET_LM type : mutate,
+
+
+    # the mutate to use for reading/writing to SSL encrypted connection from within `code`
+    #
+    SSL_LM type : mutate,
+
+
+    # the host we are connected to, used for verification
+    #
+    host String,
+
+    # the lambda to run, use SSL_LM to read/write
+    #
+    code ()->T
+  ) T ! NET_LM, SSL_LM =>
 
   c => c lm
 
@@ -77,9 +136,9 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, host String, code ()-
   c.wolfSSL_CTX_set_verify ctx wolfssl_verify_default lmbda
 
   c.wolfSSL_CTX_SetIORecv ctx (ssl, buf, sz, ctx)->
-    match (io.buffered LM).Reader.env.read
+    match (io.buffered NET_LM).Reader.env.read
       s Sequence =>
-        (io.buffered LM).Reader.env.discard sz.as_i64
+        (io.buffered NET_LM).Reader.env.discard sz.as_i64
         x := (min sz.as_i64 s.count)
         lm ! ()->
           _ := memcpy buf (lm.array u8 .from_Sequence s) x
@@ -89,8 +148,8 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, host String, code ()-
 
   c.wolfSSL_CTX_SetIOSend ctx (ssl, buf, sz, ctx)->
     arr := ffi.from_native_array u8 buf sz.as_i64
-    ((io.buffered LM).Writer.env.write arr) .or_panic
-    (io.buffered LM).Writer.env.flush .or_panic
+    ((io.buffered NET_LM).Writer.env.write arr) .or_panic
+    (io.buffered NET_LM).Writer.env.flush .or_panic
     sz
 
 
@@ -105,7 +164,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, host String, code ()-
     check c.wolfSSL_check_domain_name ssl (host.as_c_string lm) = ssl_success
 
 
-  wolf_ssl_reader : (io.buffered LM2).Reader is
+  wolf_ssl_reader : (io.buffered SSL_LM).Reader is
 
     public redef read(max_count i64) choice (Sequence u8) io.end_of_file error =>
       x choice (Sequence u8) io.end_of_file error =>
@@ -120,7 +179,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, host String, code ()-
       lm ! x
 
 
-  wolf_ssl_writer : (io.buffered LM2).Writer is
+  wolf_ssl_writer : (io.buffered SSL_LM).Writer is
 
     public redef writer(b Sequence u8) outcome unit =>
       write outcome unit =>
@@ -134,8 +193,8 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, host String, code ()-
       lm ! write
 
 
-  r := (io.buffered LM2).Reader.instate wolf_ssl_reader ()->
-         (io.buffered LM2).Writer.instate wolf_ssl_writer code
+  r := (io.buffered SSL_LM).Reader.instate wolf_ssl_reader ()->
+        (io.buffered SSL_LM).Writer.instate wolf_ssl_writer code
 
 
   c.wolfSSL_free ssl

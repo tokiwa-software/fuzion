@@ -384,6 +384,10 @@ public class Fuzion extends Tool
       {
         fuir.dumpCode();
       }
+      boolean serializeFuir()
+      {
+        return true; // this is necessary now, see #7925
+      }
     },
 
     effects    ("-effects")
@@ -1200,7 +1204,7 @@ public class Fuzion extends Tool
           }
         else
           {
-            if(CHECKS) check
+            if (CHECKS) check
               (options.needsEscapeAnalysis() == true, _backend != Backend.effects);
 
             Path fuirFile = fuirFile(options);

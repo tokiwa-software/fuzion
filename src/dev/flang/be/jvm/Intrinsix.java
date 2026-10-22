@@ -28,7 +28,6 @@ package dev.flang.be.jvm;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
@@ -154,7 +153,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                             locked(Expr.UNIT));
         });
 
-    put("mutate.new.atomic_read0",
+    put("mutate.var.atomic_read0",
         (jvm, si, cc, tvalue, args) ->
         {
           var ac = jvm._fuir.clazzOuterClazz(cc);
@@ -164,7 +163,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(val, Expr.UNIT);
         });
 
-    put("mutate.new.atomic_write0",
+    put("mutate.var.atomic_write0",
         (jvm, si, cc, tvalue, args) ->
         {
           var ac = jvm._fuir.clazzOuterClazz(cc);
@@ -175,8 +174,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, code);
         });
 
-    put("mutate.new.compare_and_set0",
-        "mutate.new.compare_and_swap0",
+    put("mutate.var.compare_and_set0",
+        "mutate.var.compare_and_swap0",
         (jvm, si, cc, tvalue, args) ->
         {
           var nc = jvm._fuir.clazzOuterClazz(cc);
@@ -189,7 +188,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           int vslot  = jvm.allocLocal(si, jt.stackSlots());    // local var slot for old value, not casted.
 
           Expr pos, neg, oldv;
-          if (jvm._fuir.clazzOriginalName(cc).equals("mutate.new.compare_and_set0"))
+          if (jvm._fuir.clazzOriginalName(cc).equals("mutate.var.compare_and_set0"))
             { // compare_and_set: return true or false
               pos = Expr.iconst(1);            // 1
               neg = Expr.iconst(0);            // 0
@@ -239,6 +238,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           return new Pair<>(Expr.iconst(jvm._options.fuzionDebugLevel()), Expr.UNIT);
         });
+
+    put("choice.tag", (jvm, si, cc, tvalue, args) -> new Pair<>(jvm._types._choices.getTag(jvm, si, jvm._fuir.clazzOuterClazz(cc), tvalue), Expr.UNIT));
 
     put("fuzion.jvm.is_null0",
         (jvm, si, cc, tvalue, args) ->
@@ -699,31 +700,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(val, code);
         });
 
-    put("fuzion.sys.internal_array.freeze",
-        "fuzion.sys.internal_array.ensure_not_frozen",
-
-        (jvm, si, cc, tvalue, args) ->
-        {
-          var in = jvm._fuir.clazzOriginalName(cc);
-          var at = jvm._fuir.clazzOuterClazz(cc);       // array type
-          var val = Expr.UNIT;
-          var code = Expr.UNIT;
-          if (CHECKS)
-            {
-              var data = jvm._fuir.clazzArg(at, 0);
-              if (jvm.fieldExists(data))
-                {
-                  code = tvalue
-                    .andThen(jvm.getfield(data))
-                    .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                               in.replace("fuzion.sys.internal_array.",""),
-                                               "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
-                                               ClassFileConstants.PrimitiveType.type_void));
-                }
-            }
-          return new Pair<>(val, code);
-        });
-
     put("effect.type.abort0",
         (jvm, si, cc, tvalue, args) ->
         {
@@ -1052,8 +1028,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
               .invokeStatic(
                 Names.RUNTIME_CLASS,
                 "native_string_length",
-                "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() +  ")I",
-                PrimitiveType.type_int
+                "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() +  ")J",
+                PrimitiveType.type_long
               ))
           , Expr.UNIT);
       });
@@ -1077,7 +1053,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 // java.lang.Class
                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                           "native_array",
-                                          "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor() + Types.JAVA_LANG_OBJECT.descriptor() + "I)" + Types.JAVA_LANG_OBJECT.descriptor(),
+                                          "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor() + Types.JAVA_LANG_OBJECT.descriptor() + "J)" + Types.JAVA_LANG_OBJECT.descriptor(),
                                           Types.JAVA_LANG_OBJECT)),
             Expr.UNIT
           );
@@ -1310,23 +1286,23 @@ public class Intrinsix extends ANY implements ClassFileConstants
    */
   private static String descriptor(Class<?> c)
   {
-    if(c==byte.class)
+    if (c==byte.class)
         return "B";
-    if(c==char.class)
+    if (c==char.class)
         return "C";
-    if(c==double.class)
+    if (c==double.class)
         return "D";
-    if(c==float.class)
+    if (c==float.class)
         return "F";
-    if(c==int.class)
+    if (c==int.class)
         return "I";
-    if(c==long.class)
+    if (c==long.class)
         return "J";
-    if(c==short.class)
+    if (c==short.class)
         return "S";
-    if(c==boolean.class)
+    if (c==boolean.class)
         return "Z";
-    if(c==void.class)
+    if (c==void.class)
         return "V";
 
     var n = c.getName().replace('.', '/');

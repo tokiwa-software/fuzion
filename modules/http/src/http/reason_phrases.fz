@@ -95,5 +95,5 @@ public type.reason_phrases container.Map i64 String =>
     (599, "Network Connect Timeout Error")
   ]
   (cache http.reason_phrases_cache_key ()->
-    http.reason_phrases_cache_key (container.map_of rp))
+    http.reason_phrases_cache_key (container.ps_map i64 String .of rp))
     .val

@@ -35,7 +35,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public interface Context
+interface Context
 {
 
 

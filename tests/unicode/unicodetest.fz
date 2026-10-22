@@ -37,7 +37,7 @@ unicodetest is
     say (s + msg)
 
 
-  chck ("Hallo Welt".upper_case ≟ "HALLO WELT") "string to upper case"
-  chck ("Hallo Welt".lower_case ≟ "hallo welt") "string to lower case"
+  chck ("Hallo Welt".upper_case = "HALLO WELT") "string to upper case"
+  chck ("Hallo Welt".lower_case = "hallo welt") "string to lower case"
 
   Exit.env.exit

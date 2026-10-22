@@ -47,4 +47,18 @@ public interface FeatureLookup {
   public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
 
 
+  /**
+   * Find the redefinition of feature f within heir.
+   *
+   * @param heir a feature that inherits from f.outer(), directly or
+   *             indirectly.
+   *
+   * @param f    a feature declared in or inherited by f.outer()
+   *
+   * @return the feature in heir that redefines f, or f itself if f is not
+   *         redefined in heir.
+   */
+  public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f);
+
+
 }

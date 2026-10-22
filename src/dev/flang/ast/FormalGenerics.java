@@ -26,9 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 
 
@@ -123,18 +126,18 @@ public class FormalGenerics extends ANY
    *
    * @param pos the source code position at which the error should be reported
    *
-   * @param detail1 part of the detail message to indicate where this happened,
-   * i.e., "call" or "type".
+   * @param detail supplier to return the following:
+   *    - part of the detail message to indicate where this happened,
+   *    i.e., "call" or "type".
    *
-   * @param detail2 optional extra lines of detail message giving further
-   * information, like {@code Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n}.
+   *    - optional extra lines of detail message giving further
+   *    information, like {@code Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n}.
    *
    * @return true iff size and type of actualGenerics does match
    */
   public boolean errorIfSizeDoesNotMatch(List<AbstractType> actualGenerics,
                                          SourcePosition pos,
-                                         String detail1,
-                                         String detail2)
+                                         Supplier<Pair<String, String>> detail)
   {
     if (PRECONDITIONS) require
       (Errors.any() || !actualGenerics.contains(Types.t_ERROR));
@@ -142,11 +145,12 @@ public class FormalGenerics extends ANY
     var result = sizeMatches(actualGenerics) || actualGenerics.contains(Types.t_ERROR);
     if (!result)
       {
+        var d = detail.get();
         AstErrors.wrongNumberOfTypeArguments(this,
                                              actualGenerics,
                                              pos,
-                                             detail1,
-                                             detail2);
+                                             d.v0(),
+                                             d.v1());
       }
     return result;
   }

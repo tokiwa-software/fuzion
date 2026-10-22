@@ -468,8 +468,9 @@ public class ParsedCall extends Call
       (expectedType.isLambdaTargetButNotLazy(res));
 
     var paa = partiallyApplicableAlternative(res, context, expectedType);
-    Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
-                         : this;
+    Expr l = paa != null && !paa._feature.isTypeFeature()
+      ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
+      : this;
     if (l == this  /* resolution did not replace this call by sth different */ &&
         _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
@@ -483,7 +484,8 @@ public class ParsedCall extends Call
             // otherwise, try to solve inconsistent type
             paa != null                              &&
             (typeForInferencing() == null                             ||
-             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.feature())
+             typeForInferencing() != Types.t_ERROR &&
+             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.selfOrConstraint().feature())
              // !typeForInferencing().isFunctionType(res)                    -- original code
              // expectedType.isAssignableFrom(typeForInferencing()).no()     -- new code, does not work, unclear why!
             ))
@@ -619,7 +621,7 @@ public class ParsedCall extends Call
       {
         var g = NO_GENERICS;
         var a = new List<Expr>();
-        var ts = cf.typeArguments();
+        var ts = cf.explicitOrOpenTypeParameters();
         var tn = ts.size();
         var ti = 0;
         var vs = cf.valueArguments();  // NYI: must hand down to get the correct number!
@@ -706,9 +708,11 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             // only the last type parameter may be open
             if (CHECKS) check
               (ti >= tn-1 ||
-               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter    ,
+               ts.get(ti).kind() == AbstractFeature.Kind.ExplicitTypeParameter ||
+               ts.get(ti).kind() == AbstractFeature.Kind.FreeTypeParameter        ,
                ti != tn-1 ||
-               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
+               ts.get(ti).kind() == AbstractFeature.Kind.ExplicitTypeParameter ||
+               ts.get(ti).kind() == AbstractFeature.Kind.FreeTypeParameter     ||
                ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
 
             var t = ti < tn &&

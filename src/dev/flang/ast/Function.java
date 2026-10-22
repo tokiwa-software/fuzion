@@ -43,12 +43,6 @@ public class Function extends AbstractLambda
 {
 
 
-  /*----------------------------  constants  ----------------------------*/
-
-
-  static final List<AbstractCall> NO_CALLS = new List<AbstractCall>().freeze();
-
-
   /*-------------------------  static variables -------------------------*/
 
   /**
@@ -354,7 +348,7 @@ public class Function extends AbstractLambda
                                           at,
                                           n._name,
                                           Contract.EMPTY_CONTRACT,
-                                          i < cl.typeArguments().size() ? Impl.TYPE_PARAMETER : Impl.FIELD);
+                                          i < cl.typeArguments().size() ? Impl.EXPLICIT_TYPE_PARAMETER : Impl.FIELD);
                     if (i < cl.typeArguments().size())
                       {
                         tps_as_actuals.add(arg.asParametricType());
@@ -368,7 +362,7 @@ public class Function extends AbstractLambda
             var rt0 = t.lambdaTargetResultType(res);
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PUB, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PUB, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, AbstractCall.NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 /**
                  * Is this the {@code call} implementation of a lambda?
@@ -410,13 +404,20 @@ public class Function extends AbstractLambda
                   {
                     _expr.propagateExpectedType(res, context, rt0, from);
                   }
-                result = refineResultType(res, context, rt0, _feature.resultType());
-                var g = t.lambdaTargetResultTypeParameter(res);
-                if (g != null && !_inheritsCall.isDefunct())
+                if (_feature.resultTypeIfPresentUrgent(res, true) == Types.t_FORWARD_CYCLIC)
                   {
-                    int idx = g.typeParameterIndex();
-                    _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);
-                    _inheritsCall.notifyInferred();
+                    AstErrors.forwardTypeInference(pos(), _feature);
+                  }
+                else
+                  {
+                    result = refineResultType(res, context, rt0, _feature.resultType());
+                    var g = t.lambdaTargetResultTypeParameter(res);
+                    if (g != null && !_inheritsCall.isDefunct())
+                      {
+                        int idx = g.typeParameterIndex();
+                        _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);
+                        _inheritsCall.notifyInferred();
+                      }
                   }
               }
 
@@ -534,7 +535,7 @@ public class Function extends AbstractLambda
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (this._call != null)
       {

@@ -620,12 +620,12 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a clazz inheriting from {@code mutate.new}, lookup the inner clazz of
+   * For a clazz inheriting from {@code mutate.var}, lookup the inner clazz of
    * the {@code mutable_value} field.
    *
    * @param cl index of a clazz representing cl's {@code mutable_value} field
    *
-   * @return the index of the requested {@code mutate.new.mutable_value} field's clazz.
+   * @return the index of the requested {@code mutate.var.mutable_value} field's clazz.
    */
   public abstract int lookupMutableValue(int cl);
 
@@ -779,6 +779,18 @@ public abstract class FUIR extends IR
       !clazzIsUnitType(cl) &&
       !clazzIsVoidType(cl) &&
       cl != clazzUniverse();
+  }
+
+
+  /**
+   * Does this clazz contain any code?
+   *
+   * @param cl
+   * @return
+   */
+  public boolean hasCode(int cl)
+  {
+    return clazzCode(cl) != NO_SITE && withinCode(clazzCode(cl));
   }
 
 
@@ -1255,9 +1267,10 @@ public abstract class FUIR extends IR
   public void dumpCode(int cl)
   {
     if (PRECONDITIONS) require
-      (clazzKind(cl) == FeatureKind.Routine);
+      (clazzKind(cl) == FeatureKind.Routine,
+       clazzNeedsCode(cl));
 
-    say("Code for " + clazzNameWithArgsAndResult(cl) + (cl == mainClazz() ? " *** main *** " : ""));
+    say("Code for " + clazzNameWithArgsAndResult(cl));
     dumpCode(cl, clazzCode(cl));
   }
 

@@ -24,7 +24,7 @@
 sequence_group_map_reduce =>
 
   # sum even and odd numbers individually
-  say <| (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
+  say <| (0..10).group_reduce _ (container.ps_map String i64) (x -> x%%2 ? "even" : "odd") (+)
 
 
   values array codepoint := ["A", "1", "b", "?", "X", "4"]
@@ -32,7 +32,7 @@ sequence_group_map_reduce =>
   classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
 
   # count occurrences of letters, numbers and other characters
-  say <| values.group_map_reduce String i32 classify (_->1) (+)
+  say <| values.group_map_reduce _ _ (container.ps_map String i64) classify (_->1) (+)
 
   # group characters by category and add underscores around each character
-  say <| values.group_map String String classify (x->"_$(x)_")
+  say <| values.group_map _ _ (container.ps_map String (Sequence String)) classify (x->"_$(x)_")

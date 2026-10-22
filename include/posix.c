@@ -101,9 +101,18 @@ static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or
   } while (0)
 
 
+#define ASSERT_SUCCESS(call)                             \
+  do {                                                   \
+      int assert_success_result = (call);                \
+      assert(assert_success_result == 0);                \
+  } while (0)
+
+
 /**
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
  *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *   - 2 for CLOCK_THREAD_CPUTIME_ID (CPU time consumed by the current thread)
+ *   - 3 for CLOCK_PROCESS_CPUTIME_ID (CPU time consumed by all threads of the process)
  */
 clockid_t get_clock_id(int clock)
 {
@@ -113,6 +122,10 @@ clockid_t get_clock_id(int clock)
         return CLOCK_REALTIME;
       case 1:
         return CLOCK_MONOTONIC;
+      case 2:
+        return CLOCK_THREAD_CPUTIME_ID;
+      case 3:
+        return CLOCK_PROCESS_CPUTIME_ID;
       default:
         assert(false);
         return -1;
@@ -538,14 +551,13 @@ static pthread_mutex_t fzE_global_mutex;
  */
 void fzE_init()
 {
-  fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+  ASSERT_SUCCESS(fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK));
 
   pthread_mutexattr_t attr;
   fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
-  bool res = pthread_mutexattr_init(&attr) == 0 &&
-            pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
-            pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
-  assert(res);
+  ASSERT_SUCCESS(pthread_mutexattr_init(&attr));
+  ASSERT_SUCCESS(pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT));
+  ASSERT_SUCCESS(pthread_mutex_init(&fzE_global_mutex, &attr));
 
 #ifdef GC_THREADS
   GC_INIT();
@@ -580,10 +592,8 @@ void * fzE_thread_create(void *(*code)(void *),
   struct sched_param default_schedparam;
   default_schedparam.sched_priority = 0;
 
-  int schedparamres = pthread_attr_setschedparam(&attr, &default_schedparam);
-  assert(schedparamres == 0);
-  int schedpolicyres = pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
-  assert(schedpolicyres == 0);
+  ASSERT_SUCCESS(pthread_attr_setschedparam(&attr, &default_schedparam));
+  ASSERT_SUCCESS(pthread_attr_setschedpolicy(&attr, SCHED_OTHER));
 
 #ifdef GC_THREADS
   int res = GC_pthread_create(&pt,NULL,code,args);
@@ -629,7 +639,8 @@ int fzE_thread_join(void * thrd)
       case ESRCH:
         return 3;
       default:
-        assert(false);
+        fprintf(stderr,"*** unexpected case in fzE_thread_join: %d", ret);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -648,7 +659,8 @@ int fzE_thread_setschedparam_convert_policy(int policy)
       case 2:
         return SCHED_RR;
       default:
-        assert(false);
+        fprintf(stderr,"*** unexpected case in fzE_thread_setschedparam_convert_policy: %d", policy);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -691,8 +703,7 @@ int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
  */
 void fzE_lock()
 {
-  int res = pthread_mutex_lock(&fzE_global_mutex);
-  assert( res == 0 );
+  ASSERT_SUCCESS(pthread_mutex_lock(&fzE_global_mutex));
 }
 
 
@@ -701,8 +712,7 @@ void fzE_lock()
  */
 void fzE_unlock()
 {
-  int res = pthread_mutex_unlock(&fzE_global_mutex);
-  assert( res == 0 );
+  ASSERT_SUCCESS(pthread_mutex_unlock(&fzE_global_mutex));
 }
 
 
@@ -770,10 +780,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
     posix_spawn_file_actions_t file_actions;
 
-    if (posix_spawn_file_actions_init(&file_actions) != 0)
-    {
-      exit(1);
-    }
+    ASSERT_SUCCESS(posix_spawn_file_actions_init(&file_actions));
 
     posix_spawn_file_actions_adddup2(&file_actions, stdIn[0], 0);
     posix_spawn_file_actions_adddup2(&file_actions, stdOut[1], 1);
@@ -798,7 +805,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
     close(stdOut[1]);
     close(stdErr[1]);
 
-    posix_spawn_file_actions_destroy(&file_actions);
+    ASSERT_SUCCESS(posix_spawn_file_actions_destroy(&file_actions));
 
     if(s != 0)
     {
@@ -1005,7 +1012,7 @@ int32_t fzE_mtx_unlock(void * mtx) {
 }
 
 void fzE_mtx_destroy(void * mtx) {
-  pthread_mutex_destroy((pthread_mutex_t *)mtx);
+  ASSERT_SUCCESS(pthread_mutex_destroy((pthread_mutex_t *)mtx));
   fzE_free(mtx);
 }
 
@@ -1045,20 +1052,20 @@ void * fzE_cnd_init(int clock)
 }
 
 void fzE_cnd_signal(void * cnd) {
-  pthread_cond_signal((pthread_cond_t *)cnd);
+  ASSERT_SUCCESS(pthread_cond_signal((pthread_cond_t *)cnd));
 }
 
 void fzE_cnd_broadcast(void * cnd) {
-  pthread_cond_broadcast((pthread_cond_t *)cnd);
+  ASSERT_SUCCESS(pthread_cond_broadcast((pthread_cond_t *)cnd));
 }
 
 void fzE_cnd_wait(void * cnd, void * mtx) {
-  pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx);
+  ASSERT_SUCCESS(pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx));
 }
 
-void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
+void fzE_cnd_timedwait(void * cnd, void * mtx, uint64_t time_ns)
 {
-  int64_t  s  =                   time_ns / 1000000000;
+  uint64_t  s  =                   time_ns / 1000000000;
   long     ns = (long) (time_ns - s       * 1000000000);
   const struct timespec abstime = { s, ns };
   // NYI: BUG: we need sth. like this on macOS:
@@ -1067,11 +1074,13 @@ void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
   // #else
   //     pthread_cond_timedwait(cond, mutex, &absolute_monotonic);
   // #endif
-  pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime);
+  int res = pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime);
+
+  assert(res == 0 || res == ETIMEDOUT);
 }
 
 void fzE_cnd_destroy(void * cnd) {
-  pthread_cond_destroy((pthread_cond_t *)cnd);
+  ASSERT_SUCCESS(pthread_cond_destroy((pthread_cond_t *)cnd));
   fzE_free(cnd);
 }
 
@@ -1116,7 +1125,7 @@ void fzE_date_time(int32_t * result)
   struct timespec ts;
   struct tm ptm;
 
-  clock_gettime(CLOCK_REALTIME, &ts);
+  ASSERT_SUCCESS(clock_gettime(CLOCK_REALTIME, &ts));
   gmtime_r(&ts.tv_sec, &ptm);
 
   ((int32_t *)result)[0] = ptm.tm_year + 1900;

@@ -111,13 +111,10 @@ public Mutable_Map(K type : property.equatable, V type) ref is
 
   # create an immutable copy of this mutable map
   #
-  public as_map container.Map K V =>
-    if K : property.orderable
-      container.ps_map K V .new keys values
-    else if K : property.hashable
-      container.hash_map keys values
-    else
-      compile_time_panic
+  # M is the map implementation that is used for creating the map
+  #
+  public as_map(M type : container.Map K V) M =>
+    M.of items
 
 
   # initializer for this mutable map

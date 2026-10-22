@@ -98,7 +98,7 @@ REF_MANUAL_ATTRIBUTES = \
   --attribute UNICODE_SOURCE=$(UNICODE_SOURCE)
 
 $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
-	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
+	javadoc --release $(JAVA_VERSION) -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
 
 $(BUILD_DIR)/generated/doc:
 	mkdir -p $@

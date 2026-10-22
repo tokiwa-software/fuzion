@@ -35,5 +35,4 @@ public class Context
     public boolean isLanguageServer() { return true; };
   };
   public static Logger logger = new DummyLogger();
-  public static boolean middleEndEnabled = false;
 }

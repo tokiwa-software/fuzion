@@ -96,7 +96,7 @@ public class Intrinsics extends ANY
         c.boxedConstString(c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl)))
          .ret());
 
-    put("mutate.new.compare_and_swap0",  (c,cl,outer,in) ->
+    put("mutate.var.compare_and_swap0",  (c,cl,outer,in) ->
         {
           var nc = c._fuir.clazzOuterClazz(cl);
           var v = c._fuir.lookupMutableValue(nc);
@@ -133,7 +133,7 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("mutate.new.compare_and_set0",  (c,cl,outer,in) ->
+    put("mutate.var.compare_and_set0",  (c,cl,outer,in) ->
         {
           var nc = c._fuir.clazzOuterClazz(cl);
           var v = c._fuir.lookupMutableValue(nc);
@@ -183,7 +183,7 @@ public class Intrinsics extends ANY
           return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
         });
 
-    put("mutate.new.atomic_read0",  (c,cl,outer,in) ->
+    put("mutate.var.atomic_read0",  (c,cl,outer,in) ->
         {
           var ac = c._fuir.clazzOuterClazz(cl);
           var v = c._fuir.lookupMutableValue(ac);
@@ -219,7 +219,7 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("mutate.new.atomic_write0", (c,cl,outer,in) ->
+    put("mutate.var.atomic_write0", (c,cl,outer,in) ->
         {
           var ac = c._fuir.clazzOuterClazz(cl);
           var v = c._fuir.lookupMutableValue(ac);
@@ -260,6 +260,9 @@ public class Intrinsics extends ANY
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug_level"          , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
+
+    put("choice.tag"           , (c,cl,outer,in) -> c.getTag(outer, cl));
+
     put("fuzion.sys.args.count", (c,cl,outer,in) -> CNames.GLOBAL_ARGC.ret());
     put("fuzion.sys.args.get"  , (c,cl,outer,in) ->
         {
@@ -481,14 +484,6 @@ public class Intrinsics extends ANY
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).ret()
             : CStmnt.EMPTY;
         });
-    put("fuzion.sys.internal_array.freeze", (c,cl,outer,in) ->
-        {
-          return CStmnt.EMPTY;
-        });
-    put("fuzion.sys.internal_array.ensure_not_frozen", (c,cl,outer,in) ->
-        {
-          return CStmnt.EMPTY;
-        });
     put("fuzion.sys.env_vars.has0", (c,cl,outer,in) ->
         {
           return CStmnt.seq(CStmnt.iff(CExpr.call("getenv",new List<>(A0.castTo("char*"))).ne(CNames.NULL),
@@ -659,9 +654,9 @@ public class Intrinsics extends ANY
           if (Arrays.binarySearch(c._effectClazzes, ecl) >= 0)
             {
               var res = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
-              res = CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr()))
-                        .castTo(c._types.clazz(ecl) + " *")
-                        .deref();
+              res = c.heapClone(res)
+                     .castTo(c._types.clazz(ecl) + " *")
+                     .deref();
               var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
               o = CStmnt.iff(evi.not(), o, c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : res.ret());
             }
@@ -938,7 +933,7 @@ public class Intrinsics extends ANY
     put("concur.sync.cnd_wait",      (c,cl,outer,in) -> CExpr.call("fzE_cnd_wait",      new List<>(A0, A1)));
     put("concur.sync.cnd_timedwait", (c,cl,outer,in) -> CExpr.call("fzE_cnd_timedwait", new List<>(A0, A1, A2)));
     put("concur.sync.cnd_destroy",   (c,cl,outer,in) -> CExpr.call("fzE_cnd_destroy",   new List<>(A0)));
-    put("native_string_length", (c,cl,outer,in) -> CExpr.call("strlen",   new List<>(A0.castTo("void *"))).ret());
+    put("native_string_length", (c,cl,outer,in) -> CExpr.call("strlen",   new List<>(A0.castTo("void *"))).castTo(CTypes.scalar(SpecialClazzes.c_i64)).ret());
     // essentially a NOP in c-backend
     put("native_array", (c,cl,outer,in) -> A0.castTo("void *" /* NYI: should be cast to array with element type cl._dfa._fuir.clazzActualGeneric(cl._cc, 0) */).ret());
   }

@@ -73,4 +73,15 @@ stringstest is
   say "abcd".quoted
 
 
+
+  # test split_if
+  say <| " foo bar".split_if (=" ")
+  say <| "foo bar ".split_if (=" ")
+  say <| "  foo bar  baz  ".split_if (=" ")
+  say <| "".split_if (=" ")
+  say <| "   ".split_if (=" ")
+  say <| "a b".split_if (=" ")
+  say <| "hello".split_if (=" ")
+
+
   Exit.env.exit

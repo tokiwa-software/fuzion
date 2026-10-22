@@ -44,17 +44,15 @@ public class ParserCacheItem
 {
 
   private final URI uri;
-  private final FrontEndOptions frontEndOptions;
   private final FrontEnd frontEnd;
   private final TreeSet<Errors.Error> errors;
   private final TreeSet<Errors.Error> warnings;
   private final Resolved resolved;
 
-  public ParserCacheItem(URI uri, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
+  public ParserCacheItem(URI uri, FrontEnd frontEnd,
     TreeSet<Errors.Error> errors, TreeSet<Errors.Error> warnings, Resolved resolved)
   {
     this.uri = uri;
-    this.frontEndOptions = frontEndOptions;
     this.frontEnd = frontEnd;
     this.errors = errors;
     this.warnings = warnings;
@@ -80,11 +78,6 @@ public class ParserCacheItem
   public TreeSet<Errors.Error> errors()
   {
     return errors;
-  }
-
-  public FuzionOptions frontEndOptions()
-  {
-    return frontEndOptions;
   }
 
   public Resolved resolved()

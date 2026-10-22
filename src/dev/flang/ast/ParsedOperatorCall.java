@@ -223,7 +223,6 @@ public class ParsedOperatorCall extends ParsedCall
   void forceFreshResolve()
   {
     _resolvedFor = null;
-    _actualsResolvedFor = null;
     _calledFeature = null;
     _type = null;
     _pendingError = null; // original attempt to resolve might have caused an

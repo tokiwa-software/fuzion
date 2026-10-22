@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue7188.fz:24:1: error 1: Could not find called feature
+reg_issue7188.fz:24:1: error 1: Could not find called feature
 unit + ([1] .map i32 _->1 .sum)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Feature not found: 'infix/infix_right +' (one argument)

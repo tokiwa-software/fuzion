@@ -24,4 +24,4 @@
 reg_issue4119 =>
 
   lm : racy_mutate is
-  x := lm.new 0
+  x := lm.var 0

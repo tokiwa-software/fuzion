@@ -30,7 +30,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, property.interval i
   # overflow checking
 
   # would negation cause an overflow?
-  public redef wrapped_on_neg bool => !is_zero
+  public fixed redef wrapped_on_neg bool => u128.this != u128.zero
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other u128) bool => u128.max -° u128.this < other

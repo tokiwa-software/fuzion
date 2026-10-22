@@ -74,6 +74,7 @@ public Clock ref : effect is
     if just_now < t
       sleep t-just_now
 
+
   # halt the current thread during the given period of time
   #
   public sleep(d time.duration) unit => abstract
@@ -85,20 +86,6 @@ public Clock ref : effect is
   #
   public redef fixed type.default_value option time.Clock =>
     Nano.default_value.bind (x -> id time.Clock x)
-
-
-  # run the given code once at the provided instant within the current thread
-  #
-  # In case the instant is in the past, do not run the code. In case the instant is
-  # in the future, wait until this clock reached the time specified by instant.
-  #
-  # return true if the code was actually run, false if the given time `t` is already
-  # in the past.
-  #
-  public run_once(t instant,
-                  code ()->unit) bool
-  =>
-    abstract
 
 
   # run the given `code` periodically at time `first+p*0`, `first+p*1`, `first+p*2`,

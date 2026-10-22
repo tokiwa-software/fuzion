@@ -32,7 +32,7 @@ package dev.flang.fuir.analysis.dfa;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class TaggedValue extends Value implements Comparable<TaggedValue>
+class TaggedValue extends Value implements Comparable<TaggedValue>
 {
 
 

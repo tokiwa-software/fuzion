@@ -42,11 +42,6 @@ module env_vars is
   get0(s Array u8) String
   => intrinsic
 
-  # check if env var with given name exists
-  #
-  module has(s String) bool =>
-    has0 (c_string s)
-
 
   # intrinsic to get env var with given name
   #

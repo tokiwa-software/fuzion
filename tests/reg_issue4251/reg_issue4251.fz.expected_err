@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4251.fz:26:2: error 1: Different count of arguments needed when calling feature
+reg_issue4251.fz:26:2: error 1: Different count of arguments needed when calling feature
 (say <| (.map **2)) <| (2..10:2)
 -^^^^^^^^^^^^^^^^^
 Feature not found: 'infix/infix_right <|' (3 arguments)

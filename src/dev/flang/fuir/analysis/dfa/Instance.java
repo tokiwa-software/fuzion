@@ -42,7 +42,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Instance extends Value
+class Instance extends Value
 {
 
 
@@ -159,7 +159,11 @@ public class Instance extends Value
   {
     if (PRECONDITIONS) require
       (v != null,
-       Errors.any() || v._clazz == NO_CLAZZ || dfa._fuir.clazzIsRef(v._clazz) || dfa._fuir.clazzResultClazz(field) == v._clazz);
+       Errors.any()
+        || v == Value.UNIT && dfa._fuir.clazzIsUnitType(dfa._fuir.clazzResultClazz(field))
+        || dfa._fuir.clazzIsOuterRef(field) // NYI: CLEANUP: try to remove?
+        || dfa._fuir.clazzIsRef(v._clazz)
+        || dfa._fuir.clazzResultClazz(field) == v._clazz);
 
     var oldv = _fields.get(field);
     if (oldv != null)
@@ -184,7 +188,7 @@ public class Instance extends Value
   Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     if (PRECONDITIONS) require
-      (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)),
+      (Errors.any() || _clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)),
        site != -1);
 
     dfa.readField(field);

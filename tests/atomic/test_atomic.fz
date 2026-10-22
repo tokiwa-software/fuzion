@@ -97,7 +97,7 @@ test_atomic is
     public redef as_string String => match my_switch.this
       on => "on"
       off => "off"
-    type.equality(a, b my_switch.this) => a.ord = b.ord
+    public redef type.equality(a, b my_switch.this) bool => a.ord = b.ord
   test0 my_switch on on off off ((a,b)-> a.ord=b.ord)
 
   # test int-like choice

@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -225,7 +226,7 @@ public class AstErrors extends ANY
   private static String argCountStr(AbstractFeature f)
   {
     var msg = new List<String>();
-    var ta = f.typeArguments();
+    var ta = f.explicitOrOpenTypeParameters();
     var va = f.valueArguments();
     var typeCount  = ta.size();
     var valueCount = va.size();
@@ -243,14 +244,22 @@ public class AstErrors extends ANY
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
+    var args         = f.explicitArguments();
+    var typeArgs     = f.explicitOrOpenTypeParameters();
+    var typeArgCount = typeArgs.size();
+    var argsStr      = args    .map2(a->sbnf(a)).toString("", ", ", "");
+    var tArgsStr     = typeArgs.map2(a->sbnf(a)).toString("", ", ", "");
     return "To call " + sbn(f.baseName())
-      + (f.arguments().isEmpty()
+      + (args.isEmpty()
           ? ", you must not provide arguments."
           : ", you must provide "
-            + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
-            + (f.typeArguments().size() > 0
-                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments."
-                : ""));
+            + StringHelpers.singularOrPlural(args.size(), "argument") + " " + argsStr + "."
+            + (typeArgs.isEmpty()
+               ? ""
+               : " The " + StringHelpers.singularOrPlural(typeArgCount, "type parameter") + " " + tArgsStr +
+                 " may be omitted or `_` may be used in place of " +
+                 (typeArgCount==1 ? "it"
+                                  : "a type parameter") + " if it can be inferred from other arguments."));
   }
 
 
@@ -395,7 +404,7 @@ public class AstErrors extends ANY
           {
             var assignableTo = new TreeSet<AbstractType>();
             frmlT.isAssignableFrom(actlT, context, false, true, assignableTo);
-            for (var ts : assignableTo)
+            for (var ts : assignableTo.stream().sorted(Comparator.comparing(t->t.toString(true))).toList())
               {
                 errorOrUndefinedFound |= ts.containsUndefined();
                 assignableToSB
@@ -1370,9 +1379,9 @@ public class AstErrors extends ANY
     if (target            instanceof Call    c                                  &&
         c.calledFeature() instanceof Feature cf                                 &&
         cf.state().atLeast(State.RESOLVED_TYPES)                                &&
-        cf.resultType().isParametricType()                                     &&
-        cf.resultType().typeParameter() instanceof Feature tp                 &&
-        tp.isFreeType()                                                         &&
+        cf.resultType().isParametricType()                                      &&
+        cf.resultType().typeParameter() instanceof Feature tp                   &&
+        tp.isFreeTypeParameter()                                                &&
         tp.constraint().compareTo(Types.resolved.t_Any) == 0)
       {
         solution = "To solve this, you might replace the free type " + s(tp) + " by a different type.  " +
@@ -1500,7 +1509,7 @@ public class AstErrors extends ANY
 
   static void missingResultTypeForField(Feature f)
   {
-    if(PRECONDITIONS) require
+    if (PRECONDITIONS) require
       (f.isField());
 
     if (CHECKS) check
@@ -1582,15 +1591,6 @@ public class AstErrors extends ANY
           "Type used: " + s(t) + "\n" +
           "Formal type parameter used " + sbnf(tp) + "\n" +
           "Formal type parameter declared in " + tp.pos().show() + "\n");
-  }
-
-  static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
-  {
-    error(pos,
-          "Actual type parameters to choice type must be disjoint types",
-          "The following types have overlapping values:\n" +
-          s(t1) + /* " at " + t1.pos().show() + */ "\n" +  // NYI: use pos before Types were interned!
-          s(t2) + /* " at " + t2.pos().show() + */ "\n");
   }
 
   static void illegalUseOfOpenFormalGeneric(SourcePosition pos, AbstractFeature generic)
@@ -1909,15 +1909,32 @@ public class AstErrors extends ANY
       }
   }
 
-  static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<AbstractFeature> missing)
+  static void failedToInferActualGeneric(SourcePosition pos,
+                                         AbstractFeature cf,
+                                         List<AbstractFeature> missing,
+                                         List<Expr> actuals)
   {
     if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
       {
-        error(pos,
-              "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
-              "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
-              "Expected type parameters: " + s(cf.generics()) + "\n"+
-              "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
+        var actualValueArgument = actuals.stream()
+          .filter(a -> a.asType() != Types.t_UNDEFINED)
+          .findFirst();
+        if (cf.valueArguments().isEmpty() && actualValueArgument.isPresent())
+          {
+            error(pos,
+                  "Expected a type argument, got a value argument",
+                  "Value argument: " + s(actualValueArgument.get()) + "\n" +
+                  "Expected " + StringHelpers.plural(cf.typeArguments().size(), "type parameter") +
+                  ": " + s(cf.generics()));
+          }
+        else
+          {
+            error(pos,
+                  "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
+                  "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
+                  "Expected type parameters: " + s(cf.generics()) + "\n"+
+                  "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
+          }
       }
   }
 
@@ -1938,7 +1955,7 @@ public class AstErrors extends ANY
   {
     var errorOrUndefinedFound = g.containsUndefined();
     var assignableToSB = new StringBuilder();
-    for (var ts : assignableTo)
+    for (var ts : assignableTo.stream().sorted(Comparator.comparing(t->t.toString(true))).toList())
       {
         errorOrUndefinedFound |= ts.containsUndefined();
         assignableToSB
@@ -2103,7 +2120,7 @@ public class AstErrors extends ANY
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
   }
 
-  public static void argumentNamesNotDistinct(Feature f, Set<String> duplicateNames)
+  public static void argumentNamesNotDistinct(AbstractFeature f, Set<String> duplicateNames)
   {
     int[] cnt = new int[1];
     error(f.pos(),
@@ -2117,8 +2134,8 @@ public class AstErrors extends ANY
           + f.arguments()
             .stream()
             .map(a -> "Argument #" + (cnt[0]++) + ": " + sbnf(a) +
-                 (duplicateNames.contains(a.baseNameHuman()) ? " is duplicate "
-                                                             : " is ok"        ) + "\n")
+                 (duplicateNames.contains(a.baseNameHuman()) ? " is duplicate at "+a.pos().show()
+                                                             : " is ok"                          ) + "\n")
             .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
         );
@@ -2679,9 +2696,13 @@ public class AstErrors extends ANY
 
   public static void loopResultsInTwoIncompatibleTypes(SourcePosition pos, Match m)
   {
-    error(pos, "Loop results in two incompatible types." ,
-      "The incompatible types are: " + m.cases().map2(c -> s(c.code().type())).stream().collect(Collectors.joining(","))
-    );
+    var types = m.cases().map2(c -> c.code().type());
+    if (!any() || types.stream().noneMatch(t -> t == Types.t_ERROR))
+      {
+        error(pos, "Loop results in two incompatible types." ,
+          "The incompatible types are: " + types.stream().map(t-> s(t)).collect(Collectors.joining(","))
+        );
+      }
   }
 
   public static void anonymousFeatureMustNotInheritFromMultiple(SourcePosition range, List<AbstractCall> i)

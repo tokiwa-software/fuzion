@@ -21,4 +21,4 @@
 #
 # -----------------------------------------------------------------------
 
-say (s 10); s(n i32) Sequence i32 => n>0 ? container.set_of_ordered [n] : []
+say (s 10); s(n i32) Sequence i32 => n>0 ? (container.ps_set i32).new [n] : []

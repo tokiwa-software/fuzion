@@ -1,0 +1,43 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7379
+#
+# -----------------------------------------------------------------------
+
+
+# check that `record_process` gives up on a process that does not terminate
+# within the given timeout and reports the command it failed to wait for
+#
+reg_issue7379 =>
+
+  # the pid in the error message is not deterministic, so only compare the
+  # beginning of the message which contains the command
+  #
+  expected := "failed waiting for 'sleep 1m'"
+
+  for stdin_file in [option (io.path.of "reg_issue7379.fz.stdin"), nil] do
+    res := "sleep 1m".execute (container.ps_map String String).empty stdin_file (time.duration.s 1) .or_panic
+
+    check !res.ok
+    check res.err.starts_with expected
+
+    say <| res.err.substring 0 expected.byte_count
+
+reg_issue7379

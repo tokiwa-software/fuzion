@@ -307,7 +307,7 @@ is
 
   # current value in the channel, nil if none.
   #
-  state := M.env.new (unbuffered_channel_state T) ready
+  state := M.env.var (unbuffered_channel_state T) ready
 
 
   # send a value to this Channel.

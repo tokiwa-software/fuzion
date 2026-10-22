@@ -4,10 +4,10 @@ Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 fuzion.runtime.checkcondition_fault#1 at {base.fum}/fuzion/runtime/check_fault.fz:56
-reg_issue4609.s.call at --CURDIR--/reg_issue4609.fz:33
-reg_issue4609.r#1 at --CURDIR--/reg_issue4609.fz:36
-reg_issue4609.q#1 at --CURDIR--/reg_issue4609.fz:35
-reg_issue4609 at --CURDIR--/reg_issue4609.fz:34
+reg_issue4609.s.call at reg_issue4609.fz:33
+reg_issue4609.r#1 at reg_issue4609.fz:36
+reg_issue4609.q#1 at reg_issue4609.fz:35
+reg_issue4609 at reg_issue4609.fz:34
 
 *** fatal errors encountered, stopping.
 one error.

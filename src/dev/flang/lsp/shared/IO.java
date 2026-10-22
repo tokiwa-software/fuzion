@@ -37,7 +37,6 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
@@ -123,34 +122,6 @@ public class IO
       {
         IO.redirectErrOutToClientLog();
       }
-  }
-
-  /**
-   * @param runnable
-   * @return callable to be run on an executor.
-   * The result of the callable is everything that is written to stdout/stderr by the runnable.
-   */
-  public synchronized static Callable<String> withCapturedStdOutErr(Runnable runnable)
-  {
-    return () -> {
-      var inputStream = new PipedInputStream();
-      var outputStream = new PrintStream(new PipedOutputStream(inputStream));
-      try
-        {
-          System.setOut(outputStream);
-          System.setErr(outputStream);
-          runnable.run();
-          // close outputstream so that reading of inputstream does not run
-          // infinitely.
-          outputStream.close();
-          return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        } finally
-        {
-          outputStream.close();
-          inputStream.close();
-          IO.redirectErrOutToClientLog();
-        }
-    };
   }
 
   public static void redirectErrOutToClientLog()

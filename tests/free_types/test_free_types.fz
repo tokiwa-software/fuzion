@@ -136,7 +136,7 @@ test_free_type is
   # Use unknown free type in function type
   #
   apply3(fn Function String A B) => fn
-  say ((apply3 bool u8 a,b->"$a $b").call true (u8 127))
+  say ((apply3 (id bool,u8->String a,b->"$a $b")).call true (u8 127))
   apply3a(fn (A,B)->String) => fn
-  say ((apply3a bool u8 a,b->"$a $b").call true (u8 127))
+  say ((apply3a (id bool,u8->String a,b->"$a $b")).call true (u8 127))
   # say ((apply3a         a,b->"$a $b").call true (u8 127))  -- should flag an error, unable to infer actual type parameters

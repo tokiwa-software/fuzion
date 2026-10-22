@@ -70,6 +70,7 @@ public find(pattern Sequence T) option i64
 
   p := pattern.as_array_backed
   ab := as_array_backed
+  init := once (() -> make p nil)
 
   make(t Sequence T, r option (Node T)) =>
     n option (Node T) =>
@@ -83,11 +84,10 @@ public find(pattern Sequence T) option i64
         r
     Node t (once (option (Node T)) ()->n) r_star
 
-  init := make p nil
 
   step(acc option (Node T), x T) =>
     match acc
-      nil => init
+      nil => init.unwrap
       n Node => if is_match acc x then n.next.or_panic else step n.rest x
 
   is_done option (Node T) -> bool => (acc)->

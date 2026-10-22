@@ -66,7 +66,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
     @Override public AbstractType type() { return Types.t_ERROR; }
     @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
-    @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
+    @Override protected Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
   };
 
 
@@ -357,7 +357,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public abstract Expr visit(FeatureVisitor v, AbstractFeature outer);
+  Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    throw new UnsupportedOperationException("Unimplemented method 'visit' for " + Expr.this.getClass());
+  }
 
 
   /**
@@ -695,7 +698,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
     var t = type();
-    return this != Call.ERROR && t != Types.t_ERROR
+    return this != Call.ERROR && !t.isArtificialType()
       && expectedType.isAssignableFromWithoutBoxing(t, context).no()
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isParametricType()
@@ -845,21 +848,40 @@ public abstract class Expr extends ANY implements HasSourcePosition
         if (frmlT.isChoice() &&
             frmlT.isAssignableFromWithoutBoxing(t).no() &&
             frmlT.isAssignableFrom(t).yes())
-          { // we do both, box and then tag:
-            for (var cg : frmlT.choiceGenerics())
-              {
-                if (cg.isAssignableFrom(t).yes())
-                  {
-                    return cg;
-                  }
-              }
-            throw new Error("Expr.needsBoxing confused for choice type "+frmlT+" which is assignable from "+t.asRef()+" but not from "+t);
+          {
+            // we do both, box and then tag:
+            return findAssignableChoiceGeneric(frmlT, t);
           }
         else
           {
             return null;
           }
       }
+  }
+
+
+  /**
+   * In a potentially nested choice find the choice generic
+   * that t is assignable to
+   *
+   * @param ct
+   * @param t
+   * @return
+   */
+  private AbstractType findAssignableChoiceGeneric(AbstractType ct, AbstractType t)
+  {
+    for (var cg : ct.choiceGenerics())
+      {
+        if (cg.isChoice() && cg.isAssignableFrom(t).yes())
+          {
+            return findAssignableChoiceGeneric(cg, t);
+          }
+        if (cg.isAssignableFromWithoutTagging(t).yes())
+          {
+            return cg;
+          }
+      }
+    throw new Error("Expr.needsBoxing confused for choice type "+ct+" which is assignable from "+t.asRef()+" but not from "+t);
   }
 
 
@@ -872,7 +894,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   private static void checkTagging(Expr expr, AbstractType at, AbstractType frmlT)
   {
-    if(PRECONDITIONS) require
+    if (PRECONDITIONS) require
       (frmlT.isChoice());
 
     // Case 1: types are equal, no tagging necessary
@@ -882,7 +904,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
       }
     // Case 1.1: types are equal, no tagging necessary
     // NYI: BUG: soundness issue?
-    else if(at.isChoice() && frmlT.asThis().compareTo(at.asThis()) == 0)
+    else if (at.isChoice() && frmlT.asThis().compareTo(at.asThis()) == 0)
       {
         return;
       }

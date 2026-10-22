@@ -209,16 +209,19 @@ public class CFG extends ANY
     put("Type.name"                      , (cfg, cl) -> { } );
 
     put("mutate.atomic_access_supported" , (cfg, cl) -> { } );
-    put("mutate.new.compare_and_set0"    , (cfg, cl) -> { } );
-    put("mutate.new.compare_and_swap0"   , (cfg, cl) -> { } );
-    put("mutate.new.atomic_read0"        , (cfg, cl) -> { } );
-    put("mutate.new.atomic_write0"       , (cfg, cl) -> { } );
+    put("mutate.var.compare_and_set0"    , (cfg, cl) -> { } );
+    put("mutate.var.compare_and_swap0"   , (cfg, cl) -> { } );
+    put("mutate.var.atomic_read0"        , (cfg, cl) -> { } );
+    put("mutate.var.atomic_write0"       , (cfg, cl) -> { } );
     put("mutate.read_fence"              , (cfg, cl) -> { } );
     put("mutate.write_fence"             , (cfg, cl) -> { } );
 
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );
     put("debug_level"                    , (cfg, cl) -> { } );
+
+    put("choice.tag"                     , (cfg, cl) -> { } );
+
     put("fuzion.sys.args.count"          , (cfg, cl) -> { } );
     put("fuzion.sys.args.get"            , (cfg, cl) -> { } );
     put("fuzion.std.exit"                , (cfg, cl) -> { } );
@@ -382,10 +385,6 @@ public class CFG extends ANY
     put("fuzion.sys.type.alloc"          , (cfg, cl) -> { } );
     put("fuzion.sys.type.setel"          , (cfg, cl) -> { } );
     put("fuzion.sys.type.getel"          , (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.freeze"
-                                         , (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.ensure_not_frozen"
-                                         , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.has0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.get0"       , (cfg, cl) -> { } );
     put("fuzion.sys.thread.current"      , (cfg, cl) -> { } );

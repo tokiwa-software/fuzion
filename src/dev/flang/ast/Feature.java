@@ -28,7 +28,6 @@ package dev.flang.ast;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Optional;
@@ -445,7 +444,7 @@ public class Feature extends AbstractFeature
   {
     this();
     _state = State.ERROR;
-    _featureName = FeatureName.get(Types.ERROR_NAME, arguments().size());
+    _featureName = FeatureName.get(Types.ERROR_NAME, explicitArgumentCount());
   }
 
 
@@ -502,7 +501,7 @@ public class Feature extends AbstractFeature
                        NoType.INSTANCE,
                        new List<String>(FuzionConstants.DESTRUCTURE_PREFIX + (uniqueDestructureFeatureId++)),
                        new List<>(),
-                       Function.NO_CALLS,
+                       AbstractCall.NO_CALLS,
                        Contract.EMPTY_CONTRACT,
                        new Impl(pos, e, Impl.Kind.FieldDef));
   }
@@ -805,14 +804,15 @@ public class Feature extends AbstractFeature
       }
     this._qname     = qname;
     this._arguments = a;
-    this._featureName = FeatureName.get(n, arguments().size());
+    this._featureName = FeatureName.get(n, explicitArgumentCount());
     this._inherits   = (i.isEmpty() &&
                         (p._kind != Impl.Kind.FieldActual) &&
                         (p._kind != Impl.Kind.FieldDef   ) &&
                         (p._kind != Impl.Kind.FieldInit  ) &&
                         (p._kind != Impl.Kind.Field      ) &&
-                        (p._kind != Impl.Kind.TypeParameter ) &&
-                        (p._kind != Impl.Kind.TypeParameterOpen ) &&
+                        (p._kind != Impl.Kind.ExplicitTypeParameter) &&
+                        (p._kind != Impl.Kind.FreeTypeParameter    ) &&
+                        (p._kind != Impl.Kind.TypeParameterOpen    ) &&
                         (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.ANY_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
       ? new List<>(new Call(_pos, FuzionConstants.ANY_NAME))
@@ -822,21 +822,6 @@ public class Feature extends AbstractFeature
     this._impl = p;
     this._effects = effects;
 
-    // check args for duplicate names
-    if (!a.stream()
-          .map(arg -> arg.baseName())
-          .filter(argName -> !argName.equals("_"))
-          .allMatch(new HashSet<>()::add))
-      {
-        var usedNames = new HashSet<>();
-        var duplicateNames = a.stream()
-              .map(arg -> arg.baseName())
-              .filter(argName -> !argName.equals("_"))
-              .filter(argName -> !usedNames.add(argName))
-              .collect(Collectors.toSet());
-        // NYI: UNDER DEVELOPMENT: report pos of arguments not pos of feature
-        AstErrors.argumentNamesNotDistinct(this, duplicateNames);
-      }
     if (isVisibilitySpecified() && isTypeParameter())
       {
         AstErrors.typeParameterMustNotDefineTypeVisibility(this);
@@ -922,8 +907,7 @@ public class Feature extends AbstractFeature
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS),
-      !isFreeType() || _outer.arguments().contains(this));
+      (Errors.any() || isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
 
     return _outer;
   }
@@ -973,7 +957,8 @@ public class Feature extends AbstractFeature
               case FieldInit, FieldDef,
                    FieldActual, FieldIter,
                    Field                     -> Kind.Field;
-              case TypeParameter             -> Kind.TypeParameter;
+              case ExplicitTypeParameter     -> Kind.ExplicitTypeParameter;
+              case FreeTypeParameter         -> Kind.FreeTypeParameter;
               case TypeParameterOpen         -> Kind.OpenTypeParameter;
               case Routine, RoutineDef       ->
                 _returnType == RefType.INSTANCE
@@ -2078,10 +2063,6 @@ A ((Choice)) declaration must not contain a result type.
 
     choiceTypeCheckAndInternalFields(res);
 
-    selfType().checkChoice(_pos, context());
-
-    _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
-
     visit(new ContextVisitor(context()) {
         /* if an error is reported in a call it might no longer make sense to check the actuals: */
         @Override public boolean visitActualsLate() { return true; }
@@ -2335,7 +2316,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     // impl.initialValue is code executed by outer, not by this. So we visit it
     // here, while impl.code is visited when impl.visit is called with this as
@@ -2418,7 +2399,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   AbstractFeature addTypeParameter(Resolution res, Feature ta)
   {
     if (PRECONDITIONS) require
-      (ta.isFreeType());
+      (ta.isFreeTypeParameter());
 
     // A call to generics() has the side effects of setting _generics,
     // _arguments
@@ -2431,39 +2412,11 @@ A pre-condition of a feature that does not redefine an inherited feature must st
     var tas = typeArguments();
     _arguments.add(tas.size(), ta);
 
-    checkDuplicateFeature(res);
-
     res._module.findDeclarations(ta, this);
 
     res._module.addTypeParameter(this, ta);
 
     return ta;
-  }
-
-
-  /**
-   * check if outer already contains a feature with
-   * the feature name of this feature
-   *
-   * @param res the current Resolution instance
-   */
-  private void checkDuplicateFeature(Resolution res)
-  {
-    var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
-    var existing = res._module.lookupFeature(_outer, newFeatureName);
-    if (existing != null && !isAbstractAndFixedPair(existing, this))
-      {
-        AstErrors.duplicateFeatureDeclaration(existing, this);
-      }
-  }
-
-
-  /**
-   * Is this a type parameter created for a free type?
-   */
-  boolean isFreeType()
-  {
-    return false;
   }
 
 
@@ -2637,25 +2590,9 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   public FeatureName featureName()
   {
     if (CHECKS) check
-      (// the feature name is currently not changed in addTypeParameter, so
-       // we add freeTypesCount() here.
-       arguments().size() == _featureName.argCount() + freeTypesCount());
+      (_featureName.argCount() == explicitArgumentCount());
 
     return _featureName;
-  }
-
-
-  /**
-   * Number of free types among the type parameters.
-   */
-  public int freeTypesCount()
-  {
-    var result = 0;
-    for (var tp : _arguments)
-      {
-        result += ((Feature) tp).isFreeType() ? 1 : 0;
-      }
-    return result;
   }
 
 
@@ -2748,13 +2685,25 @@ A pre-condition of a feature that does not redefine an inherited feature must st
 
 
   /**
+   * Constant result value for `Feature.comparisonId`
+   */
+  static int _comparisonId_ = (_comparisonIds_++);
+
+
+  @Override public int comparisonId()
+  {
+    return _comparisonId_;
+  }
+
+
+  /**
    * Compare this to other for sorting Feature
    */
   public int compareTo(AbstractFeature other)
   {
     return (other instanceof Feature of)
       ? _id - of._id
-      : +1;
+      : super.compareTo(other) /* comparing against LibraryFeature or other type */;
   }
 
 

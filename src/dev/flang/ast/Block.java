@@ -210,7 +210,7 @@ public class Block extends AbstractBlock
    *
    * @return this.
    */
-  public Block visit(FeatureVisitor v, AbstractFeature outer)
+  protected Block visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this);
     ListIterator<Expr> i = _expressions.listIterator();

@@ -45,31 +45,11 @@ public class MarkdownTool
 
   public static String italic(String str)
   {
-    if(str.isBlank()){
+    if (str.isBlank()){
       return "";
     }
     return Arrays.stream(escape(str).split(System.lineSeparator()))
       .map(l -> "*" + l + "*")
-      .collect(Collectors.joining(System.lineSeparator()));
-  }
-
-  public static String blockquote(String str)
-  {
-    if(str.isBlank()){
-      return "";
-    }
-    return Arrays.stream(escape(str).split(System.lineSeparator()))
-      .map(l -> "> " + l)
-      .collect(Collectors.joining(System.lineSeparator()));
-  }
-
-  public static String bold(String str)
-  {
-    if(str.isBlank()){
-      return "";
-    }
-    return Arrays.stream(escape(str).split(System.lineSeparator()))
-      .map(l -> "**" + l + "**")
       .collect(Collectors.joining(System.lineSeparator()));
   }
 

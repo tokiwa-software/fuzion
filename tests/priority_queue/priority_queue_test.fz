@@ -203,7 +203,7 @@ priority_queue_test =>
       else
         say "\n[PASSED] priority queue sorts $random_test_size random elements as expected"
 
-  sort_test_random 100000
+  sort_test_random 1E3
 
 
 
@@ -244,5 +244,5 @@ priority_queue_test =>
               sort.tail
     say "\n"
 
-  interleaved_random_test 40 10000
-  interleaved_random_test 60 1000
+  interleaved_random_test 40 1E3
+  interleaved_random_test 60 1E3

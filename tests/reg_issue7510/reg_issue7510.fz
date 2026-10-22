@@ -1,0 +1,45 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License. The Fuzion language
+# implementation is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# The Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7510
+#
+# -----------------------------------------------------------------------
+
+# Regression test for #7510: inheritance and '!' for effects conflict when
+# defining a constructor feature.
+#
+# The syntax
+#
+#   ex (M type : mutate) ! M : some_feat is
+#
+# must be parsed as a constructor `ex` with a formal type argument `M` bounded
+# by `mutate`, an effect annotation `! M` and an inheritance declaration
+# `: some_feat`.  The parser must not consume the ':' following 'M' for
+# inheritance as part of the effect type `M`.
+#
+reg_issue7510 =>
+
+  parent7510 is
+
+  ex7510 (M type : mutate) ! M : parent7510 is
+
+    public tag i32 => 42
+
+  m : mutate is
+  m ! ()->
+    t := ex7510 m
+    say "tag=$(t.tag)"

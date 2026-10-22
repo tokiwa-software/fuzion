@@ -235,7 +235,7 @@ is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  public map_to_list(B type, f A -> B) list B =>
+  public map_to_list(B type, f _ : A -> B) list B =>
     match list.this
       nil    => nil
       c Cons =>
@@ -411,6 +411,26 @@ is
             public redef head A => c.head
             public redef tail list A => reversed_head
             public redef finite trit => list.this.finite)
+
+
+  # create a string representation of this list including all the string
+  # representations of its contents, separated by ',' and enclosed in '['
+  # and ']'.
+  #
+  # In case this Sequence is known to be `finite` or has at most (Sequence T).type
+  # .AS_STRING_NON_FINITE_MAX_ELEMENTS elements, all elements will be shown in the
+  # resulting string. Otherwise, only the first elements will be shown followed by
+  # ",…" as in "[1,2,3,4,5,6,7,8,9,10,…]".
+  #
+  # To force printing of all elements of a finite `list` for which `finite` is
+  # false (which may be the case since a `list` in general might not know that it
+  # is finite), you may use `as_string_all`.
+  #
+  # NYI: UNDER DEVELOPMENT: #5801 would be nicer if we renamed `choice.as_string`
+  # when it is inherited and use `Sequence.as_string` automatically.
+  #
+  public redef as_string String =>
+    sequence_as_string
 
 
   # create a string representation of this list including all the string

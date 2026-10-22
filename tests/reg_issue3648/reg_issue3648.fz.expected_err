@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue3648.fz:27:22: error 1: Failed to infer actual type parameters
+reg_issue3648.fz:27:22: error 1: Failed to infer actual type parameters
   Node(T type) ref : b T is
 ---------------------^
 In call to 'reg_issue3648.b', no actual type parameters are given and inference of the type parameters failed.

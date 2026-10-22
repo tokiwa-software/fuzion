@@ -38,11 +38,11 @@ module:public array2 (
       ) : container.Mutable_Array2 T mutate.this, mutable_element
 pre
   safety: length0 ≥ 0
-  safety: length0 ≤ data.length.as_i64
+  safety: length0 ≤ data.length
   safety: length1 ≥ 0
-  safety: length1 ≤ data.length.as_i64
+  safety: length1 ≤ data.length
   safety: length0 *? length1 >=? 0
-  safety: length0 * length1 ≤ data.length.as_i64
+  safety: length0 * length1 ≤ data.length
 is
 
 

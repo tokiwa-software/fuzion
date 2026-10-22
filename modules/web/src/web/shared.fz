@@ -24,11 +24,6 @@
 net_lm : mutate is
 
 
-# this lm is used for reader/writer of the ssl connection
-#
-ssl_lm : mutate is
-
-
 # read the response
 #
 module read_reponse(LM type : mutate) ! LM =>
@@ -134,8 +129,7 @@ module do_request(family net.family.val,
       .bind c->
         c.with _ net_lm ()->
           if use_https
-            ssl_lm ! ()->
-              wolfssl _ net_lm ssl_lm host ((write_request ssl_lm rm).bind _->(read_reponse ssl_lm))
+            wolfssl _ net_lm host ((write_request wolfssl_lm rm).bind _->(read_reponse wolfssl_lm))
           else
             (write_request net_lm rm).bind _->(read_reponse net_lm)
 

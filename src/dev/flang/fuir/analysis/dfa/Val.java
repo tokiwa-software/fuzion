@@ -41,7 +41,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Val extends ANY
+abstract class Val extends ANY
 {
 
 

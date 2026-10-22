@@ -1,10 +1,10 @@
 
---CURDIR--/issue1054.fz:30:8: error 1: Incompatible type parameter
+issue1054.fz:30:8: error 1: Incompatible type parameter
   _ := c (floaty f32) # bad
 -------^
 formal type parameter 'T : issue1054.this.floaty f64'
 actual type parameter 'issue1054.this.floaty f32'
-assignable to constraint: 'issue1054.this.floaty f32',
-                          'Any'
+assignable to constraint: 'Any',
+                          'issue1054.this.floaty f32'
 
 one error.

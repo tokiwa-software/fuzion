@@ -35,7 +35,7 @@ lvl(i i64) Sequence String =>
   sub_l := c.0.bind lvl
   sub_r := c.1.bind lvl
 
-  if sub_l.is_nil then [str]
+  if sub_l = nil then [str]
   else
 
     sub_r_new := (sub_r.or_else [$" "," "," "]) ++ [$""].cycle

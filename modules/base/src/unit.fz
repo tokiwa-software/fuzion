@@ -90,8 +90,15 @@ public unit : property.orderable, property.hashable is
 # unit (contents tuple) is
 #
 
-  # human readable string
-  public redef as_string String => "unit"
+  # human readable string.
+  #
+  # This shows the type name, i.e., `unit` for this or the name of the
+  # actual type if `unit.this` is a child.
+  #
+  public redef as_string String
+  =>
+    (type_of unit.this).as_string
+
 
   # Monoid that can be used whenever a monoid of the unit type is expected.
   # This is the case for example in some calls to `fold`-like features.
@@ -106,7 +113,7 @@ public unit : property.orderable, property.hashable is
 
   # equality for two `unit` values always returns `true`
   #
-  public redef fixed type.equality(a, b unit) bool
+  public redef type.equality(a, b unit.this) bool
   =>
     true
 
@@ -114,11 +121,11 @@ public unit : property.orderable, property.hashable is
   # The total order for `unit` is trivial since there is only one value. `lteq` always
   # returns `true`
   #
-  public redef fixed type.lteq(a, b unit) bool
+  public redef type.lteq(a, b unit.this) bool
   =>
     true
 
 
   # the hash code for `unit` is a constant
   #
-  public redef fixed type.hash_code(a unit) u64 => 8577314602347175514
+  public redef type.hash_code(a unit.this) u64 => 8577314602347175514

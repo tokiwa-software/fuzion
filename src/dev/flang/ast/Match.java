@@ -127,7 +127,7 @@ public class Match extends AbstractMatch
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var os = _subject;
     var ns = _subject.visit(v, outer);

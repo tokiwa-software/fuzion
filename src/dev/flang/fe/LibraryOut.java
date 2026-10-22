@@ -494,7 +494,7 @@ class LibraryOut extends ANY
         bn = "";
       }
     _data.writeString(bn);
-    var argCount = n.argCount() + f.freeTypesCount();
+    var argCount = f.arguments().size();
     _data.writeInt (argCount);      // NYI: use better integer encoding
     _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());
@@ -607,26 +607,29 @@ class LibraryOut extends ANY
     else
       {
         _data.addOffset(t, _data.offset());
-        if (t.isParametricType())
+        switch (t.kind())
           {
-            _data.writeInt(-1);
-            _data.writeOffset(t.typeParameter());
-          }
-        else
-          {
-            _data.writeInt(t.isNormalType() ? t.generics().size() : 0);
-            _data.writeOffset(t.feature());
-            _data.writeByte(t.kind().num);
-            if (t.isNormalType())
-              {
-                for (var gt : t.generics())
-                  {
-                    type(gt);
-                  }
-              }
-            // NYI: CLEANUP: do not write outer for this types.
-            type(t.isThisType() ? Types.resolved.universe.selfType() : t.outer());
-          }
+          case ParametricType ->
+            {
+              _data.writeInt(-1);
+              _data.writeOffset(t.typeParameter());
+            }
+          case RefType, ValueType, ThisType ->
+            {
+              _data.writeInt(t.isNormalType() ? t.generics().size() : 0);
+              _data.writeOffset(t.feature());
+              _data.writeByte(t.kind().num);
+              if (t.isNormalType())
+                {
+                  for (var gt : t.generics())
+                    {
+                      type(gt);
+                    }
+                }
+              // NYI: CLEANUP: do not write outer for this types.
+              type(t.isThisType() ? Types.resolved.universe.selfType() : t.outer());
+            }
+          };
       }
   }
 

@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue6266.fz:47:10: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
+reg_issue6266.fz:47:10: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
     _ := top.read
 ---------^^^^^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
@@ -10,27 +10,27 @@ Target type: 'Stack'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'concur.atomic T', or change the result type of 'concur.atomic.read' to no longer depend on 'Stack.this'.
 
 
-{base.fum}/concur/atomic.fz:86:5: error 2: Call has an ambiguous result type since target of the call is a 'ref' type.
+{base.fum}/concur/atomic.fz:90:5: error 2: Call has an ambiguous result type since target of the call is a 'ref' type.
     value.get
 ----^^^^^^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
-Called feature: 'mutate.new.precall get'
+Called feature: 'mutate.var.precall get'
 Original result type: 'option Stack.this.node'
 Type depending on target: 'Stack.this'
 Target type: 'Stack'
-To solve this, you could try to use a value type as the target type of the call, e,g., 'mutate.new T', or change the result type of 'mutate.new.precall get' to no longer depend on 'Stack.this'.
+To solve this, you could try to use a value type as the target type of the call, e,g., 'mutate.var T', or change the result type of 'mutate.var.precall get' to no longer depend on 'Stack.this'.
 
 
-{base.fum}/mutate.fz:235:7: error 3: Call has an ambiguous result type since target of the call is a 'ref' type.
+{base.fum}/mutate.fz:245:7: error 3: Call has an ambiguous result type since target of the call is a 'ref' type.
       pre
 ------^^^
         safety: !open || is_atomic || is_exclusive
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
-Called feature: 'mutate.new.get'
+Called feature: 'mutate.var.get'
 Original result type: 'option Stack.this.node'
 Type depending on target: 'Stack.this'
 Target type: 'Stack'
-To solve this, you could try to use a value type as the target type of the call, e,g., 'mutate.new T', or change the result type of 'mutate.new.get' to no longer depend on 'Stack.this'.
+To solve this, you could try to use a value type as the target type of the call, e,g., 'mutate.var T', or change the result type of 'mutate.var.get' to no longer depend on 'Stack.this'.
 
 3 errors.

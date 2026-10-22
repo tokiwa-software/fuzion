@@ -64,18 +64,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private YesNo _dependsOnGenerics = YesNo.dontKnow;
 
 
-  // flag to disable applyTypePar caching, for debugging only
-  private static final boolean typeParCachingEnabled = true;
-  /**
-   * Cached results for {@code applyTypePars(t)} and {@code applyTypePars(f, List<AbstractType>)};
-   */
-  private AbstractType _appliedTypeParsCachedFor1;
-  private AbstractType _appliedTypeParsCache;
-  private AbstractFeature _appliedTypePars2CachedFor1;
-  private List<AbstractType> _appliedTypePars2CachedFor2;
-  private AbstractType _appliedTypePars2Cache;
-
-
   /**
    * Cached result of calling usedFeatures(_usedFeatures).
    */
@@ -959,25 +947,25 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean dependsOnGenericsNoOuter()
   {
-    boolean result = false;
-    if (isParametricType())
+    return switch (kind())
       {
-        result = true;
-      }
-    else
-      {
-        for (var t: generics())
-          {
-            if (CHECKS) check
-              (Errors.any() || t != null);
-            if (t != null &&
-                t.dependsOnGenerics())
-              {
-                result = true;
-              }
-          }
-      }
-    return result;
+      case ParametricType -> true;
+      case RefType, ValueType, ThisType ->
+        {
+          var result = false;
+          for (var t: generics())
+            {
+              if (CHECKS) check
+                (Errors.any() || t != null);
+              if (t != null &&
+                  t.dependsOnGenerics())
+                {
+                  result = true;
+                }
+            }
+          yield result;
+        }
+      };
   }
 
 
@@ -990,35 +978,32 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     YesNo result = _dependsOnGenerics;
     if (result == YesNo.dontKnow)
       {
-        if (isParametricType())
+        result = switch (kind())
           {
-            result = YesNo.yes;
-          }
-        else if (isThisType())
-          {
-            result = YesNo.yes;
-          }
-        else
-          {
-            result = YesNo.no;
-            if (generics() != UnresolvedType.NONE)
-              {
-                for (var t: generics())
-                  {
-                    if (CHECKS) check
-                      (Errors.any() || t != null);
-                    if (t != null &&
-                        t.dependsOnGenerics())
-                      {
-                        result = YesNo.yes;
-                      }
-                  }
-              }
-            if (outer() != null && outer().dependsOnGenerics())
-              {
-                result = YesNo.yes;
-              }
-          }
+          case ParametricType, ThisType -> YesNo.yes;
+          case RefType, ValueType ->
+            {
+              var res = YesNo.no;
+              if (generics() != UnresolvedType.NONE)
+                {
+                  for (var t: generics())
+                    {
+                      if (CHECKS) check
+                        (Errors.any() || t != null);
+                      if (t != null &&
+                          t.dependsOnGenerics())
+                        {
+                          res = YesNo.yes;
+                        }
+                    }
+                }
+              if (outer() != null && outer().dependsOnGenerics())
+                {
+                  res = YesNo.yes;
+                }
+              yield res;
+            }
+          };
         _dependsOnGenerics = result;
       }
     return result == YesNo.yes;
@@ -1041,23 +1026,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.any() || !isOpenGeneric(),
        Errors.any() || target.isParametricType() || target.isThisType() || target.feature().generics().sizeMatches(target.generics()));
 
-    AbstractType result;
-    if (typeParCachingEnabled && _appliedTypeParsCachedFor1 == target)
-      {
-        result = _appliedTypeParsCache;
-      }
-    else
-      {
-        result = applyTypePars_(target);
-        if (CHECKS) check
-          (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
-
-        _appliedTypeParsCachedFor1 = target;
-        _appliedTypeParsCache = result;
-      }
+    AbstractType result = applyTypePars_(target);
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED,
+       result != null);
+
     return result;
   }
 
@@ -1118,27 +1092,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (Errors.any() || f.generics().sizeMatches(actualGenerics));
 
-    AbstractType result;
-    if (typeParCachingEnabled &&
-        _appliedTypePars2CachedFor1 == f &&
-        _appliedTypePars2CachedFor2 == actualGenerics)
-      {
-        result = _appliedTypePars2Cache;
-      }
-    else
-      {
-        result = applyTypePars(f, actualGenerics, NO_SELECT);
+    AbstractType result = applyTypePars(f, actualGenerics, NO_SELECT);;
 
-        if (!actualGenerics.contains(Types.t_UNDEFINED))
-          {
-            if (CHECKS) check
-              (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
+    if (!actualGenerics.contains(Types.t_UNDEFINED))
+      {
+        if (CHECKS) check
+          (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
 
-            _appliedTypePars2CachedFor1 = f;
-            _appliedTypePars2CachedFor2 = actualGenerics;
-            actualGenerics.freeze();
-            _appliedTypePars2Cache = result;
-          }
+        actualGenerics.freeze();
       }
 
     if (POSTCONDITIONS) ensure
@@ -1219,22 +1180,24 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   private AbstractFeature matchingTypeParameter(AbstractFeature f)
   {
-    AbstractFeature res = null;
-
-    if (isParametricType())
+    return switch (kind())
       {
-        res = typeParameter();
-        if (res.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
-          {
-             res = f.isCotype() ? res.cotypeGeneric()
-                                : res.cotypeOriginGeneric();
-          }
-        if (res.outer().generics() != f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
-          {
-            res = null;
-          }
-      }
-    return res;
+      case RefType, ValueType, ThisType -> null;
+      case ParametricType ->
+        {
+          var res = typeParameter();
+          if (res.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
+            {
+               res = f.isCotype() ? res.cotypeGeneric()
+                                  : res.cotypeOriginGeneric();
+            }
+          if (res.outer().generics() != f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
+            {
+              res = null;
+            }
+          yield res;
+        }
+      };
   }
 
 
@@ -1416,64 +1379,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType actualType(AbstractType t)
   {
     return actualType(t, Context.NONE);
-  }
-
-
-  /**
-   * Check that in case this is a choice type, it is valid, i.e., it is a value
-   * type and the generic arguments to the choice are different.  Create compile
-   * time error in case this is not the case.
-   *
-   * @param pos source position to report as part of the error message
-   *
-   * @param context the source code context where this Type is used
-   *
-   * @return this or Types.t_ERROR in case an error was reported.
-   */
-  void checkChoice(SourcePosition pos, Context context)
-  {
-    if (isChoice())
-      {
-        var g = choiceGenerics(context);
-        if (CHECKS) check
-          (Errors.any() || !isRef());
-
-        int i1 = 0;
-        for (var t1 : g)
-          {
-            int i2 = 0;
-            for (var t2 : g)
-              {
-                if (i1 < i2)
-                  {
-                    if (!t1.disjoint(t2, context) &&
-                         t1 != Types.t_ERROR &&
-                         t2 != Types.t_ERROR)
-                      {
-                        AstErrors.genericsMustBeDisjoint(pos, t1, t2);
-                      }
-                  }
-                i2++;
-              }
-            i1++;
-          }
-      }
-  }
-
-
-  /**
-   * Are this and other disjoint?
-   * In other words:
-   * Do the sets these types represent not have any overlapping values?
-   *
-   * @param context the source code context where this Type is used
-   */
-  private boolean disjoint(AbstractType other, Context context)
-  {
-    return this.isVoid()
-      || other.isVoid()
-      ||    this .isAssignableFrom(other, context, false, false, null).no()
-         && other.isAssignableFrom(this , context, false, false, null).no();
   }
 
 
@@ -2324,23 +2229,22 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   AbstractType remove_type_parameter_used_for_relay_type_in_cotype()
   {
-    var result = this;
-    if (isParametricType())
+    return switch (kind())
       {
-        var tp = typeParameter();
-        var tf = tp.outer();
-        if (tf.isCotype() && tp == tf.arguments().get(0))
-          { // generic used for `abc.this.type` in `abc.type` by `abc.this.type`.
-            result = result.isRef()
-              ? tf.cotypeOrigin().selfType().asThis().asRef()
-              : tf.cotypeOrigin().selfType().asThis();
-          }
-      }
-    else
-      {
-        result = applyToGenericsAndOuter(g -> g.remove_type_parameter_used_for_relay_type_in_cotype());
-      }
-    return result;
+      case RefType, ValueType, ThisType ->
+        applyToGenericsAndOuter(g -> g.remove_type_parameter_used_for_relay_type_in_cotype());
+      case ParametricType ->
+        {
+          var tp = typeParameter();
+          var tf = tp.outer();
+          yield tf.isCotype() && tp == tf.arguments().get(0)
+            // generic used for `abc.this.type` in `abc.type` by `abc.this.type`.
+            ? (isRef()
+               ? tf.cotypeOrigin().selfType().asThis().asRef()
+               : tf.cotypeOrigin().selfType().asThis())
+            : this;
+        }
+      };
   }
 
 
@@ -2381,23 +2285,15 @@ there is no common super type of the two types (Types.t_ERROR)
     if (PRECONDITIONS) require
       (outerCotype.isCotype());
 
-    AbstractType result;
-    if (isParametricType())
+    return switch (kind())
       {
-        if (typeParameter().outer() == outerCotype.cotypeOrigin())
-          {
-            result = outerCotype.typeArguments().get(typeParameter().typeParameterIndex() + 1).asParametricType();
-          }
-        else
-          {
-            result = this;
-          }
-      }
-    else
-      {
-        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_of_type_origin(outerCotype));
-      }
-    return result;
+      case RefType, ValueType, ThisType ->
+        applyToGenericsAndOuter(g -> g.replace_type_parameter_of_type_origin(outerCotype));
+      case ParametricType ->
+        typeParameter().outer() == outerCotype.cotypeOrigin()
+          ? outerCotype.typeArguments().get(typeParameter().typeParameterIndex() + 1).asParametricType()
+          : this;
+      };
   }
 
 
@@ -2682,7 +2578,6 @@ there is no common super type of the two types (Types.t_ERROR)
         else if (a != null && !a.isArtificialType())
           {
             a.checkLegalThisType(p, context);
-            a.checkChoice(p, context);
             if (!c.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
                 !f.isCoTypesRelayTypeParameter() &&
@@ -2931,11 +2826,60 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   AbstractType replaceTypeParameters(Feature postFeature)
   {
-    return isParametricType()
-      ? typeParameter().outer() == postFeature.origin()
+    return switch (kind())
+      {
+      case RefType, ValueType, ThisType ->
+        applyToGenericsAndOuter(x -> x.replaceTypeParameters(postFeature));
+      case ParametricType ->
+        typeParameter().outer() == postFeature.origin()
           ? postFeature.typeArguments().get(typeParameter().typeParameterIndex()).asParametricType()
-          : this
-      : applyToGenericsAndOuter(x -> x.replaceTypeParameters(postFeature));
+          : this;
+      };
+  }
+
+
+  /**
+   * Does this type refer to itself in the generics or its outer?
+   * @return
+   */
+  public boolean isSelfRecursive()
+  {
+    return generics().stream().anyMatch(g -> g.isSelfRecursive(this))
+      || outer() != null && outer().isSelfRecursive(this);
+  }
+
+
+  /**
+   * Helper is isSelfRecursive
+   *
+   * @param t the type we are searching for that would signal self recursion
+   */
+  private boolean isSelfRecursive(AbstractType t)
+  {
+    var s = outer();
+    return s != null && s.isEmbeddedIn(t)
+      || generics().stream().anyMatch(g -> g.isSelfRecursive(t))
+      || s != null && s.isSelfRecursive(t);
+  }
+
+
+  /**
+   * Is this type embedded in t?
+   *
+   * @param t
+   */
+  private boolean isEmbeddedIn(AbstractType t)
+  {
+    var o = this;
+    var t1 = t;
+
+    while (o != null && t1 != null && o.feature() == t1.feature())
+      {
+        o = o.outer();
+        t1 = t1.outer();
+      }
+
+    return o == null;
   }
 
 }

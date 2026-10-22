@@ -13,7 +13,7 @@ first, let's see if dedup and unique work, should print 12, 11 and 10:
 check if tuples is sorted (expecting `false`): false
 
 creating map from tuples to their indices:
-((123, abc, unit, false) => 0), ((123, abc, unit, true ) => 1), ((456, def, unit, false) => 2), ((789, ghi, unit, true ) => 3), ((123, abd, unit, false) => 4), ((123, abd, unit, true ) => 5), ((122, abc, unit, false) => 6), ((122, abc, unit, true ) => 7), ((124, abc, unit, false) => 8), ((124, abc, unit, true ) => 9)
+{((122, abc, unit, false) => 6), ((122, abc, unit, true ) => 7), ((123, abc, unit, false) => 0), ((123, abc, unit, true ) => 1), ((123, abd, unit, false) => 4), ((123, abd, unit, true ) => 5), ((124, abc, unit, false) => 8), ((124, abc, unit, true ) => 9), ((456, def, unit, false) => 2), ((789, ghi, unit, true ) => 3)}
 map1 sorted (expecting `true`): true
 
 show sorted keys from map, should be sorted:
@@ -26,7 +26,7 @@ while keys from sorted entries now have a different order than tuples:
 map1 keys equals original tuples (expecting `false`): false
 
 now, creating a map inverting values and keys, i.e., sorted by the original indices
-(6 => (122, abc, unit, false)), (7 => (122, abc, unit, true )), (0 => (123, abc, unit, false)), (1 => (123, abc, unit, true )), (4 => (123, abd, unit, false)), (5 => (123, abd, unit, true )), (8 => (124, abc, unit, false)), (9 => (124, abc, unit, true )), (2 => (456, def, unit, false)), (3 => (789, ghi, unit, true ))
+{(0 => (123, abc, unit, false)), (1 => (123, abc, unit, true )), (2 => (456, def, unit, false)), (3 => (789, ghi, unit, true )), (4 => (123, abd, unit, false)), (5 => (123, abd, unit, true )), (6 => (122, abc, unit, false)), (7 => (122, abc, unit, true )), (8 => (124, abc, unit, false)), (9 => (124, abc, unit, true ))}
 
 printing the sorted values
 [(123, abc, unit, false), (123, abc, unit, true ), (456, def, unit, false), (789, ghi, unit, true ), (123, abd, unit, false), (123, abd, unit, true ), (122, abc, unit, false), (122, abc, unit, true ), (124, abc, unit, false), (124, abc, unit, true )]

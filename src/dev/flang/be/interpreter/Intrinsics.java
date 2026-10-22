@@ -192,7 +192,7 @@ public class Intrinsics extends ANY
     put("Type.name"            , (executor, innerClazz) -> args ->
       Interpreter.boxedConstString(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
 
-    put("mutate.new.compare_and_swap0",  (executor, innerClazz) -> args ->
+    put("mutate.var.compare_and_swap0",  (executor, innerClazz) -> args ->
         {
           var nc = executor.fuir().clazzOuterClazz(innerClazz);
           var f = executor.fuir().lookupMutableValue(nc);
@@ -211,7 +211,7 @@ public class Intrinsics extends ANY
             }
         });
 
-    put("mutate.new.compare_and_set0",  (executor, innerClazz) -> args ->
+    put("mutate.var.compare_and_set0",  (executor, innerClazz) -> args ->
         {
           var nc = executor.fuir().clazzOuterClazz(innerClazz);
           var f = executor.fuir().lookupMutableValue(nc);
@@ -247,7 +247,7 @@ public class Intrinsics extends ANY
              (t == executor.fuir().clazz(SpecialClazzes.c_bool)));
         });
 
-    put("mutate.new.atomic_read0",  (executor, innerClazz) -> args ->
+    put("mutate.var.atomic_read0",  (executor, innerClazz) -> args ->
         {
           var a = executor.fuir().clazzOuterClazz(innerClazz);
           var f = executor.fuir().lookupMutableValue(a);
@@ -258,7 +258,7 @@ public class Intrinsics extends ANY
             }
         });
 
-    put("mutate.new.atomic_write0",  (executor, innerClazz) -> args ->
+    put("mutate.var.atomic_write0",  (executor, innerClazz) -> args ->
         {
           var a = executor.fuir().clazzOuterClazz(innerClazz);
           var f = executor.fuir().lookupMutableValue(a);
@@ -426,7 +426,7 @@ public class Intrinsics extends ANY
             case c_i64  -> Long     .valueOf(args.get(1).i64Value());
             case c_i8   -> Byte     .valueOf((byte)args.get(1).i8Value());
             case c_u16  -> Character.valueOf((char)args.get(1).u16Value());
-            default -> throw new Error("NYI: BUG: primitive_to_java_object not implemented for " + executor.fuir().clazzName(executor.fuir().clazzActualGeneric(innerClazz, 0)));
+            default -> throw new Error("unexpected case: primitive_to_java_object not implemented for " + executor.fuir().clazzName(executor.fuir().clazzActualGeneric(innerClazz, 0)));
           };
           return new JavaRef(res);
         });
@@ -454,14 +454,6 @@ public class Intrinsics extends ANY
                               /* value */ args.get(3),
                               executor.fuir(),
                               /* type  */ et);
-          return Value.UNIT;
-        });
-    put("fuzion.sys.internal_array.freeze", (executor, innerClazz) -> args ->
-        {
-          return Value.UNIT;
-        });
-    put("fuzion.sys.internal_array.ensure_not_frozen", (executor, innerClazz) -> args ->
-        {
           return Value.UNIT;
         });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
@@ -515,6 +507,7 @@ public class Intrinsics extends ANY
     put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));
     put("debug"                 , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionDebug()));
     put("debug_level"           , (executor, innerClazz) -> args -> new i32Value (executor.options().fuzionDebugLevel()));
+    put("choice.tag"            , (executor, innerClazz) -> args -> new i32Value (executor.tagAndVal(                       args.get(0)).v0()      ));
     put("i8.as_i32"             , (executor, innerClazz) -> args -> new i32Value (              (                           args.get(0).i8Value() )));
     put("i8.cast_to_u8"         , (executor, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).i8Value() )));
     put("i8.prefix -°"          , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (                       -   args.get(0).i8Value() )));

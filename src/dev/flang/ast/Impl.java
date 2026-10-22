@@ -48,8 +48,9 @@ public class Impl extends ANY
 
   public static final Impl FIELD = new Impl(Kind.Field);
 
-  public static final Impl TYPE_PARAMETER = new Impl(Kind.TypeParameter);
-  public static final Impl TYPE_PARAMETER_OPEN = new Impl(Kind.TypeParameterOpen);
+  public static final Impl EXPLICIT_TYPE_PARAMETER = new Impl(Kind.ExplicitTypeParameter);
+  public static final Impl FREE_TYPE_PARAMETER     = new Impl(Kind.FreeTypeParameter);
+  public static final Impl TYPE_PARAMETER_OPEN     = new Impl(Kind.TypeParameterOpen);
 
   public static final Impl ABSTRACT = new Impl(Kind.Abstract);
 
@@ -99,8 +100,9 @@ public class Impl extends ANY
     FieldActual,  // an argument field with type defined by actual argument
     FieldIter,    // a field f declared as an iterator index in a loop (eg., for f in myset { print(f); } )
     Field,        // a field
-    TypeParameter,// a type parameter Field
-    TypeParameterOpen,// an open (list) type parameter Field
+    ExplicitTypeParameter,// a type parameter
+    FreeTypeParameter,    // a free type parameter
+    TypeParameterOpen,    // an open (list) type parameter
     RoutineDef,   // normal feature with code and implicit result type
     Routine,      // normal feature with code
     Abstract,     // an abstract feature
@@ -111,18 +113,19 @@ public class Impl extends ANY
     {
       return switch(this)
         {
-          case FieldInit         : yield "field initialization";
-          case FieldDef          : yield "field definition";
-          case FieldActual       : yield "actual argument";
-          case FieldIter         : yield "iterator";
-          case Field             : yield "field";
-          case TypeParameter     : yield "type parameter";
-          case TypeParameterOpen : yield "open type parameter";
-          case RoutineDef        : yield "routine definition";
-          case Routine           : yield "routine";
-          case Abstract          : yield "abstract";
-          case Intrinsic         : yield "intrinsic";
-          case Native            : yield "native";
+          case FieldInit            : yield "field initialization";
+          case FieldDef             : yield "field definition";
+          case FieldActual          : yield "actual argument";
+          case FieldIter            : yield "iterator";
+          case Field                : yield "field";
+          case ExplicitTypeParameter: yield "type parameter";
+          case FreeTypeParameter    : yield "free type parameter";
+          case TypeParameterOpen    : yield "open type parameter";
+          case RoutineDef           : yield "routine definition";
+          case Routine              : yield "routine";
+          case Abstract             : yield "abstract";
+          case Intrinsic            : yield "intrinsic";
+          case Native               : yield "native";
         };
     }
   };
@@ -426,8 +429,9 @@ public class Impl extends ANY
         switch (outer.kind())
           {
           case Field             -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3092 postcondition for field not supported yet");
-          case TypeParameter     ,
-               OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
+          case ExplicitTypeParameter,
+               FreeTypeParameter    ,
+               OpenTypeParameter     -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
           case Function, Constructor, RefConstructor ->
             {
               var callPostCondition = Contract.callPostCondition(res, context);
@@ -523,15 +527,16 @@ public class Impl extends ANY
   private AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean urgent)
   {
     var exprs = new List<Expr>();
-    for (var i = 0; i < _initialCalls.size(); i++)
-      {
-        var iv = initialValueFromCall(i, res);
-        exprs.add(iv);
-      }
-    var result = Expr.union(exprs, Context.NONE, urgent);
+    AbstractType result = null;
 
     if (urgent)
       {
+        for (var i = 0; i < _initialCalls.size(); i++)
+          {
+            var iv = initialValueFromCall(i, res);
+            exprs.add(iv);
+          }
+        result = Expr.union(exprs, Context.NONE, urgent);
         if (result == Types.t_FORWARD_CYCLIC)
           {
             result = Types.resolved.t_void;
@@ -707,17 +712,18 @@ public class Impl extends ANY
       {
         result = switch (_kind)
           {
-          case FieldInit         -> " = "  + _expr.getClass() + ": " +_expr;
-          case FieldDef          -> " := " + _expr.getClass() + ": " +_expr;
-          case FieldActual       -> " type_inferred_from_actual";
-          case Field             -> "";
-          case TypeParameter     -> "type";
-          case TypeParameterOpen -> "type...";
-          case RoutineDef        -> " => " + _expr.toString();
-          case Routine           -> " is " + _expr.toString();
-          case Abstract          -> "is abstract";
-          case Intrinsic         -> "is intrinsic";
-          default                -> throw new Error("Unexpected Kind: "+_kind);
+          case FieldInit             -> " = "  + _expr.getClass() + ": " +_expr;
+          case FieldDef              -> " := " + _expr.getClass() + ": " +_expr;
+          case FieldActual           -> " type_inferred_from_actual";
+          case Field                 -> "";
+          case ExplicitTypeParameter -> "type";
+          case FreeTypeParameter     -> "free type";
+          case TypeParameterOpen     -> "type...";
+          case RoutineDef            -> " => " + _expr.toString();
+          case Routine               -> " is " + _expr.toString();
+          case Abstract              -> "is abstract";
+          case Intrinsic             -> "is intrinsic";
+          default                    -> throw new Error("Unexpected Kind: "+_kind);
           };
       }
     return result;
