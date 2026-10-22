@@ -2120,7 +2120,7 @@ public class AstErrors extends ANY
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
   }
 
-  public static void argumentNamesNotDistinct(Feature f, Set<String> duplicateNames)
+  public static void argumentNamesNotDistinct(AbstractFeature f, Set<String> duplicateNames)
   {
     int[] cnt = new int[1];
     error(f.pos(),
@@ -2134,8 +2134,8 @@ public class AstErrors extends ANY
           + f.arguments()
             .stream()
             .map(a -> "Argument #" + (cnt[0]++) + ": " + sbnf(a) +
-                 (duplicateNames.contains(a.baseNameHuman()) ? " is duplicate "
-                                                             : " is ok"        ) + "\n")
+                 (duplicateNames.contains(a.baseNameHuman()) ? " is duplicate at "+a.pos().show()
+                                                             : " is ok"                          ) + "\n")
             .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
         );
