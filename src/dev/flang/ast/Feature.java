@@ -28,7 +28,6 @@ package dev.flang.ast;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Optional;
@@ -823,21 +822,6 @@ public class Feature extends AbstractFeature
     this._impl = p;
     this._effects = effects;
 
-    // check args for duplicate names
-    if (!a.stream()
-          .map(arg -> arg.baseName())
-          .filter(argName -> !argName.equals("_"))
-          .allMatch(new HashSet<>()::add))
-      {
-        var usedNames = new HashSet<>();
-        var duplicateNames = a.stream()
-              .map(arg -> arg.baseName())
-              .filter(argName -> !argName.equals("_"))
-              .filter(argName -> !usedNames.add(argName))
-              .collect(Collectors.toSet());
-        // NYI: UNDER DEVELOPMENT: report pos of arguments not pos of feature
-        AstErrors.argumentNamesNotDistinct(this, duplicateNames);
-      }
     if (isVisibilitySpecified() && isTypeParameter())
       {
         AstErrors.typeParameterMustNotDefineTypeVisibility(this);

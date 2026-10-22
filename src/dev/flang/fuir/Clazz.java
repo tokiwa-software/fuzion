@@ -110,6 +110,12 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Cached feature underlying this clazz.
+   */
+  final FuirFeature _feature;
+
+
+  /**
    * If this clazz represents a field of an open generic type, then _select
    * chooses the actual generic parameter to be used as the type of this field.
    * Otherwise, _select is NO_SELECT.
@@ -326,13 +332,14 @@ class Clazz extends ANY implements Comparable<Clazz>
     _type = _outer != null
       ? type.replaceGenericsAndOuter(type.generics(), _outer._type)
       : type;
+    _feature = (FuirFeature) _type.feature();
 
-    if (_type.feature().isFixed() &&
-        !_type.feature().isTypeParameter() &&
-        _type.outer().outer().feature() != _type.feature().outer().outer())
+    if (_feature.isFixed() &&
+        !_feature.isTypeParameter() &&
+        _type.outer().outer().feature() != _feature.outer().outer())
       {
         var x = "IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature:\n" +
-        _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _type.feature().outer().outer().toString();
+        _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _feature.outer().outer().toString();
         Errors.fatal(x);
       }
 
@@ -355,6 +362,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     _outer = null;
     _select = -5555555;
     _type = null;
+    _feature = null;
   }
 
 
@@ -612,7 +620,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   void doesNeedCode()
   {
     if (CHECKS) check
-      (!_type.feature().isTypeParameter());
+      (!_feature.isTypeParameter());
     if (!_needsCode && !_fuir._lookupDone)
       {
         _needsCode = true;
@@ -732,7 +740,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   FuirFeature feature()
   {
-    return (FuirFeature) _type.feature();
+    return _feature;
   }
 
 
