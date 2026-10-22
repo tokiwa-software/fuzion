@@ -99,7 +99,7 @@ without providing an implementation
 
 Callchain that lead to this point:
 
-call 'reg_issue3359.u#2 reg_issue3359.i' at reg_issue3359.fz:103:3
+call 'reg_issue3359.u#1 reg_issue3359.i' at reg_issue3359.fz:103:3
   u i
 --^^^
 call 'reg_issue3359'
@@ -128,7 +128,7 @@ without providing an implementation
 
 Callchain that lead to this point:
 
-call 'reg_issue3359.u#2 reg_issue3359.j' at reg_issue3359.fz:106:3
+call 'reg_issue3359.u#1 reg_issue3359.j' at reg_issue3359.fz:106:3
   u j
 --^^^
 call 'reg_issue3359'
@@ -151,7 +151,7 @@ without providing an implementation
 
 Callchain that lead to this point:
 
-call 'reg_issue3359.u#2 reg_issue3359.k' at reg_issue3359.fz:109:3
+call 'reg_issue3359.u#1 reg_issue3359.k' at reg_issue3359.fz:109:3
   u k
 --^^^
 call 'reg_issue3359'

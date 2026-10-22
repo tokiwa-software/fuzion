@@ -22,7 +22,7 @@ panic#1 at {base.fum}/panic.fz:53:19
 (option Stack.Node).or_panic at {base.fum}/switch.fz:183:5
     or_panic b->"'or_panic' called on '$(switch.this.type.name)' that is '$b'"
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Stack.push#2 i64 at reg_issue5064.fz:46:10
+Stack.push#1 i64 at reg_issue5064.fz:46:10
     _ := top.or_panic
 ---------^^^^^^^^^^^^
 universe at reg_issue5064.fz:48:1

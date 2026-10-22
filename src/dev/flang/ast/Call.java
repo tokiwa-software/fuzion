@@ -117,15 +117,21 @@ public class Call extends AbstractCall
   public List<AbstractType> actualTypeParameters()
   {
     var res = _generics;
-    if (_generics == NO_GENERICS && needsToInferTypeParametersFromArgs())
+
+    if (needsToInferTypeParametersFromArgs() && _generics.size() < _calledFeature.typeArguments().size())
       {
-        res = new List<>();
-        for (var g : _calledFeature.typeArguments())
+        if (_generics == NO_GENERICS)
           {
-            if (!g.isOpenTypeParameter())
-              {
-                res.add(Types.t_UNDEFINED);
-              }
+            res = _calledFeature.typeArguments()
+                                .filter(g -> g.isExplicitTypeParameter() || g.isFreeTypeParameter())
+                                .map2(g -> Types.t_UNDEFINED);
+          }
+        else
+          {
+            res = new List<>(_generics);
+            res.addAll(_calledFeature.typeArguments()
+                                     .filter(g ->  g.isFreeTypeParameter())
+                                     .map2(g -> Types.t_UNDEFINED));
           }
       }
     // res.freeze();  -- NYI: res.freeze not possible here since Function.propagateTypeAndInferResult performs gs.set
@@ -1104,7 +1110,7 @@ public class Call extends AbstractCall
   {
     var asz = _actuals.size() + (addOne ? 1 : 0);
     var fvsz = ff.valueArguments().size();
-    var ftsz = ff.typeArguments().size();
+    var ftsz = ff.explicitOrOpenTypeParameters().size();
 
     var result = fvsz == asz ||
       _generics.isEmpty() && (fvsz + ftsz == asz) ||
@@ -1418,9 +1424,10 @@ public class Call extends AbstractCall
   {
     return switch (cf.kind())
       {
-        case OpenTypeParameter -> cf.openTypesFeature(res).resultTypeIfPresentUrgent(res, urgent);
-        case TypeParameter     -> cf.constraint(res, context);
-        default                -> cf.resultTypeIfPresentUrgent(res, urgent);
+        case OpenTypeParameter      -> cf.openTypesFeature(res).resultTypeIfPresentUrgent(res, urgent);
+        case ExplicitTypeParameter,
+             FreeTypeParameter      -> cf.constraint(res, context);
+        default                     -> cf.resultTypeIfPresentUrgent(res, urgent);
       };
   }
 
@@ -2115,6 +2122,16 @@ public class Call extends AbstractCall
                                     _actuals = _actuals.setOrClone(argnum, actual);
                                   }
                                 actualType = typeFromActual(res, context, actual, false);
+                                if (actualType != null && !c.constraintAssignableFrom(actualType))
+                                  { // in case actual is not assignabnle, not a lambda or partially applied call,
+                                    // ignore this for type inference to avoid a bigger mess for code like
+                                    //
+                                    //    x := [0,1,2].map 42
+                                    //
+                                    // That would otherwise infer `i64` as the function type
+                                    //
+                                    actualType = null;
+                                  }
                               }
                           }
                         if (actualType != null)

@@ -8,7 +8,7 @@ In call: 'say "hi" x->x+1'
 To solve this, you might change the actual number of arguments to match the feature 'say' (one value argument s) at {base.fum}/say.fz:31:8
 public say(s Any) unit ! io.Out => io.Out.env.println s
 -------^^^
-To call 'say', you must provide one argument.
+To call 'say', you must provide one argument 's'.
 
 
 one error.

@@ -93,57 +93,57 @@ reg_issue6849 =>
   xdc ()->
 
   # calling all cases using full type inference with place holders `_`
-  xaa _   ()->
+  xaa     ()->
   xab     ()->
   xac _   ()->
-  xba _ _ ()->
-  xbb _ _ ()->
-  xbc _ _ ()->
-  xca _ _ ()->
-  xcb _ _ ()->
-  xcc _ _ ()->
+  xba     ()->
+  xbb     ()->
+  xbc _   ()->
+  xca     ()->
+  xcb     ()->
+  xcc _   ()->
 # xda _ _ ()->  # NYI: BUG: #6859 free types in type constraints not working
 # xdb _ _ ()->  # NYI: BUG: #6859 free types in type constraints not working
   xdc _ _ ()->
 
   # calling all cases using type inference for FUN type parameter using place holders `_`
-  xaa unit   ()->
+  xaa        ()->
   xab        ()->
   xac unit   ()->
-  xba unit _ ()->
-  xbb unit _ ()->
-  xbc unit _ ()->
-  xca unit _ ()->
-  xcb unit _ ()->
-  xcc unit _ ()->
+  xba        ()->
+  xbb        ()->
+  xbc unit   ()->
+  xca        ()->
+  xcb        ()->
+  xcc unit   ()->
 # xda unit _ ()->  # NYI: BUG: #6859 free types in type constraints not working
 # xdb unit _ ()->  # NYI: BUG: #6859 free types in type constraints not working
   xdc unit _ ()->
 
   # calling all cases using type inference for RESULT type parameter with place holders `_`
-  xaa _          ()->
+  xaa            ()->
   xab            ()->
   xac _          ()->
-  xba _ ()->unit ()->
-  xbb _ ()->unit ()->
-  xbc _ ()->unit ()->
-  xca _ ()->unit ()->
-  xcb _ ()->unit ()->
-  xcc _ ()->unit ()->
+  xba            ()->
+  xbb            ()->
+  xbc _          ()->
+  xca            ()->
+  xcb            ()->
+  xcc _          ()->
 # xda _ ()->unit ()->  # NYI: BUG: #6859 free types in type constraints not working
 # xdb _ ()->unit ()->  # NYI: BUG: #6859 free types in type constraints not working
   xdc _ ()->unit ()->
 
   # calling all cases using explicit type parameter
-  xaa unit          ()->
+  xaa               ()->
   xab               ()->
   xac unit          ()->
-  xba unit ()->unit ()->
-  xbb unit ()->unit ()->
-  xbc unit ()->unit ()->
-  xca unit ()->unit ()->
-  xcb unit ()->unit ()->
-  xcc unit ()->unit ()->
+  xba               ()->
+  xbb               ()->
+  xbc unit          ()->
+  xca               ()->
+  xcb               ()->
+  xcc unit          ()->
 # xda unit ()->unit ()->  # NYI: BUG: #6859 free types in type constraints not working
 # xdb unit ()->unit ()->  # NYI: BUG: #6859 free types in type constraints not working
   xdc unit ()->unit ()->

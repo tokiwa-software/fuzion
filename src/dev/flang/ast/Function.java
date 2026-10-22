@@ -348,7 +348,7 @@ public class Function extends AbstractLambda
                                           at,
                                           n._name,
                                           Contract.EMPTY_CONTRACT,
-                                          i < cl.typeArguments().size() ? Impl.TYPE_PARAMETER : Impl.FIELD);
+                                          i < cl.typeArguments().size() ? Impl.EXPLICIT_TYPE_PARAMETER : Impl.FIELD);
                     if (i < cl.typeArguments().size())
                       {
                         tps_as_actuals.add(arg.asParametricType());
