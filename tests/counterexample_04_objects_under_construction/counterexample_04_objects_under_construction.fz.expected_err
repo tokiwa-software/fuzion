@@ -1,0 +1,16 @@
+
+counterexample_04_objects_under_construction.fz:34:18: error 1: reading uninitialized field '(counterexample_04_objects_under_construction.value Foo).b' from instance of 'counterexample_04_objects_under_construction.value Foo'
+      say "b = '$b'"  # 1. should flag an error: field 'b' is read before initialization
+-----------------^
+Callchain that lead to this point:
+
+call 'counterexample_04_objects_under_construction.Foo.crash' at counterexample_04_objects_under_construction.fz:30:17
+    a String := crash
+----------------^^^^^
+call 'counterexample_04_objects_under_construction.Foo' at counterexample_04_objects_under_construction.fz:37:8
+  f := Foo
+-------^^^
+call 'counterexample_04_objects_under_construction'
+program entry point
+
+one error.

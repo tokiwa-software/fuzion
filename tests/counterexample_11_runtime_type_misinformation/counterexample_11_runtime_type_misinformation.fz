@@ -1,0 +1,39 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test counterexample_11_runtime_type_misinformation
+#
+# -----------------------------------------------------------------------
+
+# A `choice` is a tagged union.  Unlike JVM/Scala/Flow erasure examples, the
+# alternatives `Box i32` and `Box String` remain distinguishable at runtime,
+# so matching cannot confuse an `i32` box with a `String` box.
+counterexample_11_runtime_type_misinformation is
+
+  Box(T type, v T) is
+
+  Boxes : choice (Box i32) (Box String) is
+
+  describe(b Boxes) String =>
+    match b
+      x Box i32 => "i32: $(x.v)"
+      x Box String => "String: $(x.v)"
+
+  say (describe (Box i32 42))
+  say (describe (Box String "hello"))
