@@ -621,7 +621,7 @@ public class ParsedCall extends Call
       {
         var g = NO_GENERICS;
         var a = new List<Expr>();
-        var ts = cf.typeArguments();
+        var ts = cf.explicitOrOpenTypeParameters();
         var tn = ts.size();
         var ti = 0;
         var vs = cf.valueArguments();  // NYI: must hand down to get the correct number!
