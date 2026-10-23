@@ -2009,6 +2009,7 @@ public class Call extends AbstractCall
   {
     for (var f : calledFeature().typeArguments())
       {
+        res.resolveDeclarations(f);
         var i = f.typeParameterIndex();
         if (!f.isOpenTypeParameter() && i < _generics.size())
           {
