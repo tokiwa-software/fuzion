@@ -82,3 +82,67 @@ test_ternary is
 
   f x
   f y
+
+  # nested ternary with r3 layout (conditions aligned, : at end of line)
+  cond1 := false
+  cond2 := false
+  cond3 := false
+  cond4 := false
+  val1 := "v1"
+  val2 := "v2"
+  val3 := "v3"
+  val4 := "v4"
+  val5 := "v5"
+
+  # r3 layout: conditions aligned, colons at end of lines
+  r3 := cond1 ? val1 :
+        cond2 ? val2 :
+        cond3 ? val3 :
+        cond4 ? val4
+              : val5
+  say r3
+
+  # r4 layout: operators at start of lines, aligned
+  r4 := cond1
+          ? val1
+          : cond2
+          ? val2
+          : cond3
+          ? val3
+          : cond4
+          ? val4
+          : val5
+  say r4
+
+  # r5 layout: cascading diagonal indentation
+  r5 := cond1 ? val1 : cond2
+                     ? val2 : cond3
+                            ? val3 : cond4
+                                   ? val4 : val5
+  say r5
+
+  # test with true condition to verify correct value selection
+  true_cond := true
+  r3_true := true_cond ? val1 :
+             cond2 ? val2 :
+             cond3 ? val3 :
+             cond4 ? val4
+                   : val5
+  say r3_true
+
+  r4_true := true_cond
+               ? val1
+               : cond2
+               ? val2
+               : cond3
+               ? val3
+               : cond4
+               ? val4
+               : val5
+  say r4_true
+
+  r5_true := true_cond ? val1 : cond2
+                        ? val2 : cond3
+                               ? val3 : cond4
+                                      ? val4 : val5
+  say r5_true

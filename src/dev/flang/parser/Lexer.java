@@ -2760,17 +2760,33 @@ PIPE        : "|"
    *
    * @param currentRule the current rule we are trying to parse
    */
-  void matchOperator(String op, String currentRule)
-  {
-    if (isOperator(op))
-      {
-        next();
-      }
-    else
-      {
-        syntaxError("operator '" + op + "'", currentRule);
-      }
-  }
+   void matchOperator(String op, String currentRule)
+   {
+     matchOperator(false, op, currentRule);
+   }
+
+
+   /**
+    * Match the current token to be the given operator. If not, produce
+    * a syntax error.
+    *
+    * @param atMinIndent if true, use currentAtMinIndent() instead of current()
+    *
+    * @param op the operator we expect to find
+    *
+    * @param currentRule the current rule we are trying to parse
+    */
+   void matchOperator(boolean atMinIndent, String op, String currentRule)
+   {
+     if (isOperator(atMinIndent, op))
+       {
+         next();
+       }
+     else
+       {
+         syntaxError("operator '" + op + "'", currentRule);
+       }
+   }
 
 
   /**
