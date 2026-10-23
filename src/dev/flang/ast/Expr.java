@@ -697,8 +697,8 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
-    var t = type();
-    return this != Call.ERROR && !t.isArtificialType()
+    var t = typeForInferencing();
+    return this != Call.ERROR && t != null && !t.isArtificialType()
       && expectedType.isAssignableFromWithoutBoxing(t, context).no()
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isParametricType()
