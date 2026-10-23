@@ -2422,10 +2422,13 @@ public class AstErrors extends ANY
   public static void unusedResult(Expr e)
   {
     var t = e.type();
-    error(e.pos(), "Expression produces result of type " + s(t) +  " but result is not used.",
-        (!t.isParametricType() && t.feature().isConstructor()
-          ? "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(t.feature()) + " from constructor to routine by replacing " + skw("is") + " by " + skw("=>") + "."
-          : "To solve this, use the result or explicitly ignore the result " + st("_ := <expression>") + "."));
+    if (!any() || !t.isArtificialType())
+      {
+        error(e.pos(), "Expression produces result of type " + s(t) +  " but result is not used.",
+              (!t.isParametricType() && t.feature().isConstructor()
+               ? "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(t.feature()) + " from constructor to routine by replacing " + skw("is") + " by " + skw("=>") + "."
+               : "To solve this, use the result or explicitly ignore the result " + st("_ := <expression>") + "."));
+      }
   }
   public static void redefiningFieldsIsForbidden(AbstractFeature existing, AbstractFeature f)
   {

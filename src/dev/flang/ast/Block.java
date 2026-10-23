@@ -371,8 +371,7 @@ public class Block extends AbstractBlock
       .forEach(e -> {
         if (e.producesResult() &&
             e.type().compareTo(Types.resolved.t_unit) != 0 &&
-            !e.type().isVoid() &&
-            e.type() != Types.t_ERROR)
+            !e.type().isVoid())
           {
             AstErrors.unusedResult(e);
           }

@@ -28,4 +28,6 @@
 # A handy shortcut for io.Out.env.println, output string representation of
 # an object followed by a line break.
 #
-public say(s Any) unit ! io.Out => io.Out.env.println s
+public say(s _ : Any) unit ! io.Out
+=>
+  io.Out.env.println s
