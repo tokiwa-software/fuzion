@@ -45,7 +45,6 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.TypeKind;
 import dev.flang.ast.UnresolvedType;
-import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
 import dev.flang.mir.MIR;

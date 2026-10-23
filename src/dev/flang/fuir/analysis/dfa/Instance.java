@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import static dev.flang.ir.IR.NO_CLAZZ;
 
 import java.util.TreeMap;
 
