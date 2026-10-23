@@ -496,6 +496,16 @@ public class Html extends ANY
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.OpenTypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(outer.typeArguments());
 
+    var explicitTypeParameters = typeParameters.stream()
+                                               .filter(AbstractFeature::isExplicitTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+    var openTypeParameters     = typeParameters.stream()
+                                               .filter(AbstractFeature::isOpenTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+    var freeTypeParameters     = typeParameters.stream()
+                                               .filter(AbstractFeature::isFreeTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+
     // Fields
     var fields =  new List<AbstractFeature>();
     // it's not possible to get an instance of a function feature, so no fields can not be accessed from outside
@@ -553,14 +563,16 @@ public class Html extends ANY
                                                               && typeParam.constraint().constraintAssignableFrom(outer.resultType())));
       }
 
-    return mainSection0("Type Parameters",              null,         typeParameters,     outer, false)
-         + mainSection0("Fields",                       null,         fields,             outer, false)
-         + mainSection0("Constructors",                 null,         normalConstructors, outer, true)
-         + mainSection0("Type Constructors",            null,         typeConstructors,   outer, true)
-         + mainSection0("Functions",                    null,         normalFunctions,    outer, true)
-         + mainSection0("Type Features",                null,         typeFeatures,       outer, true)
-         + mainSection0("Choice Types",                 null,         choices,            outer, true)
-         + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,  outer, true);
+    return mainSection0("Type Parameters",              null,         explicitTypeParameters, outer, false)
+         + mainSection0("Open Type Parameter",          null,         openTypeParameters,     outer, false)
+         + mainSection0("Free Type Parameters",         null,         freeTypeParameters,     outer, false)
+         + mainSection0("Fields",                       null,         fields,                 outer, false)
+         + mainSection0("Constructors",                 null,         normalConstructors,     outer, true)
+         + mainSection0("Type Constructors",            null,         typeConstructors,       outer, true)
+         + mainSection0("Functions",                    null,         normalFunctions,        outer, true)
+         + mainSection0("Type Features",                null,         typeFeatures,           outer, true)
+         + mainSection0("Choice Types",                 null,         choices,                outer, true)
+         + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,      outer, true);
   }
 
 
