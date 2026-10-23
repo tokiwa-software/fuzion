@@ -869,7 +869,13 @@ public String ref : property.hashable, property.orderable is
 
   # helper type for the result of the cut feature
   #
-  private:public cut_result (public before String, public after String, public found bool) is
+  private:public universe.string_cut_result (public before String, public after String, public found bool) is
+
+    public redef as_string String =>
+      """
+        before: $before
+        after : $after
+        found : $found"""
 
 
   # Cuts out the first appearance of the string sep from this string, in other words,
@@ -880,16 +886,16 @@ public String ref : property.hashable, property.orderable is
   # If sep does not appear in this string at all, return this string as the first string,
   # the empty string as the second, and false as the bool.
   #
-  public cut(sep String) cut_result =>
+  public cut(sep String) string_cut_result =>
     match find sep
-      nil => cut_result String.this "" false
+      nil => string_cut_result String.this "" false
       i i64 =>
         l := byte_count
         sepl := sep.byte_count
 
         before := String.from_bytes (utf8.slice 0 i)
         after := String.from_bytes (utf8.slice (i + sepl) l)
-        cut_result before after true
+        string_cut_result before after true
 
 
   # convert this string to upper case
