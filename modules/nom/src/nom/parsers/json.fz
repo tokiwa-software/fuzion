@@ -108,7 +108,8 @@ public json Parser String (Sequence codepoint) json_value =>
       many0 (alt [parser_regular_codepoint, parser_escapings])
 
     delimited (tag "\"") p (tag "\"")
-      .map String (x -> String.join (x.map String (y -> String.from y)))
+      .map (.flat_map id)
+      .map String.from
 
 
   # parser for a json number
