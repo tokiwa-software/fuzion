@@ -1,13 +1,5 @@
 
-reg_issue1518.fz:35:24: error 1: Could not find called feature
-      type.x a.this => a
------------------------^
-Feature not found: 'a' (no arguments)
-Target feature: 'reg_issue1518.a.type.x'
-In call: 'a'
-
-
-reg_issue1518.fz:32:16: error 2: Wrong argument type in redefined feature
+reg_issue1518.fz:32:16: error 1: Wrong argument type in redefined feature
       redef b (f a.this -> unit) unit =>
 ---------------^
 In 'reg_issue1518.a.b' that redefines 'reg_issue1518.c.b'
