@@ -130,10 +130,11 @@ public class Html extends ANY
       }
     else if (af.isTypeParameter())
       {
-        var constraint = af.constraint().feature();
+        var constraintType = af.constraint();
+        var constraint = typeFeature(constraintType);
         return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
           .replace("$1", featureRelativeURL(constraint, relativeTo))
-          .replace("$2", htmlEncodedQualifiedName(constraint));
+          .replace("$2", htmlEncodeNbsp(constraintType.toString(true, af)));
       }
     else
       {
