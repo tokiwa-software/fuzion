@@ -325,10 +325,7 @@ public abstract class IR extends ANY
       {
         // in FUIR this inline array might be added
         //  to stack as a compile time constant.
-        if (!dumpResult)
-        {
-          stack.push(() -> toStack(stack, l, ia.code(), false));
-        }
+        stack.push(() -> toStack(stack, l, ia.code(), dumpResult));
       }
     else if (e instanceof AbstractCurrent)
       {
