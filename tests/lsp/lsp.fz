@@ -80,8 +80,8 @@ lsp =>
     lm ! ()->
       for stdin in feed_stdin do
         x := p.with_in unit lm ()->
-          check (io.buffered lm).Writer.env.write stdin.0 .ok
-        check x.ok
+          check (io.buffered lm).Writer.env.write stdin.0 ??
+        check x??
 
         for i in 1..stdin.1 do
           y := p.with_out _ lm ()->
@@ -96,16 +96,16 @@ lsp =>
                     say "-- unexpected response --"
                     say out
                     say e
-          check y.ok
+          check y??
 
 
 
-    check p.close_in.ok
+    check p.close_in??
 
     # NYI: BUG: unclear why lsp does not shut down
     match p.wait (time.duration.s 1)
       error =>
-        check p.kill.ok
+        check p.kill??
         tokiwa.process_result (String.join_lines fout.get) "" 1
       ec u32 =>
         tokiwa.process_result (String.join_lines fout.get) "" ec

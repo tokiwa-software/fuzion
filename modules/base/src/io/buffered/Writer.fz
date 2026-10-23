@@ -70,7 +70,7 @@ is
     # NYI: PERFORMANCE: write more than one byte at a time
     for res := outcome unit, writer [b.or_panic]
         b := buffer.poll
-    while res.ok && b.ok
+    while res?? && b??
     else
       buffer.clear
       res
@@ -86,7 +86,7 @@ is
   #
   public write (data Sequence u8 | String) outcome unit =>
     write_detailed data
-      .error
+      .reslt
 
 
   # buffered writing of the given array, detailed result
@@ -118,9 +118,9 @@ is
 
 # helper type for write result
 #
-private:public write_result(public bytes_written i64, public error outcome unit) is
+private:public write_result(public bytes_written i64, public reslt outcome unit) is
 
 
   # was writing successful?
   #
-  public ok bool => error.ok
+  public ok bool => reslt??
