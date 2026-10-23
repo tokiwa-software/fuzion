@@ -157,6 +157,30 @@ public class Call extends AbstractCall
 
 
   /**
+   *  Set actual argumment at given index to actual unless `this.isDefunct` or
+   *  `argnum` is out of range due to previous errors.
+   *
+   * @param argnum the index of the actual to replace
+   *
+   * @param actual the new value to be stored in as _actuals.get(argnum).
+   */
+  void setActual(int argnum, Expr actual)
+  {
+    if (PRECONDITIONS) require
+      (actual != null,
+       argnum >= 0,
+       Errors.any() || argnum < _actuals.size());
+
+    if (// !isDefunct() &&        -- redundant since isDefunct() implies _actuals.size()==0 and
+        //                        -- hence !(argnum < _actuals.size()):
+        argnum < _actuals.size())
+      {
+        _actuals = _actuals.setOrClone(argnum, actual);
+      }
+  }
+
+
+  /**
    * the target of the call, null for "this". Set by parser
    */
   protected Expr _target;
@@ -1697,23 +1721,26 @@ public class Call extends AbstractCall
                                         Context context)
   {
     var actual = _actuals.get(argnum);
-    if (!(actual instanceof NumLiteral))
+    if (actual instanceof NumLiteral)
+      {
+        if (formalTypeForPropagation == null)
+          { // a NumLiteral in first pass, no type provided
+            actual = null;
+          }
+        else if (formalTypeForPropagation.isParametricType() &&
+                 formalTypeForPropagation.typeParameter().outer() == _calledFeature)
+          { // a NumLiteral in second pass and type is a type parameter, e.g., `T`
+            // in `f(T type, a,b T)` in a call `f 12 x` where x returns `f64`, so we
+            // propagate this to NumLiteral `12`:
+            var t = _generics.get(formalTypeForPropagation.typeParameter().typeParameterIndex());
+            actual = actual.propagateExpectedType(res, context, t, null);
+            setActual(argnum, actual);
+          }
+      }
+    else
       { // not a NumLiteral, so we are happy to provide the type
         actual = res.resolveType(actual, context);
-        _actuals.set(argnum, actual);
-      }
-    else if (formalTypeForPropagation == null)
-      { // a NumLiteral in first pass, no type provided
-        actual = null;
-      }
-    else if (formalTypeForPropagation.isParametricType() &&
-             formalTypeForPropagation.typeParameter().outer() == _calledFeature)
-      { // a NumLiteral in second pass and type is a type parameter, e.g., `T`
-        // in `f(T type, a,b T)` in a call `f 12 x` where x returns `f64`, so we
-        // propagate this to NumLiteral `12`:
-        var t = _generics.get(formalTypeForPropagation.typeParameter().typeParameterIndex());
-        actual = actual.propagateExpectedType(res, context, t, null);
-        _actuals.set(argnum, actual);
+        setActual(argnum, actual);
       }
     return actual;
   }
@@ -1957,10 +1984,7 @@ public class Call extends AbstractCall
     if (t != null && t.isLambdaTargetButNotLazy(res))
       {
         actual = actual.propagateExpectedTypeForPartial(res, context, t);
-        if (!isDefunct())
-          {
-            _actuals = _actuals.setOrClone(argnum, actual);
-          }
+        setActual(argnum, actual);
       }
     return actual;
   }
@@ -2114,13 +2138,7 @@ public class Call extends AbstractCall
                                                                           () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
                                   }
 
-                                if (CHECKS) check
-                                  (_actuals.size() > argnum || Errors.any());
-
-                                if (_actuals.size() > argnum)
-                                  {
-                                    _actuals = _actuals.setOrClone(argnum, actual);
-                                  }
+                                setActual(argnum, actual);
                                 actualType = typeFromActual(res, context, actual, false);
                                 if (actualType != null && !c.constraintAssignableFrom(actualType))
                                   { // in case actual is not assignabnle, not a lambda or partially applied call,
@@ -3078,10 +3096,7 @@ public class Call extends AbstractCall
             if (actl != null && frmlT != Types.t_ERROR)
               {
                 var a = f.apply(actl, frmlT);
-                if (!isDefunct())
-                  {
-                    _actuals = _actuals.setOrClone(i, a);
-                  }
+                setActual(i, a);
               }
           }
       }
