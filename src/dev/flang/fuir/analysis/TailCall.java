@@ -200,7 +200,7 @@ public class TailCall extends ANY
 
 
   /**
-   * Helper to check from the last expr in cl's code if we find a tail call at c,ix.
+   * Helper to check from the last expr in clazzAt(s)'s code if we find a tail call at cls.
    *
    * @param cls the site of the last Expr of a code block that is to be checked if it results in the tail call at s
    *
@@ -220,11 +220,11 @@ public class TailCall extends ANY
           yield mustAssignTo == NO_CLAZZ &&
             // if cc is NO_CLAZZ we are at a dead end, return false.
             cc != NO_CLAZZ &&
-            (// we found call c/ix and we do not need to assign any variable, so we have a success!
+            (// we found call site cls and we do not need to assign any variable, so we have a success!
              cls == s ||
 
              // in case we have a call to 'Current.f' for some field 'f',
-             // recursively check if 'Current.f' is set to the call c/ix:
+             // recursively check if 'Current.f' is set to the call site cls:
              _fuir.clazzKind(cc) == IR.FeatureKind.Field &&
              cls > _fuir.codeBlockStart(cls)+1 &&
              _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
