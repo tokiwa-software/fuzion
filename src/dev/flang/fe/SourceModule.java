@@ -43,6 +43,9 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import java.util.stream.Collectors;
+import java.util.stream.Gatherer;
+
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
@@ -998,20 +1001,26 @@ A post-condition of a feature that does not redefine an inherited feature must s
             fn = FeatureName.get(fn.baseName(), fn.argCount(), existingFeatures.size());
             f.setFeatureName(fn);
           }
+        else if (existing.isArgument() && f.isArgument() && existing.outer() == f.outer())
+          {
+            var duplicateNames = f.outer()
+                                  .arguments()
+                                  .stream()
+                                  .map(arg -> arg.featureName().baseName())
+                                  .gather(Gatherer.ofSequential(TreeSet<String>::new,
+                                                                Gatherer.Integrator.<TreeSet<String>,String,String>ofGreedy
+                                                                ((state, argName, downstream) -> argName.equals("_")      // ignore '_'
+                                                                                              || state.add(argName)       // record name
+                                                                                              || downstream.push(argName) // pass down if already recorded
+                                                                )
+                                                               )
+                                         )
+                                  .collect(Collectors.toSet());
+            AstErrors.argumentNamesNotDistinct(f.outer(), duplicateNames);
+          }
         else
           {
-            if (existing instanceof Feature ef && ef.isArgument() && f.isArgument() && !f.isTypeParameter())
-              {
-                // NYI: CLEANUP: there should not be two places where
-                // similar error is raised.
-                // An error should have been raised already in feature constructor:
-                // "Names of arguments used in this feature must be distinct"
-                check(Errors.any());
-              }
-            else
-              {
-                AstErrors.duplicateFeatureDeclaration(f, existing);
-              }
+            AstErrors.duplicateFeatureDeclaration(f, existing);
           }
       }
     df.put(fn, f);
@@ -2093,14 +2102,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
                 if (isInherited1 && isInherited2)
                   { // NYI: Should be ok if existing or f is abstract.
                     AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, f1, f2);
-                  }
-                else
-                  {
-                    // NYI: if (!isInherited && !sameModule(f, outer))
-                    if (!Feature.isAbstractAndFixedPair(f1, f2))
-                      {
-                        AstErrors.duplicateFeatureDeclaration(f1, f2);
-                      }
                   }
               }
           }
