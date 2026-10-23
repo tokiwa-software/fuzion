@@ -667,18 +667,45 @@ public class Impl extends ANY
     if (CHECKS) check
       (!urgent || result != null);
 
-    return result != null                   &&
-           result != Types.t_FORWARD_CYCLIC &&
-           result != Types.t_ERROR          &&
-           result.isCotypeType()            &&
-           /**
-            * this allows code like:
-            * p := codepoint.type
-            * p.some_type_feature
-            */
-           !_expr.isTypeAsValueCall()
-      ? Types.resolved.f_Type.selfType()
+    return result != null
+      ? adjustInferredType(result)
       : result;
+  }
+
+
+  /**
+   * Adjusts an inferred type in special cases:
+   * such as cotypetypes and this-type references.
+   */
+  private AbstractType adjustInferredType(AbstractType result)
+  {
+    /**
+     * this allows code like:
+     * p := codepoint.type
+     * p.some_type_feature
+     */
+    if (result.isCotypeType() &&
+        !_expr.isTypeAsValueCall())
+      {
+        result = Types.resolved.f_Type.selfType();
+      }
+    /**
+     * Programmer probably does not intend
+     * this-type of ref feature to be inferred
+     * since this would lead to
+     * "Call has ambiguous result" type or similar.
+     *
+     * So we normalize e.g.:
+     * Ring.this
+     * to
+     * outer.this.Ring T
+     */
+    else if (result.isThisType() && result.feature().isRef())
+      {
+        result = result.asRef(true);
+      }
+
+    return result;
   }
 
 
