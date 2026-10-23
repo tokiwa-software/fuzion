@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.LibraryFeature;
@@ -147,7 +148,7 @@ public class Html extends ANY
               + htmlEncodedBasename(f)
               + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
               + c.actualTypeParameters().stream()
-                 .map(at -> htmlEncodeNbsp(at.toString(false, af)))
+                 .map(at -> htmlEncodeNbsp(at.toString(true, af)))
                  .collect(Collectors.joining(", ")) + "</a>";
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
@@ -166,10 +167,10 @@ public class Html extends ANY
     var at = af.resultType();
     if (at.isParametricType())
       {
-        return htmlEncodeNbsp(at.toString(false, context))
+        return htmlEncodeNbsp(at.toString(true, context))
                + (at.isOpenGeneric() ? "..." : "");
       }
-    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(false, context)))
+    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(true, context)))
       .replace("$2", featureRelativeURL(at.feature(), relativeTo));
   }
 
@@ -1155,14 +1156,43 @@ public class Html extends ANY
    */
   private String arguments(AbstractFeature f, AbstractFeature relativeTo)
   {
+    // free type parameters are inferred from the type of the value argument
+    // they are used in, so they are not shown as separate arguments but
+    // directly after that argument.
+    var freeTypes = f.valueArguments()
+      .stream()
+      .map(a -> typeFeature(a.resultType()))
+      .filter(AbstractFeature::isFreeTypeParameter)
+      .collect(Collectors.toSet());
+
     var res = f.arguments()
       .stream()
+      .filter(a -> !freeTypes.contains(a))
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
-        htmlEncodedBasename(a) + "&nbsp;"
-        + (a.isTypeParameter() ? typeArgAsString(a, relativeTo) : anchorType(a, f, relativeTo)))
+        {
+          var freeType = a.isTypeParameter() ? null : typeFeature(a.resultType());
+          return htmlEncodedBasename(a) + "&nbsp;"
+            + (a.isTypeParameter()               ? typeArgAsString(a, relativeTo) :
+               freeType != null
+               && freeType.isFreeTypeParameter() ? htmlEncodedBasename(freeType)
+                                                   + "&nbsp;" + typeArgAsString(freeType, relativeTo)
+                                                 : anchorType(a, f, relativeTo));
+        })
       .collect(Collectors.joining(htmlEncodeNbsp(", ")));
     return res.isEmpty() ? "" : "(" + res + ")";
+  }
+
+
+  /**
+   * Get the feature defining the given type, also for parametric types.
+   *
+   * @param t a resolved type
+   * @return the feature of t or, for a parametric type, its type parameter
+   */
+  private static AbstractFeature typeFeature(AbstractType t)
+  {
+    return t.isParametricType() ? t.typeParameter() : t.feature();
   }
 
 
