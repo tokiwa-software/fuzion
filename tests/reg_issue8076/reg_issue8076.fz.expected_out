@@ -1,1 +1,3 @@
-instance[string_cut_result]
+before: hallo
+after : welt
+found : true

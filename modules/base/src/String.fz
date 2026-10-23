@@ -871,6 +871,12 @@ public String ref : property.hashable, property.orderable is
   #
   private:public universe.string_cut_result (public before String, public after String, public found bool) is
 
+    public redef as_string String =>
+      """
+        before: $before
+        after : $after
+        found : $found"""
+
 
   # Cuts out the first appearance of the string sep from this string, in other words,
   # returns a tuple of two strings and a bool, the first string is the substring before
