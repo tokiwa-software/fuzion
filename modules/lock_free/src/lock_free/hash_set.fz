@@ -30,7 +30,7 @@ public hash_set(K type : property.hashable, map lock_free.Map K unit) : containe
   # does this set contain the given value?
   #
   public redef contains (k K) bool =>
-    map[k].ok
+    map[k]??
 
 
   # list representation of values in this set

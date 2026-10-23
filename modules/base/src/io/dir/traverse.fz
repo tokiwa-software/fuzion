@@ -52,7 +52,7 @@ public traverse(
               else
                 t
           }
-    while res.ok
+    while res??
       # NYI: should abort on error, on no_more_entries this is fine
       np outcome io.path :=
         match io.dir.Read.env.next

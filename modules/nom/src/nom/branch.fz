@@ -23,5 +23,5 @@ module branch is
     parser I R O input->
       parser
         .map (.call input)
-        .filter (.ok)
+        .filter (??)
         .first (error "alt: no parser successful")

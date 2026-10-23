@@ -83,6 +83,6 @@ is
     # the body of the response
     body i64 -> choice (Sequence u8) io.end_of_file error) http.response_message
     pre
-      debug: http.reason_phrases[status_code].ok
+      debug: http.reason_phrases[status_code]??
   =>
     http.response_message nil 1 1 status_code http.reason_phrases[status_code].or_panic (as_header_map header) body

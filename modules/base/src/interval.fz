@@ -78,7 +78,7 @@ is
   public infix : (step_factor T) interval T
   pre
     debug: ((step_factor.sign = 0): through=from) # `step_factor` cannot be zero unless `from == through`, because a zero step would never reach `through`.
-    safety: (step *? step_factor).ok
+    safety: (step *? step_factor)??
   =>
     interval from through step*step_factor
 
@@ -240,7 +240,7 @@ is
   public reverse_interval interval T
   pre
     safety: T.zero -! step  # We must be able to negate `step`, so `T` must be signed
-    debug: through.ok && first.ok
+    debug: through?? && first??
   =>
     match last
       l T =>
@@ -273,4 +273,4 @@ is
   # count diverge.
   #
   public redef finite trit =>
-    through.ok.as_trit
+    through?? .as_trit

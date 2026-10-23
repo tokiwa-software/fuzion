@@ -177,8 +177,9 @@ instate_helper (option String) fuzion.runtime.post_fault at catch_postcondition.
 -----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
            nil
 -----------^^^
-  until r.ok
---^^^^^^^^^^
+  until r??
+--^^^^^^^^^
+>>>>>>> main
     say r
 ----^^^^^
   else
@@ -288,8 +289,8 @@ catch_postcondition.loop at catch_postcondition.fz:256:10
 -----------^^^^^^^^^^^^^^^^^^^^^^^^
            nil
 -----------^^^
-  until r.ok
---^^^^^^^^^^
+  until r??
+--^^^^^^^^^
     say r
 ----^^^^^
   else
@@ -462,8 +463,8 @@ instate_helper String fuzion.runtime.post_fault at catch_postcondition.fz:234:3
 -----------^^^^^^^^^^^^^^^^^^^^^^^^
            nil
 -----------^^^
-  until r.ok
---^^^^^^^^^^
+  until r??
+--^^^^^^^^^
     say r
 ----^^^^^
   else
@@ -747,8 +748,8 @@ catch_postcondition.z.catch#1 at catch_postcondition.fz:162:3
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     r := h.res
 ----^^^^^^^^^^
-  until r.ok
---^^^^^^^^^^
+  until r??
+--^^^^^^^^^
     say r
 ----^^^^^
   else

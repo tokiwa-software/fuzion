@@ -1,0 +1,58 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8086
+#
+# -----------------------------------------------------------------------
+
+# This code used to produce unjustified `no type can be inferred from lambda`
+# errors for the first argument `q` passed to `r`.
+#
+# Additionally, it produced `Expression produces result of type '**error**'
+# but result is not used.` for each call to `r`.
+#
+# There should only be one error per call to `r`
+#
+reg_issue8086 =>
+
+  # original code from #8086
+
+  q(v i64) =>
+  r(U, V type, f F : V->U, v V) U => f v
+  r q (-)
+  r q (.as_string)
+  r q x->x
+  say "done."
+
+  # additional positive tests
+
+  r q 1E9
+  r q [1].length
+  q2(v codepoint->String) => say (v "l")
+  r q2 (id codepoint->String cp->"'$cp' $(type_of cp)")
+  r q2 (id codepoint->String ($))
+  r q2 (id codepoint->String (.as_string))
+  r q2 (id codepoint->String x->x)
+
+  # the following are possible in principle, but type inference is not strong enough yet:
+  #
+  # r q2 (cp->"'$cp' $(type_of cp)")
+  # r q2 ($)
+  # r q2 (.as_string)
+  # r q2 x->x

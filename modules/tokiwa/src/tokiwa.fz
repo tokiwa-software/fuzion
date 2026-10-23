@@ -45,7 +45,7 @@ public tokiwa is
     timeout option time.duration
   ) outcome tokiwa.process_result =>
     seq := map (.as_string)
-    ( if env_vars.ok
+    ( if env_vars??
         os.process.start seq.first.or_panic (seq.drop 1) env_vars.or_panic
       else
         os.process.start seq.first.or_panic (seq.drop 1)

@@ -40,8 +40,8 @@ lvl(i i64) Sequence String =>
 
     sub_r_new := (sub_r.or_else [$" "," "," "]) ++ [$""].cycle
 
-    [str] ++ (sub_l.ok ? [" ┌─┴$(sub_r.ok ? "─┐ " : " ")"] : [])
-          ++ (sub_l.ok ? sub_l.or_panic.zip sub_r_new (s1,s2)->("$(s1) $(s2)") : [])
+    [str] ++ (sub_l?? ? [" ┌─┴$(sub_r?? ? "─┐ " : " ")"] : [])
+          ++ (sub_l?? ? sub_l.or_panic.zip sub_r_new (s1,s2)->("$(s1) $(s2)") : [])
 
 
 say <| lvl 0 .as_string "\n"

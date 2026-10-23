@@ -153,8 +153,7 @@ test_atomic is
   test0 lights3 red "blinking" green (error "out-of-order") ((a,b)-> a.ord=b.ord)
 
   # test general choice
-  test0 (option 23) (option 42) nil (option 4711) (a,b)->
-    a.ok = b.ok && (!a || a.or_panic = b.or_panic)
+  test0 (option 23) (option 42) nil (option 4711) (=)
 
 
   test =>
