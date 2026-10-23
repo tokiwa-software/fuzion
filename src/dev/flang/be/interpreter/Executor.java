@@ -42,7 +42,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessExpression;
 

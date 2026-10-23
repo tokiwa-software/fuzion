@@ -28,7 +28,6 @@ package dev.flang.fuir.analysis.dfa;
 
 import java.util.Comparator;
 
-import dev.flang.fuir.FUIR;
 
 /**
  * Instance represents the result of fuzion.sys.array.alloc
