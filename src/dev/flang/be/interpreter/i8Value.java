@@ -55,7 +55,7 @@ public class i8Value extends Value
   public i8Value(int val)
   {
     if (PRECONDITIONS) require
-      (-0x8000 <= val && val <= 0x7fff);
+      (-0x80 <= val && val <= 0x7f);
 
     _val = val;
   }
