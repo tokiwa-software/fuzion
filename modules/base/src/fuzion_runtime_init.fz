@@ -51,7 +51,7 @@ fuzion_runtime_deinit =>
     c()
 
   #
-  # NYI: BUG: this code does not currently work...
+  # NYI: BUG: #8114 type constraints in lambdas do not work yet.
   #
 
   #
