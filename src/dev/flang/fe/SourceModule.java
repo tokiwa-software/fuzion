@@ -1108,7 +1108,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
     forEachDeclaredOrInheritedFeature(outer,
                                       af ->
                                       {
-                                        if (isOpenTypeParameterCandiate(use, af))
+                                        if (isOpenTypeParameterCandidate(use, af))
                                           {
                                             result.add(af);
                                           }
@@ -1120,7 +1120,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   /**
    * check if feature af is a feasible open type parameter candidate
    */
-  private boolean isOpenTypeParameterCandiate(Expr use, AbstractFeature af)
+  private boolean isOpenTypeParameterCandidate(Expr use, AbstractFeature af)
   {
     return featureVisible(use.pos()._sourceFile, af) &&
         resultTypeIsOpenGeneric(af) &&

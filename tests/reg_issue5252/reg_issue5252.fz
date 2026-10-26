@@ -32,8 +32,8 @@ reg_issue5252 =>
 
   say (123++          .call 2 )     # explicit call of lambda returned by `123++`: prints `14`
   say (123.postfix ++ .call 3 )     # explicit call of lambda returned by `123++`: prints `21`
-  say (123.postfix ++      (4))     # impicit call of lambda returned by `123++`: prints `28`
-  say (123.postfix ++       5 )     # impicit call of lambda returned by `123++`: prints `35`
+  say (123.postfix ++      (4))     # implicit call of lambda returned by `123++`: prints `28`
+  say (123.postfix ++       5 )     # implicit call of lambda returned by `123++`: prints `35`
   say (123.0 +*+ _->"hi"      )     # prints `hi`
   say (123.0 +*+ .bin         )     # prints `11000000111001`
 # say (123.0+*+ .hex          )     # should fail, and does so

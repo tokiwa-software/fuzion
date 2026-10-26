@@ -30,7 +30,7 @@ import dev.flang.fuir.SpecialClazzes;
 
 
 /**
- * LValue represents an address of a modifyable value type, which is the result
+ * LValue represents an address of a modifiable value type, which is the result
  * of reading a value field.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)

@@ -912,7 +912,7 @@ Feature
                                          hasRT = !isConstructor && !isChoice && !isTypeParameter
    | O=1      | 1      | int           | open type Feature index,
    | isTypeParameter | 1 | Type        | constraint of (open) type parameters
-.2+| true NYI! !isField? !isIntrinsc
+.2+| true NYI! !isField? !isIntrinsic
               | 1      | int           | inherits count i
               | i      | Code          | inherits calls
 .2+| R        | 1      | int           | feature offset of precondition feature
@@ -970,7 +970,8 @@ Feature
    *   | NYI!   |        |               |                                               |
    *   | !isFiel+--------+---------------+-----------------------------------------------+
    *   | d? !isI| i      | Code          | inherits calls                                |
-   *   | ntrinsc|        |               |                                               |
+   *   | ntrinsi|        |               |                                               |
+   *   | c      |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | R      | 1      | int           | feature offset of precondition feature        |
    *   |        |        +---------------+-----------------------------------------------+
@@ -2402,7 +2403,7 @@ SourceFile
    *
    * @param module the module name the SourcePosition is from
    *
-   * @param pos 32-bits pos, 32-bits posEnd cramed into a long value
+   * @param pos 32-bit pos and 32-bit posEnd packed into a long value
    *
    * @return
    */
@@ -2534,7 +2535,7 @@ SourceFile
    */
   @Override
   public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
-    // NYI: BUG: #8187 Must not used named lookup, redefinitions should be found in
+    // NYI: BUG: #8187 Must not use name lookup; redefinitions should be found in
     // `d._redefinitions`. If they are not there, we should find out why and fix that.
     if (f.isFixed() && !f.isTypeParameter())
       {

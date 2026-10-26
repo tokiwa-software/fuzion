@@ -53,7 +53,7 @@ reg_issue7836 =>
     m(n) => r x*n
   say <| (7 |> (x-> r x)).m 1
 
-  # a simplified version, usling partial application
+  # a simplified version, using partial application
   #
   r1(x) is
     m(n) => r1 x*n

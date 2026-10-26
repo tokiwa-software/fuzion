@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = reg_issue4253_infix_assiciativity
+override NAME = reg_issue4253_infix_associativity
 include ../simple.mk

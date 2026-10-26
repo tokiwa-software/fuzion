@@ -17,20 +17,20 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue4253_infix_assiciativity
+#  Source code of Fuzion test reg_issue4253_infix_associativity
 #
 # -----------------------------------------------------------------------
 
-# Some tests for left- and right-assiciative operators using examples
+# Some tests for left- and right-associative operators using examples
 # from #4253.
 #
-reg_issue4253_infix_assiciativity =>
+reg_issue4253_infix_associativity =>
 
   # examples from #4253
   say "expecting `[4, 16, 36, 64, 100]`, four times:"
   say <|  (.map **2) <| (2..10:2)
   say <| ((.map **2) <| (2..10:2))
-  say <|   .map **2  <| (2..10:2)   # not form #4253, using fewer parentheses
+  say <|   .map **2  <| (2..10:2)   # not from #4253, using fewer parentheses
   say    ((.map **2) <| (2..10:2))
 
 
@@ -62,7 +62,7 @@ reg_issue4253_infix_assiciativity =>
   # using left and right associativity will result in left-to-right
   # execution:
 
-  # feature returning lambda that subtracts x from an i23.
+  # feature returning a lambda that negates its i64 argument.
   sub(x i64) i64->i64 => -x
 
   say "expecting `-36`"

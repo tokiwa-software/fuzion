@@ -240,7 +240,7 @@ public class Loop extends ANY
 
   /**
    * Has there been an error found in the loops code?
-   * This is used for displaying/supressing loop specific error messages.
+   * This is used for displaying/suppressing loop specific error messages.
    */
   private boolean _defunct = false;
 

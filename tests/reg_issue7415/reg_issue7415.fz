@@ -27,7 +27,7 @@ reg_issue7415 =>
 
   # ----------------------------------------------------------------------
 
-  # the original example fro #7415
+  # the original example from #7415
 
   x(T : Any) is
     y(f T->T) =>

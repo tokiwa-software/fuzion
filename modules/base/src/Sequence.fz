@@ -663,7 +663,7 @@ is
 
   # fold the elements of this non-empty Sequence using the given function right-to-left
   #
-  # e.g., to concat the elements of a non-empty Sequence of Sequeces, use `foldr1 (++)`
+  # e.g., to concat the elements of a non-empty Sequence of Sequences, use `foldr1 (++)`
   #
   public foldr1 (f (T,T)->T) T => as_list.foldr1 f
 

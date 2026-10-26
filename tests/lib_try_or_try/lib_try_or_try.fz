@@ -46,7 +46,7 @@
 #      .catch  _->4
 # ```
 
-#  1) the catch of the try returned from `or_try` would first instatiate an lm. lets called it lm_1.
+#  1) the catch of the try returned from `or_try` would first instantiate an lm. Let's call it lm_1.
 #  2) the code of the catch calls the catch of the original try, this instantiates another lm, lets call it lm_2.
 #  3) code of the original try fails, writing to `m <- e`, m was created from lm_2, so all is good
 #  4) code_catch m.get.or_panic is now executed, this code also fails, also writing to m via `m <- e` but this m was created from lm_1 while lm_2 is still instated => we get an invalid mutate error.

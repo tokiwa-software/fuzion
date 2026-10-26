@@ -106,7 +106,7 @@ To solve this, you could change the type of the target 'b' to 'bool' or convert 
 typeinference_for_args_negative.fz:30:6: error 12: Type inference from actual arguments failed due to incompatible types of actual arguments
   a3(a, b) => a+b    # *** error ***, mixes String and f64 in arg `a`
 -----^
-For the formal argument 'typeinference_for_args_negative.a3.a' the following incompatible actual arguments where found for type inference:
+For the formal argument 'typeinference_for_args_negative.a3.a' the following incompatible actual arguments were found for type inference:
 actual is value of type 'String' at typeinference_for_args_negative.fz:41:11
   say (a3 "hello"     " world!")
 ----------^^^^^^^
@@ -124,7 +124,7 @@ and at typeinference_for_args_negative.fz:44:11
 typeinference_for_args_negative.fz:31:9: error 13: Type inference from actual arguments failed due to incompatible types of actual arguments
   a4(a, b) => a+b    # *** error ***, mixes String, i64, f64 and bool in arg `b`
 --------^
-For the formal argument 'typeinference_for_args_negative.a4.b' the following incompatible actual arguments where found for type inference:
+For the formal argument 'typeinference_for_args_negative.a4.b' the following incompatible actual arguments were found for type inference:
 actual is value of type 'String' at typeinference_for_args_negative.fz:46:23
   say (a4 "hello"     " world!")
 ----------------------^^^^^^^^^

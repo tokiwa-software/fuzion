@@ -570,7 +570,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * This method contains the logic of the assignabilty rules for the Fuzion language.
+   * This method contains the logic of the assignability rules for the Fuzion language.
    *
    * @param actual the actual type.
    *
@@ -857,7 +857,7 @@ NYI: UNDER DEVELOPMENT:
    * Convenience wrapper for applyTypeParsMaybeOpen for a given target type
    * t. If t is a plain type, apply t's feature and type parameters to this.
    *
-   * @param t the type describing the feature and actual type parameters to applay.
+   * @param t the type describing the feature and actual type parameters to apply.
    *
    * @return the list of resulting types after applying t's actual type
    * parameters to this. In case this is an open type parameter, this list might
@@ -2228,7 +2228,7 @@ there is no common super type of the two types (Types.t_ERROR)
    *     a : choice bool i64 is
    *       type.answer a.this => 42
    *
-   * the result type of {@code a.type.answer} is a relay type, the corrsponding {@code thisType} is
+   * the result type of {@code a.type.answer} is a relay type, and the corresponding {@code thisType} is
    * `a.this`.
    *
    * @return the corresponding {@code thisType} iff {@code isRelayType()}, otherwise {@code this}.
@@ -2245,7 +2245,7 @@ there is no common super type of the two types (Types.t_ERROR)
    * must not be the case for any clazzes in FUIR since clazzes require concrete
    * types.
    *
-   * @return true if an {@code this.type} where found
+   * @return true if a {@code this.type} was found
    */
   public boolean containsThisType()
   {
@@ -2420,7 +2420,7 @@ there is no common super type of the two types (Types.t_ERROR)
    * @param actuals the actual type parameters
    *
    * @param actualPos the position of the actual arguments or unresolved types that `actuals` came
-   * from, either directly or via type inference.  Used to diplay source code position for inferred
+   * from, either directly or via type inference.  Used to display source code position for inferred
    * type, e.g. for `option _ "bla"`, this will give the position of `"bla"`.  May be null or
    * contain null for unknown positions.
    *
@@ -2475,7 +2475,7 @@ there is no common super type of the two types (Types.t_ERROR)
    * @param tp the formal type parameter to check against
    *
    * @param pos the position of the actual argument or unresolved type that `actual` came from or,
-   * if not available, source posittion of the cal we are checking. Never null.
+   * if not available, source position of the call we are checking. Never null.
    *
    * @param constraint the constraint on the type parameter
    *

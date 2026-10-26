@@ -392,7 +392,7 @@ public String ref : property.hashable, property.orderable is
               else fuzion.std.panic "String.codepoints_and_errors: missing case for $b1"
         else if 0x80 ≤ b1 ≤ 0xbf then e1 "stray continuation byte without preceding leading byte."
         else if 0xf5 ≤ b1 ≤ 0xfd then e1 "codes 0xf5..0xfd are undefined."
-        else if 0xfe ≤ b1 ≤ 0xff then e1 "codes 0xfe and 0xff are undefined, used for endianess checking."
+        else if 0xfe ≤ b1 ≤ 0xff then e1 "codes 0xfe and 0xff are undefined, used for endianness checking."
         else
           fuzion.std.panic "String.codepoints_and_errors: missing case for $b1"
 

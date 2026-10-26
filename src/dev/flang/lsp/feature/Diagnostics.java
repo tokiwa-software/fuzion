@@ -48,7 +48,7 @@ import dev.flang.lsp.util.Bridge;
  */
 public enum Diagnostics
 {
-  nameingRefs, nameingFeatures, nameingTypeParams, duplicateName, errors, warnings, unusedFeatures;
+  namingRefs, namingFeatures, namingTypeParams, duplicateName, errors, warnings, unusedFeatures;
 
   public static void publishDiagnostics(URI uri)
   {
@@ -102,19 +102,19 @@ public enum Diagnostics
       .filter(f -> (f.isOuterRef() || f.isRef()) && !f.isField())
       .filter(f -> {
         var basename = f.baseName();
-        var splittedBaseName = basename.split("_");
+        var splitBaseName = basename.split("_");
         return
         // any lowercase after _
-        Arrays.stream(splittedBaseName).anyMatch(str -> Character.isLowerCase(str.codePointAt(0)))
+        Arrays.stream(splitBaseName).anyMatch(str -> Character.isLowerCase(str.codePointAt(0)))
           // any uppercase after first char
-          || Arrays.stream(splittedBaseName)
+          || Arrays.stream(splitBaseName)
             .anyMatch(str -> !str.isEmpty()
               && str.substring(1).codePoints().anyMatch(c -> Character.isUpperCase(c)));
       })
       .map(f -> {
         return create(Bridge.toRangeBaseName(f),
           "use Snake_Pascal_Case for refs, check: https://flang.dev/design/identifiers",
-          DiagnosticSeverity.Information, nameingRefs);
+          DiagnosticSeverity.Information, namingRefs);
       });
   }
 
@@ -132,7 +132,7 @@ public enum Diagnostics
       .map(f -> {
         return create(Bridge.toRangeBaseName(f),
           "use snake_case for features and value types, check: https://flang.dev/design/identifiers",
-          DiagnosticSeverity.Information, nameingFeatures);
+          DiagnosticSeverity.Information, namingFeatures);
       });
     return snakeCase;
   }
@@ -148,7 +148,7 @@ public enum Diagnostics
       .map(f -> {
         return create(Bridge.toRangeBaseName(f),
           "use UPPERCASE for type parameters, check: https://flang.dev/design/identifiers",
-          DiagnosticSeverity.Information, Diagnostics.nameingTypeParams);
+          DiagnosticSeverity.Information, Diagnostics.namingTypeParams);
       });
     return uppercase;
   }

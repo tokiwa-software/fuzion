@@ -117,7 +117,7 @@ static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or
 
 /**
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
- *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
  *   - 2 for CLOCK_THREAD_CPUTIME_ID (CPU time consumed by the current thread)
  *   - 3 for CLOCK_PROCESS_CPUTIME_ID (CPU time consumed by all threads of the process)
  */
@@ -380,7 +380,7 @@ int fzE_get_peer_address(int sockfd, void * buf) {
 
 // get the peer's port
 // result is the port number
-// might return useless infomrmation when called on udp socket
+// might return useless information when called on udp socket
 unsigned short fzE_get_peer_port(int sockfd) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
@@ -556,7 +556,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
 static pthread_mutex_t fzE_global_mutex;
 
 /**
- * Run plattform specific initialisation code
+ * Run platform-specific initialisation code
  */
 void fzE_init()
 {
@@ -1059,10 +1059,10 @@ void fzE_mtx_destroy(void * mtx) {
  * @param clock the clock to be used:
  *
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
- *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
  *
  * NYI: support for other values defined in
- * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ * /usr/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
  *
  * @return NULL on error or pointer to condition
  *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.

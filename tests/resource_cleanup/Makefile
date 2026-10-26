@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = resource_cleanunp
+override NAME = resource_cleanup
 include ../simple.mk

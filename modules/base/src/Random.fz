@@ -29,7 +29,7 @@ public Random ref : effect
 is
 
   # for a random instance installed in the current environment, update the
-  # environment to the next random value.  The the contents of the current
+  # environment to the next random value.  The contents of the current
   # instance are left unchanged, 'Random.env' will provide the new instance.
   #
   public next Random => abstract

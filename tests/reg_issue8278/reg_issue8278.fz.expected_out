@@ -1,4 +1,4 @@
-simplfied: expected `a`, got: a
+simplified: expected `a`, got: a
 original expect `a`, got: a
 comprehensive `b` expected a.t1, got: a.t1
 comprehensive `b` expected b.t2, got: b.t2

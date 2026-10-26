@@ -1033,7 +1033,7 @@
       size of the smaller piece.
 
       This data structure is now used by `String.type.concat`, `Sequence.concat`
-      and `container.exapnding_array.concat` and significantly improved the
+      and `container.expanding_array.concat` and significantly improved the
       performance.  Support for splitting is still missing.
 
       This change consists of the following pull requests:
@@ -1689,7 +1689,7 @@
     - fix type parameter constraint in `Clock.run_periodic`
       ([#5859](https://github.com/tokiwa-software/fuzion/pull/5859))
 
-    - change visbilities of handles(2)/bitset
+    - change visibilities of handles(2)/bitset
       ([#5860](https://github.com/tokiwa-software/fuzion/pull/5860))
 
     - `process.wait` add timeout parameter
@@ -1834,7 +1834,7 @@
 
   - nom module
 
-    - nom: add NYI-comments to `nom.parsers.jseon`
+    - nom: add NYI-comments to `nom.parsers.json`
       ([#6208](https://github.com/tokiwa-software/fuzion/pull/6208))
 
     - nom: implement access feature in `json_value` to avoid nested `match`
@@ -1935,7 +1935,7 @@
   - add error for adding precondition when implicit `pre true` is inherited
     ([#5177](https://github.com/tokiwa-software/fuzion/pull/5177))
 
-  - Avoid crash during type inference of defunc call
+  - Avoid crash during type inference of defunct call
     ([#6854](https://github.com/tokiwa-software/fuzion/pull/6854))
 
   - Avoid subsequent `Incompatible types when passing argument` error in
@@ -2058,7 +2058,7 @@
     ([#6816](https://github.com/tokiwa-software/fuzion/pull/6816))
 
   - fix constraint assignability checking, now enforces that type parameter on
-    type constraint are not relaxed in redefintions
+    type constraints are not relaxed in redefinitions
     ([#6834](https://github.com/tokiwa-software/fuzion/pull/6834))
 
   - fix resolving fully qualified this-types
@@ -2645,7 +2645,7 @@
   - runtime: include/posix: remove static assert for ENOSYS
     ([#6940](https://github.com/tokiwa-software/fuzion/pull/6940))
 
-  - convert intrisics to natives
+  - convert intrinsics to natives
     ([#6268](https://github.com/tokiwa-software/fuzion/pull/6268))
 
   - native features: switch from `array` to `mutate.array`
@@ -3365,7 +3365,7 @@
   - update adoptium usage and recommendation
     ([#6378](https://github.com/tokiwa-software/fuzion/pull/6378))
 
-  - add hierarchy of faults diagram to comment for `fuion.runtime.fault`
+  - add hierarchy of faults diagram to comment for `fuzion.runtime.fault`
     ([#6319](https://github.com/tokiwa-software/fuzion/pull/6319))
 
   - Readme.md: add section on tests
@@ -4337,7 +4337,7 @@
 
   - normalise outer clazzes of fields to always be values ([#4585](https://github.com/tokiwa-software/fuzion/pull/4585))
 
-  - record which sites and code where used by DFA ([#4666](https://github.com/tokiwa-software/fuzion/pull/4666))
+  - record which sites and code were used by DFA ([#4666](https://github.com/tokiwa-software/fuzion/pull/4666))
 
   - Remove fuir field index ([#4588](https://github.com/tokiwa-software/fuzion/pull/4588))
 
@@ -4506,9 +4506,9 @@
 
     - lib/be: add `fuzion.java.cast` ([#3912](https://github.com//tokiwa-software/fuzion/pull/3912))
 
-    - `concur.Futur`
+    - `concur.Future`
 
-        - add `concur.Futur` and thread.submit that returns a `Future` ([#3625](https://github.com//tokiwa-software/fuzion/pull/3625))
+        - add `concur.Future` and thread.submit that returns a `Future` ([#3625](https://github.com//tokiwa-software/fuzion/pull/3625))
         - add `and_then` to `concur.Future` ([#3768](https://github.com//tokiwa-software/fuzion/pull/3768))
 
     - added SIEVE cache implementation ([#3760](https://github.com//tokiwa-software/fuzion/pull/3760))
@@ -4565,7 +4565,7 @@
 
     - move `or`, `and_then`, `or_else`, `and` to `switch` ([#4170](https://github.com/tokiwa-software/fuzion/pull/4170))
 
-    - move `array2`/`array3` instatiation to type feature (type.new) ([#4207](https://github.com/tokiwa-software/fuzion/pull/4207))
+    - move `array2`/`array3` instantiation to type feature (type.new) ([#4207](https://github.com/tokiwa-software/fuzion/pull/4207))
 
     - repository restructuring: move lib to modules/base ([#4315](https://github.com/tokiwa-software/fuzion/pull/4315))
 
@@ -4595,7 +4595,7 @@
 
               s := 3.14.sin
 
-    - lib: added new choice type `trit` with values `TRUE`, `FALSE`, and `nil`, changed `Sequence.finite` to return `trit` to distinquish the cases known finite, known infinite, and unknown. ([#4020](https://github.com//tokiwa-software/fuzion/pull/4020))
+    - lib: added new choice type `trit` with values `TRUE`, `FALSE`, and `nil`, changed `Sequence.finite` to return `trit` to distinguish the cases known finite, known infinite, and unknown. ([#4020](https://github.com//tokiwa-software/fuzion/pull/4020))
 
     - lib: change `Sequence.first`/`last` to return options ([#4018](https://github.com//tokiwa-software/fuzion/pull/4018))
 
@@ -4699,7 +4699,7 @@
 
   - ast: don't show `make ... a ref` for choices ([#3933](https://github.com//tokiwa-software/fuzion/pull/3933))
 
-  - ast: error when declarding type feature within feature that does not define a type ([#3985](https://github.com//tokiwa-software/fuzion/pull/3985))
+  - ast: error when declaring type feature within feature that does not define a type ([#3985](https://github.com//tokiwa-software/fuzion/pull/3985))
 
   - ast: fix check failure in `AstErrors.unusedResult` ([#4064](https://github.com//tokiwa-software/fuzion/pull/4064))
 
@@ -5263,7 +5263,7 @@
 
   - Type constraints can now be made more restrictive in preconditions and conditional code, fix ([#967](https://github.com/tokiwa-software/fuzion/issues/967), [#3480](https://github.com//tokiwa-software/fuzion/pull/3480))
 
-    This provides a simple mechanism to add inner features that require additional type constraints such as `Sequence.find` that requires the element type to `T` to be constrained by `property.quatable`. As a precondition, this is written as
+    This provides a simple mechanism to add inner features that require additional type constraints such as `Sequence.find` that requires the element type `T` to be constrained by `property.equatable`. As a precondition, this is written as
 
         public find(pattern Sequence T) option i32
           pre
@@ -5593,7 +5593,7 @@
 
     which used to be parsed as two loops (the second one being `do say "hey!"`, now causes an error.
 
-  - remove `intrinsic_contructor` features ([#3062](https://github.com/tokiwa-software/fuzion/pull/3062)), using `instrinsic` instead.
+  - remove `intrinsic_constructor` features ([#3062](https://github.com/tokiwa-software/fuzion/pull/3062)), using `intrinsic` instead.
 
   - Fuzion no longer permits silently ignoring a result ([#3095](https://github.com/tokiwa-software/fuzion/pull/3095)). If `feat` returns a result that is no `unit` or `void`, calling `feat` will cause an error:
 
@@ -5926,7 +5926,7 @@
 
   - fix `ArrayIndexOutOfBoundsException` when creating error message ([#3457](https://github.com//tokiwa-software/fuzion/pull/3457))
 
-  - Fix handling of env var `FUZION_DISABLE_ANSI_ESCAPSE` ([#3455](https://github.com//tokiwa-software/fuzion/pull/3455))
+  - Fix handling of env var `FUZION_DISABLE_ANSI_ESCAPES` ([#3455](https://github.com//tokiwa-software/fuzion/pull/3455))
 
   - fix source range length in error message ([#3443](https://github.com//tokiwa-software/fuzion/pull/3443))
 
@@ -6018,11 +6018,11 @@
 
 - General
 
-  - Work a a Fuzion module for a nom-like parser combinator framework has started ([#2808](https://github.com/tokiwa-software/fuzion/pull/2808))
+  - Work on a Fuzion module for a nom-like parser combinator framework has started ([#2808](https://github.com/tokiwa-software/fuzion/pull/2808))
 
 - Documentation
 
-   - readme: add section for installing Fuzion from package manger ([#2919](https://github.com/tokiwa-software/fuzion/pull/2919))
+   - readme: add section for installing Fuzion from package manager ([#2919](https://github.com/tokiwa-software/fuzion/pull/2919))
 
    - ref_manual: Add more examples for comments and strings ([#2939](https://github.com/tokiwa-software/fuzion/pull/2939))
 
@@ -6218,7 +6218,7 @@
 
   - merge logic of addInheritedFeature and addToDeclaredOrInherited ([#3019](https://github.com/tokiwa-software/fuzion/pull/3019))
 
-  - For better error messages, source ranges are not stored in Fuziom module files instead of source position ([#2844](https://github.com/tokiwa-software/fuzion/pull/2844))
+  - For better error messages, source ranges are now stored in Fuzion module files instead of source positions ([#2844](https://github.com/tokiwa-software/fuzion/pull/2844))
 
   - The universe is not written to a fum-file ([#2846](https://github.com/tokiwa-software/fuzion/pull/2846))
 
@@ -6238,7 +6238,7 @@
 
 - Fuzion Intermediate Representation
 
-  - fix mixture of endianess for constant data ([#2839](https://github.com/tokiwa-software/fuzion/pull/2839))
+  - fix mixture of endianness for constant data ([#2839](https://github.com/tokiwa-software/fuzion/pull/2839))
 
   - Code cleanup and simplifications ([#2888](https://github.com/tokiwa-software/fuzion/pull/2888), [#2927](https://github.com/tokiwa-software/fuzion/pull/2927), [#2907](https://github.com/tokiwa-software/fuzion/pull/2907), [#2924](https://github.com/tokiwa-software/fuzion/pull/2924), [#2917](https://github.com/tokiwa-software/fuzion/pull/2917), [#2886](https://github.com/tokiwa-software/fuzion/pull/2886))
 
@@ -6322,7 +6322,7 @@ Effect backend
 
   - Support for exceptions in Java interface ([#2667](https://github.com/tokiwa-software/fuzion/pull/2667)).
 
-  - For -jar backend: Add missing classes needed to handle errors such as StackOverfowError ([#2716](https://github.com/tokiwa-software/fuzion/pull/2716)).
+  - For -jar backend: Add missing classes needed to handle errors such as StackOverflowError ([#2716](https://github.com/tokiwa-software/fuzion/pull/2716)).
 
   - Removed dependency on interpreter backend ([#2686](https://github.com/tokiwa-software/fuzion/pull/2686)).
 
@@ -7113,7 +7113,7 @@ C back end
 
 - Fuzion language
 
-  - Fix the handling of types, in particular in conjuction with covariance and
+  - Fix the handling of types, in particular in conjunction with covariance and
     type constraints #1612, #1620, #1627, #1629, #1650. This allowed the removal
     of the type parameter from numeric, see below.
 
@@ -7129,7 +7129,7 @@ C back end
   - This change sounds subtle, but it fixes a number of problems when the
     original value type is used as the type of inner features of the boxed value
     type feature and these types must be value types even after boxing. All the
-    details can be found in the the pull request description.
+    details can be found in the pull request description.
 
   - Calling type features from type parameters has been fixed (#1471).
 
@@ -7342,7 +7342,7 @@ C back end
 
    - added syntax for effects in feature declarations.
 
-      HelloWorls ! io.out is
+      HelloWorld ! io.out is
         say "HelloWorld!"
 
 - base library
@@ -7351,7 +7351,7 @@ C back end
 
   - renamed has_equality as equatable
 
-  - lazy variants of some features where removed, the main variants are now lazy
+  - lazy variants of some features were removed, the main variants are now lazy
 
   - `Unary` function type has been introduced.
 
@@ -7807,7 +7807,7 @@ C back end
   - added application-wide data-flow analysis
 
   - 'fz' command has new option '-dfa' that runs DFA analysis as backend. Should
-    be used with '-verbose=<n>' for 'n>0' to get ouput other than just errors.
+    be used with '-verbose=<n>' for 'n>0' to get output other than just errors.
 
 - base lib
 
@@ -7939,7 +7939,7 @@ C back end
 
   - match statement now supports matching `*`, which creates a default branch.
 
-  - calls of the form `f a,b,c` are no longer supported, has be be either `f a b
+  - calls of the form `f a,b,c` are no longer supported; use either `f a b
     c` or `f(a,b,c)`.
 
   - full stop can now be used for empty constructors, e.g.
@@ -8050,7 +8050,7 @@ C back end
   - added support for effects: New expression '<type>.env' permits access to
     current instance of an effect
 
-  - unicode punctuations are now allowed as codepoints within operators
+  - unicode punctuation characters are now allowed in operators
 
 - fz
 
@@ -8103,7 +8103,7 @@ C back end
 - Fuzion language
   - added keyword *intrinsic_constructor* to mark intrinsics that create an
     instance of their result type.  This simplifies static analysis for
-    frequence cases such as *fuzion.java.getField0*.
+    frequent cases such as *fuzion.java.getField0*.
   - inline arrays now may end with a comma as in
     ```
       a := [ 1,
@@ -8130,7 +8130,7 @@ C back end
 
 - stdlib
 
-  - lib: Minor improvements used in tutoral at fuzion-lang.dev:
+  - lib: Minor improvements used in tutorial at fuzion-lang.dev:
 
     - added 'list head tail' as a counterpart to Haskell's 'head : tail' for
       list creation.
@@ -8177,7 +8177,7 @@ C back end
 
     - creating source positions for code loaded from .fum file on demand only.
 
-    - caching of code, result, outerRef withn LibraryFeature
+    - caching of code, result, outerRef within LibraryFeature
 
     - using StatementVisitor instead of FeatureVisitor. The former does not
       support code modification, so it might be faster.
@@ -8226,7 +8226,7 @@ C back end
 
 - front end
 
-  - suppoert for qualified features, even to add inner features to library code
+  - support for qualified features, even to add inner features to library code
     such as
     ```
       i32.factorial => if val <= 1 then 1 else val * (val-1).factorial
@@ -8329,7 +8329,7 @@ C back end
 
   - new design for code input / execution output text areas
 
-  - tuturial section on string literals.
+  - tutorial section on string literals.
 
   - examples and idioms updated for new syntax of lambda expressions and
     function types.
@@ -8338,7 +8338,7 @@ C back end
 
 - fuzion.ebnf
 
-  - grammar is now checked using antlr, bugs and inconsitencies have been fixed.
+  - grammar is now checked using antlr, bugs and inconsistencies have been fixed.
 
 - Frontend/Parser:
 
@@ -8430,7 +8430,7 @@ C back end
 
   - now supports modules via '-modules' options. Currently, these are just
     additional source code directories in 'build/modules', but these should be
-    packed into fuzion module files eventualls.
+    packed into fuzion module files eventually.
 
 - Parser
 
@@ -8444,7 +8444,7 @@ C back end
 
 - fuzion-lang.dev website
 
-  - now supportes ACE editor for source code
+  - now supports ACE editor for source code
 
   - use server-side events to fix many issues in the communication.
 
@@ -8482,13 +8482,13 @@ C back end
 
 - C backend
 
-  - several bugs fixed: bugs related to (normlized) outer refs, calls to
+  - several bugs fixed: bugs related to (normalized) outer refs, calls to
     not-instantiated clazzes, code after a statement that produced a void
     result, array of unit type, etc.
 
 - IR
 
-  - several fixes in normlization of outer refs, i.e., in the way clazzes
+  - several fixes in normalization of outer refs, i.e., in the way clazzes
     instantiated with different outer contexts are distinguished.  This fixed
     several tests that failed when using the C backend.
 
@@ -8504,7 +8504,7 @@ C back end
 
 - Front End
 
-  - fixed issue#8: returing 'false' as 'option<V>' n logner allowed
+  - fixed issue#8: returning 'false' as 'option<V>' no longer allowed
 
 
 ## 2021-07-06: V0.053
@@ -8603,11 +8603,11 @@ C back end
     ```
   - A loop's 'until' clause now supports 'then' to separate the condition from
     the code executed for successful loop termination.  The code is now
-    summetric to 'if cond then'.
+    symmetric to 'if cond then'.
 
 - lib
 
-  - 'o??' and 'o!!' are new postfix operator synonymes for 'exists' and 'isNil'
+  - 'o??' and 'o!!' are new postfix operator synonyms for 'exists' and 'isNil'
     in 'option', 'numOption' and 'outcome'.
 
 - fz
@@ -8658,7 +8658,7 @@ C back end
 - lib
 
   - replaced 'streamable' by 'List', i.e., the preferred way to iterate is by
-    using lisp-syle lists consisting of a head and a cons-cell.
+    using lisp-style lists consisting of a head and a cons-cell.
 
   - added u128 for unsigned 128-bit integers
 
@@ -8899,7 +8899,7 @@ C back end
     LC, Ll, Lm, Lo, Lt, Lu, Nd, Nl, and No, while the first character may not be
     of one of the numeric types No, Nl, No.
 
-  - operartors now may consist of non-ASCII code points of Unicode categories
+  - operators now may consist of non-ASCII code points of Unicode categories
     Sc, Sk, Sm, So.
 
 - tools:
@@ -8915,7 +8915,7 @@ C back end
 
 - lib
 
-  - added list.fold, list.take, added predefined monoids to numeric ands string.
+  - added list.fold, list.take, added predefined monoids to numeric and string.
 
   - renamed FALSE.fz and TRUE.fz to avoid name clashes on case-insensitive file
     systems.
@@ -9019,7 +9019,7 @@ C back end
 
 ## 2021-03-09: V0.024
 
-- Desgn:
+- Design:
 
   - Added section "Automatic global data" in the file
     design/monadic_lifting.html to propose monadic parameters together with
@@ -9129,7 +9129,7 @@ Benchmarks:
 
 ## 2021-02-07: V0.017
 
-- Frotend:
+- Frontend:
 
   - Inspired by FOSDEM talks on Raku, I have decided to experiment with making
     the parentheses on calls optional. This means that instead of
@@ -9208,7 +9208,7 @@ Benchmarks:
 - Fuzion IR
 
   - extracted dynamic binding related code from Clazz.java to
-    DynamicBinging.java.
+    DynamicBinding.java.
 
 - fuzion-lang.dev
 
@@ -9226,7 +9226,7 @@ Benchmarks:
 
 - Fuzion Front End
 
-  - Removed Loop from AST, a loop is now directly replaced by a tail recurive
+  - Removed Loop from AST, a loop is now directly replaced by a tail recursive
     call.
 
   - Source file name extension is .fz now.
@@ -9442,7 +9442,7 @@ Benchmarks:
 
 - website
 
-  - added Fusion grammer fusion.ebnf linked from the main page.
+  - added Fusion grammar fusion.ebnf linked from the main page.
 
   - Fusion Tutorial
 
@@ -9500,7 +9500,7 @@ Benchmarks:
 
 - Fusion Front End
 
-  - Removed redundent directory listing in source dirs to improve speed.
+  - Removed redundant directory listing in source dirs to improve speed.
 
 ## 2020-10-29: V0.007
 
@@ -9574,7 +9574,7 @@ Benchmarks:
       such that their actual type is always the same.
 
     - disabling pre- and postconditions in production (enabled by setting env
-      variables PRECONDTIONS=true and POSCONDITIONS=true)
+      variables PRECONDITIONS=true and POSTCONDITIONS=true)
 
 ## 2020-10-22: V0.006
 
@@ -9591,7 +9591,7 @@ Benchmarks:
 - Fusion Interpreter
 
   - When processing input from stdin (which is used when clicking "run" on the
-    website examplex), the interpreter now parses stmnts and not feature.  If
+    website examples), the interpreter now parses statements rather than features.  If
     input is a single statement that is a feature declaration, that feature will
     be executed as before. Otherwise, these statements will be added to the
     internal feature --universe-- and this will be executed.  This has the
@@ -9599,7 +9599,7 @@ Benchmarks:
     'stdout.println("Hello, World!")' can be executed directly now and Fusion
     scripts with shebang are possible.
 
-  - uninitialized non-ref values are not initialzed with -555555555 to be more
+  - uninitialized non-ref values are now initialized with -555555555 to be more
     obvious when used.  DFA to detect possible uninitialized accesses is still
     not supported.
 
@@ -9679,7 +9679,7 @@ Benchmarks:
   - initial assignments to fields are no longer allowed unless the field is
     declared within the code of an outer routine.  In particular, x := <expr>
     does not work. This code was never executed anyway and I do not want to
-    leave the execution order as a arbitray decision of the implementation.
+    leave the execution order as an arbitrary decision of the implementation.
 
 - Fusion library
 

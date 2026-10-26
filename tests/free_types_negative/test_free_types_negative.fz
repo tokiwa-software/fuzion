@@ -30,9 +30,9 @@ test_free_type_negative is
   a1(v T : Any    ) => say "a: $T $v"
   a2(v T : numeric) => say "a: $T $(v+v)"
   a1 42
-  a1 "fourty two"
+  a1 "forty-two"
   a2 42
-  a2 "fourty two"    # 1. should flag an error: type constraint not respected
+  a2 "forty-two"    # 1. should flag an error: type constraint not respected
 
   # free type with implicit constraint `Any`
   #
@@ -84,7 +84,7 @@ test_free_type_negative is
       b B => say "g: B $b"
 
   ga1 String | i32 := 42
-  ga2 String | u8  := "fourty two"
+  ga2 String | u8  := "forty-two"
   ga3 f64    | String := 3.14
   g ga1
   g ga2

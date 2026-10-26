@@ -43,7 +43,7 @@
 # This gives operations a means to become stateful.
 #
 # In case an effect performs an abort, the code the effect was instated for
-# will be abandoned and the function passed via tha `def` argument to
+# will be abandoned and the function passed via the `def` argument to
 # `instate` will be used to produce a result from the last effect instance.
 #
 # Effects may redefine the `finally` feature that is executed directly after

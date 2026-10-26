@@ -533,7 +533,7 @@ class CodeGen
         // in case we access the value in a boxed target, unbox it first:
         tv = Expr
           .comment("UNBOXING , boxed type " + clazzInQuotes(tt) + " desired type " + clazzInQuotes(cco))
-          .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getfield works vor unit type (resulting in tv.drop()).
+          .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getFieldOrUnit works for unit type (resulting in tv.drop()).
                                      Names.BOXED_VALUE_FIELD_NAME,
                                      _types.javaType(cco)));
       }

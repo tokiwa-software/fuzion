@@ -285,7 +285,7 @@ is
 #    mtx := concur.sync.mtx_init.or_panic
 #
 # but there is currently no easy way to access this field while `concur.Threads.env.current`
-# cannot be used becuse `concur.Threads` is not yet instated.
+# cannot be used because `concur.Threads` is not yet instated.
 #
 # NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
 # is sorted by dependency, but alphabetically, so we add prefix 'A_' as a workaround.
