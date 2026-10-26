@@ -25,7 +25,7 @@ This call can be resolved in two ways, either as a direct call to 'partial_appli
 or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at partial_application_negative.fz:54:3
   ambig(x i32) Unary String i32 => {say "V1"; y->"#$y x:$x#"}
 --^^^^^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partial_application_negative.fz:61:14: error 4: Ambiguity between direct and partially applied call target
@@ -37,7 +37,7 @@ This call can be resolved in two ways, either as a direct call to 'partial_appli
 or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at partial_application_negative.fz:55:3
   ambig(x,y i32)     String     => "$x $y"
 --^^^^^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partial_application_negative.fz:62:14: error 5: Ambiguity between direct and partially applied call target
@@ -49,7 +49,7 @@ This call can be resolved in two ways, either as a direct call to 'partial_appli
 or by partially applying arguments to a call to 'partial_application_negative.ambig' declared at partial_application_negative.fz:56:3
   ambig(x,y,z i32)   String     => "$x $y $z"
 --^^^^^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partial_application_negative.fz:42:47: error 6: Could not find called feature
@@ -103,7 +103,7 @@ This call can be resolved in two ways, either as a direct call to 'partial_appli
 or by partially applying arguments to a call to 'partial_application_negative.ambig2' declared at partial_application_negative.fz:67:3
   ambig2(x, y i32) String => "$x $y"
 --^^^^^^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partial_application_negative.fz:74:26: error 11: Ambiguity between direct and partially applied call target
@@ -115,6 +115,6 @@ This call can be resolved in two ways, either as a direct call to 'partial_appli
 or by partially applying arguments to a call to 'partial_application_negative.ambig2' declared at partial_application_negative.fz:67:3
   ambig2(x, y i32) String => "$x $y"
 --^^^^^^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 11 errors.
