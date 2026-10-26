@@ -1,0 +1,74 @@
+
+--CURDIR--/reg_issue7546.fz:34:17: error 1: Could not find called feature
+    operation : choice put get rem is
+----------------^^^^^^
+Feature not found: 'choice' (3 arguments)
+Target feature: 'my_test.(λ()->).call'
+In call: 'choice'
+
+
+--CURDIR--/reg_issue7546.fz:38:37: error 2: Type not found
+      say "[INFO] $op $k$(match v ? v => "=>$v" | _ => "")"
+------------------------------------^
+Type 'v' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'v'
+in feature: 'my_test.(λ()->).call.test'
+However, one feature has been found that matches the type name but that does not define a type:
+'my_test.(λ()->).call.test.v' defined at --CURDIR--/reg_issue7546.fz:36:29:
+    test(op operation, k K, v option V) =>
+----------------------------^
+
+To solve this, remove the return type (or replace it by 'ref') of this feature.
+
+
+--CURDIR--/reg_issue7546.fz:38:51: error 3: Type not found
+      say "[INFO] $op $k$(match v ? v => "=>$v" | _ => "")"
+--------------------------------------------------^
+Type '_' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: '_'
+in feature: 'my_test.(λ()->).call.test'
+To solve this, check the spelling of the type you have used.
+
+
+--CURDIR--/reg_issue7546.fz:44:10: error 4: Incompatible types when passing argument in a call
+    test put 6 "six"
+---------^^^
+Actual type for argument #1 'op' does not match expected type.
+In call to          : 'my_test.(λ()->).call.test'
+expected formal type: 'my_test.(λ()->).call.this.operation'
+actual type found   : 'my_test.(λ()->).call.this.put'
+assignable to       : 'my_test.(λ()->).call.this.put'
+for value assigned  : 'put'
+To solve this, you could change the type of the target 'op' to 'my_test.(λ()->).call.this.put' or convert the type of the assigned value to 'my_test.(λ()->).call.this.operation'.
+
+
+--CURDIR--/reg_issue7546.fz:44:14: error 5: Illegal use of numeric literal.
+    test put 6 "six"
+-------------^
+'my_test.K' or its constraint does not implement 'from_u32'.
+
+
+--CURDIR--/reg_issue7546.fz:44:16: error 6: Incompatible types when passing argument in a call
+    test put 6 "six"
+---------------^^^^^
+Actual type for argument #3 'v' does not match expected type.
+In call to          : 'my_test.(λ()->).call.test'
+expected formal type: 'option V'
+actual type found   : 'String'
+assignable to       : 'String'
+for value assigned  : '"six"'
+To solve this, you could change the type of the target 'v' to 'String' or convert the type of the assigned value to 'option V'.
+
+
+--CURDIR--/reg_issue7546.fz:38:35: error 7: 'match' subject type must be a choice type
+      say "[INFO] $op $k$(match v ? v => "=>$v" | _ => "")"
+----------------------------------^
+Matched type: 'String', which is not a choice type
+
+
+--CURDIR--/reg_issue7546.fz:40:13: error 8: 'match' subject type must be a choice type
+      match op
+------------^^
+Matched type: 'my_test.(λ()->).call.this.operation', which is not a choice type
+
+8 errors.
