@@ -36,7 +36,7 @@
 # The implementation that was used as an inspiration for this port:
 # https://github.com/ledbutter/CSharpFingerTree
 #
-# NYI: UNDER DEVELOPMENT: split0, slice, reverse
+# NYI: UNDER DEVELOPMENT: split0, reverse
 #
 private:public Finger_Tree(T type) ref : container.abstract_array T is
 
@@ -122,6 +122,7 @@ empty(T type) : container.Finger_Tree T is
     else
       r
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.empty T
+  public redef slice(I type : integer, from, to I) Sequence T => []
 
 
 
@@ -151,6 +152,8 @@ is
     while j < data.count
     do
       ia[i+j] := data[j]
+  public redef slice(I type : integer, from, to I) Sequence T =>
+    container.single (data.slice from to)
 
 
 
@@ -251,6 +254,16 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
     lft.fill_internal_array ia i
     ft.fill_internal_array ia i+lft.count
     rght.fill_internal_array ia i+lft.count+ft.count
+
+
+  public redef slice(I type : integer, from, to I) Sequence T =>
+    (lft.finger ++ [ft] ++ rght.finger)
+      .reduce (id (Sequence T) (Finger_Tree T .empty), from.as_i64, to.as_i64) (r,t)->
+        if t.is_valid_index r.1 || t.is_valid_index r.2
+          (r.0 ++ t.slice (max 0 r.1) (min r.0.count r.2), r.1-t.count, r.2-t.count)
+        else
+          (r.0, r.1-t.count, r.2-t.count)
+      .0
 
 
 # this is called digit in the paper
