@@ -172,7 +172,10 @@ public abstract_array
       debug: i ≥ 0
       debug: i=0 || i.as_i64<length
   =>
-    (slice i.as_i64 length).as_list
+    if is_valid_index i
+      (list T).of_finite (index[] i) (if i+1<length then as_list i+1 else nil)
+    else
+      nil
 
 
   # create a slice from this array's elements at index 'from' (included)
