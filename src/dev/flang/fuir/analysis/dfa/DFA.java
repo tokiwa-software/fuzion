@@ -1795,46 +1795,6 @@ public class DFA extends ANY
 
 
   /**
-   * Helper routine for intrinsics that set the elements of an array given as an argument
-   *
-   * @param cl the intrinsic call
-   *
-   * @param argnum the argument that is an internal array
-   *
-   * @param intrinsicName name of the intrinsic, just of error handling
-   *
-   * @param elementClazz the element type of the array.
-   */
-  static void setArrayElementsToAnything(Call cl, int argnum, String intrinsicName, SpecialClazzes elementClazz)
-  {
-    var array = cl._args.get(argnum);
-    if (array instanceof SysArray sa)
-      {
-        sa.setel(NumericValue.create(cl._dfa, fuir(cl).clazz(SpecialClazzes.c_i32)),
-                 NumericValue.create(cl._dfa, fuir(cl).clazz(elementClazz)));
-      }
-    else
-      {
-        Errors.fatal("DFA internal error: intrinsic '" + intrinsicName+ ": Expected class SysArray, found " + array.getClass() + " " + array);
-      }
-  }
-
-
-  /**
-   * Helper routine to call setArrayElementsToAnything with specific clazz.
-   *
-   * @param cl the intrinsic call
-   *
-   * @param argnum the argument that is an internal array
-   *
-   * @param intrinsicName name of the intrinsic, just of error handling
-   */
-  static void setArrayU8ElementsToAnything (Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_u8 ); }
-  static void setArrayI32ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_i32); }
-  static void setArrayI64ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_i64); }
-
-
-  /**
    * Allocate the result instance of an intrinsic call returning
    * fuzion.java.Java_Object or children like fuzion.java.Array.
    *
@@ -3341,8 +3301,6 @@ public class DFA extends ANY
     return k;
   }
 
-
-  static final int _cntArrayCons = 0;
 
   /**
    * Create call to given clazz with given target and args.
