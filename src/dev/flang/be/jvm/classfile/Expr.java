@@ -1631,7 +1631,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
         {
-          idx[0] += (n>4 ? 2 : 1);
+          idx[0] += (n>3 ? 2 : 1);
         }
     };
   }
