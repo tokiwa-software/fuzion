@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.SpecialClazzes;
 
 /**
  * f64Value is a value of type f64
@@ -98,23 +97,6 @@ public class f64Value extends Value
     var l = Double.doubleToRawLongBits(_val);
     slot.container.nonrefs[slot.offset    ] = (int) l;
     slot.container.nonrefs[slot.offset + 1] = (int) (l >> 32);
-  }
-
-
-  /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  void checkStaticClazz(int expected)
-  {
-    if (expected != fuir().clazz(SpecialClazzes.c_f64))
-      {
-        throw new Error("f64 value not allowed for clazz " + expected);
-      }
   }
 
 
