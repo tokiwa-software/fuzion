@@ -840,6 +840,16 @@ public abstract class FUIR extends IR
   public abstract int clazzActualGeneric(int cl, int gix);
 
 
+  /**
+   * Get the number of actual generic parameters of a given clazz.
+   *
+   * @param cl a clazz id
+   *
+   * @return the number of actual generic parameters of cl, 0 if none
+   */
+  public abstract int clazzActualGenericCount(int cl);
+
+
   /*---------------------  analysis results  ---------------------*/
 
 

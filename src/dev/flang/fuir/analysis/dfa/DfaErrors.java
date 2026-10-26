@@ -67,6 +67,40 @@ class DfaErrors extends ANY
                  "Callchain that lead to this point:\n\n" + why.contextString());
   }
 
+
+  /**
+   * Report a fatal error for a recursion with ever-growing generic type
+   * arguments.  Such a recursion would create an unbounded number of
+   * monomorphized clazzes during DFA.
+   *
+   * @param e the newly created call that caused the growing instantiation
+   *
+   * @param ancestor an older call to the same original feature with a smaller
+   * type instantiation
+   */
+  public static void dfaGrowingTypeRecursion(Call e, Call ancestor)
+  {
+    var fuir = e._dfa._fuir;
+    var cl   = e.calledClazz();
+    var anc  = ancestor.calledClazz();
+    var msg  = "DFA detected unbounded recursion with ever-growing type arguments.";
+    var detail =
+      "Call to " + code(fuir.clazzNameHuman(cl)) +
+      "\nrecurs from call to " + code(fuir.clazzNameHuman(anc)) +
+      "\nwith a strictly larger type instantiation.\n\n" +
+      "Callchain that lead to this point:\n\n" + e._context.contextString();
+    var pos = e.callSitePos();
+    if (pos == null)
+      {
+        Errors.fatal(msg, detail);
+      }
+    else
+      {
+        Errors.fatal(pos.pos(), msg, detail);
+      }
+  }
+
+
   public static void fatal(String msg)
   {
     Errors.fatal(msg);
