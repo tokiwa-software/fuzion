@@ -1,2 +1,3 @@
 alive: ok
-joined: thread was already joined
+joined: ok
+joined, stable: true

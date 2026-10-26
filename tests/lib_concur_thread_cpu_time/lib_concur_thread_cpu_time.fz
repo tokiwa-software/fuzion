@@ -46,3 +46,7 @@ lib_concur_thread_cpu_time =>
   done.write true
   t.join.or_panic
   show "joined"
+
+  # after the thread finished, the recorded CPU time does not change
+  #
+  say "joined, stable: $(t.cpu_time.or_panic = t.cpu_time.or_panic)"
