@@ -2411,6 +2411,20 @@ public class GeneratingFUIR extends FUIR
   }
 
 
+  /**
+   * Get the number of actual generic parameters of a given clazz.
+   *
+   * @param cl a clazz id
+   *
+   * @return the number of actual generic parameters of cl, 0 if none
+   */
+  @Override
+  public int clazzActualGenericCount(int cl)
+  {
+    return clazz(cl).actualTypeParameters().length;
+  }
+
+
   /*---------------------  analysis results  ---------------------*/
 
 

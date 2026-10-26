@@ -806,6 +806,33 @@ public class DFA extends ANY
 
 
   /**
+   * Maximum number of times a call to the same original feature with a strictly
+   * growing generic type argument may be found in the current call context
+   * before we consider this an unbounded monomorphization and stop compilation.
+   *
+   * This is used to detect recursions like
+   *
+   *   f T      -> f (Sequence T)
+   *   f (Sequence T) -> f (Sequence (Sequence T))
+   *
+   * where DFA would otherwise create ever new clazzes without reaching a fix
+   * point.
+   *
+   * Set this to 0 to disable this check.
+   */
+  private static final int MAX_GROWING_TYPE_RECURSION =
+    FuzionOptions.intPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.MAX_GROWING_TYPE_RECURSION", 2);
+
+
+  /**
+   * Maximum depth used when searching for a clazz within the actual generic
+   * arguments and outer clazzes of another clazz.
+   */
+  private static final int MAX_TYPE_SEARCH_DEPTH =
+    FuzionOptions.intPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.MAX_TYPE_SEARCH_DEPTH", 100);
+
+
+  /**
    * To spot potential problems early where DFA takes a lot of iterations.
    */
   private static final int MAX_ITERATIONS =
@@ -3445,6 +3472,144 @@ public class DFA extends ANY
 
 
   /**
+   * Check if clazz {@code sub} occurs within the actual generic arguments of
+   * clazz {@code sup}, i.e., if {@code sup} is {@code sub} or if {@code sub}
+   * occurs recursively in an actual generic argument of {@code sup}.
+   *
+   * @param sub the clazz to search for
+   *
+   * @param sup the clazz to search in
+   *
+   * @return true if sub occurs within sup
+   */
+  private boolean clazzContains(int sub, int sup)
+  {
+    return clazzContains(sub, sup, 0);
+  }
+
+
+  /**
+   * Helper for {@link #clazzContains(int, int)} with a depth limit to avoid
+   * endless recursion for recursive types.
+   */
+  private boolean clazzContains(int sub, int sup, int depth)
+  {
+    if (sub == sup)
+      {
+        return true;
+      }
+    if (sup == NO_CLAZZ || depth > MAX_TYPE_SEARCH_DEPTH)
+      {
+        return false;
+      }
+    var n = _fuir.clazzActualGenericCount(sup);
+    for (var i = 0; i < n; i++)
+      {
+        if (clazzContains(sub, _fuir.clazzActualGeneric(sup, i), depth + 1))
+          {
+            return true;
+          }
+      }
+    return false;
+  }
+
+
+  /**
+   * Are the actual generic arguments of clazz {@code cl} a strict extension of
+   * the actual generic arguments of clazz {@code ancestor}?
+   */
+  private boolean hasGrowingActualGeneric(int cl, int ancestor)
+  {
+    if (cl == NO_CLAZZ || ancestor == NO_CLAZZ)
+      {
+        return false;
+      }
+    var n = _fuir.clazzActualGenericCount(cl);
+    if (n != _fuir.clazzActualGenericCount(ancestor))
+      {
+        return false;
+      }
+    for (var i = 0; i < n; i++)
+      {
+        var cur = _fuir.clazzActualGeneric(cl, i);
+        var old = _fuir.clazzActualGeneric(ancestor, i);
+        if (cur != old && clazzContains(old, cur))
+          {
+            return true;
+          }
+      }
+    return false;
+  }
+
+
+  /**
+   * Is clazz {@code cur} an instantiation of the same original feature as
+   * {@code ancestor} but with a strictly more nested type argument?
+   *
+   * For example, for the recursion
+   *
+   *   f T -> f (Sequence T)
+   *
+   * this returns true for {@code f (Sequence T)} and {@code f T}.
+   *
+   * @param cur the newer clazz
+   *
+   * @param ancestor an older clazz from the call context
+   *
+   * @return true if cur is a strictly growing instantiation of ancestor
+   */
+  private boolean isGrowingInstantiation(int cur, int ancestor)
+  {
+    if (cur == ancestor ||
+        !_fuir.clazzOriginalName(cur).equals(_fuir.clazzOriginalName(ancestor)))
+      {
+        return false;
+      }
+    return hasGrowingActualGeneric(cur, ancestor) ||
+           hasGrowingActualGeneric(_fuir.clazzOuterClazz(cur), _fuir.clazzOuterClazz(ancestor));
+  }
+
+
+  /**
+   * Check whether the call context of {@code e} contains multiple calls to the
+   * same original feature with ever-growing generic type arguments.  If so, this
+   * would cause an unbounded number of monomorphized clazzes and DFA would never
+   * reach a fix point, so report a fatal error and stop compilation.
+   *
+   * @param e a newly created call
+   */
+  private void checkGrowingTypeRecursion(Call e)
+  {
+    if (MAX_GROWING_TYPE_RECURSION <= 0)
+      {
+        return;
+      }
+    var cl = e.calledClazz();
+    var outer = _fuir.clazzOuterClazz(cl);
+    if (_fuir.clazzActualGenericCount(cl) == 0 &&
+        (outer == NO_CLAZZ || _fuir.clazzActualGenericCount(outer) == 0))
+      {
+        return;
+      }
+    var expansions = 0;
+    var prev = cl;
+    for (var ctx = e._context; ctx instanceof Call ancestor; ctx = ancestor._context)
+      {
+        var anc = ancestor.calledClazz();
+        if (isGrowingInstantiation(prev, anc))
+          {
+            if (++expansions >= MAX_GROWING_TYPE_RECURSION)
+              {
+                DfaErrors.dfaGrowingTypeRecursion(e, ancestor);
+                return;
+              }
+            prev = anc;
+          }
+      }
+  }
+
+
+  /**
    * Helper for newCall to analyze a newly created call immediately. This helps
    * to avoid quadratic performance when analyzing a sequence of calls as in
    *
@@ -3464,6 +3629,7 @@ public class DFA extends ANY
    */
   private void analyzeNewCall(Call e)
   {
+    checkGrowingTypeRecursion(e);
     var cnt = _newCallRecursiveAnalyzeCalls;
     var rec = true;
     if (cnt < _newCallRecursiveAnalyzeClazzes.length)

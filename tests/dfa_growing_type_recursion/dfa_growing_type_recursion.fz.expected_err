@@ -1,0 +1,21 @@
+
+dfa_growing_type_recursion.fz:35:3: error 1: DFA detected unbounded recursion with ever-growing type arguments.
+  f (Sequence T)
+--^^^^^^^^^^^^^^
+Call to 'f#1 (Sequence (Sequence u8))'
+recurs from call to 'f#1 u8'
+with a strictly larger type instantiation.
+
+Callchain that lead to this point:
+
+call 'f#1 (Sequence u8)' at dfa_growing_type_recursion.fz:35:3
+  f (Sequence T)
+--^^^^^^^^^^^^^^
+call 'f#1 u8' at dfa_growing_type_recursion.fz:37:1
+f u8
+^^^^
+call 'universe'
+program entry point
+
+*** fatal errors encountered, stopping.
+one error.

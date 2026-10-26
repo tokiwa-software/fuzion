@@ -356,6 +356,12 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
+  public int clazzActualGenericCount(int cl)
+  {
+    return _clazzes[clazzId2num(cl)].clazzActualGenerics().length;
+  }
+
+  @Override
   public LifeTime lifeTime(int cl)
   {
     return _clazzes[clazzId2num(cl)].lifeTime();
