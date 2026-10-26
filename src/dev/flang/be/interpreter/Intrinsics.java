@@ -505,7 +505,9 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.thread.cpu_time0", (executor, innerClazz) -> args ->
         {
-          var thread = ((Thread) ((JavaRef) args.get(1))._javaRef);
+          var t = ((JavaRef) args.get(1))._javaRef;
+          // `fuzion.sys.thread.current` results in a FuzionThread, `spawn0` in a Java Thread
+          var thread = t instanceof FuzionThread ft ? ft._javaThread : (Thread) t;
           return new i64Value(java.lang.management.ManagementFactory.getThreadMXBean().getThreadCpuTime(thread.threadId()));
         });
 

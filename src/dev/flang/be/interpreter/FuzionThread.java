@@ -65,6 +65,10 @@ public class FuzionThread extends ANY
 
   /*----------------------------  variables  ----------------------------*/
 
+  /**
+   * the Java thread this FuzionThread belongs to.
+   */
+  final Thread _javaThread = Thread.currentThread();
 
   /**
    * Current call stack, for debugging output
