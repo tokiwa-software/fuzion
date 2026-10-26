@@ -52,57 +52,6 @@ class CallGroup extends ANY implements Comparable<CallGroup>
   /*-------------------------  static methods  --------------------------*/
 
 
-  /**
-   * simple hash function that maps clazz id, site and target value that
-   * identify a CallGroup to a unique long.  This may fail and return -1 if no
-   * unique value can be produced.
-   *
-   * @param dfa the DFA instance
-   *
-   * @param cl a clazz id.
-   *
-   * @param site a call site
-   *
-   * @param tvalue a value used as call target
-   *
-   * @return -1 or a values that is unique for the given cl/site/tvalue.
-   */
-  private long quickHash(DFA dfa, int cl, int site, Value tvalue)
-  {
-    long k = -1;
-    var k1 = dfa._fuir.clazzId2num(cl);
-    var k2 = tvalue._id;
-    var k3 = dfa.siteSensitive(cl) ? DFA.siteIndex(site) : 0;
-    var k4 = 0; // NYI: 10 unused bits still available in the hash code.
-    if (CHECKS) check
-      (k1 >= 0,
-       k2 >= 0,
-       k3 >= 0,
-       k4 >= 0);
-    // We use a LongMap in case we manage to fiddle k1..k4 into a long
-    //
-    // try to fit clazz id, tvalue id, siteIndex and env id into long as follows
-    //
-    // Bit 6666555555555544444444443333333333222222222211111111110000000000
-    //     3210987654321098765432109876543210987654321098765432109876543210
-    //     <----clazz id----><---tvalue id----><---siteIndex----><-0 .. 0->
-    //     |     18 bits    ||     18 bits    ||     18 bits    ||10 bits |
-    //
-    if (k1 <= 0x3FFFE &&
-        k2 <= 0x3FFFE &&
-        k3 <= 0x3FFFE &&
-        k4 <= 0x03FE)
-      {
-        k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x400L + k4;
-        if (CHECKS) check
-          (((k >> (18*2+10)) & 0x3FFFF) == k1,
-           ((k >> (18  +10)) & 0x3FFFF) == k2,
-           ((k >> (     10)) & 0x3FFFF) == k3,
-           ((k               & 0x003FF) == k4));
-      }
-    return k;
-  }
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -181,7 +130,7 @@ class CallGroup extends ANY implements Comparable<CallGroup>
     _cc = cc;
     _site = site;
     _target = target;
-    _quickHash = quickHash(dfa, cc, site, target);
+    _quickHash = dfa.callQuickHash(cc, site, target, null);
   }
 
 
