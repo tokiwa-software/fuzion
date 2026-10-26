@@ -49,3 +49,18 @@ fuzion_runtime_deinit =>
 
   for c in effect_types.type_foldf nil cleanups do
     c()
+
+  #
+  # NYI: BUG: this code does not currently work...
+  #
+
+  #
+  # backwards := effect_types.foldf (id (list (Nullary unit)) nil) T,e->
+  #     if T : effect then
+  #       match T.default_value
+  #         T => (() -> T.env.finally) : e
+  #         nil => e
+  #     else
+  #       compile_time_error  # effect_types should contain only effects
+
+  # backwards.for_each (.call)
