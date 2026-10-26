@@ -56,10 +56,8 @@ inference_choice_generics =>
                (special_branch 08 15)
                (special_branch 32 168)))
 
-  # NYI: UNDER DEVELOPMENT: #8048 Do not call `print` while this issue is open
-  if false
-    print tree2
-    say ""
+  print tree2
+  say ""
 
   # -----------------------------
 
