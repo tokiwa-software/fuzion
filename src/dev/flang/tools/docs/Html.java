@@ -131,7 +131,7 @@ public class Html extends ANY
     else if (af.isTypeParameter())
       {
         var constraintType = af.constraint();
-        var constraint = typeFeature(constraintType);
+        var constraint = constraintType.feature();
         return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
           .replace("$1", featureRelativeURL(constraint, relativeTo))
           .replace("$2", htmlEncodeNbsp(constraintType.toString(true, af)));
@@ -1172,40 +1172,22 @@ public class Html extends ANY
     // free type parameters are inferred from the type of the value argument
     // they are used in, so they are not shown as separate arguments but
     // directly after that argument.
-    var freeTypes = f.valueArguments()
-      .stream()
-      .map(a -> typeFeature(a.resultType()))
-      .filter(AbstractFeature::isFreeTypeParameter)
-      .collect(Collectors.toSet());
+    var freeTypes = f.typeArguments()
+      .filter(AbstractFeature::isFreeTypeParameter);
 
     var res = f.arguments()
       .stream()
       .filter(a -> !freeTypes.contains(a))
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
-      .map(a ->
-        {
-          var freeType = a.isTypeParameter() ? null : typeFeature(a.resultType());
-          return htmlEncodedBasename(a) + "&nbsp;"
-            + (a.isTypeParameter()               ? typeArgAsString(a, relativeTo) :
-               freeType != null
-               && freeType.isFreeTypeParameter() ? htmlEncodedBasename(freeType)
-                                                   + "&nbsp;" + typeArgAsString(freeType, relativeTo)
-                                                 : anchorType(a, f, relativeTo));
-        })
+      .map(a -> htmlEncodedBasename(a) + "&nbsp;" +
+        (a.isTypeParameter()             ? typeArgAsString(a, relativeTo) :
+        (a.resultType().isParametricType() &&
+         a.resultType().typeParameter() instanceof AbstractFeature freeType &&
+         freeType.isFreeTypeParameter()) ? htmlEncodedBasename(freeType) + "&nbsp;" +
+                                           typeArgAsString(freeType, relativeTo)
+                                         : anchorType(a, f, relativeTo)))
       .collect(Collectors.joining(htmlEncodeNbsp(", ")));
     return res.isEmpty() ? "" : "(" + res + ")";
-  }
-
-
-  /**
-   * Get the feature defining the given type, also for parametric types.
-   *
-   * @param t a resolved type
-   * @return the feature of t or, for a parametric type, its type parameter
-   */
-  private static AbstractFeature typeFeature(AbstractType t)
-  {
-    return t.isParametricType() ? t.typeParameter() : t.feature();
   }
 
 
