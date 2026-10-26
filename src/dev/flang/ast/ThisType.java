@@ -56,7 +56,8 @@ class ThisType extends ResolvedType {
   {
     if (PRECONDITIONS) require
       (!feature.isUniverse(),
-       feature != Types.f_ERROR);
+       feature != Types.f_ERROR,
+       !feature.isTypeParameter());
     _feature = feature;
   }
 
