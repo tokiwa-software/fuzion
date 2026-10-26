@@ -1476,7 +1476,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
     if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
       {
         _res.resolveDeclarations(outer);
-        var type_fs = new List<AbstractFeature>();
+        var type_fs = new List<FeatureAndOuter>();
         var nontype_fs = new List<AbstractFeature>();
         var fs = lookup(outer, name, null, traverseOuter, false);
         var o = outer;
@@ -1498,7 +1498,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               {
                 if (f.definesType() || f.isTypeParameter())
                   {
-                    type_fs.add(f);
+                    type_fs.add(fo);
                     result = fo;
                   }
                 else
