@@ -1647,7 +1647,7 @@ public class Runtime extends ANY
 
     if (c == boolean.class)
       {
-        return 4;
+        return 1;
       }
     else if (c == byte.class)
       {
