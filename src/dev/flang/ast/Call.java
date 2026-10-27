@@ -2750,11 +2750,13 @@ public class Call extends AbstractCall
    * This is used by Impl.initialValueFromCall to exclude actual arguments that
    * recursively depend on the type of the argument that we are trying to infer.
    *
-   * @return true iff in our call stack, the is a call to
+   * @return true iff in our call stack, there is a call to
    * `this.resolveTypes(res, context)`.
    */
   boolean resolvingTypesRightNow()
   {
+    // _resolvedFor will be set early on in `resolveTypes, while `_type` will be
+    // set later when resolution was successful.
     return _resolvedFor != null && _type == null;
   }
 
