@@ -79,7 +79,7 @@ public class ParserCache extends ANY
   public SourceModule sourceModule(AbstractFeature f)
   {
     if (PRECONDITIONS)
-      require(!TypeTool.containsError(f.selfType()));
+      require(!f.selfType().containsError());
     var universe = FeatureTool.universe(f);
     return universe2FrontEndMap.get(universe).sourceModule();
   }

@@ -456,8 +456,6 @@ public class Call extends AbstractCall
   /**
    * Get the type of the target feature.
    *
-   * NYI: CLEANUP: can we merge targetFeatureType/targetType?
-   *
    * @return the type of the targetFeature or null if unknown.
    */
   private AbstractType targetFeatureType(Resolution res, Context context)
@@ -550,8 +548,16 @@ public class Call extends AbstractCall
         _target.loadCalledFeature(res, context);
         _target = res.resolveType(_target, context);
         var tt = targetFeatureType(res, context);
-
-        if (tt == null && _target instanceof Call c)
+        var ct = tt == null ? cotypeIfOnlyTypeFeatureNamed(res, context) : null;
+        if (ct != null)
+          { // target can only be meant as a type, so look for the called feature in its cotype
+            result = ct;
+            if (_target instanceof Call c)
+              { // the target is not called, so its error must not be reported
+                c._pendingError = null;
+              }
+          }
+        else if (tt == null && _target instanceof Call c)
           {
             c._pendingError = ()->
               {
@@ -943,7 +949,7 @@ public class Call extends AbstractCall
         if (_target != null && _target.asParsedType() != null)
           {
             var tt = _target.asParsedType().resolve(res, context, true);
-            if (tt != null && tt.isNormalType() && tt.feature().hasCotype())
+            if (tt != null && tt.isNormalType() && tt.feature().hasCotype() && tt.feature().cotype() != targetFeature)
               {
                 fos.addAll(res._module.lookup(tt.feature().cotype(), _name, this, false, false));
               }
@@ -1479,10 +1485,6 @@ public class Call extends AbstractCall
    */
   private AbstractType getResultType0(Resolution res, Context context, boolean urgent)
   {
-    // NYI: CLEANUP: There is some overlap between Call.adjustResultType,
-    // Call.adjustType and AbstractType.genericsAssignable, might be nice to
-    // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
-    // / etc. in the same order and move them to a dedicated function).
     var t0 = _target == null || target().type().selfOrConstraint(context).isArtificialType()
       ? Types.t_ERROR
       : effectiveResultType(res, context, _calledFeature, urgent);
@@ -2245,6 +2247,7 @@ public class Call extends AbstractCall
     if (actualType != null)
       {
         actualType = actualType.replace_type_parameters_of_cotype_origin(context.outerFeature());
+        actualType = typeForTypeAsValue(actual, actualType);
         if (!actualType.isParametricType() && actualType.feature().isCotype())
           {
             actualType = actual instanceof Call c && c.calledFeature().isOpenTypeParameter()
@@ -2253,6 +2256,21 @@ public class Call extends AbstractCall
           }
       }
     return actualType;
+  }
+
+
+  /**
+   * @param actual an actual argument
+   *
+   * @param actualType the type of the argument
+   *
+   * @return the actual type or if this is a type as value call type of `Type`
+   */
+  private static AbstractType typeForTypeAsValue(Expr actual, AbstractType actualType)
+  {
+    return actualType.isParametricType() && actual instanceof Call c && c.isTypeAsValueCall()
+      ? Types.resolved.f_Type.selfType()
+      : actualType;
   }
 
 
@@ -2762,6 +2780,34 @@ public class Call extends AbstractCall
 
 
   /**
+   * Helper for targetFeature. Returns the cotype of the target type if the target has no feature
+   * named _name, but its cotype has at least one type feature with this name that fails to match the actual arguments.
+   *
+   * @param res the resolution instance
+   * @param context the source code context where this Call is used
+   * @return the cotype of the target type, or null if the target is not such a type
+   */
+  private AbstractFeature cotypeIfOnlyTypeFeatureNamed(Resolution res, Context context)
+  {
+    var pt = _target.asParsedType();
+    var tt = pt == null ? null : pt.resolve(res, context, true);
+    if (tt != null && tt != Types.t_ERROR && tt.isNormalType() && !tt.feature().isTypeParameter())
+      {
+        var tf = tt.feature();
+        var ct = res.cotype(tf);
+        res.resolveDeclarations(ct);
+        if (res._module.lookup(tf, _name, this, false, false).isEmpty() &&
+            res._module.lookup(ct, _name, this, false, false).stream().anyMatch(fo -> fo._feature.isTypeFeature())&&
+            findOnTarget(res, ct, true).v1() == null) // a matching type feature is found by tryResolveTypeCall
+          {
+            return ct;
+          }
+      }
+    return null;
+  }
+
+
+  /**
    * try resolving this call as dot-type-call
    *
    * On success _calledFeature and _target will be set.
@@ -2803,7 +2849,7 @@ public class Call extends AbstractCall
                    would always have an ambiguity when calling `as_string` */
                   && f.outer().isCotype())
                 {
-                  if (fo != null && !fo._feature.isTypeParameter())
+                  if (fo != null && !fo._feature.isTypeParameter() && tf.valueArguments().isEmpty() /* otherwise `t.f` cannot call inner `f` */)
                     {
                       AstErrors.ambiguousCall(this, fo._feature, tfo._feature);
                       setToErrorState();
@@ -3187,7 +3233,8 @@ public class Call extends AbstractCall
                 var frmlT = resolvedFormalArgumentTypes[i];
                 if (CHECKS) check
                   (Errors.any() || actl != Call.ERROR);
-                if (frmlT != Types.t_ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actl.type(), context).no())
+                var actlType = typeForTypeAsValue(actl, actl.type());
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actlType, context).no())
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, i, frmlT, actl, context);
                   }
