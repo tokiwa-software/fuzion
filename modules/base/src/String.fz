@@ -548,9 +548,6 @@ public String ref : property.hashable, property.orderable is
   public split_at_byte(i i64) (String, String)
     pre
       debug: 0 ≤ i ≤ byte_count
-      # NYI: ENHANCEMENT: #6342, #6381: re-enable when Sequence.conat
-      # consistently can return an expanding_array for finite Strings
-      # debug: utf8.is_array_backed
   =>
     (substring 0 i, substring i byte_count)
 
