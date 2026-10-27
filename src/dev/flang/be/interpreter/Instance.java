@@ -322,35 +322,6 @@ public class Instance extends ValueWithClazz
 
 
   /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  @Override
-  public void checkStaticClazz(int expected)
-  {
-    if (fuir().clazzIsRef(expected))
-      {
-        // NYI:
-        // if (!expected.isAssignableFromWithoutTagging(clazz()))
-        //   {
-        //     throw new Error("Dynamic runtime clazz "+clazz()+" does not match static "+expected);
-        //   }
-      }
-    else
-      {
-        if (expected != _clazz)
-          {
-            throw new Error("Runtime clazz "+_clazz+" does not equal static "+expected);
-          }
-      }
-  }
-
-
-  /**
    * Convert this value into an LValue with the given offset.
    *
    * @param c the clazz of the value, for debugging only

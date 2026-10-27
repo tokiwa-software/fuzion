@@ -705,7 +705,7 @@ is
   public fixed as_map container.Map CTK CTV =>
     s := snapshot true
     _ : container.Map CTK CTV is
-      public redef size i64 => s.size.as_i64
+      public redef size i64 => s.size
       public redef index [] (k CTK) option CTV => s[k]
       public redef items Sequence (tuple CTK CTV) => s.items
 

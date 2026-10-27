@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.LibraryFeature;
@@ -129,10 +130,11 @@ public class Html extends ANY
       }
     else if (af.isTypeParameter())
       {
-        var constraint = af.constraint().feature();
+        var constraintType = af.constraint();
+        var constraint = constraintType.feature();
         return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
           .replace("$1", featureRelativeURL(constraint, relativeTo))
-          .replace("$2", htmlEncodedQualifiedName(constraint));
+          .replace("$2", htmlEncodeNbsp(constraintType.toString(true, af)));
       }
     else
       {
@@ -147,7 +149,7 @@ public class Html extends ANY
               + htmlEncodedBasename(f)
               + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
               + c.actualTypeParameters().stream()
-                 .map(at -> htmlEncodeNbsp(at.toString(false, af)))
+                 .map(at -> htmlEncodeNbsp(at.toString(true, af)))
                  .collect(Collectors.joining(", ")) + "</a>";
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
@@ -166,10 +168,10 @@ public class Html extends ANY
     var at = af.resultType();
     if (at.isParametricType())
       {
-        return htmlEncodeNbsp(at.toString(false, context))
+        return htmlEncodeNbsp(at.toString(true, context))
                + (at.isOpenGeneric() ? "..." : "");
       }
-    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(false, context)))
+    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(true, context)))
       .replace("$2", featureRelativeURL(at.feature(), relativeTo));
   }
 
@@ -494,6 +496,16 @@ public class Html extends ANY
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.OpenTypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(outer.typeArguments());
 
+    var explicitTypeParameters = typeParameters.stream()
+                                               .filter(AbstractFeature::isExplicitTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+    var openTypeParameters     = typeParameters.stream()
+                                               .filter(AbstractFeature::isOpenTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+    var freeTypeParameters     = typeParameters.stream()
+                                               .filter(AbstractFeature::isFreeTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+
     // Fields
     var fields =  new List<AbstractFeature>();
     // it's not possible to get an instance of a function feature, so no fields can not be accessed from outside
@@ -551,14 +563,16 @@ public class Html extends ANY
                                                               && typeParam.constraint().constraintAssignableFrom(outer.resultType())));
       }
 
-    return mainSection0("Type Parameters",              null,         typeParameters,     outer, false)
-         + mainSection0("Fields",                       null,         fields,             outer, false)
-         + mainSection0("Constructors",                 null,         normalConstructors, outer, true)
-         + mainSection0("Type Constructors",            null,         typeConstructors,   outer, true)
-         + mainSection0("Functions",                    null,         normalFunctions,    outer, true)
-         + mainSection0("Type Features",                null,         typeFeatures,       outer, true)
-         + mainSection0("Choice Types",                 null,         choices,            outer, true)
-         + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,  outer, true);
+    return mainSection0("Type Parameters",              null,         explicitTypeParameters, outer, false)
+         + mainSection0("Open Type Parameter",          null,         openTypeParameters,     outer, false)
+         + mainSection0("Free Type Parameters",         null,         freeTypeParameters,     outer, false)
+         + mainSection0("Fields",                       null,         fields,                 outer, false)
+         + mainSection0("Constructors",                 null,         normalConstructors,     outer, true)
+         + mainSection0("Type Constructors",            null,         typeConstructors,       outer, true)
+         + mainSection0("Functions",                    null,         normalFunctions,        outer, true)
+         + mainSection0("Type Features",                null,         typeFeatures,           outer, true)
+         + mainSection0("Choice Types",                 null,         choices,                outer, true)
+         + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,      outer, true);
   }
 
 
@@ -1155,12 +1169,23 @@ public class Html extends ANY
    */
   private String arguments(AbstractFeature f, AbstractFeature relativeTo)
   {
+    // free type parameters are inferred from the type of the value argument
+    // they are used in, so they are not shown as separate arguments but
+    // directly after that argument.
+    var freeTypes = f.typeArguments()
+      .filter(AbstractFeature::isFreeTypeParameter);
+
     var res = f.arguments()
       .stream()
+      .filter(a -> !freeTypes.contains(a))
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
-      .map(a ->
-        htmlEncodedBasename(a) + "&nbsp;"
-        + (a.isTypeParameter() ? typeArgAsString(a, relativeTo) : anchorType(a, f, relativeTo)))
+      .map(a -> htmlEncodedBasename(a) + "&nbsp;" +
+        (a.isTypeParameter()             ? typeArgAsString(a, relativeTo) :
+        (a.resultType().isParametricType() &&
+         a.resultType().typeParameter() instanceof AbstractFeature freeType &&
+         freeType.isFreeTypeParameter()) ? htmlEncodedBasename(freeType) + "&nbsp;" +
+                                           typeArgAsString(freeType, relativeTo)
+                                         : anchorType(a, f, relativeTo)))
       .collect(Collectors.joining(htmlEncodeNbsp(", ")));
     return res.isEmpty() ? "" : "(" + res + ")";
   }

@@ -83,7 +83,7 @@ class ResolvedParametricType extends ResolvedType
    *
    * @return the Generic instance, never null.
    */
-  public AbstractFeature backingFeature()
+  protected AbstractFeature backingFeature()
   {
     return _generic;
   }

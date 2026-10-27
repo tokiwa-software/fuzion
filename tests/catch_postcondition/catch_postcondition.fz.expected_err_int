@@ -179,7 +179,6 @@ instate_helper (option String) fuzion.runtime.post_fault at catch_postcondition.
 -----------^^^
   until r??
 --^^^^^^^^^
->>>>>>> main
     say r
 ----^^^^^
   else
