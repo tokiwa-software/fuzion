@@ -2369,7 +2369,8 @@ public class AstErrors extends ANY
               " declared at " + directCall.pos().show() +  "\n" +
               "or by partially applying arguments to a call to " + s(partialCall) +
               " declared at " + partialCall.pos().show() +  ".\n" +
-              "To solve this, rename one of the ambiguous features.");
+              "To solve this, use an explicit lambda, e.g., " + ss("x -> foo x") +
+              ", or rename one of the ambiguous features.");
       }
   }
 
