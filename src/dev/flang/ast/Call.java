@@ -2744,6 +2744,22 @@ public class Call extends AbstractCall
 
 
   /**
+   * Are we in the middle of resolving this Call, i.e., the result `type()` is
+   * still unknown?
+   *
+   * This is used by Impl.initialValueFromCall to exclude actual arguments that
+   * recursively depend on the type of the argument that we are trying to infer.
+   *
+   * @return true iff in our call stack, the is a call to
+   * `this.resolveTypes(res, context)`.
+   */
+  boolean resolvingTypesRightNow()
+  {
+    return _resolvedFor != null && _type == null;
+  }
+
+
+  /**
    * try resolving this call as dot-type-call
    *
    * On success _calledFeature and _target will be set.
