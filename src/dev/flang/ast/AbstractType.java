@@ -608,31 +608,29 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         assignableTo.add(actual);
       }
-    var target_type = this  .remove_type_parameter_used_for_relay_type_in_cotype();
-    var actual_type = actual.remove_type_parameter_used_for_relay_type_in_cotype();
     var result = isArtificialType() || actual.isArtificialType()
         ? YesNo.dontKnow
-        : YesNo.fromBool(target_type.compareTo(actual_type) == 0 || actual_type.isVoid());
-    if (result.no() && !target_type.isParametricType() && isRef() && actual_type.isRef())
+        : YesNo.fromBool(compareTo(actual) == 0 || actual.isVoid());
+    if (result.no() && !isParametricType() && isRef() && actual.isRef())
       {
-        if (actual_type.isParametricType())
+        if (actual.isParametricType())
           {
-            result = isAssignableFrom(actual_type.typeParameter().constraint(context).asRef(true), context, allowBoxing, allowTagging, assignableTo);
+            result = isAssignableFrom(actual.typeParameter().constraint(context).asRef(true), context, allowBoxing, allowTagging, assignableTo);
           }
         else
           {
-            for (var p: actual_type.feature().inherits())
+            for (var p: actual.feature().inherits())
               {
-                var pt = actual_type.actualType(p.type(), context).asRef(true);
+                var pt = actual.actualType(p.type(), context).asRef(true);
                 result = pt == actual ? YesNo.no : isAssignableFrom(pt, context, allowBoxing, allowTagging, assignableTo);
                 // until result != no
                 if (!result.no()) { break; }
               }
           }
       }
-    if (result.no() && allowTagging && target_type.isChoice() && !isRelayType())
+    if (result.no() && allowTagging && isChoice() && !isRelayType())
       {
-        result = YesNo.fromBool(target_type.isChoiceMatch(actual_type, context));
+        result = YesNo.fromBool(isChoiceMatch(actual, context));
       }
     // NYI: UNDER DEVELOPMENT: probably unsound! see also isAssignableFrom
     if (result.no() && isChoice() && actual.isChoice() && (isThisType() || actual.isThisType()))
@@ -2176,60 +2174,18 @@ there is no common super type of the two types (Types.t_ERROR)
     if (PRECONDITIONS) require
       (tpt.isParametricType());
 
-    var result = this;
-    if (isParametricType() && tf.isCotype())
-      {
-        if (typeParameter() == tf.arguments().get(0))
-          { // a call of the form `T.f x` where `f` is declared as
-            // `abc.type.f(arg abc.this.type)`, so replace
-            // `abc.this.type` by `T`.
-            result = tpt;
-          }
-      }
-    else
-      {
-        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_used_for_relay_type_in_cotype(tf, tpt));
-      }
-    return result;
-  }
-
-
-  /**
-   * Replace implicit generic type used for {@code abc.this.type} in {@code abc.type} by
-   * {@code abc.this.type}.
-   *
-   * example:
-   *
-   *   num is
-   *
-   *     type.zero num.this.type is abstract
-   *
-   *     plus (other num.this.type) num.this.type is abstract
-   *
-   *     type.sum is
-   *       infix ∙ (a, b num.this.type) num.this.type is a.plus b
-   *
-   * here, when passing {@code b} to {@code plus}, {@code b} is of type {@code num.this.type}, which was
-   * replaced by the implicit first generic argument of {@code num.type}, but it needs
-   * to be changed back to {@code num.this.type}.
-   */
-  AbstractType remove_type_parameter_used_for_relay_type_in_cotype()
-  {
     return switch (kind())
       {
-      case RefType, ValueType, ThisType ->
-        applyToGenericsAndOuter(g -> g.remove_type_parameter_used_for_relay_type_in_cotype());
       case ParametricType ->
-        {
-          var tp = typeParameter();
-          var tf = tp.outer();
-          yield tf.isCotype() && tp == tf.arguments().get(0)
-            // generic used for `abc.this.type` in `abc.type` by `abc.this.type`.
-            ? (isRef()
-               ? tf.cotypeOrigin().selfType().asThis().asRef()
-               : tf.cotypeOrigin().selfType().asThis())
-            : this;
-        }
+        // a call of the form `T.f x` where `f` is declared as
+        // `abc.type.f(arg abc.this.type)`, so replace
+        // `abc.this.type` by `T`.
+        tf.isCotype() && typeParameter() == tf.arguments().get(0)
+        ? tpt
+        : this;
+      case ThisType -> this;
+      case RefType, ValueType ->
+        applyToGenericsAndOuter(g -> g.replace_type_parameter_used_for_relay_type_in_cotype(tf, tpt));
       };
   }
 
