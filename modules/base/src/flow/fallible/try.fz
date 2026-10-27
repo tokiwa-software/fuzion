@@ -23,6 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
+
 # try -- try to run code requiring fallible effect and handle failure
 #
 # This feature allows Java-like try-catch syntax for fallible
@@ -36,12 +37,12 @@
 #
 #     res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE code || (s->handle post condition failure `s`)
 #
-public try(ERROR type, F type : flow.fallible ERROR, T type, code_try ()->T) is
+public type.try(T type, code_try ()->T) is
 
   # a local mutate used for storing an error
   # when throwing an exception
   #
-  lm : mutate is
+  universe.lm : mutate is
 
   # define code to execute in case of fault and run code
   #
@@ -57,10 +58,10 @@ public try(ERROR type, F type : flow.fallible ERROR, T type, code_try ()->T) is
   #
   catch0(code_catch ERROR->T) T ! lm =>
     m := lm.env.var (option ERROR nil)
-    v := F.new e->
+    v := fallible.this.new e->
               m <- e
-              F.abort
-    F.instate T v code_try (_ -> code_catch m.get.or_panic)
+              fallible.this.abort
+    fallible.this.instate T v code_try (_ -> code_catch m.get.or_panic)
 
 
   # on failure try if code `alt` succeeds
@@ -72,8 +73,8 @@ public try(ERROR type, F type : flow.fallible ERROR, T type, code_try ()->T) is
   #       .or_try _->envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic
   #       .catch  _->4
   #
-  public or_try(alt ERROR->T) try ERROR F T =>
-    try ERROR F _ ()->
+  public or_try(alt ERROR->T) try T =>
+    try _ ()->
       catch0 alt
 
 
