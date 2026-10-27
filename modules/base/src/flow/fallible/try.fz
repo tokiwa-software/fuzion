@@ -42,12 +42,12 @@ public type.try(T type, code_try ()->T) is
   # a local mutate used for storing an error
   # when throwing an exception
   #
-  universe.lm : mutate is
+  universe.try_lm : mutate is
 
   # define code to execute in case of fault and run code
   #
   public catch(code_catch ERROR->T) T =>
-    lm ! ()->
+    try_lm ! ()->
       catch0 code_catch
 
 
@@ -56,8 +56,8 @@ public type.try(T type, code_try ()->T) is
   # this is necessary e.g. for `or_try` to avoid
   # an `invalid mutate` error.
   #
-  catch0(code_catch ERROR->T) T ! lm =>
-    m := lm.env.var (option ERROR nil)
+  catch0(code_catch ERROR->T) T ! try_lm =>
+    m := try_lm.env.var (option ERROR nil)
     v := fallible.this.new e->
               m <- e
               fallible.this.abort
