@@ -1,0 +1,88 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8137
+#
+# -----------------------------------------------------------------------
+
+# This tests the declaration of internal features like `Any` or `i64` in
+# application code.
+#
+# Doing this used to make the `fz` command crash
+#
+reg_issue8137 =>
+
+
+  # -----------------  tests from issue #8137:  -----------------
+
+
+  # original test case resulted from a typo `Any o` instead of `o Any`
+  #
+  case1 =>
+    test(MM type : container.Mutable_Map String (lock_free.Node String i32)) =>
+      s (id Any (lock_free.Sieve_Cache String i32 MM 3))
+      s(Any o) =>
+        say "case1: Any is $(s.this.Any) $(s.this.Any.dynamic_type)"
+
+    test (lock_free.Map String (lock_free.Node String i32))
+
+  case1
+
+  # simpler test case with typo `Any o`, `o` is handled as a free type
+  #
+  case2 =>
+    test is
+      s(Any o) =>  # NOTE `Any` used as argument name with free type `o`!
+        say "case2: Any is $(s.this.Any) $(s.this.Any.dynamic_type)"
+
+    test.s 42
+
+  case2
+
+  # simpler test case `Any i64` without free type
+  #
+  case3 =>
+    test is
+      s(Any i64) =>  # NOTE `Any` used as argument name
+        say "case3: Any is $(s.this.Any) $(s.this.Any.dynamic_type)"
+
+    test.s 42
+
+  case3
+
+
+  # -----------------  some more similar tests:  -----------------
+
+
+  # declaring a new `String`
+  #
+  case4 =>
+    String := "bla"
+    say "case4: String is $(case4.this.String) $(case4.this.String.dynamic_type)"
+
+  case4
+
+
+  # declaring a new `utf8_data` (which is internally used for const_string but should never be ambgiuous):
+  #
+  case5 =>
+    utf8_data => "bla".utf8
+    say "case5: $utf8_data"
+
+  case5
