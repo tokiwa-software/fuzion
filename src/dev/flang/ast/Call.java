@@ -456,8 +456,6 @@ public class Call extends AbstractCall
   /**
    * Get the type of the target feature.
    *
-   * NYI: CLEANUP: can we merge targetFeatureType/targetType?
-   *
    * @return the type of the targetFeature or null if unknown.
    */
   private AbstractType targetFeatureType(Resolution res, Context context)
@@ -1479,10 +1477,6 @@ public class Call extends AbstractCall
    */
   private AbstractType getResultType0(Resolution res, Context context, boolean urgent)
   {
-    // NYI: CLEANUP: There is some overlap between Call.adjustResultType,
-    // Call.adjustType and AbstractType.genericsAssignable, might be nice to
-    // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
-    // / etc. in the same order and move them to a dedicated function).
     var t0 = _target == null || target().type().selfOrConstraint(context).isArtificialType()
       ? Types.t_ERROR
       : effectiveResultType(res, context, _calledFeature, urgent);
