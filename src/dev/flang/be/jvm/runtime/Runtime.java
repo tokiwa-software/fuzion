@@ -1578,13 +1578,46 @@ public class Runtime extends ANY
   {
     try
       {
-        if (f.getType() == int.class)
+        var ft = f.getType();
+        if (ft == boolean.class)
+          {
+            target.set(ValueLayout.JAVA_BOOLEAN, offset, f.getBoolean(source));
+          }
+        else if (ft == byte.class)
+          {
+            target.set(ValueLayout.JAVA_BYTE, offset, f.getByte(source));
+          }
+        else if (ft == char.class)
+          {
+            target.set(ValueLayout.JAVA_CHAR, offset, f.getChar(source));
+          }
+        else if (ft == short.class)
+          {
+            target.set(ValueLayout.JAVA_SHORT, offset, f.getShort(source));
+          }
+        else if (ft == int.class)
           {
             target.set(ValueLayout.JAVA_INT, offset, f.getInt(source));
           }
-        if (f.getType() == Object.class)
+        else if (ft == long.class)
+          {
+            target.set(ValueLayout.JAVA_LONG, offset, f.getLong(source));
+          }
+        else if (ft == float.class)
+          {
+            target.set(ValueLayout.JAVA_FLOAT, offset, f.getFloat(source));
+          }
+        else if (ft == double.class)
+          {
+            target.set(ValueLayout.JAVA_DOUBLE, offset, f.getDouble(source));
+          }
+        else if (ft == Object.class)
           {
             target.set(ValueLayout.ADDRESS, offset, (MemorySegment)f.get(source));
+          }
+        else
+          {
+            throw new Error("Implementation restriction: setMemSeg missing impl. for: " + ft);
           }
       }
     catch (Exception e)
