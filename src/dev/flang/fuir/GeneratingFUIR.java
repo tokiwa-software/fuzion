@@ -755,7 +755,16 @@ public class GeneratingFUIR extends FUIR
 
   private final List<List<AbstractCall>> _inh;
 
+  /**
+   * For special clazzes, map from their features to the SpecialClazz.  This is
+   * used to quickly find with new Clazz'es need a special clazz id and need to
+   * be entered to _specialClazzes.
+   */
+  private final TreeMap<AbstractFeature, SpecialClazzes> _specialFeatures;
 
+  /**
+   * Map from `SpecialClazzes.ordinal` to `Clazz`, will be filled lazily on demand.
+   */
   private final Clazz[] _specialClazzes;
 
   private final Map<AbstractType, Clazz> _clazzesForTypes;
@@ -819,9 +828,25 @@ public class GeneratingFUIR extends FUIR
       {
         _argClazzes = null;
       }
-    _specialClazzes = new Clazz[SpecialClazzes.values().length];
-    _universe  = newClazz(null, mir.universe().selfType(), FuzionConstants.NO_SELECT)._id;
+
+    _specialFeatures = new TreeMap<>();
+    for (var s : SpecialClazzes.values())
+      {
+        var f = s._getFeature.get();
+        if (f != null)
+          {
+            _specialFeatures.put(f, s);
+          }
+      }
+
+    var universe  = newClazz(null, mir.universe().selfType(), FuzionConstants.NO_SELECT);
+    _universe  = universe._id;
     doesNeedCode(_universe);
+
+    _specialClazzes = new Clazz[SpecialClazzes.values().length];
+    _specialClazzes[SpecialClazzes.c_NOT_FOUND.ordinal()] = null;
+    _specialClazzes[SpecialClazzes.c_universe .ordinal()] = universe;
+
     _mainClazz = newClazz(mir.main().selfType())._id;
     doesNeedCode(_mainClazz);
     _inh = new List<>();
@@ -852,6 +877,7 @@ public class GeneratingFUIR extends FUIR
     _clazzes = original._clazzes;
     _resultClazzes = original._resultClazzes;
     _argClazzes = original._argClazzes;
+    _specialFeatures = original._specialFeatures;
     _specialClazzes = original._specialClazzes;
     _inh = original._inh;
     _clazzesForTypes = original._clazzesForTypes;
@@ -982,43 +1008,15 @@ public class GeneratingFUIR extends FUIR
             outerR.addInner(result);
           }
 
-        var s = SpecialClazzes.c_NOT_FOUND;
-        if (cl.isRef() == cl.feature().isRef())  // not an boxed or explicit value clazz
+        if (cl.isRef() == cl.feature().isRef())  // not a boxed or explicit value clazz
           {
-            // NOTE: this only works for features in universe!
-            s = switch (cl.feature().baseName())
-              {
-              case FuzionConstants.ANY_NAME    -> SpecialClazzes.c_Any         ;
-              case FuzionConstants.I8_NAME     -> SpecialClazzes.c_i8          ;
-              case FuzionConstants.I16_NAME    -> SpecialClazzes.c_i16         ;
-              case FuzionConstants.I32_NAME    -> SpecialClazzes.c_i32         ;
-              case FuzionConstants.I64_NAME    -> SpecialClazzes.c_i64         ;
-              case FuzionConstants.U8_NAME     -> SpecialClazzes.c_u8          ;
-              case FuzionConstants.U16_NAME    -> SpecialClazzes.c_u16         ;
-              case FuzionConstants.U32_NAME    -> SpecialClazzes.c_u32         ;
-              case FuzionConstants.U64_NAME    -> SpecialClazzes.c_u64         ;
-              case FuzionConstants.F32_NAME    -> SpecialClazzes.c_f32         ;
-              case FuzionConstants.F64_NAME    -> SpecialClazzes.c_f64         ;
-              case "void"                      -> SpecialClazzes.c_void        ;
-              case "bool"                      -> SpecialClazzes.c_bool        ;
-              case "const_string"              -> SpecialClazzes.c_const_string;
-              case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
-              case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
-              case "Condition"                 -> SpecialClazzes.c_Condition   ;
-              case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;
-              case "Directory_Descriptor"      -> SpecialClazzes.c_Directory_Descriptor;
-              case "Java_Ref"                  -> SpecialClazzes.c_Java_Ref;
-              case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
-              case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
-              case "Internal_Thread"           -> SpecialClazzes.c_Internal_Thread;
-              case "stackoverflow_cause"       -> SpecialClazzes.c_stackoverflow_cause;
-              default                          -> SpecialClazzes.c_NOT_FOUND   ;
-              };
-            if (s != SpecialClazzes.c_NOT_FOUND && s._argCount == cl.feature().arguments().size())
+            var s = _specialFeatures.get(cl.feature());
+            if (s != null)
               {
                 if (CHECKS) check
                   (_specialClazzes[s.ordinal()] == null);
-                _specialClazzes[s.ordinal()] = result;
+
+                _specialClazzes[s.ordinal()] = cl;
                 cl._specialClazzId = s;
               }
           }
@@ -2043,20 +2041,13 @@ public class GeneratingFUIR extends FUIR
     var result = _specialClazzes[s.ordinal()];
     if (result == null && !_lookupDone)
       {
-        if (s == SpecialClazzes.c_universe)
-          {
-            result = clazz(_universe);
-          }
-        else
-          {
-            var o = clazz(s._outer);
-            var oc = clazz(o);
-            var of = (LibraryFeature) oc.feature();
-            var f = of.get(of._libModule, s._name, s._argCount);
-            result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
-            if (CHECKS) check
-              (f.isRef() == (result.isRef()));
-          }
+        var o = clazz(s._outer);
+        var oc = clazz(o);
+        var of = (LibraryFeature) oc.feature();
+        var f = s._getFeature.get();
+        result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
+        if (CHECKS) check
+          (f.isRef() == (result.isRef()));
         _specialClazzes[s.ordinal()] = result;
       }
     return result;
