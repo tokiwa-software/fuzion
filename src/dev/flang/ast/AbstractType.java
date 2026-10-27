@@ -804,22 +804,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var g = go != null ? go : i1.next();
         go = g.isOpenGeneric() ? g : null;
         var og = i2.next();
-        var gt = g.selfOrConstraint(context);
 
-        if (
-          switch (g.kind())
-            {
-              case ParametricType ->
-                                      // NYI: BUG: #5002: check recursive type, e.g.:
-                                      // this  = monad monad.A monad.MA
-                                      // other = monad option.T (option option.T)
-                                      // for now just prevent infinite recursion
-                                      gt.compareTo(this) != 0
-                                      &&
-                                      !gt.constraintAssignableFrom(context, og, null);
-              case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
-            }
-          )
+        if (g.compareTo(og) != 0)
           {
             return false;
           }
@@ -2509,7 +2495,8 @@ there is no common super type of the two types (Types.t_ERROR)
     var result = this;
     if (result != Types.t_ERROR && isNormalType())
       {
-        if (!checkActualTypePars(context, feature(), generics(), unresolvedGenerics(), null, null))
+        if (!checkActualTypePars(context, feature(), generics(), unresolvedGenerics(), null,
+                                 c -> c.applyTypePars(this)))
           {
             result = Types.t_ERROR;
           }

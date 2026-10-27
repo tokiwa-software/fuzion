@@ -71,5 +71,5 @@ public fallible(ERROR type, h ERROR->void) : effect is
   # Note that the code is not executed unless `.catch` or `infix ||` is applied
   # to the result of the call to `try`.
   #
-  public type.try(T type, code_try ()->T) flow.try ERROR fallible.this T =>
-    flow.try ERROR fallible.this T code_try
+  public type.try(T type, code_try ()->T) flow.try ERROR (flow.fallible ERROR) T =>
+    flow.try ERROR (flow.fallible ERROR) T code_try
