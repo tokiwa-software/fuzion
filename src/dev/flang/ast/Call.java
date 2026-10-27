@@ -2245,6 +2245,7 @@ public class Call extends AbstractCall
     if (actualType != null)
       {
         actualType = actualType.replace_type_parameters_of_cotype_origin(context.outerFeature());
+        actualType = typeForTypeAsValue(actual, actualType);
         if (!actualType.isParametricType() && actualType.feature().isCotype())
           {
             actualType = actual instanceof Call c && c.calledFeature().isOpenTypeParameter()
@@ -2253,6 +2254,21 @@ public class Call extends AbstractCall
           }
       }
     return actualType;
+  }
+
+
+  /**
+   * @param actual an actual argument
+   *
+   * @param actualType the type of the argument
+   *
+   * @return the actual type or if this is a type as value call type of `Type`
+   */
+  private static AbstractType typeForTypeAsValue(Expr actual, AbstractType actualType)
+  {
+    return actualType.isParametricType() && actual instanceof Call c && c.isTypeAsValueCall()
+      ? Types.resolved.f_Type.selfType()
+      : actualType;
   }
 
 
@@ -3169,7 +3185,8 @@ public class Call extends AbstractCall
                 var frmlT = resolvedFormalArgumentTypes[i];
                 if (CHECKS) check
                   (Errors.any() || actl != Call.ERROR);
-                if (frmlT != Types.t_ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actl.type(), context).no())
+                var actlType = typeForTypeAsValue(actl, actl.type());
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actlType, context).no())
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, i, frmlT, actl, context);
                   }
