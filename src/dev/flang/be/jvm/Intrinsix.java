@@ -420,7 +420,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
       }
       case c_i64 -> {
         yield Expr.checkcast(new ClassType("java/lang/Long"))
-          .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long));
+          .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()J", PrimitiveType.type_long));
       }
       case c_f32 -> {
         yield Expr.checkcast(new ClassType("java/lang/Float"))
@@ -504,7 +504,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         yield Expr.aload(slot, JAVA_LANG_OBJECT)
           .andThen(
             Expr.checkcast(new ClassType("java/lang/Long"))
-              .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long)));
+              .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()J", PrimitiveType.type_long)));
       }
       case c_f32 -> {
         yield Expr.aload(slot, JAVA_LANG_OBJECT)
