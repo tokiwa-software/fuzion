@@ -1856,7 +1856,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
 
   private void checkLegalDefinesType(Feature f)
   {
-    if (f.definesUsableType() && inTypeFeature(f))
+    if (f.definesUsableType() && !f.outer().isCotype() && inTypeFeature(f))
       {
         AstErrors.illegalFeatureDefiningType(f);
       }

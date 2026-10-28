@@ -526,9 +526,13 @@ public abstract class Module extends ANY implements FeatureLookup
   /**
    * Find the redefinition of feature f within heir.
    *
-   * This does not perform a lookup by name, but uses the redefinition
-   * relation, so features in heir that have the same name as f but do not
-   * redefine f (e.g., fixed features) are ignored.
+   * For fixed features, this performs a lookup by name since fixed features
+   * are not inherited and a call to a fixed feature must be bound to the
+   * feature with the same name in the actual outer type.
+   *
+   * For all other features, this does not perform a lookup by name, but uses
+   * the redefinition relation, so features in heir that have the same name as
+   * f but do not redefine f are ignored.
    *
    * @param heir a feature that inherits from f.outer(), directly or
    *             indirectly.
@@ -540,6 +544,14 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   @Override
   public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
+    if (f.isFixed() && !f.isTypeParameter())
+      {
+        var sameName = lookupFeature(heir, f.featureName());
+        if (sameName != null && sameName.isFixed())
+          {
+            return sameName;
+          }
+      }
     var d = data(heir);
     var m = d._redefinitions;
     if (m == null)
