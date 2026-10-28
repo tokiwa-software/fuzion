@@ -479,7 +479,7 @@ public class ParsedCall extends Call
         if (!isDefunct() &&/* checkTypeFeaturePartialAmbiguity may have set
 _calledFeature to error */
           (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
-            _pendingError != null                       ||
+            _pendingError instanceof PendingNotFound    ||
 
             // convert pre/postfix to infix, e.g., `1-` -> `x->1-x` */
             isPartialInfix(res, expectedType)           ||
@@ -549,7 +549,6 @@ _calledFeature to error */
           {
             AstErrors.partialApplicationAmbiguity(pos(), direct._feature, paa._feature);
             _pendingError = null;
-            _calledFeature = Types.f_ERROR;
             setToErrorState();
           }
       }

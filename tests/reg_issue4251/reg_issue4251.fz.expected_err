@@ -1,10 +1,11 @@
 
-reg_issue4251.fz:26:2: error 1: Different count of arguments needed when calling feature
+reg_issue4251.fz:26:2: error 1: Illegal forward or cyclic type inference
 (say <| (.map **2)) <| (2..10:2)
 -^^^^^^^^^^^^^^^^^
-Feature not found: 'infix/infix_right <|' (3 arguments)
-Target feature: 'universe'
-In call: '(say <| (.map **2))'
-This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'infix_right <|' at {base.fum}/pipes.fz:162:8
+public infix_right <| (A, R type, f A->R, a A) R =>
+-------^^^^^^^^^^^^^^
 
 one error.
