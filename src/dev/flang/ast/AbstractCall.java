@@ -304,16 +304,18 @@ public abstract class AbstractCall extends Expr
                                              AbstractType t,
                                              BiConsumer<AbstractType, AbstractType> foundRef)
   {
-    var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : t;
-    var t1 = t0 == Types.t_ERROR              ? Types.t_ERROR : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));
-    var t2 = t1 == Types.t_ERROR              ? Types.t_ERROR : replace_type_parameter_used_for_relay_type_in_cotype(t1, target());
-    var t3 = t2 == Types.t_ERROR              ? Types.t_ERROR : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
-    var t4 = t3 == Types.t_ERROR              ? Types.t_ERROR : t3.applyTypePars(target().type());
-
-    if (POSTCONDITIONS) ensure
-      (t4 != null);
-
-    return t4;
+    return calledFeature() == Types.f_ERROR || t == Types.t_ERROR
+      ? Types.t_ERROR
+      : calledFeature().outer().handDownAndApply
+        (t,
+         target().type().selfOrConstraint(context),
+         x -> x == Types.t_ERROR
+           ? Types.t_ERROR
+           : adjustThisTypeForTarget(context,
+                                     replace_type_parameter_used_for_relay_type_in_cotype(x, target()),
+                                     calledFeature(),
+                                     target().type(),
+                                     foundRef));
   }
 
 

@@ -2369,7 +2369,8 @@ public class AstErrors extends ANY
               " declared at " + directCall.pos().show() +  "\n" +
               "or by partially applying arguments to a call to " + s(partialCall) +
               " declared at " + partialCall.pos().show() +  ".\n" +
-              "To solve this, rename one of the ambiguous features.");
+              "To solve this, use an explicit lambda, e.g., " + ss("x -> foo x") +
+              ", or rename one of the ambiguous features.");
       }
   }
 
@@ -2470,9 +2471,7 @@ public class AstErrors extends ANY
   {
     error(f.pos(),
       "Must not define type inside of type feature.",
-      "To solve this, move the type outside of the type feature." + System.lineSeparator() +
-      "E.g., instead of: " + System.lineSeparator() + code("type.union : Monoid bitset is") + System.lineSeparator() +
-      "do this: " + code("public type.union =>" + System.lineSeparator() + "  _ : Monoid bitset"));
+      "To solve this, move the type outside of the type feature.");
   }
 
   public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)

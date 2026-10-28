@@ -4,4 +4,17 @@ reg_issue7599.fz:33:9: error 1: Syntax error: expected identifier name, infix/pr
 --------^
 While parsing: name, parse stack: name (twice), argNames, formArgs, formArgsOpt, routOrField, feature, expr, exprs, block (twice), implRout, routOrField, feature, expr, exprs, block (twice), unit
 
-one error.
+
+reg_issue7599.fz:36:23: error 2: Incompatible types in assignment
+      my_mut.this.env.arr T
+----------------------^^^
+assignment to field : 'my_mut.arr.type.empty.result'
+expected formal type: 'my_mut.this.abstract_a my_mut.arr.type.T'
+actual type found   : 'my_mut.this.type.arr my_mut.arr.type.T'
+assignable to       : 'Any',
+                      'my_mut.this.type.abstract_a my_mut.arr.type.T',
+                      'my_mut.this.type.arr my_mut.arr.type.T'
+for value assigned  : 'my_mut.this.env.arr T'
+To solve this, you could change the type of the target 'my_mut.arr.type.empty.result' to 'my_mut.this.type.arr my_mut.arr.type.T' or convert the type of the assigned value to 'my_mut.this.abstract_a my_mut.arr.type.T'.
+
+2 errors.
