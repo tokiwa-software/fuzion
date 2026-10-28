@@ -1579,11 +1579,7 @@ public class Runtime extends ANY
     try
       {
         var ft = f.getType();
-        if (ft == boolean.class)
-          {
-            target.set(ValueLayout.JAVA_BOOLEAN, offset, f.getBoolean(source));
-          }
-        else if (ft == byte.class)
+        if (ft == byte.class)
           {
             target.set(ValueLayout.JAVA_BYTE, offset, f.getByte(source));
           }
@@ -1678,11 +1674,7 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (c != void.class);
 
-    if (c == boolean.class)
-      {
-        return 4;
-      }
-    else if (c == byte.class)
+    if (c == byte.class)
       {
         return 1;
       }
@@ -1932,11 +1924,7 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (ct != void.class);
 
-    if (ct == boolean.class)
-      {
-        return memSeg.get(ValueLayout.JAVA_BOOLEAN, offset);
-      }
-    else if (ct == byte.class)
+    if (ct == byte.class)
       {
         return memSeg.get(ValueLayout.JAVA_BYTE, offset);
       }
@@ -1983,11 +1971,7 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (ct != void.class);
 
-    if (ct == boolean.class)
-      {
-        return ValueLayout.JAVA_BOOLEAN;
-      }
-    else if (ct == byte.class)
+    if (ct == byte.class)
       {
         return ValueLayout.JAVA_BYTE;
       }

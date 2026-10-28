@@ -58,6 +58,6 @@ public short_circuit(T type, h T->void) : /* NYI: need to inherit this privately
   # run the code where we may early return from
   #
   public type.run(code_try ()->T) T =>
-    flow
-      .try T short_circuit.this T code_try
+    short_circuit.this
+      .try code_try
       .catch id
