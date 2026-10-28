@@ -61,7 +61,7 @@ public enum SpecialClazzes
   c_Condition           (c_universe    , ()->Types.resolved.f_Condition),
   c_File_Descriptor     (c_universe    , ()->Types.resolved.f_File_Descriptor),
   c_Directory_Descriptor(c_universe    , ()->Types.resolved.f_Directory_Descriptor),
-  c_Java_Ref            (c_universe    , ()->Types.resolved.f_fuzion_Java_Object_Ref),
+  c_Java_Ref            (c_universe    , ()->Types.resolved.f_Java_Ref),
   c_Mapped_Memory       (c_universe    , ()->Types.resolved.f_Mapped_Memory),
   c_Native_Ref          (c_universe    , ()->Types.resolved.f_Native_Ref),
   c_Internal_Thread     (c_universe    , ()->Types.resolved.f_Internal_Thread),
