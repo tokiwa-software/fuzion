@@ -235,6 +235,7 @@ public class Types extends ANY
     public final AbstractFeature f_Nullary;
     public final AbstractFeature f_Lazy;
     public final AbstractFeature f_auto_unwrap;
+    public final AbstractFeature f_Java_Ref;
     public final AbstractFeature f_Mutex;
     public final AbstractFeature f_Condition;
     public final AbstractFeature f_File_Descriptor;
@@ -329,6 +330,7 @@ public class Types extends ANY
       f_Nullary                 = universe            .get(mod, NULLARY_NAME, 1);
       f_Lazy                    = universe            .get(mod, LAZY_NAME, 1);
       f_auto_unwrap             = universe            .get(mod, "auto_unwrap", 2);
+      f_Java_Ref                = universe            .get(mod, "Java_Ref", 0);
       f_Mutex                   = universe            .get(mod, "Mutex", 0);
       f_Condition               = universe            .get(mod, "Condition", 0);
       f_File_Descriptor         = universe            .get(mod, "File_Descriptor", 0);
