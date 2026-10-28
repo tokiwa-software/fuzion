@@ -28,11 +28,11 @@ type_in_cotype is
 
   type.some_type(arg i32) : property.equatable is
 
+    # access the outer type of the cotype of some_type
+    type_in_cotype.this.type.some_feat
+
 
     public redef type.equality(a, b some_type.this) bool =>
-
-      # access the outer type of the cotype of some_type
-      type_in_cotype.this.type.some_feat
 
       a.arg = b.arg
 
@@ -43,6 +43,10 @@ type_in_cotype is
 
   say (type_in_cotype.some_type 1 = type_in_cotype.some_type 1)
   say (type_in_cotype.some_type 1 = type_in_cotype.some_type 2)
+
+  # NYI: BUG: require-condition3 failed: Resolution.java:594 "(Errors.any() || !af.isUniverse(), Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS), !af.isCotype());"
+  # type.some_type2 : some_type 1 is
+  # say (type_in_cotype.some_type2  = type_in_cotype.some_type2)
 
 
 type_in_cotype2 : type_in_cotype is
