@@ -1076,7 +1076,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (Errors.any() || f.generics().sizeMatches(actualGenerics));
 
-    AbstractType result = applyTypePars(f, actualGenerics, NO_SELECT);;
+    AbstractType result = applyTypePars(f, actualGenerics, NO_SELECT);
 
     if (!actualGenerics.contains(Types.t_UNDEFINED))
       {

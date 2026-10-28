@@ -1386,7 +1386,11 @@ public class Call extends AbstractCall
       (res != null);
 
     AbstractType result;
-    if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
+    if (_type != null)
+      {
+        result = _type;
+      }
+    else if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
       {
         result = Types.resolved.t_void; // a recursive call will not return and execute further
       }
@@ -1507,7 +1511,7 @@ public class Call extends AbstractCall
     var t4 = t3 == null || t3.isArtificialType() ? t3 : resolveForCalledFeature(res, t3, target().type(), context);
     var t5 = t4 == null || t4.isArtificialType() ? t4 : calledFeature().isCotype() ? t4 : t4.replace_type_parameters_of_cotype_origin(context.outerFeature());
     // NYI: CLEANUP: cleanup potential?
-    return t5 == Types.t_UNDEFINED
+    return t5 == null || t5.containsUndefined()
       ? null
       : t5;
   }
@@ -3036,7 +3040,8 @@ public class Call extends AbstractCall
     var t = getResultType(res, context, false);
 
     if (CHECKS) check
-      (Errors.any() || t != Types.t_ERROR);
+      (_type == null || _type.compareTo(t) == 0,
+       Errors.any() || t != Types.t_ERROR);
 
     _type = t;
 
