@@ -54,7 +54,7 @@ public Exit ref : effect is
 
       # mutable value of the current exit code set
       #
-      exit_code := concur.atomic u8 .new 0
+      exit_code := u8 0
 
 
       # exit with the given code
@@ -75,7 +75,7 @@ public Exit ref : effect is
           debug: exit_code = code
         =>
           if exit_code = 0
-            exit_code.write code
+            set exit_code := code
           else
             error "exit code is already set"
 

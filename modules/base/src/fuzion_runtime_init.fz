@@ -33,22 +33,27 @@ fuzion_runtime_init =>
 # of the fuzion runtime system
 #
 fuzion_runtime_deinit =>
-  # NYI: BUG: need to make sure that exit effect runs last
-  #           basically we need a way to order default effects
 
   # cleanups must be done in reverse order of instation
   #
   cleanups : container.type_applicator (list (Nullary unit)) is
     public redef apply(T type, e list (Nullary unit)) list (Nullary unit) =>
       if T : effect then
-        match T.default_value
-          T => (() -> T.env.finally) : e
-          nil => e
+        if T : Exit
+          e
+        else
+          match T.default_value
+            T => (() -> T.env.finally) : e
+            nil => e
       else
         e
 
   for c in effect_types.type_foldf nil cleanups do
     c()
+
+
+  Exit.env.finally
+
 
   #
   # NYI: BUG: #8114 type constraints in lambdas do not work yet.

@@ -129,11 +129,19 @@ public effect is
   #
   module type.big_bang_singularity
   =>
+    # exit needs to be the last effect to be deinstated
+    # and thus the first one to be instated
+    match Exit.default_value
+      v Exit => Exit.instate_at_singularity0 v
+      nil =>
+
     effect_types.type_foldf unit T,e->
       if T : effect then
-        match T.default_value
-          v T => T.instate_at_singularity0 v
-          nil =>
+        if T : Exit then
+        else
+          match T.default_value
+            v T => T.instate_at_singularity0 v
+            nil =>
 
 
   # If this effect may be instated automatically at application start (during the
