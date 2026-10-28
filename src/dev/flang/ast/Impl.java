@@ -466,6 +466,7 @@ public class Impl extends ANY
       }
   }
 
+  static class RecursiveActualArgumentTypeResolution extends Error { }
 
   /**
    * Get the initial value from actual argument in a call.
@@ -492,8 +493,28 @@ public class Impl extends ANY
                 if (res != null && !_infiniteRecursionInResolveTypes)
                   {
                     _infiniteRecursionInResolveTypes = true;
-                    actl = res.resolveType(actl, ic.resolvedFor());
-                    aargs.set(actl);
+                    try
+                      {
+                        actl.visit(new FeatureVisitor()
+                          {
+                            @Override
+                            public void action(AbstractCall c)
+                            {
+                              if (c instanceof Call cc && cc.resolvingTypesRightNow())
+                                {
+                                  throw new RecursiveActualArgumentTypeResolution();
+                                }
+                            }
+                          }, null);
+
+                        actl = res.resolveType(actl, ic.resolvedFor());
+                        aargs.set(actl);
+
+                      }
+                    catch (RecursiveActualArgumentTypeResolution _)
+                      {
+                        // ignore this actual argument, see #7836 for an example
+                      }
                     _infiniteRecursionInResolveTypes = false;
                   }
                 if (CHECKS) check

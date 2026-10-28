@@ -2762,6 +2762,24 @@ public class Call extends AbstractCall
 
 
   /**
+   * Are we in the middle of resolving this Call, i.e., the result `type()` is
+   * still unknown?
+   *
+   * This is used by Impl.initialValueFromCall to exclude actual arguments that
+   * recursively depend on the type of the argument that we are trying to infer.
+   *
+   * @return true iff in our call stack, there is a call to
+   * `this.resolveTypes(res, context)`.
+   */
+  boolean resolvingTypesRightNow()
+  {
+    // _resolvedFor will be set early on in `resolveTypes, while `_type` will be
+    // set later when resolution was successful.
+    return _resolvedFor != null && _type == null;
+  }
+
+
+  /**
    * Helper for targetFeature. Returns the cotype of the target type if the target has no feature
    * named _name, but its cotype has at least one type feature with this name that fails to match the actual arguments.
    *
