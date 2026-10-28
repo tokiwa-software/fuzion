@@ -115,6 +115,11 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
   snprintf(searchPath, MAX_PATH, "%s\\*", pathname);
 
   wchar_t* wideStr = utf8_to_wide_str(searchPath);
+  if (!wideStr) {
+    fzE_free(dir);
+    result[0] = ERROR_INVALID_NAME;
+    return NULL;
+  }
   dir->handle = FindFirstFileW(wideStr, &dir->findData);
   free(wideStr);
 
@@ -129,6 +134,9 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
 }
 
 int fzE_dir_read(intptr_t * dir, int8_t * result) {
+  if (!result) {
+    return -1;
+  }
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FALSE;
   while ((res = FindNextFileW(d->handle, &d->findData)) &&
@@ -140,8 +148,12 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
   }
   else {
     int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, d->findData.cFileName, -1, NULL, 0, NULL, NULL);
-    assert (sizeNeeded != 0);
-    assert(sizeNeeded >= 0 && sizeNeeded<1024); // NYI:
+    if (sizeNeeded == 0) {
+      return -1;
+    }
+    if (sizeNeeded >= 1024) {
+      return -1;
+    }
 
     int len = WideCharToMultiByte(CP_UTF8, 0, d->findData.cFileName, -1, (void *)result, sizeNeeded, NULL, NULL) - 1;
 
@@ -265,9 +277,11 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
   if (bind_res != 0)
     {
       SetLastError(fzE_net_error());
+      freeaddrinfo(addr_info);
+      return fzE_net_error();
     }
   freeaddrinfo(addr_info);
-  return bind_res;
+  return 0;
 }
 
 
@@ -301,9 +315,11 @@ int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host,
   if (con_res != 0)
     {
       SetLastError(fzE_net_error());
+      freeaddrinfo(addr_info);
+      return fzE_net_error();
     }
   freeaddrinfo(addr_info);
-  return con_res;
+  return 0;
 }
 
 
@@ -370,8 +386,11 @@ int fzE_socket_read(int sockfd, void * buf, size_t count){
 // may block if socket is set to blocking.
 // -1 or number of bytes written on success
 int fzE_socket_write(int sockfd, const void * buf, size_t count){
-  // NYI: setlast error missing: fzE_net_error
-  return sendto( sockfd, buf, count, 0, NULL, 0 );
+  int res = sendto(sockfd, buf, count, 0, NULL, 0);
+  if (res == -1) {
+    SetLastError(fzE_net_error());
+  }
+  return res;
 }
 
 
@@ -525,11 +544,17 @@ int64_t win_time_to_unix_time(LONGLONG qp)
  */
 int fzE_stat(const char *pathname, int64_t * metadata)
 {
+  if (!metadata) {
+    return -1;
+  }
   int result = -1;
 
   WIN32_FILE_ATTRIBUTE_DATA fileInfo;
 
   wchar_t* wideStr = utf8_to_wide_str(pathname);
+  if (!wideStr) {
+    return -1;
+  }
 
   if (GetFileAttributesExW(wideStr, GetFileExInfoStandard, &fileInfo)) {
     LARGE_INTEGER fileSize;
@@ -579,6 +604,9 @@ int fzE_stat(const char *pathname, int64_t * metadata)
  */
 int fzE_lstat(const char *pathname, int64_t * metadata)
 {
+  if (!metadata) {
+    return -1;
+  }
   int result = -1;
 
   BY_HANDLE_FILE_INFORMATION fileInfo;
@@ -589,6 +617,9 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
   sa.lpSecurityDescriptor = NULL;
 
   wchar_t* wideStr = utf8_to_wide_str(pathname);
+  if (!wideStr) {
+    return -1;
+  }
 
   HANDLE hFile = CreateFileW(
       wideStr,
@@ -686,7 +717,7 @@ typedef struct {
 unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
   thread_trampoline_t* trampoline = (thread_trampoline_t*)raw_arg;
   trampoline->func(trampoline->arg);
-  // NYI: free: trampoline
+  fzE_free(trampoline);
   return 0;
 }
 
@@ -850,8 +881,12 @@ wchar_t *build_unicode_environment_block(char *env[], size_t envLen) {
   return envBlock;
 }
 
-
-int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result)
+{
+  if (!result) {
+    return -1;
+  }
+  result[0] = 0;
 
   // Programmatically controlling which handles are inherited by new processes in Win32
   // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
@@ -881,6 +916,16 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   // so app would not be found when passing
   // via args
   wchar_t *app = utf8_to_wide_str(args[0]);
+  if (!app) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStdoutWrite);
+    CloseHandle(hStderrRead);
+    CloseHandle(hStderrWrite);
+    SetLastError(ERROR_INVALID_NAME);
+    return -1;
+  }
   WCHAR resolvedPath[MAX_PATH];
   DWORD spw = SearchPathW(
     NULL,
@@ -892,6 +937,12 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   );
   free(app);
   if (spw == 0) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStdoutWrite);
+    CloseHandle(hStderrRead);
+    CloseHandle(hStderrWrite);
     SetLastError(ERROR_FILE_NOT_FOUND);
     return -1;
   }
@@ -900,6 +951,12 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   wchar_t *envBlock = build_unicode_environment_block(env, envLen);
 
   if (!args_w) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStdoutWrite);
+    CloseHandle(hStderrRead);
+    CloseHandle(hStderrWrite);
     SetLastError(ERROR_INVALID_NAME);
     return -1;
   }
@@ -933,6 +990,9 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   free(envBlock);
 
   if (!success) {
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStderrRead);
     return -1;
   }
 
@@ -968,6 +1028,7 @@ int64_t fzE_process_poll(int64_t p){
 
   if (result == WAIT_FAILED)
     {
+      SetLastError(GetLastError());
       return -2;
     }
 
@@ -1002,8 +1063,9 @@ int fzE_hostname(char *buf, size_t nbytes)
     if (gethostname(buf, (int)nbytes) == SOCKET_ERROR) {
         return -1;
     }
-
-    buf[nbytes - 1] = '\0';
+    if (nbytes > 0) {
+        buf[nbytes - 1] = '\0';
+    }
 
     return (int)strnlen(buf, nbytes);
 }
@@ -1249,7 +1311,7 @@ void fzE_date_time(int32_t * result)
   ((int32_t *)result)[5] = ptm->tm_sec;
   long long billion = 1000000000;
   // NYI: UNDER DEVELOPMENT: check if there is a better way
-  ((int32_t *)result)[6] = (int32_t)(counter.QuadPart % billion);
+  ((int32_t *)result)[6] = (int32_t)(counter.QuadPart % billion) & 0x7FFFFFFF;
 }
 
 
