@@ -1,0 +1,48 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test Makefile
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+reg_issue37 =>
+
+  a(T type) is
+    b : a b is                     # 1. should flag an error: `b` found in `a.b` and in `a`
+
+  x is
+    y : x is
+      f(v z) => say "f"            # 2. should flag an error: `z` found in `x.y` and in `x`
+    z is
+
+  # qualified versions must work
+  p(T type) is
+    q : p p.this.q is
+      say "ok in p.q"
+
+  u is
+    v : u is
+      g(w u.v.this.k) => say "g"
+      h(w u.this.k)   => say "h"
+    k is
+
+  _ := (p i32).q
+  _ := u.v

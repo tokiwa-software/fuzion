@@ -100,7 +100,8 @@ public class QualThisType extends UnresolvedType
                   .qualifiedName()
                   .endsWith(_qual.stream().filter(x -> !x._name.equals(FuzionConstants.UNIVERSE_NAME))
                   .map(x -> x._name)
-                  .collect(Collectors.joining("."))))
+                  .collect(Collectors.joining(".")))&&
+                  found.stream().noneMatch(x -> x._feature == fo._feature))
               {
                 found.add(fo);
               }
@@ -114,7 +115,7 @@ public class QualThisType extends UnresolvedType
           }
         else if (!found.isEmpty() && !tolerant)
           {
-            AstErrors.ambiguousType(pos(), _name, found.map2(x -> x._feature));
+            AstErrors.ambiguousType(pos(), _name, found);
             _resolved = Types.t_ERROR;
           }
       }
