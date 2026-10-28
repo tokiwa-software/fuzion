@@ -28,7 +28,14 @@
 module:public Thread(thrd Internal_Thread,
 
                      # NYI: CLEANUP: use thread id
-                     id uid
+                     id uid,
+
+                     # CPU time in nano seconds recorded by the thread itself
+                     # when its code finished, -1 if not recorded (yet).
+                     #
+                     # NOTE: this is a function and not a `concur.atomic` since
+                     # `concur.atomic` is a value type that would be copied.
+                     final_cpu_time () -> i64
                      ) ref
   : property.orderable
 is
@@ -126,6 +133,31 @@ is
         unit
       else
         error "fzE_thread_setaffinity error $(e)"
+
+
+  # get the CPU time this thread has consumed so far
+  #
+  # For a thread that has finished execution, this is the CPU time recorded
+  # by the thread when it finished.
+  #
+  # The result is not guaranteed to be monotonic, see `time.Thread_Time`.
+  #
+  public cpu_time outcome time.duration ! atomic_access
+  =>
+    f := final_cpu_time()
+    ns :=
+      if f >= 0
+        f
+      else if joined.read.is_no
+        # in case the thread finished meanwhile, use the recorded time
+        r := fuzion.sys.thread.cpu_time0 thrd
+        r >= 0 ? r : final_cpu_time()
+      else
+        i64 -1
+    if ns >= 0
+      time.duration.ns ns.as_u64
+    else
+      error "failed to get CPU time of thread"
 
 
   # equality

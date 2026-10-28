@@ -91,7 +91,7 @@ public Threads ref : effect is
   #
   public redef fixed type.default_value option concur.Threads
   =>
-    initial := concur.Thread fuzion.sys.thread.current (uid 0)
+    initial := concur.Thread fuzion.sys.thread.current (uid 0) (()->i64 -1)
     default [] initial
 
 
@@ -113,7 +113,7 @@ universe.default(
     tid := unique_id  # NYI: CLEANUP: use thread id
     spawn_without_inherited_effects tid ()->
       ewh.teleport ()->
-        st := concur.Thread fuzion.sys.thread.current  tid
+        st := concur.Thread fuzion.sys.thread.current  tid (()->i64 -1)
         concur.Threads.replace (default (children++[st]).as_array st)
         code()
 
@@ -152,8 +152,14 @@ universe.default(
         tid uid,
         code ()->unit)
   =>
-    concur.Thread (fuzion.sys.thread.spawn code) tid
-
+    final_cpu_time := concur.atomic i64 .new -1
+    ewh := effect_wormhole   # effects needed to write `final_cpu_time` in the new thread
+    t := fuzion.sys.thread.spawn ()->
+      code()
+      # record the CPU time used by this thread
+      ewh.teleport ()->
+        final_cpu_time.write (fuzion.sys.thread.cpu_time0 fuzion.sys.thread.current)
+    concur.Thread t tid (()->final_cpu_time.read)
 
   # detach a child thread
   #

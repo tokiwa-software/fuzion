@@ -240,6 +240,11 @@ public class Intrinsics extends ANY
     return 38 /* ENOSYS - Function not implemented */;
   }
 
+    public static long fuzion_sys_thread_cpu_time0(Object thread)
+  {
+    return java.lang.management.ManagementFactory.getThreadMXBean().getThreadCpuTime(((Thread) thread).threadId());
+  }
+
 }
 
 /* end of file */
