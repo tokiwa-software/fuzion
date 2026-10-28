@@ -26,6 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
+import java.util.function.Supplier;
+
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Types;
 import dev.flang.util.FuzionConstants;
 
 /**
@@ -34,44 +38,44 @@ import dev.flang.util.FuzionConstants;
 public enum SpecialClazzes
 {
   // dummy entry to report failure of getSpecialId()
-  c_NOT_FOUND   (""                            , 0, null        ),
+  c_NOT_FOUND           (null          , ()->null),
 
-  c_universe    (FuzionConstants.UNIVERSE_NAME , 0, c_NOT_FOUND ),
-  c_Any         (FuzionConstants.ANY_NAME      , 0, c_universe  ),
-  c_i8          (FuzionConstants.I8_NAME       , 1, c_universe  ),
-  c_i16         (FuzionConstants.I16_NAME      , 1, c_universe  ),
-  c_i32         (FuzionConstants.I32_NAME      , 1, c_universe  ),
-  c_i64         (FuzionConstants.I64_NAME      , 1, c_universe  ),
-  c_u8          (FuzionConstants.U8_NAME       , 1, c_universe  ),
-  c_u16         (FuzionConstants.U16_NAME      , 1, c_universe  ),
-  c_u32         (FuzionConstants.U32_NAME      , 1, c_universe  ),
-  c_u64         (FuzionConstants.U64_NAME      , 1, c_universe  ),
-  c_f32         (FuzionConstants.F32_NAME      , 1, c_universe  ),
-  c_f64         (FuzionConstants.F64_NAME      , 1, c_universe  ),
-  c_void        ("void"                        , 0, c_universe  ),
-  c_bool        ("bool"                        , 0, c_universe  ),
-  c_const_string("const_string"                , 0, c_universe  ),
-  c_CS_utf8_data("utf8_data"                   , 0, c_const_string),
-  c_String      (FuzionConstants.STRING_NAME   , 0, c_universe  ),
-  c_Mutex       ("Mutex"                       , 0, c_universe  ),
-  c_Condition   ("Condition"                   , 0, c_universe  ),
-  c_File_Descriptor("File_Descriptor"          , 0, c_universe  ),
-  c_Directory_Descriptor("Directory_Descriptor", 0, c_universe  ),
-  c_Java_Ref    ("Java_Ref"                    , 0, c_universe  ),
-  c_Mapped_Memory("Mapped_Memory"              , 0, c_universe  ),
-  c_Native_Ref  ("Native_Ref"                  , 0, c_universe  ),
-  c_Internal_Thread("Internal_Thread"          , 0, c_universe  ),
-  c_stackoverflow_cause("stackoverflow_cause"  , 1, c_universe  )
+  c_universe            (c_NOT_FOUND   , ()->null),
+  c_Any                 (c_universe    , ()->Types.resolved.f_Any),
+  c_i8                  (c_universe    , ()->Types.resolved.f_i8),
+  c_i16                 (c_universe    , ()->Types.resolved.f_i16),
+  c_i32                 (c_universe    , ()->Types.resolved.f_i32),
+  c_i64                 (c_universe    , ()->Types.resolved.f_i64),
+  c_u8                  (c_universe    , ()->Types.resolved.f_u8),
+  c_u16                 (c_universe    , ()->Types.resolved.f_u16),
+  c_u32                 (c_universe    , ()->Types.resolved.f_u32),
+  c_u64                 (c_universe    , ()->Types.resolved.f_u64),
+  c_f32                 (c_universe    , ()->Types.resolved.f_f32),
+  c_f64                 (c_universe    , ()->Types.resolved.f_f64),
+  c_void                (c_universe    , ()->Types.resolved.f_void),
+  c_bool                (c_universe    , ()->Types.resolved.f_bool),
+  c_const_string        (c_universe    , ()->Types.resolved.f_const_string),
+  c_CS_utf8_data        (c_const_string, ()->Types.resolved.f_const_string_utf8_data),
+  c_String              (c_universe    , ()->Types.resolved.f_String),
+  c_Mutex               (c_universe    , ()->Types.resolved.f_Mutex),
+  c_Condition           (c_universe    , ()->Types.resolved.f_Condition),
+  c_File_Descriptor     (c_universe    , ()->Types.resolved.f_File_Descriptor),
+  c_Directory_Descriptor(c_universe    , ()->Types.resolved.f_Directory_Descriptor),
+  c_Java_Ref            (c_universe    , ()->Types.resolved.f_Java_Ref),
+  c_Mapped_Memory       (c_universe    , ()->Types.resolved.f_Mapped_Memory),
+  c_Native_Ref          (c_universe    , ()->Types.resolved.f_Native_Ref),
+  c_Internal_Thread     (c_universe    , ()->Types.resolved.f_Internal_Thread),
+  c_stackoverflow_cause (c_universe    , ()->Types.resolved.f_stackoverflow_cause)
   ;
 
-  final String _name;
-  final int _argCount;
   final SpecialClazzes _outer;
+  final Supplier<dev.flang.ast.AbstractFeature> _getFeature;
 
-  SpecialClazzes(String name, int argc, SpecialClazzes outer)
+  SpecialClazzes(SpecialClazzes outer,
+                 Supplier<dev.flang.ast.AbstractFeature> getFeature)
   {
-    _name = name;
-    _argCount = argc;
     _outer = outer;
+    _getFeature = getFeature;
   }
+
 }
