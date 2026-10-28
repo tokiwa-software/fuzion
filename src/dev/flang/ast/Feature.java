@@ -2183,8 +2183,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
     if (!(arg.isTypeParameter()
           || Types.resolved.legalNativeArgumentTypes.contains(at)
           || at.selfOrConstraint(Context.NONE).isLambdaTargetButNotLazy(res)
-          // NYI: BUG: check if array element type is valid
-          || !at.isParametricType() && at.feature() == Types.resolved.f_mutate_array
+          || !at.isParametricType() && at.feature() == Types.resolved.f_mutate_array && Types.resolved.legalNativeArgumentTypes.contains(at.generics().get(0))
           || !at.isParametricType() && at.feature().mayBeNativeValue()
           || !at.isParametricType() && Types.resolved.f_fuzion_sys_array_data.resultType().feature() == at.feature()
           )

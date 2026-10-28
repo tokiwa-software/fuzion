@@ -16,4 +16,16 @@ native_legal_types_negative.fz:28:23: error 3: Implementation restriction: Resul
 ----------------------^^^^^^
 To solve, this specify a legal type.
 
-3 errors.
+
+native_legal_types_negative.fz:30:25: error 4: Implementation restriction: Argument type 'bool' is not (yet) allowed in native features.
+  illegal_arg_type_bool(a bool) unit => native
+------------------------^
+To solve, this specify a legal type.
+
+
+native_legal_types_negative.fz:32:31: error 5: Implementation restriction: Argument type 'mutate.array bool' is not (yet) allowed in native features.
+  illegal_arg_type_array_bool(a mutate.array bool) unit => native
+------------------------------^
+To solve, this specify a legal type.
+
+5 errors.
