@@ -94,6 +94,11 @@ class NormalType extends LibraryType
     this._generics = generics;
     this._generics.freeze();
     this._outer = outer;
+
+    if (POSTCONDITIONS) ensure(
+      isLegalParametricRelayType(),
+      isLegalNormalRelayType()
+    );
   }
 
 
