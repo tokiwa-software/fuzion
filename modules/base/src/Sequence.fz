@@ -1239,7 +1239,8 @@ is
   #     [-3, -5, -7, -9, -11, -13, -15, -17, -19, -21, …]
   #
   public pairwise(B type, f _ : (T,T)->B) Sequence B =>
-    pairwise.map ||>f
+    # pairwise.map ||>f    -- NYI: BUG: #8146 make result inference impossible
+    pairwise.map (a -> f a.0 a.1)
 
 
   # apply f to sliding window of triplets
@@ -1253,7 +1254,8 @@ is
   #     [f 0 1 2, f 1 2 3, f 2 3 4, f 3 4 5]
   #
   public tripletwise(B type, f _ : (T,T,T)->B) Sequence B =>
-    tripletwise.map |||>f
+    #tripletwise.map |||>f    -- NYI: BUG: #8146 make result inference impossible
+    tripletwise.map (a -> f a.0 a.1 a.2)
 
 
   # apply f to sliding window of quads
@@ -1267,7 +1269,8 @@ is
   #     [f 0 1 2 3, f 1 2 3 4, f 2 3 4 5]
   #
   public quadwise(B type, f _ : (T,T,T,T)->B) Sequence B =>
-    quadwise.map ||||>f
+    # quadwise.map ||||>f    -- NYI: BUG: #8146 make result inference impossible
+    quadwise.map (a -> f a.0 a.1 a.2 a.3)
 
 
   # apply f to sliding window of quints
@@ -1281,7 +1284,8 @@ is
   #     [f 0 1 2 3 4, f 1 2 3 4 5]
   #
   public quintwise(B type, f _ : (T,T,T,T,T)->B) Sequence B =>
-    quintwise.map |||||>f
+    # quintwise.map |||||>f    -- NYI: BUG: #8146 make result inference impossible
+    quintwise.map (a -> f a.0 a.1 a.2 a.3 a.4)
 
 
   # apply f to sliding window of sextets
@@ -1295,7 +1299,8 @@ is
   #     [f 1 2 3 4 5]
   #
   public sextetwise(B type, f _ : (T,T,T,T,T,T)->B) Sequence B =>
-    sextetwise.map ||||||>f
+    # sextetwise.map ||||||>f    -- NYI: BUG: #8146 make result inference impossible
+    sextetwise.map (a -> f a.0 a.1 a.2 a.3 a.4 a.5)
 
 
   # sliding window
