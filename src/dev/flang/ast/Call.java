@@ -2859,7 +2859,10 @@ public class Call extends AbstractCall
                       // we found a feature that fits a dot-type-call.
                       _calledFeature = f;
                       _pendingError = null;
-                      _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
+                      var t = tf == context.outerFeature() && !tf.isCotype()
+                        ? tf.thisType().cotypeType(res)
+                        : _target.asParsedType();
+                      _target = Call.typeAsValue(_pos, t).resolveTypes(res, context);
                     }
                 }
               if (_calledFeature != null)
