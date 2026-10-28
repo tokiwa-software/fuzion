@@ -1466,14 +1466,9 @@ public class Html extends ANY
           <div class="cursor_pointer">
             <details id="$2" $0>
               <summary>
-                <div class="d-grid" style="grid-template-columns: 1fr min-content;">
-                  <div class="d-flex flex-wrap word-break-break-word">
-                    <div class="d-flex flex-wrap word-break-break-word fz-code">
-                      <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
-                      <div class="flex-grow-1"></div>
-                      <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
-                    </div>
-                  </div>
+                <div class="word-break-break-word fz-code fd-signature">
+                  <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
+                  <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
                 </div>
               </summary>
             </details>
