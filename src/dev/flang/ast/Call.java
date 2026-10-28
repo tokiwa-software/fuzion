@@ -573,7 +573,7 @@ public class Call extends AbstractCall
               };
             if (urgent)
               {
-                c._pendingError.run();
+                reportPendingError();
                 result = Types.f_ERROR;
               }
           }
@@ -772,33 +772,45 @@ public class Call extends AbstractCall
       {
 
       }
-    else if (targetFeature == null)
-      {
-        _pendingError = ()->
-          {
-            if (_target.type() != Types.t_ERROR)
-              {
-                triggerFeatureNotFoundError(res, new List<>(), _target.type().feature());
-              }
-          };
-      }
     else
       {
-        var fos = findOnTarget(res, targetFeature, true).v0();
-        _pendingError = ()->
-          {
-            if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
-              { // give a more specific error when trying to call a choice feature
-                AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
-              }
-            else
-              {
-                triggerFeatureNotFoundError(res, fos, targetFeature);
-              }
-          };
+        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true).v0() : new List<FeatureAndOuter>();
+        _pendingError =
+          (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
+          ? ()->AstErrors.cannotCallChoice(pos(), fos.get(0)._feature) // give a more specific error when trying to call a choice feature
+          : new PendingNotFound(res, fos, _target.type().feature());
       }
   }
 
+  /**
+   * Special Runnable to be stored in _pendingError to indicate that the problem
+   * was that the feature was not found.
+   *
+   * This will used later to try to find an alternative through partial application.
+   */
+  class PendingNotFound implements Runnable
+  {
+    Resolution _res;
+    List<FeatureAndOuter> _fos;
+    AbstractFeature _targetFeature;
+
+    PendingNotFound(Resolution res,
+                    List<FeatureAndOuter> fos,
+                    AbstractFeature targetFeature)
+    {
+      _res = res;
+      _fos = fos;
+      _targetFeature = targetFeature;
+    }
+    @Override
+    public void run()
+    {
+      if (_targetFeature != Types.f_ERROR)
+        {
+          triggerFeatureNotFoundError(_res, _fos, _targetFeature);
+        }
+    }
+  }
 
   /**
    * Is the target of this call _unwrapable_, i.e. result type inheriting from auto_unwrap?
@@ -2841,7 +2853,10 @@ public class Call extends AbstractCall
                       // we found a feature that fits a dot-type-call.
                       _calledFeature = f;
                       _pendingError = null;
-                      _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
+                      var t = tf == context.outerFeature() && !tf.isCotype()
+                        ? tf.thisType().cotypeType(res)
+                        : _target.asParsedType();
+                      _target = Call.typeAsValue(_pos, t).resolveTypes(res, context);
                     }
                 }
               if (_calledFeature != null)

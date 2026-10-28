@@ -34,6 +34,9 @@ type_in_cotype is
 
     public redef type.equality(a, b some_type.this) bool =>
 
+      # access the outer type of the cotype of some_type
+      type_in_cotype.this.type.some_feat
+
       a.arg = b.arg
 
 
@@ -57,5 +60,4 @@ type_in_cotype2 : type_in_cotype is
 
 _ := type_in_cotype
 
-# NYI: BUG: this should print hello from type_in_cotype2
 _ := type_in_cotype2

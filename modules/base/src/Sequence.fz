@@ -1149,12 +1149,170 @@ is
     M.of kvs
 
 
-  # sliding window with step size one
+  # sliding window of tuple pairs
+  #
+  # example:
+  #
+  #     (0..5).pairwise
+  #
+  # results in
+  #
+  #     [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)]
+  #
+  public pairwise Sequence (T,T) =>
+    zip (drop 1) tuple
+
+
+  # sliding window of 3-tuple triplets
+  #
+  # example:
+  #
+  #     (0..5).tripletwise
+  #
+  # results in
+  #
+  #     [(0, 1, 2), (1, 2, 3), (2, 3, 4), (3, 4, 5)]
+  #
+  public tripletwise Sequence (T, T, T) =>
+    sliding 3 .map (.as_3tuple)
+
+
+  # sliding window of 4-tuple quads
+  #
+  # example:
+  #
+  #     (0..5).quadwise
+  #
+  # results in
+  #
+  #     [(0, 1, 2, 3), (1, 2, 3, 4), (2, 3, 4, 5)]
+  #
+  public quadwise Sequence (T, T, T, T) =>
+    sliding 4 .map (.as_4tuple)
+
+
+  # sliding window of 5-tuple quints
+  #
+  # example:
+  #
+  #     (0..5).quintwise
+  #
+  # results in
+  #
+  #     [(0, 1, 2, 3, 4), (1, 2, 3, 4, 5)]
+  #
+  public quintwise Sequence (T, T, T, T, T) =>
+    sliding 5 .map (.as_5tuple)
+
+
+  # sliding window of 6-tuple sextets
+  #
+  # example:
+  #
+  #     (0..5).sextetwise
+  #
+  # results in
+  #
+  #     [(0, 1, 2, 3, 4, 5)]
+  #
+  public sextetwise Sequence (T, T, T, T, T, T) =>
+    sliding 6 .map (.as_6tuple)
+
+
+  # apply f to sliding window of pairs
+  #
+  # example:
+  #
+  #     (0..5).pairwise f
+  #
+  # results in
+  #
+  #     [f 0 1, f 1 2, f 2 3, f 3 4, f 4 5]
+  #
+  # example: difference of squares
+  #
+  #     (1..).map **2
+  #          .pairwise (-)
+  #
+  # results in increasing negative odd numbers
+  #
+  #     [-3, -5, -7, -9, -11, -13, -15, -17, -19, -21, …]
+  #
+  public pairwise(B type, f _ : (T,T)->B) Sequence B =>
+    # pairwise.map ||>f    -- NYI: BUG: #8146 make result inference impossible
+    pairwise.map (a -> f a.0 a.1)
+
+
+  # apply f to sliding window of triplets
+  #
+  # example:
+  #
+  #     (0..5).tripletwise f
+  #
+  # results in
+  #
+  #     [f 0 1 2, f 1 2 3, f 2 3 4, f 3 4 5]
+  #
+  public tripletwise(B type, f _ : (T,T,T)->B) Sequence B =>
+    #tripletwise.map |||>f    -- NYI: BUG: #8146 make result inference impossible
+    tripletwise.map (a -> f a.0 a.1 a.2)
+
+
+  # apply f to sliding window of quads
+  #
+  # example:
+  #
+  #     (0..5).quadwise f
+  #
+  # results in
+  #
+  #     [f 0 1 2 3, f 1 2 3 4, f 2 3 4 5]
+  #
+  public quadwise(B type, f _ : (T,T,T,T)->B) Sequence B =>
+    # quadwise.map ||||>f    -- NYI: BUG: #8146 make result inference impossible
+    quadwise.map (a -> f a.0 a.1 a.2 a.3)
+
+
+  # apply f to sliding window of quints
+  #
+  # example:
+  #
+  #     (0..5).quintwise f
+  #
+  # results in
+  #
+  #     [f 0 1 2 3 4, f 1 2 3 4 5]
+  #
+  public quintwise(B type, f _ : (T,T,T,T,T)->B) Sequence B =>
+    # quintwise.map |||||>f    -- NYI: BUG: #8146 make result inference impossible
+    quintwise.map (a -> f a.0 a.1 a.2 a.3 a.4)
+
+
+  # apply f to sliding window of sextets
+  #
+  # example:
+  #
+  #     (0..5).sextetwise f
+  #
+  # results in
+  #
+  #     [f 1 2 3 4 5]
+  #
+  public sextetwise(B type, f _ : (T,T,T,T,T,T)->B) Sequence B =>
+    # sextetwise.map ||||||>f    -- NYI: BUG: #8146 make result inference impossible
+    sextetwise.map (a -> f a.0 a.1 a.2 a.3 a.4 a.5)
+
+
+  # sliding window
   # blocks of size elements, each is offset by one element to the previous one
   #
   # example:
-  # `(0..5).sliding 3`
-  # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
+  #
+  #    (0..5).sliding 3
+  #
+  # results in
+  #
+  #    [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]
   #
   public sliding (size i64) Sequence (Sequence T) =>
     sliding size 1
@@ -1164,11 +1322,20 @@ is
   # blocks of size elements, each is offset by step elements to the previous one
   #
   # examples:
-  # `(0..5).sliding 3 1`
-  # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
   #
-  # `(0..9).sliding 3 2`
-  # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
+  #     (0..5).sliding 3 1
+  #
+  # results in
+  #
+  #     [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]
+  #
+  # and
+  #
+  #     (0..9).sliding 3 2
+  #
+  # results in
+  #
+  #     [[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]
   #
   public sliding (size i64, step i64) Sequence (Sequence T)
     pre
@@ -1349,8 +1516,8 @@ is
         []
 
 
-  # Maximum number of elements shown for on a call to `as_string` for a non-finite
-  # Sequence.
+  # Maximum number of elements shown for a non-finite Sequence in
+  # the result of a call to `as_string`.
   #
   public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i64 => 10
 
