@@ -33,7 +33,7 @@ In call: 't2.of'
 To solve this, you might change the actual number of arguments to match the feature 'of' (2 value arguments s t) at partially_applicable_type_feature_negative.fz:39:15
   public type.of(s, t String) t2 => t2 "$s$t"
 --------------^^
-To call 'of', you must provide 2 arguments.
+To call 'of', you must provide 2 arguments 's', 't'.
 
 
 
@@ -46,7 +46,7 @@ This call can be resolved in two ways, either as a direct call to 't4.type.of' d
 or by partially applying arguments to a call to 't4.type.of' declared at partially_applicable_type_feature_negative.fz:54:15
   public type.of(s String) t4 => t4 "partial $s"
 --------------^^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partially_applicable_type_feature_negative.fz:57:21: error 5: Ambiguity between direct and partially applied call target
@@ -58,7 +58,7 @@ This call can be resolved in two ways, either as a direct call to 't4.type.of' d
 or by partially applying arguments to a call to 't4.type.of' declared at partially_applicable_type_feature_negative.fz:54:15
   public type.of(s String) t4 => t4 "partial $s"
 --------------^^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partially_applicable_type_feature_negative.fz:65:20: error 6: Ambiguity between direct and partially applied call target
@@ -70,7 +70,7 @@ This call can be resolved in two ways, either as a direct call to 't5.type.of' d
 or by partially applying arguments to a call to 't5.type.of' declared at partially_applicable_type_feature_negative.fz:63:15
   public type.of(s, t String) t5 => t5 "$s$t"
 --------------^^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partially_applicable_type_feature_negative.fz:75:17: error 7: Ambiguity between direct and partially applied call target
@@ -82,7 +82,7 @@ This call can be resolved in two ways, either as a direct call to 't6.type.f' de
 or by partially applying arguments to a call to 't6.type.f' declared at partially_applicable_type_feature_negative.fz:73:15
   public type.f(a, b, c String) t6 => t6 "via type.f(a,b,c): $a $b $c"
 --------------^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partially_applicable_type_feature_negative.fz:76:20: error 8: Ambiguity between direct and partially applied call target
@@ -94,7 +94,7 @@ This call can be resolved in two ways, either as a direct call to 't6.type.f' de
 or by partially applying arguments to a call to 't6.type.f' declared at partially_applicable_type_feature_negative.fz:73:15
   public type.f(a, b, c String) t6 => t6 "via type.f(a,b,c): $a $b $c"
 --------------^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partially_applicable_type_feature_negative.fz:85:16: error 9: Ambiguity between direct and partially applied call target
@@ -106,7 +106,7 @@ This call can be resolved in two ways, either as a direct call to 't7.of' declar
 or by partially applying arguments to a call to 't7.type.of' declared at partially_applicable_type_feature_negative.fz:83:15
   public type.of(s String) String => "via type.of(s): $s"
 --------------^^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partially_applicable_type_feature_negative.fz:94:16: error 10: Ambiguity between direct and partially applied call target
@@ -118,7 +118,7 @@ This call can be resolved in two ways, either as a direct call to 't8.type.of' d
 or by partially applying arguments to a call to 't8.of' declared at partially_applicable_type_feature_negative.fz:92:10
   public of(s String) String => "via of(s): $s"
 ---------^^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 partially_applicable_type_feature_negative.fz:103:26: error 11: Ambiguous targets found for call to 'a'
@@ -155,7 +155,7 @@ In call: 't3.of'
 To solve this, you might change the actual number of arguments to match the feature 'of' (one value argument s) at partially_applicable_type_feature_negative.fz:46:15
   public type.of(s String) t3 => t3 s
 --------------^^
-To call 'of', you must provide one argument.
+To call 'of', you must provide one argument 's'.
 
 
 13 errors.

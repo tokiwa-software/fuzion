@@ -50,6 +50,9 @@ public interface FeatureLookup {
   /**
    * Find the redefinition of feature f within heir.
    *
+   * For fixed features, this performs a lookup by name in heir since fixed
+   * features are not inherited.
+   *
    * @param heir a feature that inherits from f.outer(), directly or
    *             indirectly.
    *

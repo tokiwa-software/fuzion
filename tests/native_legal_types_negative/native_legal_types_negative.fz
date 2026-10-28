@@ -26,3 +26,8 @@ native_legal_types_negative =>
   illegal_arg_type(a unit, b String) unit => native
 
   illegal_result_type String => native
+
+  illegal_arg_type_bool(a bool) unit => native
+
+  illegal_arg_type_array_bool(a mutate.array bool) unit => native
+
