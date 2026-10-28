@@ -1,0 +1,32 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test counterexample_23_overdetermined_recursion
+#
+# -----------------------------------------------------------------------
+
+# The constraints on `A` and `B` refer to each other, so satisfying `A T`
+# would require `T` to satisfy both `B T` and `A T` indefinitely.  Fuzion
+# reports that no concrete type argument can satisfy the cyclic constraints.
+counterexample_23_overdetermined_recursion is
+
+  A(T type : B T) is  # 1. should flag an error: cyclic constraint
+  B(T type : A T) is
+
+  x A i32 := A i32  # 2. should flag an error: i32 does not satisfy B i32

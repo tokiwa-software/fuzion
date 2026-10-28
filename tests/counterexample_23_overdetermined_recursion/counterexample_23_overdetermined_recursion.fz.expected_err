@@ -1,0 +1,29 @@
+
+counterexample_23_overdetermined_recursion.fz:32:14: error 1: Incompatible type parameter
+  x A i32 := A i32  # 2. should flag an error: i32 does not satisfy B i32
+-------------^
+formal type parameter 'T : counterexample_23_overdetermined_recursion.this.B T' with constraint 'counterexample_23_overdetermined_recursion.this.B i32'
+actual type parameter 'i32'
+assignable to constraint: 'Any',
+                          'i32',
+                          'integer',
+                          'java_primitive',
+                          'num.wrap_around',
+                          'numeric',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.interval',
+                          'property.orderable',
+                          'property.partially_orderable'
+
+
+counterexample_23_overdetermined_recursion.fz:29:16: error 2: Incompatible type parameter
+  A(T type : B T) is  # 1. should flag an error: cyclic constraint
+---------------^
+formal type parameter 'T : counterexample_23_overdetermined_recursion.this.A T'
+actual type parameter 'T'
+assignable to constraint: 'Any',
+                          'T',
+                          'counterexample_23_overdetermined_recursion.this.B T'
+
+2 errors.

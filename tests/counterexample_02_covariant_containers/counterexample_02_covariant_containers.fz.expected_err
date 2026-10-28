@@ -1,0 +1,15 @@
+
+counterexample_02_covariant_containers.fz:30:3: error 1: Incompatible types in assignment
+  vehicles array Any := cars  # 1. should flag an error: mutable arrays are invariant
+--^^^^^^^^
+assignment to field : 'counterexample_02_covariant_containers.vehicles'
+expected formal type: 'array Any'
+actual type found   : 'array i32'
+assignable to       : 'array i32'
+for value assigned  : 'cars'
+To solve this you could:
+  • make  'array Any' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'counterexample_02_covariant_containers.vehicles' to 'array i32', or
+  • convert the type of the assigned value to 'array Any'.
+
+one error.
