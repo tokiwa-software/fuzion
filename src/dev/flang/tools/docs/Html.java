@@ -517,6 +517,15 @@ public class Html extends ANY
         fields.addAll(normalArguments);
       }
 
+    // Normal arguments of function features
+    // List them independent of visibility, they can not be called,
+    // but they might contain a comment which otherwise is not shown..
+    var functionArguments = signatureWithArrow(outer)
+                              ? outer.arguments().clone()
+                              : new List<AbstractFeature>();
+    functionArguments.removeIf(a->a.isTypeParameter());
+
+
     // Constructors
     var allConstructors =  new TreeSet<AbstractFeature>();
     allConstructors.addAll(map.getOrDefault(AbstractFeature.Kind.Constructor, new TreeSet<AbstractFeature>()));
@@ -566,6 +575,7 @@ public class Html extends ANY
     return mainSection0("Type Parameters",              null,         explicitTypeParameters, outer, false)
          + mainSection0("Open Type Parameter",          null,         openTypeParameters,     outer, false)
          + mainSection0("Free Type Parameters",         null,         freeTypeParameters,     outer, false)
+         + mainSection0("Arguments",                    null,         functionArguments,      outer, false)
          + mainSection0("Fields",                       null,         fields,                 outer, false)
          + mainSection0("Constructors",                 null,         normalConstructors,     outer, true)
          + mainSection0("Type Constructors",            null,         typeConstructors,       outer, true)
