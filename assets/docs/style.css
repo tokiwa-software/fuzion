@@ -65,6 +65,40 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   margin-left: .2em;
 }
 
+.fd-signature{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  max-width: 100%;
+}
+
+.fd-signature-col1,
+.fd-signature-col2,
+.fd-signature-col3{
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+.fd-signature-col1,
+.fd-signature-col2{
+  align-self: flex-start;
+}
+
+.fd-signature-col1,
+.fd-signature-col3,
+.fd-signature-arg{
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.fd-signature-arg{
+  max-width: 100%;
+}
+
+.fd-signature-col3{
+  align-self: flex-end;
+}
+
 .ml-10{
   margin-left: 1em;
 }
@@ -87,10 +121,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .cursor-pointer{
   cursor: pointer;
-}
-
-.flex-grow-1{
-  flex-grow: 1;
 }
 
 .font-weight-600{
