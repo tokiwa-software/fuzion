@@ -34,32 +34,32 @@ loop_variant_2.test_6 at loop_variant_2.fz:81:5
 ----^^
       say "i=$i"
 ------^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at loop_variant_2.fz:85:3
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch0#1 at loop_variant_2.fz:85:3
   test_6 # no try catch, so the stacktrace gets printed
 --^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/try.fz:50:7
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:51:7
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-(instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm).call_code.call at {base.fum}/effect.fz:404:18
+(instate_helper unit try_lm).call_code.call at {base.fum}/effect.fz:404:18
       set res := code()
 -----------------^^^^
-instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm at <source position not available>
+instate_helper unit try_lm at <source position not available>
 
-(flow.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit at {base.fum}/effect.fz:170:10
+try_lm.type.instate#4 unit at {base.fum}/effect.fz:170:10
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit at {base.fum}/effect.fz:190:5
+try_lm.type.instate#3 unit at {base.fum}/effect.fz:190:5
     instate R e code (_ -> compile_time_panic)
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
+try_lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit at {base.fum}/effect.fz:228:5
+try_lm.infix !#2 unit at {base.fum}/effect.fz:228:5
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch#1 at {base.fum}/flow/try.fz:49:5
-    lm ! ()->
-----^^^^^^^^^
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:50:5
+    try_lm ! ()->
+----^^^^^^^^^^^^^
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
 loop_variant_2.test#2 at loop_variant_2.fz:32:5
@@ -73,32 +73,32 @@ loop_variant_2.test#2 at loop_variant_2.fz:32:5
 ------^^^^^^^^^^
         say "FATAL FAULT `variant`: $s"
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at loop_variant_2.fz:78:3
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch0#1 at loop_variant_2.fz:78:3
   test test_5 5
 --^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/try.fz:50:7
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:51:7
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-(instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm).call_code.call at {base.fum}/effect.fz:404:18
+(instate_helper unit try_lm).call_code.call at {base.fum}/effect.fz:404:18
       set res := code()
 -----------------^^^^
-instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm at <source position not available>
+instate_helper unit try_lm at <source position not available>
 
-(flow.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit at {base.fum}/effect.fz:170:10
+try_lm.type.instate#4 unit at {base.fum}/effect.fz:170:10
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit at {base.fum}/effect.fz:190:5
+try_lm.type.instate#3 unit at {base.fum}/effect.fz:190:5
     instate R e code (_ -> compile_time_panic)
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
+try_lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit at {base.fum}/effect.fz:228:5
+try_lm.infix !#2 unit at {base.fum}/effect.fz:228:5
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch#1 at {base.fum}/flow/try.fz:49:5
-    lm ! ()->
-----^^^^^^^^^
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:50:5
+    try_lm ! ()->
+----^^^^^^^^^^^^^
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
 loop_variant_2.test#2 at loop_variant_2.fz:32:5
@@ -112,32 +112,32 @@ loop_variant_2.test#2 at loop_variant_2.fz:32:5
 ------^^^^^^^^^^
         say "FATAL FAULT `variant`: $s"
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at loop_variant_2.fz:71:3
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch0#1 at loop_variant_2.fz:71:3
   test test_4 4
 --^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/try.fz:50:7
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:51:7
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-(instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm).call_code.call at {base.fum}/effect.fz:404:18
+(instate_helper unit try_lm).call_code.call at {base.fum}/effect.fz:404:18
       set res := code()
 -----------------^^^^
-instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm at <source position not available>
+instate_helper unit try_lm at <source position not available>
 
-(flow.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit at {base.fum}/effect.fz:170:10
+try_lm.type.instate#4 unit at {base.fum}/effect.fz:170:10
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit at {base.fum}/effect.fz:190:5
+try_lm.type.instate#3 unit at {base.fum}/effect.fz:190:5
     instate R e code (_ -> compile_time_panic)
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
+try_lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit at {base.fum}/effect.fz:228:5
+try_lm.infix !#2 unit at {base.fum}/effect.fz:228:5
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch#1 at {base.fum}/flow/try.fz:49:5
-    lm ! ()->
-----^^^^^^^^^
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:50:5
+    try_lm ! ()->
+----^^^^^^^^^^^^^
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
 loop_variant_2.test#2 at loop_variant_2.fz:32:5
@@ -151,32 +151,32 @@ loop_variant_2.test#2 at loop_variant_2.fz:32:5
 ------^^^^^^^^^^
         say "FATAL FAULT `variant`: $s"
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch0#1 at loop_variant_2.fz:63:3
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch0#1 at loop_variant_2.fz:63:3
   test test_3 3
 --^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/try.fz:50:7
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:51:7
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-(instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm).call_code.call at {base.fum}/effect.fz:404:18
+(instate_helper unit try_lm).call_code.call at {base.fum}/effect.fz:404:18
       set res := code()
 -----------------^^^^
-instate_helper unit (flow.try String fuzion.runtime.variant_fault unit).lm at <source position not available>
+instate_helper unit try_lm at <source position not available>
 
-(flow.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit at {base.fum}/effect.fz:170:10
+try_lm.type.instate#4 unit at {base.fum}/effect.fz:170:10
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit at {base.fum}/effect.fz:190:5
+try_lm.type.instate#3 unit at {base.fum}/effect.fz:190:5
     instate R e code (_ -> compile_time_panic)
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
+try_lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit at {base.fum}/effect.fz:228:5
+try_lm.infix !#2 unit at {base.fum}/effect.fz:228:5
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(flow.try String fuzion.runtime.variant_fault unit).catch#1 at {base.fum}/flow/try.fz:49:5
-    lm ! ()->
-----^^^^^^^^^
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:50:5
+    try_lm ! ()->
+----^^^^^^^^^^^^^
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
 loop_variant_2.test#2 at loop_variant_2.fz:32:5

@@ -592,7 +592,6 @@ public class Resolution extends ANY
   {
     if (PRECONDITIONS) require
       (Errors.any() || !af.isUniverse(),
-       Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS),
        !af.isCotype());
 
     if (af._cotype == null)
