@@ -68,7 +68,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 .fd-signature{
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   max-width: 100%;
 }
 
@@ -77,6 +77,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 .fd-signature-col3{
   flex: 0 0 auto;
   max-width: 100%;
+}
+
+.fd-signature-col1,
+.fd-signature-col2{
+  align-self: flex-start;
 }
 
 .fd-signature-col1,
