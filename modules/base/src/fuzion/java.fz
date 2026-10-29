@@ -45,7 +45,7 @@ public java is
   # A Java array
   #
   public Array(T type,
-               public redef java_ref Java_Ref) ref : Sequence T, fuzion.java.Java_Object java_ref
+               jr Java_Ref) ref : Sequence T, fuzion.java.Java_Object jr
   is
     public length i32 ! fuzion.jvm =>
       fuzion.jvm.env.array_length T java_ref
@@ -103,7 +103,7 @@ public java is
 
   # Java's 'java.lang.String' type
   #
-  public Java_String(public redef java_ref Java_Ref) ref : String, fuzion.java.Java_Object java_ref
+  public Java_String(jr Java_Ref) ref : String, fuzion.java.Java_Object jr
   is
     public redef utf8 Sequence u8 =>
       (fuzion.jvm.env.java_string_to_string java_ref).utf8
