@@ -91,9 +91,11 @@ public class Call extends AbstractCall
     @Override
     public void run()
     {
-      if (_targetFeature != Types.f_ERROR)
+      var tf = _targetFeature != null ? _targetFeature
+                                      : _target.type().feature();
+      if (tf != Types.f_ERROR)
         {
-          triggerFeatureNotFoundError(_res, _fos, _targetFeature, _calledName);
+          triggerFeatureNotFoundError(_res, _fos, tf, _calledName);
         }
     }
   }
@@ -618,7 +620,7 @@ public class Call extends AbstractCall
             c.setPendingError(()->AstErrors.forwardTypeInference(c.pos(), c._calledFeature));
             if (urgent)
               {
-                reportPendingError();
+                c._pendingError.run();
                 result = Types.f_ERROR;
               }
           }
@@ -819,12 +821,12 @@ public class Call extends AbstractCall
       }
     else
       {
-        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true).v0() : new List<FeatureAndOuter>();
-        var tf  = targetFeature != null ? targetFeature                               : _target.type().feature();
+        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true).v0()
+                                        : new List<FeatureAndOuter>();
         setPendingError(
           (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
           ? ()->AstErrors.cannotCallChoice(pos(), fos.get(0)._feature) // give a more specific error when trying to call a choice feature
-          : new PendingNotFound(res, fos, tf));
+          : new PendingNotFound(res, fos, targetFeature));
       }
   }
 
