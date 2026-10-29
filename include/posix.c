@@ -1050,6 +1050,7 @@ void * fzE_cnd_init(int clock)
               res = (void *)cnd;
             }
         }
+      pthread_condattr_destroy(&attr);
     }
   return res;
 }
