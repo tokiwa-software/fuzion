@@ -943,10 +943,10 @@ public class NumLiteral extends Constant
                   var result = super.resolveTypes(res, context);
                   if (_calledFeature == null)
                     {
-                      _pendingError = ()->
+                      setPendingError(()->
                         {
                           AstErrors.illegalNumLiteral(this);
-                        };
+                        });
                     }
                   return result;
                 }
