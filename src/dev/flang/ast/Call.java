@@ -48,6 +48,57 @@ public class Call extends AbstractCall
 {
 
 
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Special Runnable to be stored in _pendingError to indicate that the problem
+   * was that the feature was not found.
+   *
+   * This will used later to try to find an alternative through partial application.
+   */
+  class PendingNotFound implements Runnable
+  {
+    boolean _suspended = false;
+    Resolution _res;
+    List<FeatureAndOuter> _fos;
+    AbstractFeature _targetFeature;
+    FeatureName _calledName;
+
+    /**
+     * constructor
+     *
+     * @param res the Resolution instance
+     *
+     * @param fos the candidates that were found with correct name but any
+     * argument count
+     *
+     * @param the target feature that was used to try to find the called
+     * feature.
+     */
+    PendingNotFound(Resolution res,
+                    List<FeatureAndOuter> fos,
+                    AbstractFeature targetFeature)
+    {
+      _res = res;
+      _fos = fos;
+      _targetFeature = targetFeature;
+      // we must create _calledName early since _actuals may change due to
+      // attempted partial application
+      _calledName = FeatureName.get(_name, _actuals.size());
+    }
+
+    @Override
+    public void run()
+    {
+      if (_targetFeature != Types.f_ERROR)
+        {
+          triggerFeatureNotFoundError(_res, _fos, _targetFeature, _calledName);
+        }
+    }
+  }
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -221,6 +272,11 @@ public class Call extends AbstractCall
    * will be set to a Runnable that reports the corresponding error. The error
    * output is delayed because partial application may later fix this once we
    * know better what the expected target type is.
+   *
+   * This may be set to PendingNotFound, which may be suspended and removed if
+   * partial application or type feature lookup is successful. If suspended, a
+   * new PendingNotFound will not replace the old one, but un-suspend it such
+   * that we get the original error.
    */
   Runnable _pendingError = null;
 
@@ -554,23 +610,13 @@ public class Call extends AbstractCall
             result = ct;
             if (_target instanceof Call c)
               { // the target is not called, so its error must not be reported
-                c._pendingError = null;
+                c.clearPendingError();
               }
           }
         else if (tt == null && _target instanceof Call c)
           {
-            c._pendingError = ()->
-              {
-                if (c._calledFeature == null)
-                  {
-                    c.triggerFeatureNotFoundError(res, context);
-                  }
-                else
-                  {
-                    AstErrors.forwardTypeInference(c.pos(), c._calledFeature);
-                  }
-                setToErrorState();
-              };
+            c.setPendingError(()->AstErrors.forwardTypeInference(c.pos(), c._calledFeature));
+            setToErrorState();
             if (urgent)
               {
                 reportPendingError();
@@ -718,8 +764,8 @@ public class Call extends AbstractCall
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
        Errors.any() || _target        != Call.ERROR,
-       Errors.any() || _calledFeature != null || _pendingError != null || targetErroneous(res, context),
-       Errors.any() || _target        != null || _pendingError != null);
+       Errors.any() || _calledFeature != null || hasPendingError() || targetErroneous(res, context),
+       Errors.any() || _target        != null || hasPendingError());
 
     return !targetVoid;
   }
@@ -775,42 +821,14 @@ public class Call extends AbstractCall
     else
       {
         var fos = targetFeature != null ? findOnTarget(res, targetFeature, true).v0() : new List<FeatureAndOuter>();
-        _pendingError =
+        var tf  = targetFeature != null ? targetFeature                               : _target.type().feature();
+        setPendingError(
           (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
           ? ()->AstErrors.cannotCallChoice(pos(), fos.get(0)._feature) // give a more specific error when trying to call a choice feature
-          : new PendingNotFound(res, fos, _target.type().feature());
+          : new PendingNotFound(res, fos, tf));
       }
   }
 
-  /**
-   * Special Runnable to be stored in _pendingError to indicate that the problem
-   * was that the feature was not found.
-   *
-   * This will used later to try to find an alternative through partial application.
-   */
-  class PendingNotFound implements Runnable
-  {
-    Resolution _res;
-    List<FeatureAndOuter> _fos;
-    AbstractFeature _targetFeature;
-
-    PendingNotFound(Resolution res,
-                    List<FeatureAndOuter> fos,
-                    AbstractFeature targetFeature)
-    {
-      _res = res;
-      _fos = fos;
-      _targetFeature = targetFeature;
-    }
-    @Override
-    public void run()
-    {
-      if (_targetFeature != Types.f_ERROR)
-        {
-          triggerFeatureNotFoundError(_res, _fos, _targetFeature);
-        }
-    }
-  }
 
   /**
    * Is the target of this call _unwrapable_, i.e. result type inheriting from auto_unwrap?
@@ -827,17 +845,22 @@ public class Call extends AbstractCall
   private void triggerFeatureNotFoundError(Resolution res, Context context)
   {
     var tf = targetFeature(res, context, true);
-    triggerFeatureNotFoundError(res, findOnTarget(res, tf, true).v0(), tf);
+    triggerFeatureNotFoundError(res,
+                                findOnTarget(res, tf, true).v0(),
+                                tf,
+                                FeatureName.get(_name, _actuals.size()));
   }
 
 
   /**
    * helper for triggering a feature not found error.
    */
-  private void triggerFeatureNotFoundError(Resolution res, List<FeatureAndOuter> fos, AbstractFeature tf)
+  private void triggerFeatureNotFoundError(Resolution res,
+                                           List<FeatureAndOuter> fos,
+                                           AbstractFeature tf,
+                                           FeatureName calledName)
   {
-    var calledName = FeatureName.get(_name, _actuals.size());
-    var names = ParsedOperatorCall.lookupNames(_name).map2(n -> FeatureName.get(n, _actuals.size()));
+    var names = ParsedOperatorCall.lookupNames(_name).map2(n -> FeatureName.get(n, calledName.argCount()));
     var direktLookup = res._module.lookupFeature(tf, calledName);
     AstErrors.calledFeatureNotFound(this,
                                     calledName,
@@ -890,6 +913,60 @@ public class Call extends AbstractCall
 
 
   /**
+   * record a pending error for this call.  Do not overwrite an existing
+   * error. If there is an exsiting suspended PendingNotFound and `r instanceof
+   * PendingNotFound`, unsuspend the existing one.
+   */
+  public void setPendingError(Runnable r)
+  {
+    if (PRECONDITIONS) require
+      (r != null);
+
+    var p = _pendingError;
+    if (p != null)
+      {
+        if (r instanceof PendingNotFound &&
+            p instanceof PendingNotFound pnf)
+          {
+            pnf._suspended = false;
+          }
+        r = p;
+      }
+    _pendingError = r;
+  }
+
+
+  /**
+   * clear a pending error.
+   */
+  public void clearPendingError()
+  {
+    _pendingError = null;
+  }
+
+
+  /**
+   * suspend a pending PendingNotFound error.
+   */
+  public void suspendPendingNotFound()
+  {
+    if (_pendingError instanceof PendingNotFound pnf)
+      {
+        pnf._suspended = true;
+      }
+  }
+
+
+  /**
+   * Do we have a pending error that is not suspended?
+   */
+  public boolean hasPendingError()
+  {
+    return _pendingError != null && !(_pendingError instanceof PendingNotFound pnf && pnf._suspended);
+  }
+
+
+  /**
    * Check if there is a pending error from an unsuccessful attempt to find the
    * called feature.  If so, report the corresponding error and set this call
    * into an error state (with _calledFeature, _target, _actuals and _type set
@@ -897,7 +974,7 @@ public class Call extends AbstractCall
    */
   void reportPendingError()
   {
-    if (_pendingError != null)
+    if (hasPendingError())
       {
         _pendingError.run();
         _pendingError = null;
@@ -1096,7 +1173,7 @@ public class Call extends AbstractCall
         if (foa != null && _target != Universe.instance)
           {
             _calledFeature = foa._feature;
-            _pendingError = null;
+            suspendPendingNotFound();
             var newActuals = new List<>(_target);
             newActuals.addAll(_actuals);
             if (CHECKS) check
@@ -1169,7 +1246,7 @@ public class Call extends AbstractCall
   public AbstractFeature calledFeature()
   {
     if (PRECONDITIONS) require
-      (Errors.any() || calledFeatureKnown() || _pendingError != null);
+      (Errors.any() || calledFeatureKnown() || hasPendingError());
 
     reportPendingError();
     AbstractFeature result = _calledFeature != null ? _calledFeature : Types.f_ERROR;
@@ -1238,17 +1315,17 @@ public class Call extends AbstractCall
   {
     // type() will only be called when we really need the type, so we can report
     // an error in case there is one pending.
-    var hasPendingError = _pendingError != null;
+    var hasPendingError = hasPendingError();
     if (
-      _pendingError == null &&
+      !hasPendingError() &&
       !isDefunct() &&
       !errorInActuals() &&
        calledFeatureKnown() &&
       !missingGenerics().isEmpty()
       )
       {
-        _pendingError = ()->
-          AstErrors.failedToInferActualGeneric(_pos, _calledFeature, missingGenerics(), _actuals);
+        setPendingError
+          (()->AstErrors.failedToInferActualGeneric(_pos, _calledFeature, missingGenerics(), _actuals));
       }
 
     reportPendingError();
@@ -2852,7 +2929,7 @@ public class Call extends AbstractCall
                     {
                       // we found a feature that fits a dot-type-call.
                       _calledFeature = f;
-                      _pendingError = null;
+                      suspendPendingNotFound();
                       var t = tf == context.outerFeature() && !tf.isCotype()
                         ? tf.thisType().cotypeType(res)
                         : _target.asParsedType();
@@ -2906,7 +2983,7 @@ public class Call extends AbstractCall
     // Check that we either know _calledFeature, or there is an error pending
     // either for this Call, or we have a problem with the target:
     if (PRECONDITIONS) require
-      (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetErroneous(res, context));
+      (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || hasPendingError() || targetErroneous(res, context));
 
     if (_calledFeature == Types.f_ERROR)
       {
@@ -3001,7 +3078,7 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (targetErroneous(res, context) || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR || result == Call.ERROR);
+      (targetErroneous(res, context) || hasPendingError() || Errors.any() || result.typeForInferencing() != Types.t_ERROR || result == Call.ERROR);
 
     return  result;
   }
@@ -3013,7 +3090,7 @@ public class Call extends AbstractCall
   private boolean isErroneous(Resolution res, Context context)
   {
     return !res._options.isLanguageServer() &&
-      (targetErroneous(res, context) || _pendingError == null && typeForInferencing() == Types.t_ERROR);
+      (targetErroneous(res, context) || !hasPendingError() && typeForInferencing() == Types.t_ERROR);
   }
 
 
@@ -3301,7 +3378,7 @@ public class Call extends AbstractCall
 
     // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
     // also we can not inherit from none constructor features like and/or etc.
-    if (_pendingError == null && !isInheritanceCall())
+    if (!hasPendingError() && !isInheritanceCall())
       {
         // convert
         //   a && b into if a then b     else false

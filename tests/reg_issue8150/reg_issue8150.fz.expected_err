@@ -1,0 +1,18 @@
+
+reg_issue8150.fz:32:12: error 1: Could not find called feature
+  pipe1 tt.take2 # should report `take2 (no arguments)` not found
+-----------^^^^^
+Feature not found: 'take2' (no arguments)
+Target feature: 'reg_issue8150.tt'
+In call: 'tt.take2'
+
+
+reg_issue8150.fz:33:12: error 2: Could not find called feature
+  pipe2 tt.take2 # should report `take2 (no arguments)` not found
+-----------^^^^^
+Feature not found: 'take2' (no arguments)
+Target feature: 'reg_issue8150.tt'
+In call: 'tt.take2'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
+
+2 errors.

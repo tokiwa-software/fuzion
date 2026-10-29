@@ -315,7 +315,7 @@ public class ParsedCall extends Call
           }
         _actuals = new List<Expr>(ab);
         _calledFeature = Types.resolved.f_bool_AND;
-        _pendingError = null;
+        suspendPendingNotFound();
         _name = _calledFeature.baseName();
         var result = res.resolveType(ab, context);
         _actuals = new List<Expr>(result);
@@ -479,10 +479,10 @@ public class ParsedCall extends Call
         if (!isDefunct() &&/* checkTypeFeaturePartialAmbiguity may have set
 _calledFeature to error */
           (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
-            _pendingError instanceof PendingNotFound    ||
+            _pendingError instanceof PendingNotFound pn     ||
 
             // convert pre/postfix to infix, e.g., `1-` -> `x->1-x` */
-            isPartialInfix(res, expectedType)           ||
+            isPartialInfix(res, expectedType)               ||
 
             // otherwise, try to solve inconsistent type
             paa != null                              &&
@@ -548,7 +548,7 @@ _calledFeature to error */
         if (direct != null && direct._feature != paa._feature)
           {
             AstErrors.partialApplicationAmbiguity(pos(), direct._feature, paa._feature);
-            _pendingError = null;
+            clearPendingError();
             setToErrorState();
           }
       }
@@ -610,7 +610,7 @@ _calledFeature to error */
     var n = t.arity(res);
     if (mustNotContainDeclarations("a partially applied function call", context.outerFeature()))
       {
-        _pendingError = null;
+        suspendPendingNotFound();
         List<Expr> pns = new List<>();
         for (var i = 0; i < n; i++)
           {
@@ -644,7 +644,6 @@ _calledFeature to error */
               : /* v- ==> x->v-x */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
         _calledFeature = null;
-        _pendingError = null;
         var fn = new Function(pos(),
                               pns,
                               this)
