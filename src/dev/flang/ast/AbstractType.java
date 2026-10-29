@@ -1076,7 +1076,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (Errors.any() || f.generics().sizeMatches(actualGenerics));
 
-    AbstractType result = applyTypePars(f, actualGenerics, NO_SELECT);;
+    AbstractType result = applyTypePars(f, actualGenerics, NO_SELECT);
 
     if (!actualGenerics.contains(Types.t_UNDEFINED))
       {
@@ -1101,31 +1101,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   boolean isCotypeType()
   {
     return !isParametricType() && feature().isCotype();
-  }
-
-
-  /**
-   * Check if type t depends on a formal generic parameter of this. If so,
-   * replace t by the corresponding actual generic parameter from the list
-   * provided.
-   *
-   * @param target the target whose actuals type parameters should be applied to
-   * this.
-   *
-   * @param select true iff this is an open generic type and we select a given
-   * actual generic.
-   *
-   * @return t iff t does not depend on a formal generic parameter of this,
-   * otherwise the type that results by replacing all formal generic parameters
-   * of this in t by the corresponding type from actualGenerics.
-   */
-  public AbstractType applyTypePars(AbstractType target, int select)
-  {
-    if (PRECONDITIONS) require
-      (target != null,
-       Errors.any() || !isOpenGeneric() || select >= 0);
-
-    return applyTypePars(target.feature(), target.generics(), select);
   }
 
 
@@ -1775,6 +1750,26 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
+   * Recursively replace this type by the result of {@code replacement} if
+   * {@code condition} holds for this type.  Otherwise, apply the same
+   * replacement to this type's generics and outer type.
+   *
+   * @param condition the condition a type needs to fulfil to be replaced
+   *
+   * @param replacement the function that provides the replacement type
+   *
+   * @return the resulting type.
+   */
+  private AbstractType replaceType(Predicate<AbstractType> condition,
+                                   Function<AbstractType, AbstractType> replacement)
+  {
+    return condition.test(this)
+      ? replacement.apply(this)
+      : applyToGenericsAndOuter(t -> t.replaceType(condition, replacement));
+  }
+
+
+  /**
    * This must be called on a call result type to replace {@code this.type} used in
    * the result type by the actual type dictated by the target of the call
    *
@@ -1805,16 +1800,36 @@ there is no common super type of the two types (Types.t_ERROR)
                                                  Context context)
   {
     var result = this;
-    do
+    while (tt != null)
       {
-        result = result.replace_this_type_by_actual_outer2(tt, foundRef, context);
-        tt = switch(tt.kind())
-          {
-            case ParametricType, ThisType -> null;
-            case RefType, ValueType -> tt.outer();
-          };
+        var target_type = tt;
+        result = result.replaceType
+          (t ->
+              // we have a type parameter TT.THIS#TYPE, which is equal to TT
+              t.isRelayType() && target_type.isParametricType()
+              ||
+              // we have abc.this.type with tt inheriting from abc, so use tt
+              t.isThisType() && (!target_type.isParametricType() && target_type.feature().inheritsFrom(t.feature())
+                              ||
+                              // we have a,b,c.this.type and tt is type parameter with constraint x.y.z: So replace it if
+                              // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
+                              // parameter will be replaced, we will find that actual outer type that fits here.
+                              //
+                              // NYI: CLEANUP: instead of returning `tt` here, we might create a new type that refers to the n`th outer type
+                              // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
+                              // case `a` inherits from this.
+                              target_type.isParametricType() && target_type.typeParameter().constraint(context).whichOuterInheritsFrom(t.feature()) >= 0
+                              ),
+           t ->
+           {
+             if (foundRef != null && target_type.isRef())
+               {
+                 foundRef.accept(t, target_type);
+               }
+             return target_type;
+           });
+        tt = tt.isNormalType() ? tt.outer() : null;
       }
-    while (tt != null);
     return result;
   }
 
@@ -1840,8 +1855,8 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * This is used in a call {@code E.x} were {@code E} has a constraint {@code E : a.b} and {@code x}
    * has a result type {@code a.this.p} or {@code a.b.this.q} to replace the {@code this} type by
-   * the constraint to bet {@code E.p} (alternatively {@code E.outer(1).p},
-   * see @replace_this_type_by_actual_outer2) or {@code E.q}, respectively.
+   * the constraint to bet {@code E.p} (alternatively {@code E.outer(1).p})
+   * or {@code E.q}, respectively.
    *
    * @param f the feature this might be inheriting from (or from f.outer()...).
    *
@@ -1866,62 +1881,6 @@ there is no common super type of the two types (Types.t_ERROR)
       }
 
     return tf != null ? result : -1;
-  }
-
-
-  /**
-   * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
-   * exactly tt, ignoring tt.outer().
-   *
-   * @param tt the type feature we are calling
-   *
-   * @param foundRef a consumer that will be called for all the this-types found
-   * together with the ref type they are replaced with.  May be null.
-   *
-   * @param context the source code context where this Type is used
-   */
-  AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
-  {
-    AbstractType result;
-    if (replacesThisType(tt, context))
-      {
-        if (foundRef != null && tt.isRef())
-          {
-            foundRef.accept(this, tt);
-          }
-        result = tt;
-      }
-    else
-      {
-        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef, context));
-      }
-    return result;
-  }
-
-
-  /**
-   * Is this a {@code .this} type that should be replaced by {@code tt}?
-   *
-   * @param tt the type feature we are calling
-   *
-   * @param context the source code context where this Type is used
-   */
-  private boolean replacesThisType(AbstractType tt, Context context)
-  {
-    return
-      isRelayType() && tt.isParametricType()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
-      ||
-      isThisType() && (!tt.isParametricType() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with tt inheriting from abc, so use tt
-                       ||
-                       // we have a,b,c.this.type and tt is type parameter with constraint x.y.z: So replace it if
-                       // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
-                       // parameter will be replaced, we will find that actual outer type that fits here.
-                       //
-                       // NYI: CLEANUP: instead of returning `tt` here, we might create a new type that refers to the n`th outer type
-                       // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
-                       // case `a` inherits from this.
-                       tt.isParametricType() && tt.typeParameter().constraint(context).whichOuterInheritsFrom(feature()) >= 0
-                       );
   }
 
 
@@ -1973,9 +1932,8 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   public AbstractType replace_relay_type_in_cotype(AbstractFeature cotype)
   {
-    return isRelayType() && cotype  == typeParameter().outer()
-      ? cotype.cotypeOrigin().selfTypeInCoType()
-      : applyToGenericsAndOuter(g -> g.replace_relay_type_in_cotype(cotype));
+    return replaceType(t -> t.isRelayType() && cotype == t.typeParameter().outer(),
+                       t -> cotype.cotypeOrigin().selfTypeInCoType());
   }
 
 
@@ -2008,19 +1966,17 @@ there is no common super type of the two types (Types.t_ERROR)
     if (PRECONDITIONS) require
       (parent == Types.f_ERROR || heir == Types.f_ERROR || heir.inheritsFrom(parent));
 
-    if (isThisType() && feature() == parent)
-      {
-        var tt = heir.thisType();
-        if (foundRef != null && tt.feature().isRef())
-          {
-            foundRef.accept(this, tt);
-          }
-        return tt;
-      }
-    else
-      {
-        return applyToGenericsAndOuter(g -> g.replace_this_type(parent, heir, foundRef));
-      }
+    return replaceType
+      (t -> t.isThisType() && t.feature() == parent,
+       t ->
+       {
+         var tt = heir.thisType();
+         if (foundRef != null && tt.feature().isRef())
+           {
+             foundRef.accept(t, tt);
+           }
+         return tt;
+       });
   }
 
 
@@ -2174,19 +2130,13 @@ there is no common super type of the two types (Types.t_ERROR)
     if (PRECONDITIONS) require
       (tpt.isParametricType());
 
-    return switch (kind())
-      {
-      case ParametricType ->
-        // a call of the form `T.f x` where `f` is declared as
-        // `abc.type.f(arg abc.this.type)`, so replace
-        // `abc.this.type` by `T`.
-        tf.isCotype() && typeParameter() == tf.arguments().get(0)
-        ? tpt
-        : this;
-      case ThisType -> this;
-      case RefType, ValueType ->
-        applyToGenericsAndOuter(g -> g.replace_type_parameter_used_for_relay_type_in_cotype(tf, tpt));
-      };
+    // a call of the form `T.f x` where `f` is declared as
+    // `abc.type.f(arg abc.this.type)`, so replace
+    // `abc.this.type` by `T`.
+    return replaceType(t -> t.isParametricType() &&
+                            tf.isCotype() &&
+                            t.typeParameter() == tf.arguments().get(0),
+                       t -> tpt);
   }
 
 
@@ -2227,15 +2177,11 @@ there is no common super type of the two types (Types.t_ERROR)
     if (PRECONDITIONS) require
       (outerCotype.isCotype());
 
-    return switch (kind())
-      {
-      case RefType, ValueType, ThisType ->
-        applyToGenericsAndOuter(g -> g.replace_type_parameter_of_type_origin(outerCotype));
-      case ParametricType ->
-        typeParameter().outer() == outerCotype.cotypeOrigin()
-          ? outerCotype.typeArguments().get(typeParameter().typeParameterIndex() + 1).asParametricType()
-          : this;
-      };
+    return replaceType(t -> t.isParametricType() &&
+                            t.typeParameter().outer() == outerCotype.cotypeOrigin(),
+                       t -> outerCotype.typeArguments()
+                             .get(t.typeParameter().typeParameterIndex() + 1)
+                             .asParametricType());
   }
 
 
@@ -2768,15 +2714,11 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   AbstractType replaceTypeParameters(Feature postFeature)
   {
-    return switch (kind())
-      {
-      case RefType, ValueType, ThisType ->
-        applyToGenericsAndOuter(x -> x.replaceTypeParameters(postFeature));
-      case ParametricType ->
-        typeParameter().outer() == postFeature.origin()
-          ? postFeature.typeArguments().get(typeParameter().typeParameterIndex()).asParametricType()
-          : this;
-      };
+    return replaceType(t -> t.isParametricType() &&
+                            t.typeParameter().outer() == postFeature.origin(),
+                       t -> postFeature.typeArguments()
+                             .get(t.typeParameter().typeParameterIndex())
+                             .asParametricType());
   }
 
 
