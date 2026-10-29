@@ -616,7 +616,6 @@ public class Call extends AbstractCall
         else if (tt == null && _target instanceof Call c)
           {
             c.setPendingError(()->AstErrors.forwardTypeInference(c.pos(), c._calledFeature));
-            setToErrorState();
             if (urgent)
               {
                 reportPendingError();
