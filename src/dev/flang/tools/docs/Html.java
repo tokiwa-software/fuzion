@@ -541,10 +541,18 @@ public class Html extends ANY
     if (!signatureWithArrow(outer))
       {
         fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
-        var normalArguments = outer.arguments().clone();
-        normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
-        fields.addAll(normalArguments);
+        var valueArguments = outer.valueArguments().clone();
+        valueArguments.removeIf(a->a.visibility().eraseTypeVisibility() != Visi.PUB);
+        fields.addAll(valueArguments);
       }
+
+    // Value arguments of function features
+    // List them independent of visibility, they can not be called,
+    // but they might contain a comment which otherwise is not shown..
+    var functionArguments = signatureWithArrow(outer)
+                              ? outer.valueArguments().clone()
+                              : new List<AbstractFeature>();
+
 
     // Constructors
     var allConstructors =  new TreeSet<AbstractFeature>();
@@ -595,6 +603,7 @@ public class Html extends ANY
     return mainSection0("Type Parameters",              null,         explicitTypeParameters, outer, false)
          + mainSection0("Open Type Parameter",          null,         openTypeParameters,     outer, false)
          + mainSection0("Free Type Parameters",         null,         freeTypeParameters,     outer, false)
+         + mainSection0("Arguments",                    null,         functionArguments,      outer, false)
          + mainSection0("Fields",                       null,         fields,                 outer, false)
          + mainSection0("Constructors",                 null,         normalConstructors,     outer, true)
          + mainSection0("Type Constructors",            null,         typeConstructors,       outer, true)
