@@ -927,13 +927,13 @@ public class NumLiteral extends Constant
           };
         var from_u32_args = switch (_originalString)
           {
-          case "from_u32" -> new List<Expr>(this);
-          default         -> new List<Expr>();
+          case "0", "1" -> new List<Expr>();
+          default       -> new List<Expr>(this);
           };
         var from_u32 = new ParsedCall(target,
-                                       new ParsedName(pos(),
-                                                      // NYI: BUG: #8138: Replace String by Types.resolved.f_*
-                                                      from_u32_name),
+                                      new ParsedName(pos(),
+                                                     // NYI: BUG: #8138: Replace String by Types.resolved.f_*
+                                                     from_u32_name),
                                       from_u32_args)
                              .resolveTypes(res, _context);
         if (from_u32._pendingError == null)
