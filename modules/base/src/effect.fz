@@ -230,7 +230,7 @@ public effect is
 
   # fluent interface for using multiple effects together
   #
-  public and(R type, E type : effect, e Lazy E) Functional R =>
+  public and(R type, E : effect, e Lazy E) Functional R =>
     as_functional R
       .compose (e.as_functional R)
 

@@ -88,7 +88,7 @@ public Any ref is
   #     say <| sum [3.14, 32, 16.0, 8]
   #
   public dynamic_apply(R type,
-                       F type : Typed_Function R,
+                       F : Typed_Function R,
                        f F
                        ) R
   =>

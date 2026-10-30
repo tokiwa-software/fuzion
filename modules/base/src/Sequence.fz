@@ -308,7 +308,7 @@ is
   #
   # NOTE: for negative n an empty Sequence is returned
   #
-  public take (I type : integer, n I) Sequence T
+  public take (I : integer, n I) Sequence T
     # NYI: BUG: breaks tail call optimization
     # post debug: n>0 || result.is_empty
   => as_list.take n
@@ -332,7 +332,7 @@ is
   #
   # NOTE: for negative n the Sequence is returned as is
   #
-  public drop (I type : integer, n I) Sequence T
+  public drop (I : integer, n I) Sequence T
     # NYI: BUG: breaks tail call optimization
     # post debug: n>0 || count=result.count
   => as_list.drop n
@@ -346,7 +346,7 @@ is
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(I type : integer, from, to I) Sequence T
+  public slice(I : integer, from, to I) Sequence T
     pre
       debug : from ≥ 0
       debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
@@ -742,7 +742,7 @@ is
 
   # sort this Sequence using `by` to map elements to an orderable type.
   #
-  public sort_by(O type : property.orderable, by T->O) container.sorted_array T =>
+  public sort_by(O : property.orderable, by T->O) container.sorted_array T =>
     container.sorted_array Sequence.this ((a,b)->(by a) <= (by b))
 
 
@@ -839,14 +839,14 @@ is
   # Note that this may have a performance in O(i) unless this
   # Sequence is_array_backed.
   #
-  public is_valid_index(I type : integer, i I) bool =>
+  public is_valid_index(I : integer, i I) bool =>
     (0 ≤ i && (if is_array_backed then i.as_i64 ≤ count
                                   else !(drop i).is_empty))
 
 
   # the nth element in the sequence, must exist
   #
-  public index [] (I type : integer, i I) T
+  public index [] (I : integer, i I) T
     pre
       debug: is_valid_index i
   =>
@@ -863,7 +863,7 @@ is
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  public indexed(I type : property.interval, start_idx I) Sequence (tuple I T) =>
+  public indexed(I : property.interval, start_idx I) Sequence (tuple I T) =>
     zip (start_idx..) (a,b -> (b, a))
 
 
@@ -1118,7 +1118,7 @@ is
   # convert this Sequence to a Map
   # via mapping all elements to key value pairs
   #
-  public as_map(KEY type : property.equatable,
+  public as_map(KEY : property.equatable,
                 VALUE type,
                 mapper T -> (KEY,VALUE)) container.Map KEY VALUE =>
     if KEY : property.orderable
@@ -1136,9 +1136,9 @@ is
   #
   #     say <| (1..10).as_map _ _ (container.ps_map i64 i64) (x -> (x, x*x))
   #
-  public as_map(KEY type : property.equatable,
+  public as_map(KEY : property.equatable,
                 VALUE type,
-                M type : container.Map KEY VALUE,
+                M : container.Map KEY VALUE,
                 mapper T -> (KEY,VALUE)) M
   =>
 
@@ -1356,10 +1356,10 @@ is
   #
   public group_reduce (
     # type of the keys
-    K type : property.orderable,
+    K : property.orderable,
 
     # the type of the map to create
-    M type : container.Map K T,
+    M : container.Map K T,
 
     # function to generate the key
     key_f T->K,
@@ -1385,13 +1385,13 @@ is
   #
   public group_map_reduce (
     # type of the keys
-    K type : property.orderable,
+    K : property.orderable,
 
     # type of the values in the result
     B type,
 
     # the type of the map to create
-    M type : container.Map K B,
+    M : container.Map K B,
 
     # function to generate the keys
     key_f T->K,
@@ -1429,13 +1429,13 @@ is
   #
   public group_map (
     # type of the keys
-    K type : property.orderable,
+    K : property.orderable,
 
     # type of the values in the result
     B type,
 
     # the type of the map to create
-    M type : container.Map K (Sequence B),
+    M : container.Map K (Sequence B),
 
     # function to generate the keys
     key_f T->K,
@@ -1461,7 +1461,7 @@ is
   #
   # f determines the key of an element
   #
-  public group_by_mutable_map(K type : property.equatable, MM type : container.Mutable_Map K (Sequence T), M type : container.Map K (Sequence T), f T -> K) M
+  public group_by_mutable_map(K : property.equatable, MM : container.Mutable_Map K (Sequence T), M : container.Map K (Sequence T), f T -> K) M
   =>
     res := MM.empty
 
@@ -1479,7 +1479,7 @@ is
   #
   # f determines the key of an element
   #
-  public group_by(K type : property.equatable, f T -> K) container.Map K (Sequence T) =>
+  public group_by(K : property.equatable, f T -> K) container.Map K (Sequence T) =>
     lm : mutate is
     lm.instate_self (container.Map K (Sequence T)) ()->
       if K : property.orderable

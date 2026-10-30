@@ -43,7 +43,7 @@
 #     say <| mem 3
 #
 #
-public memoize(MM type : container.Mutable_Map T R, T type : property.equatable, R type, f T->R) T->R =>
+public memoize(MM : container.Mutable_Map T R, T : property.equatable, R type, f T->R) T->R =>
   _ : Unary R T is
 
     # the memory
@@ -125,7 +125,7 @@ public memoize is
   #
   public memoized(# the key type, i.e, input type of memoized function
                   #
-                  K type : property.orderable,
+                  K : property.orderable,
 
                   # the value type, i.e., result type of memoized function
                   #
@@ -164,7 +164,7 @@ public memoize is
   #
   public keep(# the key type, i.e, input type of memoized function
               #
-              K type : property.orderable,
+              K : property.orderable,
 
               # the value type, i.e., result type of memoized function
               #
@@ -232,7 +232,7 @@ memoized_effect(# type to identify this memoized instance
 
                 # the key type, i.e, input type of memoized function
                 #
-                K type : property.orderable,
+                K : property.orderable,
 
                 # the value type, i.e., result type of memoized function
                 #

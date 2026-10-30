@@ -51,7 +51,7 @@ public monad (A type) is
   #
   # Apply f to elements of type A and wrap them in MB.
   #
-  public infix >>=~ (B type, MB type : monad B, f A -> MB) MB => abstract
+  public infix >>=~ (B type, MB : monad B, f A -> MB) MB => abstract
 
 
   # join operator

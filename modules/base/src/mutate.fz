@@ -507,7 +507,7 @@ public mutate : effect is
     public update
       (
         # function type, permits specialization of calls for each function
-        F type : T->T,
+        F : T->T,
 
         # function calculating the new value from the old value
         f F

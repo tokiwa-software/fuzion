@@ -46,7 +46,7 @@
 # This is not an interval in the mathematical sense, but rather a representation
 # of an arithmetic progression.
 #
-public interval(T type : integer,
+public interval(T : integer,
 
                 # Start value. Included unless the interval is empty.
                 public from T,
