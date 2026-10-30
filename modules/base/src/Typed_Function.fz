@@ -31,7 +31,7 @@
 # This is used, e.g., as an argument to `Any.dynamic_apply`.
 #
 public Typed_Function(R type,
-                      A type...) ref is
+                      A...) ref is
 
 
   # call this function for type `T` on arguments `a...` and `v`.
@@ -50,7 +50,7 @@ public Typed_Function(R type,
 # This is used, e.g., as an argument to `choice.combine`.
 #
 public Typed_Combiner(R type,
-                      A type...) ref is
+                      A...) ref is
 
 
   # call this function for type `T` on arguments `a...`, 'v'  and `w`.
