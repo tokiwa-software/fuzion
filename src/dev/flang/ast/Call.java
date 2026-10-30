@@ -52,18 +52,45 @@ public class Call extends AbstractCall
 
 
   /**
-   * Special Runnable to be stored in _pendingError to indicate that the problem
-   * was that the feature was not found.
+   * Special Runnable to be stored in _pendingError to indicate that the problem was that the
+   * feature was not found.
    *
-   * This will used later to try to find an alternative through partial application.
+   * This will be suspended while trying to find an alternative through partial application. Only if
+   * that fails as well, this pending error will be un-suspended and reported.
    */
   class PendingNotFound implements Runnable
   {
+    /**
+     * Is this error suspended while we try to resolve the call using partial application?
+     */
     boolean _suspended = false;
+
+    /**
+     * The resolution instance
+     */
     Resolution _res;
+
+    /**
+     * the candidates that were found with correct name but any argument count
+     */
     List<FeatureAndOuter> _fos;
+
+    /**
+     * target feature that was used to try to find the called feature.
+     */
     AbstractFeature _targetFeature;
+
+    /**
+     * FeatureNmae that was searched for when this pending error was created.  This is stored here
+     * since the name and argcount may change for partial applicaiton ("prefix +",0 may become
+     * "infix +",1).
+     */
     FeatureName _calledName;
+
+    /**
+     * The _actuals when this error was created.  This may also get changed for partial application,
+     * so we keep the original value in case we need to report an error with the original arguments.
+     */
     List<Expr> _originalActuals; // copy of original actuals.  Call.this._actuals might get changed
                                  // for partial applications, so we restore this to report an error
                                  // referring to the original call.
