@@ -21,6 +21,23 @@
 #
 # -----------------------------------------------------------------------
 
+usage =>
+  """
+    simple_example is a small program to record or check a Fuzion test.
+
+    - record excecutes the test and saves stdout/err to files.
+    - check  excecutes the test and compares the output
+      to the recorded stdout/err files. If therer is any difference
+      simple_example emits the diff and returns with non zero exit code.
+
+    If a file name input or <test.fz>.input exists its contents
+    will be written to the tests stdin.
+
+    Usage  : simple_example <check|record> <any|jvm|c|int|effect> <fz+args> <test.fz>
+
+    Example: simple_example check jvm "build/bin/fz -modules=nom" tests/hello/HelloWorld.fz
+  """
+
 ########### Extensions ###############
 
 is_windows =>
@@ -170,12 +187,7 @@ clean_err(err io.path) unit =>
 if envir.Args.env.count != 5
 
   # NYI: UNDER DEVELOPMENT: what should happen for check any? only jvm/int? or forbid?
-  say """
-      Usage  : simple_example <check|record> <any|jvm|c|int|effect> <fz+args> <test.fz>
-      Usage  : simple_example add <test_name>
-
-      Example: simple_example check jvm "build/bin/fz -modules=nom" tests/hello/HelloWorld.fz
-      """
+  say usage
   Exit.env.exit 1
 
 action := envir.Args.env[1]
