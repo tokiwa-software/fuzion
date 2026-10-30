@@ -34,7 +34,7 @@ module:public Dynamic_Array (
 
   # element type
   #
-  T type,
+  T : Any,
 
   # contents of the array
   #

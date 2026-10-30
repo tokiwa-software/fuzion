@@ -31,7 +31,7 @@ module:public open(fd File_Descriptor,
   # install Seek effect for type `io.file.this.Seek`
   # and run `code`
   #
-  public seek(R type, code ()->R) outcome R =>
+  public seek(R : Any, code ()->R) outcome R =>
 
     sk : Seek is
       public redef seek(offset i64) outcome unit =>
@@ -56,7 +56,7 @@ module:public open(fd File_Descriptor,
   #       io.file.open.env.mmap (i64 0) (i64 100) ()->
   #         io.file.mapped_buffer.env[99] := 42
   #
-  public mmap(R type, offset i64, size i64, code ()->R) outcome R
+  public mmap(R : Any, offset i64, size i64, code ()->R) outcome R
     pre
       safety: offset % os.mmap_offset_multiple = 0
       safety: size > 0

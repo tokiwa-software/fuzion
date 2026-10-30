@@ -39,7 +39,7 @@ private:public pipe : effect is
 
   # with writer for one pipe
   #
-  with_writer(T type, LM type : mutate, w () -> outcome unit, r i64 -> T) outcome T ! concur.atomic_access
+  with_writer(T : Any, LM type : mutate, w () -> outcome unit, r i64 -> T) outcome T ! concur.atomic_access
   =>
     if status != 0
       error "creating pipe" status.as_i64
@@ -55,14 +55,14 @@ private:public pipe : effect is
 
   # instate a pipe for writing and run code
   #
-  public type.for_writing(T type, LM type : mutate, w () -> outcome unit, r i64 -> T) outcome T =>
+  public type.for_writing(T : Any, LM type : mutate, w () -> outcome unit, r i64 -> T) outcome T =>
     os.pipe ! ()->
       os.pipe.env.with_writer T LM w r
 
 
   # with reader for one pipe
   #
-  with_reader(T type, LM type : mutate, r () -> outcome unit, w i64 -> T) outcome T ! concur.atomic_access
+  with_reader(T : Any, LM type : mutate, r () -> outcome unit, w i64 -> T) outcome T ! concur.atomic_access
   =>
     if status != 0
       error "creating pipe" status.as_i64
@@ -80,7 +80,7 @@ private:public pipe : effect is
 
   # instate a pipe for reading and run code
   #
-  public type.for_reading(T type, LM type : mutate, r () -> outcome unit, w i64 -> T) outcome T =>
+  public type.for_reading(T : Any, LM type : mutate, r () -> outcome unit, w i64 -> T) outcome T =>
     os.pipe ! ()->
       os.pipe.env.with_reader T LM r w
 

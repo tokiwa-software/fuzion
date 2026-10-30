@@ -43,7 +43,7 @@
 #     say <| mem 3
 #
 #
-public memoize(MM type : container.Mutable_Map T R, T type : property.equatable, R type, f T->R) T->R =>
+public memoize(MM : container.Mutable_Map T R, T : property.equatable, R : Any, f T->R) T->R =>
   _ : Unary R T is
 
     # the memory
@@ -123,11 +123,11 @@ public memoize is
 
   # effect wrapped around map of memoized keys and corresponding values
   #
-  public memoized(# the key type, i.e, input type of memoized function
+  public memoized(# the key : Any, i.e, input type of memoized function
                   #
-                  K type : property.orderable,
+                  K : property.orderable,
 
-                  # the value type, i.e., result type of memoized function
+                  # the value : Any, i.e., result type of memoized function
                   #
                   V type
                   )
@@ -162,13 +162,13 @@ public memoize is
   # use global memoized effect to retrieve the value for a given key or,
   # if that value was not calculated yet, to return it
   #
-  public keep(# the key type, i.e, input type of memoized function
+  public keep(# the key : Any, i.e, input type of memoized function
               #
-              K type : property.orderable,
+              K : property.orderable,
 
-              # the value type, i.e., result type of memoized function
+              # the value : Any, i.e., result type of memoized function
               #
-              V type,
+              V : Any,
 
               # the function input
               #
@@ -207,9 +207,9 @@ public memoize is
   #
   #   memoized_constant_effect pi f64
   #
-  public const(# the value type, i.e., result type of memoized function
+  public const(# the value : Any, i.e., result type of memoized function
               #
-              V type,
+              V : Any,
 
               # the function to calculate the result
               #
@@ -228,15 +228,15 @@ public memoize is
 #
 memoized_effect(# type to identify this memoized instance
                 #
-                M type,
+                M : Any,
 
-                # the key type, i.e, input type of memoized function
+                # the key : Any, i.e, input type of memoized function
                 #
-                K type : property.orderable,
+                K : property.orderable,
 
-                # the value type, i.e., result type of memoized function
+                # the value : Any, i.e., result type of memoized function
                 #
-                V type,
+                V : Any,
 
                 # the store used for memoization
                 #
@@ -316,18 +316,18 @@ is
 
 # ref type wrapped around mutable `global_value`
 #
-Ref(V type, v V) ref is
+Ref(V : Any, v V) ref is
 
 
 # effect to memoize constant values calculated only once
 #
 private:public memoized_constant_effect(# type to identify this memoized instance
                                         #
-                                        M type,
+                                        M : Any,
 
-                                        # the value type, i.e., result type of memoized function
+                                        # the value : Any, i.e., result type of memoized function
                                         #
-                                        V type,
+                                        V : Any,
 
                                         # the stored value, accessed by current thread only, so no
                                         # need for exclusivity

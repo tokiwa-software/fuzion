@@ -27,7 +27,7 @@
 #
 private:public hash_map(
         HK type : property.hashable,
-        V  type,
+        V  : Any,
         ks Sequence HK,
         vs Sequence V) : container.Map HK V
   pre

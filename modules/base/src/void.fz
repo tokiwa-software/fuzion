@@ -30,7 +30,7 @@
 # void is the bottom type in Fuzion, the default empty type that is a subtype of all
 # other types.
 #
-# It is impossible to create any values of this type, consequently, it is impossible
+# It is impossible to create any values of this : Any, consequently, it is impossible
 # to assign anything to a field of void type.
 #
 # If used as the type of an argument field for a feature, the feature can never be

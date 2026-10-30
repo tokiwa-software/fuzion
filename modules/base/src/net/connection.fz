@@ -33,7 +33,7 @@ module:public connection(desc i32) is
 
   # this installs reader, writer and endpoint for the given connection
   #
-  public with(T type, LM type : mutate, fn ()->T) T
+  public with(T : Any, LM type : mutate, fn ()->T) T
   =>
 
     reader =>
@@ -71,7 +71,7 @@ module:public connection(desc i32) is
   #
   # NYI: DOCUMENTATION: see tests/sockets_thread_pool for now
   #
-  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, fn ()->T) concur.Future (outcome T)
+  public in_thread_pool(T : Any, TP type : concur.thread_pool, LM type : mutate, fn ()->T) concur.Future (outcome T)
   =>
     TP.env.submit (outcome T) ()->
       LM.default_value.or_panic ! ()->

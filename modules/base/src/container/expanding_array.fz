@@ -42,7 +42,7 @@
 private:public expanding_array
   (
    # element type
-   T type,
+   T : Any,
 
    # the array containing the actual data
    data fuzion.sys.internal_array (container.slot T),
@@ -309,7 +309,7 @@ slot(T type) : choice reserved unused T is
 
 # effect that will be installed by `expanding_array.expand` when running `filler`
 #
-private:public expanding(T type,
+private:public expanding(T : Any,
                          data fuzion.sys.internal_array (container.slot T),
                          public length i64,
                          public n i64

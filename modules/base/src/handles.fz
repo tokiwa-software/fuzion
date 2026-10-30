@@ -61,7 +61,7 @@
 # is currently used as a monad.
 #
 private:public handles(
-  T, X type,
+  T, X : Any,
 
   # the inner value of this monad
   public v X,
@@ -175,14 +175,14 @@ is
 
   public fixed redef infix >>= (f X -> handles T X) handles T X => bind X f
 
-  public fixed bind(B type, f X -> handles T B) handles T B =>
+  public fixed bind(B : Any, f X -> handles T B) handles T B =>
     handles (f v).v ar oneway_monad_mode.plain
 
-  public fixed return( B type, w B) handles T B => handles w ar oneway_monad_mode.plain
+  public fixed return( B : Any, w B) handles T B => handles w ar oneway_monad_mode.plain
 
 # shorthand for creating and installing an empty set of handles of given type.
 #
-public handles(T type, rr ()->unit) unit =>
+public handles(T : Any, rr ()->unit) unit =>
   (handles unit (array T).empty oneway_monad_mode.inst) ! rr
 
 # shorthand for creating an empty set of handles of given type.
@@ -194,7 +194,7 @@ public handles_(T type) handles T unit => handles unit (array T).empty oneway_mo
 # using the handles interface
 #
 private:public handle_id(
-  T type,
+  T : Any,
   # the index in `handles.ar`
   x i64
   )
@@ -226,6 +226,6 @@ handles_type(T type) is
 #
 # this uses the handles instance from the current environment
 #
-public handle(T type, v T) handle_id T ! handles T unit
+public handle(T : Any, v T) handle_id T ! handles T unit
 =>
   (handles T unit).env.create v

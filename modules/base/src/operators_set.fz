@@ -32,7 +32,7 @@
 #     say <| "B" ∈ my_set
 #     say <| "D" ∈ my_set
 #
-public infix ∈ (T type : property.equatable,
+public infix ∈ (T : property.equatable,
                 a T,
                 s container.Set T) bool
 =>
@@ -47,7 +47,7 @@ public infix ∈ (T type : property.equatable,
 #     say <| "B" ∉ my_set
 #     say <| "D" ∉ my_set
 #
-public infix ∉ (T type : property.equatable,
+public infix ∉ (T : property.equatable,
                 a T,
                 s container.Set T) bool
 =>

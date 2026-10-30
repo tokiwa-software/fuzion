@@ -25,7 +25,7 @@
 
 # Typed_Sequence -- ancestor for features representing sequence of typed values
 #
-# Unlike `Sequence`, which contains values of all the same type, a `Typed_Sequence`
+# Unlike `Sequence`, which contains values of all the same : Any, a `Typed_Sequence`
 # contains values of different types.  This is similar to `Sequence Any`, only that
 # values are not forced to be boxed into references.
 #
@@ -52,7 +52,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
     as_reverse_list : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
                       container.typed_applicator (list container.Typed_Value) is
 
-      public redef apply(A type, e (list container.Typed_Value), v A) list container.Typed_Value
+      public redef apply(A : Any, e (list container.Typed_Value), v A) list container.Typed_Value
       =>
         container.typed_value v : e
 
@@ -78,7 +78,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   =>
     count_elements : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
                      container.typed_applicator i64 is
-      public redef apply(A type, e i64, v A) i64 => e + 1
+      public redef apply(A : Any, e i64, v A) i64 => e + 1
 
     typed_foldf 0 count_elements
 
@@ -88,7 +88,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
-  public typed_foldf(E type, A type : container.typed_applicator E, e E, a A) E
+  public typed_foldf(E : Any, A type : container.typed_applicator E, e E, a A) E
   =>
     abstract
 
@@ -98,7 +98,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
-  public typed_zip_and_fold(E type, Z type : Typed_Combiner E E, b Typed_Sequence.this, e E, z Z) E
+  public typed_zip_and_fold(E : Any, Z type : Typed_Combiner E E, b Typed_Sequence.this, e E, z Z) E
   =>
     abstract
 
@@ -111,14 +111,14 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
 #     #
 #     printn(A type ..., a A...) : container.typed_fold 1 a
 #     =>
-#       public redef apply(T type, n i32, v T) i32
+#       public redef apply(T : Any, n i32, v T) i32
 #       =>
 #         say "$n: $v"
 #         n + 1
 #
 #       res    # field `res` will receive the result of last `apply`
 #
-public typed_fold(E type, e E, s container.Typed_Sequence) : container.typed_applicator E is
+public typed_fold(E : Any, e E, s container.Typed_Sequence) : container.typed_applicator E is
 
   # the result of the fold
   #
@@ -136,7 +136,7 @@ public typed_fold(E type, e E, s container.Typed_Sequence) : container.typed_app
 #     #
 #     printn(A type ..., a A...) : container.variadic i32
 #     =>
-#       public redef apply(T type, n i32, v T) i32
+#       public redef apply(T : Any, n i32, v T) i32
 #       =>
 #         say "$n: $v"
 #         n + 1
@@ -175,11 +175,11 @@ public typed_applicator(E type) is
   #
   #     my_concat : container.typed_applicator String is
   #
-  #       public redef apply(T type, e String, v T) String
+  #       public redef apply(T : Any, e String, v T) String
   #       =>
   #         e + $v
   #
-  public apply(T type, e E, v T) E
+  public apply(T : Any, e E, v T) E
     : fuzion.lambda_target
   =>
     abstract
@@ -192,10 +192,10 @@ public typed_applicator(E type) is
 public Typed_Value ref is
 
 
-  # Feed this value's type, the cumulative value `e` and this value itself into
+  # Feed this value's : Any, the cumulative value `e` and this value itself into
   # `a.apply` and return the resulting cumulative value.
   #
-  public apply_to(E type, A type: container.typed_applicator E, e E, a A) E
+  public apply_to(E : Any, A type: container.typed_applicator E, e E, a A) E
   =>
     abstract
 
@@ -207,7 +207,7 @@ public Typed_Value ref is
 # of all the same type `Typed_Value`.
 #
 public typed_value(# the type
-                   T type,
+                   T : Any,
 
                    # the value
                    v T)
@@ -215,13 +215,13 @@ public typed_value(# the type
 
   # apply `a` to `T` `e` `v`
   #
-  public redef apply_to(E type, A type: container.typed_applicator E, e E, a A) E
+  public redef apply_to(E : Any, A type: container.typed_applicator E, e E, a A) E
   =>
     a.apply T e v
 
 
   # create a String of the form `"<type> <value>"` where `<type>`
-  # is the name of the type, enclosed by `(`/`)` in case it contains
+  # is the name of the : Any, enclosed by `(`/`)` in case it contains
   # spaces.
   #
   # Examples:
@@ -262,7 +262,7 @@ public Types ref : Sequence Type is
 
     as_reverse_list : container.type_applicator (list Type) is
 
-      public redef apply(A type, e (list Type)) list Type
+      public redef apply(A : Any, e (list Type)) list Type
       =>
         list (id Type A) e
 
@@ -287,7 +287,7 @@ public Types ref : Sequence Type is
   public redef count i64
   =>
     count_elements : container.type_applicator i64 is
-      public redef apply(A type, e i64) i64 => e + 1
+      public redef apply(A : Any, e i64) i64 => e + 1
 
     type_foldf 0 count_elements
 
@@ -297,7 +297,7 @@ public Types ref : Sequence Type is
   #
   # In case this `Types` instance is empty, the result is `e`.
   #
-  public type_foldf(E type, A type : container.type_applicator E, e E, a A) E
+  public type_foldf(E : Any, A type : container.type_applicator E, e E, a A) E
   =>
     abstract
 
@@ -318,10 +318,10 @@ public type_applicator(E type) is
   #
   #     my_concat : container.type_applicator String is
   #
-  #       public redef apply(T type, e String) String
+  #       public redef apply(T : Any, e String) String
   #       =>
   #         e + $T
   #
-  public apply(T type, e E) E : fuzion.lambda_target
+  public apply(T : Any, e E) E : fuzion.lambda_target
   =>
     abstract

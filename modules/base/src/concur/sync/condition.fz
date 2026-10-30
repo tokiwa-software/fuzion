@@ -30,7 +30,7 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
   # run code synchronized across all threads
   # that also use this condition
   #
-  public synchronized(T type, code ()->T) T ! atomic_access =>
+  public synchronized(T : Any, code ()->T) T ! atomic_access =>
     mtx.synchronized code
 
 

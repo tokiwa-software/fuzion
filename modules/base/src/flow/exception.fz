@@ -34,7 +34,7 @@ public exception (# type parameter used only to distinguish different
                   # errors raised by the reader from those raised
                   # by the writer.
                   #
-                  T type,
+                  T : Any,
 
                   h error->void
                   ) : flow.fallible error h
@@ -51,7 +51,7 @@ is
   # via a call to 'raise' wrap the 'error' passed to 'raise' into the
   # resulting 'outcome'.
   #
-  public type.on(R type, f ()->R) outcome R =>
+  public type.on(R : Any, f ()->R) outcome R =>
     exception.this.try   (outcome R) ()->
                     f()
                   .catch
@@ -62,8 +62,8 @@ is
 # it.  The result will be an `outcome R` that, in case of success, contains
 # the result of `f`, or, in case of `(exception T).env.raise`, contains the error.
 #
-public exception(T type,
-           R type,
+public exception(T : Any,
+           R : Any,
            f ()->R) outcome R =>
   (exception T).on f
 
@@ -72,8 +72,8 @@ public exception(T type,
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # '(exception T).env.raise'.
 #
-public exception_or_panic(T type,
-                          R type,
+public exception_or_panic(T : Any,
+                          R : Any,
                           f ()->R) R =>
   match (exception T).on f
     e error => panic $e

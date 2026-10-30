@@ -24,7 +24,7 @@
 
 # state of the blocking queue
 #
-bqstate(T type, is_closed bool, data array T) is
+bqstate(T : Any, is_closed bool, data array T) is
 
 
 # NYI: replace by better queue implementation, e.g. https://arxiv.org/pdf/2305.07229

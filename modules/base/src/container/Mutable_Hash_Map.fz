@@ -41,7 +41,7 @@ module:public Mutable_Hash_Map(
 
         # type of the values
         #
-        V  type,
+        V  : Any,
 
         # initial size, also the size of the hash map will not decrease below this
         #

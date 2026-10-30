@@ -227,7 +227,7 @@ public mutate : effect is
   # 'mutate' effect in the current environment
   #
   public var (
-    T type,
+    T : Any,
 
     # initial value, will be updated by 'put' or 'infix <-'.
     mutable_value T
@@ -443,7 +443,7 @@ public mutate : effect is
       safety: open
     =>
       check_and_replace
-      # NYI: UNDER_DEVELOPMENT: #7707 Would be nicer to add `mutate.compare_and_set(T type, v new T, exp, mod T) T`
+      # NYI: UNDER_DEVELOPMENT: #7707 Would be nicer to add `mutate.compare_and_set(T : Any, v new T, exp, mod T) T`
       # and redefine it in `concur.atomic_mutate`.
       #
       # same for other features that test `is_atomic`.
@@ -506,8 +506,8 @@ public mutate : effect is
     #
     public update
       (
-        # function type, permits specialization of calls for each function
-        F type : T->T,
+        # function : Any, permits specialization of calls for each function
+        F : T->T,
 
         # function calculating the new value from the old value
         f F
@@ -567,7 +567,7 @@ public mutate : effect is
   # perform given code with exclusive access to the mutable values created with
   # this instance of `mutate`.
   #
-  public exclusive(R type, F type: ()->R, code F) R
+  public exclusive(R : Any, F type: ()->R, code F) R
   pre
     safety: exclusive_allowed
   =>
@@ -592,7 +592,7 @@ public mutate : effect is
   # exclusively wait for the given condition to hold and then perform given code with
   # exclusive access to the mutable values created with this instance of `mutate`.
   #
-  public exclusive_when(R type,
+  public exclusive_when(R : Any,
                         C type: ()->bool,
                         F type: ()->R,
                         condition C,
@@ -644,6 +644,6 @@ public mutate : effect is
 
 # create a new mutable value of type T with initial value v
 #
-public mut(T type, v T) mutate.var T ! mutate
+public mut(T : Any, v T) mutate.var T ! mutate
 =>
   mutate.env.var v

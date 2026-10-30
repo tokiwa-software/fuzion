@@ -33,7 +33,7 @@ once_mutate : racy_mutate is
 # executes `f` only the first time when
 # calling `get` caching its result.
 #
-public once(T type, f Lazy T) : auto_unwrap T once_mutate is
+public once(T : Any, f Lazy T) : auto_unwrap T once_mutate is
 
   cache := once_mutate.env.var (option T) nil
 

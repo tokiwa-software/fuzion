@@ -78,7 +78,7 @@ public composition is
   # public M(f ((T,U type) T -> U)) ((V,W type) V->W) => f f
   #
   # we can emulate this if we require the argument to be given twice:
-  public M(T, U, V type, f0 (T->U)->(T->V), f1 T->U) T->V => f0 f1
+  public M(T, U, V : Any, f0 (T->U)->(T->V), f1 T->U) T->V => f0 f1
   # applying M to id:
   public Mid(T type) T->T => M T T T x->x x->x   # NYI: should also work:  (composition.this.id T) (composition.this.id T)
   # applying M to M
@@ -98,21 +98,21 @@ public composition is
   # Haskell: $
   #
   # this is already defined in universe:
-  # public infix |>(T, U type, x T, f T->U) U => f x
+  # public infix |>(T, U : Any, x T, f T->U) U => f x
 
   # T
   # hold an argument
   # Bird: thrush
   # BQN: ?
   # Haskell: flip id
-  public thrush(T, U, V type, x T, f (T,U)->V) U->V => y->f x y  # NYI: UNDER DEVELOPMENT: just `f x` with partial application should do , but does not
+  public thrush(T, U, V : Any, x T, f (T,U)->V) U->V => y->f x y  # NYI: UNDER DEVELOPMENT: just `f x` with partial application should do , but does not
 
   # V
   # hold a pair of arguments
   # Bird: vireo
   # BQN: ?
   # Haskell: flip . flip id
-  public vireo(T, U, V, W type, x T, y U, f (T,U,V)->W) V->W => z->f x y z  # NYI: UNDER DEVELOPMENT: just `f x y` with partial application should do , but does not
+  public vireo(T, U, V, W : Any, x T, y U, f (T,U,V)->W) V->W => z->f x y z  # NYI: UNDER DEVELOPMENT: just `f x y` with partial application should do , but does not
 
   # K
   # Elementary Cancellator, first
@@ -220,8 +220,8 @@ public composition is
   # Constant cancellator?
   # Bird: ?
   # BQN: ˙
-  public const1(T, U    type, v T) U     -> T => x     -> v
-  public const2(T, U, V type, v T) (U,V) -> T => (x,y) -> v
+  public const1(T, U    : Any, v T) U     -> T => x     -> v
+  public const2(T, U, V : Any, v T) (U,V) -> T => (x,y) -> v
 
   # O
   #
@@ -249,4 +249,4 @@ public composition is
   #     g (Lazy (list i32))->list i32 := x->3:x
   #     say <| (fix (list i32) g).take 10
   #
-  fix(A type, f Lazy ((Lazy A)->A)) => f.call (fix A f)
+  fix(A : Any, f Lazy ((Lazy A)->A)) => f.call (fix A f)
