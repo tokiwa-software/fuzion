@@ -52,18 +52,48 @@ public class Call extends AbstractCall
 
 
   /**
-   * Special Runnable to be stored in _pendingError to indicate that the problem
-   * was that the feature was not found.
+   * Special Runnable to be stored in _pendingError to indicate that the problem was that the
+   * feature was not found.
    *
-   * This will used later to try to find an alternative through partial application.
+   * This will be suspended while trying to find an alternative through partial application. Only if
+   * that fails as well, this pending error will be un-suspended and reported.
    */
   class PendingNotFound implements Runnable
   {
+    /**
+     * Is this error suspended while we try to resolve the call using partial application?
+     */
     boolean _suspended = false;
+
+    /**
+     * The resolution instance
+     */
     Resolution _res;
+
+    /**
+     * the candidates that were found with correct name but any argument count
+     */
     List<FeatureAndOuter> _fos;
+
+    /**
+     * target feature that was used to try to find the called feature.
+     */
     AbstractFeature _targetFeature;
+
+    /**
+     * FeatureNmae that was searched for when this pending error was created.  This is stored here
+     * since the name and argcount may change for partial applicaiton ("prefix +",0 may become
+     * "infix +",1).
+     */
     FeatureName _calledName;
+
+    /**
+     * The _actuals when this error was created.  This may also get changed for partial application,
+     * so we keep the original value in case we need to report an error with the original arguments.
+     */
+    List<Expr> _originalActuals; // copy of original actuals.  Call.this._actuals might get changed
+                                 // for partial applications, so we restore this to report an error
+                                 // referring to the original call.
 
     /**
      * constructor
@@ -86,14 +116,31 @@ public class Call extends AbstractCall
       // we must create _calledName early since _actuals may change due to
       // attempted partial application
       _calledName = FeatureName.get(_name, _actuals.size());
+      _originalActuals = new List<>(_actuals);
     }
 
     @Override
     public void run()
     {
-      if (_targetFeature != Types.f_ERROR)
+      var tf = _targetFeature != null ? _targetFeature
+                                      : _target.type().feature();
+      if (tf != Types.f_ERROR)
         {
-          triggerFeatureNotFoundError(_res, _fos, _targetFeature, _calledName);
+          var names = ParsedOperatorCall.lookupNames(_name).map2(n -> FeatureName.get(n, _calledName.argCount()));
+          var direktLookup = _res._module.lookupFeature(tf, _calledName);
+          _actuals = _originalActuals;
+          AstErrors.calledFeatureNotFound
+            (Call.this,
+             _calledName,
+             tf,
+             _target,
+             FeatureAndOuter.findExactOrCandidate
+               (_fos,
+                (FeatureName fn) -> false,
+                (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
+             _res._options.isLanguageServer() || tf == null ? new List<FeatureAndOuter>()
+                                                            : hiddenCandidates(_res, tf, _calledName),
+             direktLookup);
         }
     }
   }
@@ -618,7 +665,7 @@ public class Call extends AbstractCall
             c.setPendingError(()->AstErrors.forwardTypeInference(c.pos(), c._calledFeature));
             if (urgent)
               {
-                reportPendingError();
+                c._pendingError.run();
                 result = Types.f_ERROR;
               }
           }
@@ -819,12 +866,12 @@ public class Call extends AbstractCall
       }
     else
       {
-        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true).v0() : new List<FeatureAndOuter>();
-        var tf  = targetFeature != null ? targetFeature                               : _target.type().feature();
+        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true).v0()
+                                        : new List<FeatureAndOuter>();
         setPendingError(
           (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
           ? ()->AstErrors.cannotCallChoice(pos(), fos.get(0)._feature) // give a more specific error when trying to call a choice feature
-          : new PendingNotFound(res, fos, tf));
+          : new PendingNotFound(res, fos, targetFeature));
       }
   }
 
@@ -835,43 +882,6 @@ public class Call extends AbstractCall
   private boolean mayUnwrapTarget()
   {
     return _target != null && _target.typeForInferencing() != null && !_target.typeForInferencing().isParametricType() && _target.typeForInferencing().feature().inheritsFrom(Types.resolved.f_auto_unwrap);
-  }
-
-
-  /**
-   * helper for triggering a feature not found error.
-   */
-  private void triggerFeatureNotFoundError(Resolution res, Context context)
-  {
-    var tf = targetFeature(res, context, true);
-    triggerFeatureNotFoundError(res,
-                                findOnTarget(res, tf, true).v0(),
-                                tf,
-                                FeatureName.get(_name, _actuals.size()));
-  }
-
-
-  /**
-   * helper for triggering a feature not found error.
-   */
-  private void triggerFeatureNotFoundError(Resolution res,
-                                           List<FeatureAndOuter> fos,
-                                           AbstractFeature tf,
-                                           FeatureName calledName)
-  {
-    var names = ParsedOperatorCall.lookupNames(_name).map2(n -> FeatureName.get(n, calledName.argCount()));
-    var direktLookup = res._module.lookupFeature(tf, calledName);
-    AstErrors.calledFeatureNotFound(this,
-                                    calledName,
-                                    tf,
-                                    _target,
-                                    FeatureAndOuter.findExactOrCandidate(fos,
-                                                                        (FeatureName fn) -> false,
-                                                                         (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
-                                    res._options.isLanguageServer() || tf == null
-                                      ? new List<FeatureAndOuter>()
-                                      : hiddenCandidates(res, tf, calledName),
-                                    direktLookup);
   }
 
 

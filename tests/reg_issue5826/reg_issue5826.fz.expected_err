@@ -7,15 +7,7 @@ Expected type parameters: 'T'
 Type inference failed for one type parameter 'T'
 
 
-reg_issue5826.fz:27:20: error 2: Could not find called feature
-  (1..10).for_each x ->
--------------------^
-Feature not found: 'x' (no arguments)
-Target feature: 'example'
-In call: 'x'
-
-
-reg_issue5826.fz:27:11: error 3: Could not find called feature
+reg_issue5826.fz:27:11: error 2: Could not find called feature
   (1..10).for_each x ->
 ----------^^^^^^^^^^^^^
     if x ∈ squares
@@ -35,5 +27,13 @@ In call:
     else
       say "$x not in squares"
 
+
+
+reg_issue5826.fz:27:20: error 3: Could not find called feature
+  (1..10).for_each x ->
+-------------------^
+Feature not found: 'x' (no arguments)
+Target feature: 'example'
+In call: 'x'
 
 3 errors.
