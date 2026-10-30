@@ -232,16 +232,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
             r.append t
           .append s.data
       d deep =>
-        # NYI: BUG: triggers ugly case in DFA: deep lft (ft.merge ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
-        x := array rght.finger.count+seq.count+d.lft.finger.count i->
-          if i < rght.finger.count
-            rght.finger[i]
-          else if i < rght.finger.count+seq.count
-            seq[i-rght.finger.count]
-          else
-            d.lft.finger[i-rght.finger.count-seq.count]
-        deep lft (ft.merge x d.ft) d.rght
-
+        deep lft (ft.merge ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
 
 
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.deep lft ft rght
@@ -292,13 +283,7 @@ is
     pre
       debug 2 : finger.count < 4
   =>
-    # NYI: BUG: triggers ugly case in DFA: hand ([[seq], finger].flat_map id).as_array_backed
-    if finger.count = 1
-      hand [seq, finger[0]]
-    else if finger.count = 2
-      hand [seq, finger[0], finger[1]]
-    else
-      hand [seq, finger[0], finger[1], finger[2]]
+    hand ([[seq], finger].flat_map id).as_array_backed
 
 
   # new hand with seq appended
@@ -307,13 +292,7 @@ is
     pre
       debug 2 : finger.count < 4
   =>
-    # NYI: BUG: triggers ugly case in DFA: hand ([finger, [seq]].flat_map id).as_array_backed
-    if finger.count = 1
-      hand [finger[0], seq]
-    else if finger.count = 2
-      hand [finger[0], finger[1], seq]
-    else
-      hand [finger[0], finger[1], finger[2], seq]
+    hand ([finger, [seq]].flat_map id).as_array_backed
 
 
   # index access to the element in this hand
