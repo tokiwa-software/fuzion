@@ -30,4 +30,6 @@
 #
 # 'yap' as in: They kept yapping about something.
 #
-public yap(s Any) unit ! io.Out => io.Out.env.print s
+public yap(s _ : Any) unit ! io.Out
+=>
+  io.Out.env.print s

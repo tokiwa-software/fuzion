@@ -1,28 +1,37 @@
 
-reg_issue5263.fz:39:11: error 1: Different count of arguments needed when calling feature
+reg_issue5263.fz:39:11: error 1: Illegal forward or cyclic type inference
   say |<| .byte_count |<| "hi"  # 1. should flag an error
 ----------^^^^^^^^^^^^^^^^^^^^
-Feature not found: 'infix/infix_right |<|' (3 arguments)
-Target feature: 'reg_issue5263'
-In call: '.byte_count |<| "hi"'
-This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'reg_issue5263.infix |<|' at reg_issue5263.fz:38:3
+  infix |<| (sink T->R, source T) R => source |> sink
+--^^^^^^^^^
 
 
 reg_issue5263.fz:47:6: error 2: Different count of arguments needed when calling feature
   f (q "hi" "ho" 32)             # 2. should flag an error
 -----^
-Feature not found: 'q' (5 arguments)
-Target feature: 'reg_issue5263.(λq).call'
+Feature not found: 'q' (3 arguments)
+Target feature: 'reg_issue5263'
 In call: '(q "hi" "ho" 32)'
-This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1 -> ..code using a0,a1..)'.
+To solve this, you might change the actual number of arguments to match the feature 'q' (4 value arguments a b c d) at reg_issue5263.fz:45:3
+  q(a Any, b String, c i32, d f64) => say "$a $b $c $d"
+--^
+To call 'q', you must provide 4 arguments 'a', 'b', 'c', 'd'.
+
 
 
 reg_issue5263.fz:48:6: error 3: Different count of arguments needed when calling feature
   f (q Any)                      # 3. should flag an error
 -----^
-Feature not found: 'q' (3 arguments)
-Target feature: 'reg_issue5263.(λq).call'
+Feature not found: 'q' (one argument)
+Target feature: 'reg_issue5263'
 In call: '(q Any)'
-This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1 -> ..code using a0,a1..)'.
+To solve this, you might change the actual number of arguments to match the feature 'q' (4 value arguments a b c d) at reg_issue5263.fz:45:3
+  q(a Any, b String, c i32, d f64) => say "$a $b $c $d"
+--^
+To call 'q', you must provide 4 arguments 'a', 'b', 'c', 'd'.
+
 
 3 errors.

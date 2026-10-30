@@ -32,9 +32,8 @@ In call:
 reg_issue5826.fz:27:20: error 3: Could not find called feature
   (1..10).for_each x ->
 -------------------^
-Feature not found: 'x' (one argument)
-Target feature: 'example.(λx).call'
+Feature not found: 'x' (no arguments)
+Target feature: 'example'
 In call: 'x'
-This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 3 errors.

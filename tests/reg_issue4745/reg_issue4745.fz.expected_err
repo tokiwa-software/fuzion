@@ -2,8 +2,9 @@
 reg_issue4745.fz:25:6: error 1: Could not find called feature
 0 |> blabla
 -----^^^^^^
-Feature not found: 'blabla' (no arguments)
-Target feature: 'universe'
+Feature not found: 'blabla' (one argument)
+Target feature: '(λblabla).call'
 In call: 'blabla'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 one error.
