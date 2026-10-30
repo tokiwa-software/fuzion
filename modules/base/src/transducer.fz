@@ -44,7 +44,7 @@
 # B    input      type
 # C    transduced type
 #
-public transducer(TA, B, C type,
+public transducer(TA, B, C : Any,
                   td ((TA,B) -> TA) ->  (TA,C) -> TA) is
 
   # use the transducer with reducing function `rf`.
@@ -55,13 +55,13 @@ public transducer(TA, B, C type,
 
   # left-to-right composition of transducers
   #
-  public compose (A type, o transducer(TA,A,B)) transducer TA A C =>
+  public compose (A : Any, o transducer(TA,A,B)) transducer TA A C =>
     transducer TA A C (re -> transducer.this.call (o.call re))
 
 
   # left-to-right composition of transducers
   #
-  public infix ∘ (A type, o transducer(TA,A,B)) transducer TA A C =>
+  public infix ∘ (A : Any, o transducer(TA,A,B)) transducer TA A C =>
     transducer.this.compose o
 
 

@@ -28,7 +28,7 @@
 # Sequences are empty, finite or infinite ordered collections of instances
 # of a given type.  Sequences may calculate elements lazily on demand.
 #
-# Sequence is a 'ref' type, i.e., different sub-features may be assigned
+# Sequence is a 'ref' : Any, i.e., different sub-features may be assigned
 # to a field of type 'Sequence'.
 #
 # Heirs of Sequence must implement 'as_list'.
@@ -563,7 +563,7 @@ is
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
-  public map(B type, f _ : T->B) Sequence B
+  public map(B : Any, f _ : T->B) Sequence B
     # NYI: BUG: count = result.count sometimes recursive
     # post
       # NYI: BUG: debug: finite = result.finite
@@ -590,14 +590,14 @@ is
   #
   # will print the elements since `for_each` is not lazy.
   #
-  public infix | (B type, f T->B) Sequence B => map f
+  public infix | (B : Any, f T->B) Sequence B => map f
 
 
   # map each element of this Sequence to Sequence
   # Then flatten the result by one level,
   # essentially combining all the sequences.
   #
-  public flat_map(B type, f T -> Sequence B) Sequence B =>
+  public flat_map(B : Any, f T -> Sequence B) Sequence B =>
     as_list.flat_map_to_list f
 
 
@@ -613,7 +613,7 @@ is
   #
   # results in `[1,2,2,4,2,4,2,4,6]`
   #
-  public map_pairs(B type, f (T,T)->B) Sequence B =>
+  public map_pairs(B : Any, f (T,T)->B) Sequence B =>
     zip (drop 1) f
 
 
@@ -642,7 +642,7 @@ is
   #
   # e.g., to find the product of a Sequence of i32, use `s.foldf (*) 1`
   #
-  public foldf (B type, e B, f (B,T)->B) B
+  public foldf (B : Any, e B, f (B,T)->B) B
   =>
     as_list.foldf e f
 
@@ -672,7 +672,7 @@ is
   #
   # e.g., to concat the elements of a Sequence of Sequences, use `foldrf [] (++)`
   #
-  public foldrf (B type, e B, f (T,B)->B) B => as_list.foldrf e f
+  public foldrf (B : Any, e B, f (T,B)->B) B => as_list.foldrf e f
 
 
   # map this Sequence to a list that contains the result of folding
@@ -690,7 +690,7 @@ is
   # e.g., for a Sequence s `[3,8,10]`, `s.scan 0 (+)` creates a Sequence of
   # partial sums `[0, 3, 11, 21]`
   #
-  public scan (R type, a R, f (R,T)->R) Sequence R => as_list.scan R a f
+  public scan (R : Any, a R, f (R,T)->R) Sequence R => as_list.scan R a f
 
 
   # scan1 works like its counterpart with an initial value, except
@@ -708,7 +708,7 @@ is
   # the reduction is finished once f yields abort or
   # if the end of the sequence is reached.
   #
-  public reduce(R type, init R, f (R,T) -> R | abort R) R =>
+  public reduce(R : Any, init R, f (R,T) -> R | abort R) R =>
     match as_list
       nil => init
       c Cons =>
@@ -722,7 +722,7 @@ is
   # the reduction is finished once `f` yields `abort` or
   # if the end of the sequence is reached.
   #
-  public reduce_or_error(R type, init R, f (R,T) -> R | abort (outcome R)) outcome R =>
+  public reduce_or_error(R : Any, init R, f (R,T) -> R | abort (outcome R)) outcome R =>
     match as_list
       nil => init
       c Cons =>
@@ -749,7 +749,7 @@ is
   # create a new Sequence from the result of applying 'f' to the
   # elements of this Sequence and 'b' in order.
   #
-  public zip(U,V type, b Sequence U, f (T,U)->V) Sequence V => as_list.zip b f
+  public zip(U,V : Any, b Sequence U, f (T,U)->V) Sequence V => as_list.zip b f
 
 
   # create a new Sequence from the result of applying 'f' to the
@@ -767,7 +767,7 @@ is
   #     ...               , ...
   #     Sequence.this.last, b.last
   #
-  public combine(U, V type, b Sequence U, f (T,U)->V) Sequence V =>
+  public combine(U, V : Any, b Sequence U, f (T,U)->V) Sequence V =>
     flat_map x->
       b.map y->(f x y)
 
@@ -787,13 +787,13 @@ is
   #     (...               , ...   )
   #     (Sequence.this.last, b.last)
   #
-  public pairs(U type, b Sequence U) Sequence ((T, U)) =>
+  public pairs(U : Any, b Sequence U) Sequence ((T, U)) =>
     combine b tuple
 
 
   # takes a transducer xf, a reducer f and an initial value
   # returns the result of applying the reducer xf f to the Sequence
-  public transduce(TA,U type, xf transducer TA U T, rf (TA,U) -> TA, init TA) TA =>
+  public transduce(TA,U : Any, xf transducer TA U T, rf (TA,U) -> TA, init TA) TA =>
     red := xf.call rf
     for
       res := init, red.call res el
@@ -810,7 +810,7 @@ is
   # gt_ten := filter (Sequence i32) i32 (x -> x > 10)
   # xf := ages ∘ gt_ten
   # say ([human 4, human 12, human 30].into xf) # [12,30]
-  public into(TA type, xf transducer (Sequence TA) TA T) Sequence TA =>
+  public into(TA : Any, xf transducer (Sequence TA) TA T) Sequence TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
       res := (Sequence TA).empty, (red.call res el)
@@ -1119,7 +1119,7 @@ is
   # via mapping all elements to key value pairs
   #
   public as_map(KEY : property.equatable,
-                VALUE type,
+                VALUE : Any,
                 mapper T -> (KEY,VALUE)) container.Map KEY VALUE =>
     if KEY : property.orderable
       as_map KEY VALUE (container.ps_map KEY VALUE) mapper
@@ -1137,7 +1137,7 @@ is
   #     say <| (1..10).as_map _ _ (container.ps_map i64 i64) (x -> (x, x*x))
   #
   public as_map(KEY : property.equatable,
-                VALUE type,
+                VALUE : Any,
                 M : container.Map KEY VALUE,
                 mapper T -> (KEY,VALUE)) M
   =>
@@ -1238,7 +1238,7 @@ is
   #
   #     [-3, -5, -7, -9, -11, -13, -15, -17, -19, -21, …]
   #
-  public pairwise(B type, f _ : (T,T)->B) Sequence B =>
+  public pairwise(B : Any, f _ : (T,T)->B) Sequence B =>
     # pairwise.map ||>f    -- NYI: BUG: #8146 make result inference impossible
     pairwise.map (a -> f a.0 a.1)
 
@@ -1253,7 +1253,7 @@ is
   #
   #     [f 0 1 2, f 1 2 3, f 2 3 4, f 3 4 5]
   #
-  public tripletwise(B type, f _ : (T,T,T)->B) Sequence B =>
+  public tripletwise(B : Any, f _ : (T,T,T)->B) Sequence B =>
     #tripletwise.map |||>f    -- NYI: BUG: #8146 make result inference impossible
     tripletwise.map (a -> f a.0 a.1 a.2)
 
@@ -1268,7 +1268,7 @@ is
   #
   #     [f 0 1 2 3, f 1 2 3 4, f 2 3 4 5]
   #
-  public quadwise(B type, f _ : (T,T,T,T)->B) Sequence B =>
+  public quadwise(B : Any, f _ : (T,T,T,T)->B) Sequence B =>
     # quadwise.map ||||>f    -- NYI: BUG: #8146 make result inference impossible
     quadwise.map (a -> f a.0 a.1 a.2 a.3)
 
@@ -1283,7 +1283,7 @@ is
   #
   #     [f 0 1 2 3 4, f 1 2 3 4 5]
   #
-  public quintwise(B type, f _ : (T,T,T,T,T)->B) Sequence B =>
+  public quintwise(B : Any, f _ : (T,T,T,T,T)->B) Sequence B =>
     # quintwise.map |||||>f    -- NYI: BUG: #8146 make result inference impossible
     quintwise.map (a -> f a.0 a.1 a.2 a.3 a.4)
 
@@ -1298,7 +1298,7 @@ is
   #
   #     [f 1 2 3 4 5]
   #
-  public sextetwise(B type, f _ : (T,T,T,T,T,T)->B) Sequence B =>
+  public sextetwise(B : Any, f _ : (T,T,T,T,T,T)->B) Sequence B =>
     # sextetwise.map ||||||>f    -- NYI: BUG: #8146 make result inference impossible
     sextetwise.map (a -> f a.0 a.1 a.2 a.3 a.4 a.5)
 
@@ -1388,7 +1388,7 @@ is
     K : property.orderable,
 
     # type of the values in the result
-    B type,
+    B : Any,
 
     # the type of the map to create
     M : container.Map K B,
@@ -1432,7 +1432,7 @@ is
     K : property.orderable,
 
     # type of the values in the result
-    B type,
+    B : Any,
 
     # the type of the map to create
     M : container.Map K (Sequence B),

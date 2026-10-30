@@ -42,7 +42,7 @@ public effect_wormhole is
   # teleport the effects from the environment this wormhole was created in
   # to the current environment and execute given code.
   #
-  public teleport(R type, code ()->R) R
+  public teleport(R : Any, code ()->R) R
   =>
     Old_EV ref is
       re_instate unit => abstract

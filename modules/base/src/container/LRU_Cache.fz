@@ -45,7 +45,7 @@ private:public LRU_Cache(
   K type : property.hashable,
 
   # type of values stored in the cache
-  V type,
+  V : Any,
 
   # maps keys to the array index where the value is stored
   #

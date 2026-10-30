@@ -32,7 +32,7 @@
 # name clash with routine array(T,length,init).
 #
 module:public array(
-      T type,
+      T : Any,
       module internal_array fuzion.sys.internal_array T,
       _ unit,
       _ unit,
@@ -192,5 +192,5 @@ is
 
 # array -- create initialized one-dimensional immutable array
 #
-public array(T type, I : integer, length I, init I -> T) array T =>
+public array(T : Any, I : integer, length I, init I -> T) array T =>
   (array T).new length init

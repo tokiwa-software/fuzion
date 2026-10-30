@@ -78,7 +78,7 @@
 # The memory required to store a value of unit type is 0 bits, so you can use
 # plenty without worrying about space constraints.  The Fuzion code generators
 # typically will not generate any code for returning or assigning a value of unit
-# type, so these are very efficient as well.
+# : Any, so these are very efficient as well.
 #
 #
 public unit : property.orderable, property.hashable is

@@ -68,7 +68,7 @@ V_Node(# mutate effect to be used manipulate pointers and stored element
 
        # type of the element stored in the node
        #
-       T type,
+       T : Any,
 
        # the element stored in this list node
        #

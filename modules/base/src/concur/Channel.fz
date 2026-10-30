@@ -126,7 +126,7 @@ public channel(T type) Channel T
 #
 public channel(# type of elements that can be sent through this channel
                #
-               T type,
+               T : Any,
 
                # capacity of this channel.
                #
@@ -202,11 +202,11 @@ is
 
   # sent -- channel state indicating that data was sent to a blocked receiving thread
   #
-  universe.sent(T type, data T) is
+  universe.sent(T : Any, data T) is
 
   # sending -- channel state indicating that data was sent with no receiver waiting, so the sender will wait for a receiver
   #
-  universe.sending(T type, data T) is
+  universe.sending(T : Any, data T) is
 
   # received -- channel state indicating that sending data was received, so sender can continue
   #

@@ -118,7 +118,7 @@ is
   #
   #
   public infix !(# result type
-                 R type,
+                 R : Any,
 
                  # the code to execute with `e` instated.
                  code () -> R
@@ -178,7 +178,7 @@ is
   #
   public redef fixed type.hash_code(a tuple.this) u64 : container.typed_fold xxh_first a.values
   =>
-    public redef apply(T type, h u64, v T) u64
+    public redef apply(T : Any, h u64, v T) u64
     =>
       if T : property.hashable then
         xxh_next h (T.hash_code v)
@@ -192,6 +192,6 @@ is
   public redef as_string String =>
 
     concat : container.typed_applicator String is
-      public redef apply(V type, e String, v V) String => e="" ? $v : "$e, $v"
+      public redef apply(V : Any, e String, v V) String => e="" ? $v : "$e, $v"
 
     "($(values.typed_foldf "" concat))"

@@ -34,7 +34,7 @@
 #
 private:public ordered_map(
            OK type : property.orderable,
-           V  type,
+           V  : Any,
            k0 Sequence OK,
            v0 Sequence V) : container.Map OK V
 pre

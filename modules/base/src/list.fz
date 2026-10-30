@@ -235,7 +235,7 @@ is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  public map_to_list(B type, f _ : A -> B) list B =>
+  public map_to_list(B : Any, f _ : A -> B) list B =>
     match list.this
       nil    => nil
       c Cons =>
@@ -248,7 +248,7 @@ is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  public flat_map_to_list(B type, f A -> Sequence B) list B =>
+  public flat_map_to_list(B : Any, f A -> Sequence B) list B =>
     match list.this
       nil    => nil
       c Cons =>
@@ -287,7 +287,7 @@ is
   #
   # e.g., to find the product of a list of i32, use `s.foldf (*) 1`
   #
-  public redef foldf (B type, e B, f (B,A)->B) B =>
+  public redef foldf (B : Any, e B, f (B,A)->B) B =>
     list.this ? nil    => e
               | c Cons => c.tail.foldf (f e c.head) f
 
@@ -321,7 +321,7 @@ is
   #
   # e.g., to concat the elements of a list of lists, use foldrf (++) []
   #
-  public redef foldrf (B type, e B, f (A,B)->B) B =>
+  public redef foldrf (B : Any, e B, f (A,B)->B) B =>
     list.this ? nil    => e
               | c Cons => f c.head (c.tail.foldrf e f)
 
@@ -352,7 +352,7 @@ is
   # e.g., for a list s of i32, s.scan (+) 0 creates a list of
   # partial sums (0..).map x->(s.take x).fold i32.sum
   #
-  public redef scan (T type, a T, f (T,A)->T) Sequence T =>
+  public redef scan (T : Any, a T, f (T,A)->T) Sequence T =>
     match head
       nil => a : nil
       x A => (a : (tail.scan T (f a x) f).as_list)
@@ -626,14 +626,14 @@ is
   # create a new list from the result of applying 'f' to the
   # elements of this list and 'b' in order.
   #
-  public redef zip(U, V type, b Sequence U, f (A,U)->V) Sequence V =>
+  public redef zip(U, V : Any, b Sequence U, f (A,U)->V) Sequence V =>
     zip_list b f
 
 
   # create a new list from the result of applying 'f' to the
   # elements of this list and 'b' in order.
   #
-  zip_list(U, V type, b Sequence U, f (A,U)->V) list V =>
+  zip_list(U, V : Any, b Sequence U, f (A,U)->V) list V =>
     match list.this
       c1 Cons =>
         b.as_list ? c2 Cons =>
@@ -657,7 +657,7 @@ is
   #     ...           , ...
   #     list.this.last, b.last
   #
-  public combine_list(U, V type, b Sequence U, f (A,U)->V)  Sequence V =>
+  public combine_list(U, V : Any, b Sequence U, f (A,U)->V)  Sequence V =>
     flat_map x->(b.map y->(f x y))
 
 
@@ -746,7 +746,7 @@ is
 
   # fmap lifts a function from A to B to a function from list A to list B
   #
-  public type.fmap(B type, f A -> B) list A -> list B =>
+  public type.fmap(B : Any, f A -> B) list A -> list B =>
     .map_to_list f
 
 
@@ -800,7 +800,7 @@ is
 
 # convenience routine to create a list from head h and lazy tail t.
 #
-public list(T type, h T, t Lazy (list T)) list T =>
+public list(T : Any, h T, t Lazy (list T)) list T =>
   (list T).of h t trit.unknown
 
 
@@ -820,7 +820,7 @@ public list(T type, h T, t Lazy (list T)) list T =>
 #
 #     ones => 1 : ones
 #
-public infix_right : (A type, h A, t Lazy (list A)) list A =>
+public infix_right : (A : Any, h A, t Lazy (list A)) list A =>
   (list A).of h t trit.unknown
 
 
@@ -847,5 +847,5 @@ public infix_right : (A type, h A, t Lazy (list A)) list A =>
 #
 # will produce the powers of two: 1,2,4,8,16,32,...
 #
-public infix :: (A type, h A, f A->A) list A =>
+public infix :: (A : Any, h A, f A->A) list A =>
   list h (f h :: f)

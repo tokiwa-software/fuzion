@@ -26,13 +26,13 @@
 # helper to allocate memory for an internal_array.
 # returns an internal_array.
 #
-module internal_array_init(T type, length i64) =>
+module internal_array_init(T : Any, length i64) =>
   internal_array T (fuzion.sys.alloc T length.as_i32) length
 
 
 # fuzion.sys.internal_array_init -- one-dimensional low-level array
 #
-module internal_array(T type, module data Array T, module length i64) is
+module internal_array(T : Any, module data Array T, module length i64) is
 
   # wrap this into an immutable array.
   #
@@ -57,12 +57,12 @@ module internal_array(T type, module data Array T, module length i64) is
 
 # allocate memory for l elements of type X
 #
-type.alloc(X type, l i32) Array X => intrinsic
+type.alloc(X : Any, l i32) Array X => intrinsic
 
 # get element at index i from data d
 #
-type.getel(X type, d Array X, i i32) X => intrinsic
+type.getel(X : Any, d Array X, i i32) X => intrinsic
 
 # set element at index i in data d
 #
-type.setel(X type, d Array X, i i32, o X) unit => intrinsic
+type.setel(X : Any, d Array X, i i32, o X) unit => intrinsic

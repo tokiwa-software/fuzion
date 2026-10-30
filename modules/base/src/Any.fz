@@ -45,7 +45,7 @@ public Any ref is
 
   # Get the dynamic type of this instance.  For value instances `x`, this is
   # equal to `type_of x`, but for `x` with a `ref` type `x.dynamic_type` gives
-  # the actual runtime type, while `type_of x` results in the static
+  # the actual runtime : Any, while `type_of x` results in the static
   # compile-time type.
   #
   # There is no dynamic type of a type instance since this would result in an
@@ -87,7 +87,7 @@ public Any ref is
   #
   #     say <| sum [3.14, 32, 16.0, 8]
   #
-  public dynamic_apply(R type,
+  public dynamic_apply(R : Any,
                        F : Typed_Function R,
                        f F
                        ) R

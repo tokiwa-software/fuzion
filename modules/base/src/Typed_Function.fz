@@ -30,13 +30,13 @@
 #
 # This is used, e.g., as an argument to `Any.dynamic_apply`.
 #
-public Typed_Function(R type,
+public Typed_Function(R : Any,
                       A...) ref is
 
 
   # call this function for type `T` on arguments `a...` and `v`.
   #
-  public call(T type, a A..., v T) R
+  public call(T : Any, a A..., v T) R
     : fuzion.lambda_target
   => abstract
 
@@ -49,12 +49,12 @@ public Typed_Function(R type,
 #
 # This is used, e.g., as an argument to `choice.combine`.
 #
-public Typed_Combiner(R type,
+public Typed_Combiner(R : Any,
                       A...) ref is
 
 
   # call this function for type `T` on arguments `a...`, 'v'  and `w`.
   #
-  public call(T type, a A..., v T, w T) R
+  public call(T : Any, a A..., v T, w T) R
     : fuzion.lambda_target
   => abstract

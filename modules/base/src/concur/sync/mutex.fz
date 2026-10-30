@@ -30,7 +30,7 @@ module:public mutex(module mtx Mutex) is
   # run code synchronized across all threads
   # that also use this mutex
   #
-  public synchronized(T type, F type : ()->T, code F) T =>
+  public synchronized(T : Any, F type : ()->T, code F) T =>
 
     lock_effect : effect is
       public redef finally unit =>

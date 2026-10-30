@@ -51,7 +51,7 @@ private:public ps_map
    PK type : property.orderable,
 
    # value type
-   V type,
+   V : Any,
 
    # the array containing the sorted arrays, see below for details
    data container.expanding_array (PK, V),

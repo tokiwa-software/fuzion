@@ -26,7 +26,7 @@
 # e.g.    option  (something/nil)
 #      or outcome (something/error)
 #
-public switch(A type, B type /* NYI: B should be open generic */)
+public switch(A : Any, B type /* NYI: B should be open generic */)
   : choice A B,
     monad A,
     Sequence A
@@ -83,7 +83,7 @@ is
   # returns o if switch is of type A, otherwise return the
   # switches B.
   #
-  public and (O type, o switch.this) switch.this =>
+  public and (O : Any, o switch.this) switch.this =>
     match switch.this
       A   => o
       b B => b
@@ -171,7 +171,7 @@ is
 
   # get A or cause an `exception T`
   #
-  public or_cause(T type, e B->error) A ! flow.exception T =>
+  public or_cause(T : Any, e B->error) A ! flow.exception T =>
     match switch.this
       a A => a
       b B => (flow.exception T).env.cause (e b)
@@ -203,7 +203,7 @@ is
   #       .fold (idx -> "found needle at {idx}") (_ -> "could not find needle")
   #
   #
-  public fold(C type, fa A->C, fb B->C) C =>
+  public fold(C : Any, fa A->C, fb B->C) C =>
     match switch.this
       a A => fa a
       b B => fb b

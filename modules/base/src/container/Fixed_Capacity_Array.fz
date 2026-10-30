@@ -36,7 +36,7 @@ module:public Fixed_Capacity_Array(
 
   # element type
   #
-  T type,
+  T : Any,
 
   # contents of the array
   #

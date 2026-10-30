@@ -75,7 +75,7 @@ public blocking_mutate_using_clock(C type : time.Clock) : blocking_mutate_using_
   # perform given code with exclusive access to the mutable values created with
   # this instance of `mutate`.
   #
-  public redef exclusive(R type, F type: ()->R, code F) R
+  public redef exclusive(R : Any, F type: ()->R, code F) R
   =>
     me := concur.Threads.env.current
     if exclusive_thread = me then
@@ -188,7 +188,7 @@ public blocking_mutate_using_clock(C type : time.Clock) : blocking_mutate_using_
     # In case of a timeout, the result will be nil. Otherwise, the result of running `code()`
     # will be wrapped in an option and returned.
     #
-    public exclusive_when(R type,
+    public exclusive_when(R : Any,
                           O type: ()->bool,
                           F type: ()->R,
                           condition O,

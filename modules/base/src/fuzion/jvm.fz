@@ -33,7 +33,7 @@ private:public jvm : effect is
 
   # shorthand to for jvm with no additional class path
   #
-  public type.use(T type, code ()->T) T =>
+  public type.use(T : Any, code ()->T) T =>
     fuzion.jvm.use _ [] code
 
 
@@ -42,7 +42,7 @@ private:public jvm : effect is
   # - run code on the jvm
   # - destroy jvm (if jvm had to be started)
   #
-  public type.use(T type, option_strings array String, code ()->T) T =>
+  public type.use(T : Any, option_strings array String, code ()->T) T =>
     fuzion.jvm ! ()->
       # NYI: UNDER DEVELOPMENT: return error code
       res := fuzion.jvm.env.create_jvm (option_strings.map (str -> fuzion.sys.c_string str)).as_array.internal_array.data option_strings.count.as_i32
@@ -61,7 +61,7 @@ private:public jvm : effect is
   # read a static field of given name in class with given name.  Wrap result into
   # an instance of T.
   #
-  public get_static_field(T type, clazz String, field String, signature String) T =>
+  public get_static_field(T : Any, clazz String, field String, signature String) T =>
     c := string_to_java_object1 clazz
     f := string_to_java_object1 field
     get_static_field0 T c f (sys.c_string signature)
@@ -70,7 +70,7 @@ private:public jvm : effect is
   # read a field of given name from given object instance thiz.  Wrap result into
   # an instance of T.
   #
-  public get_field(T type, thiz fuzion.java.Java_Object, field String, signature String) T =>
+  public get_field(T : Any, thiz fuzion.java.Java_Object, field String, signature String) T =>
     f := string_to_java_object1 field
     get_field0 T thiz.java_ref f (sys.c_string signature)
 
@@ -92,12 +92,12 @@ private:public jvm : effect is
 
   # intrinsic to read static field
   #
-  get_static_field0(T type, clazz, field Java_Ref, signature universe.Array u8) T => intrinsic
+  get_static_field0(T : Any, clazz, field Java_Ref, signature universe.Array u8) T => intrinsic
 
 
   # intrinsic to read instance field
   #
-  get_field0(T type, thiz, field Java_Ref, signature universe.Array u8) T => intrinsic
+  get_field0(T : Any, thiz, field Java_Ref, signature universe.Array u8) T => intrinsic
 
 
   # intrinsic to set static field
@@ -113,7 +113,7 @@ private:public jvm : effect is
   # Call a virtual Java method class_name.name with given signature signature
   # on instance thiz with given arguments
   #
-  public call_virtual(T type,
+  public call_virtual(T : Any,
                       class_name String,
                       name String,
                       signature String,
@@ -133,7 +133,7 @@ private:public jvm : effect is
   # Call a static Java method with given name and signature with given
   # arguments
   #
-  public call_static(T type,
+  public call_static(T : Any,
                      class_name String,
                      name String,
                      signature String,
@@ -149,7 +149,7 @@ private:public jvm : effect is
   # Call a Java constructor with given signature for class with given name
   # with given arguments
   #
-  public call_constructor(T type,
+  public call_constructor(T : Any,
                           class_name String,
                           signature String,
                           args array fuzion.java.Java_Object) outcome T
@@ -162,7 +162,7 @@ private:public jvm : effect is
 
   # intrinsic to call given Java instance method
   #
-  call_v0(T type,
+  call_v0(T : Any,
           class_name Java_Ref,
           name Java_Ref,
           signature Java_Ref,
@@ -171,7 +171,7 @@ private:public jvm : effect is
 
   # intrinsic to call given Java static method
   #
-  call_s0(T type,
+  call_s0(T : Any,
           class_name Java_Ref,
           name Java_Ref,
           signature Java_Ref,
@@ -180,7 +180,7 @@ private:public jvm : effect is
 
   # intrinsic to call given Java constructor
   #
-  call_c0(T type,
+  call_c0(T : Any,
           class_name Java_Ref,
           signature Java_Ref,
           args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
@@ -207,12 +207,12 @@ private:public jvm : effect is
 
   # intrinsic to get the length of a Java array of arbitrary type
   #
-  module array_length(T type, a Java_Ref) i32 => intrinsic
+  module array_length(T : Any, a Java_Ref) i32 => intrinsic
 
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  module array_get(T type, a Java_Ref, ix i32, signature universe.Array u8) T => intrinsic
+  module array_get(T : Any, a Java_Ref, ix i32, signature universe.Array u8) T => intrinsic
 
 
   # convert a Sequence to a Java Array object
@@ -221,7 +221,7 @@ private:public jvm : effect is
   #
   # If you want to create an array of complex types use `Java.as_java_object [...]`
   #
-  public array_to_java_object(T type, a Sequence T) fuzion.java.Array T
+  public array_to_java_object(T : Any, a Sequence T) fuzion.java.Array T
     pre
       T : java_primitive
   =>
@@ -230,7 +230,7 @@ private:public jvm : effect is
 
   # intrinsic to convert an array to a Java Array object
   #
-  array_to_java_object0(T type, a fuzion.sys.internal_array T) Java_Ref => intrinsic
+  array_to_java_object0(T : Any, a fuzion.sys.internal_array T) Java_Ref => intrinsic
 
 
   # convert a string to a Java String object

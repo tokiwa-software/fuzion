@@ -52,6 +52,6 @@ public atomic_mutate : mutate is
   # perform given code with exclusive access to the mutable values created with
   # this instance of `mutate`.
   #
-  public redef exclusive(R type, F type: ()->R, code F) R
+  public redef exclusive(R : Any, F type: ()->R, code F) R
   =>
     compile_time_panic   # exclusive access not supported by atomic_mutate

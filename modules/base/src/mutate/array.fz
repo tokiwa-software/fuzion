@@ -25,7 +25,7 @@
 #
 module:public array (
        # element type
-       T type,
+       T : Any,
 
        # contents of the array
        module data fuzion.sys.internal_array T
@@ -124,6 +124,6 @@ is
 # convenience feature for creating a new array,
 # in some cases even with type inference
 #
-public new_array (T type, I type : integer, length I, init I->T) mutate.this.array T
+public new_array (T : Any, I type : integer, length I, init I->T) mutate.this.array T
 =>
   mutate.this.array T .new length init

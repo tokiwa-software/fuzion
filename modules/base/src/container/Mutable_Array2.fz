@@ -24,7 +24,7 @@
 # Mutable_Array2 -- two-dimensional mutable array with effect
 #
 module:public Mutable_Array2
-  (T type,
+  (T : Any,
 
    E type : effect) ref
 

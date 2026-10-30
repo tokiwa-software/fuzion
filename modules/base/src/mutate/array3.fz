@@ -25,7 +25,7 @@
 #
 module:public array3 (
        # element type
-       T type,
+       T : Any,
 
        # length of each dimension
        public redef length0 i64,
@@ -138,5 +138,5 @@ is
 # convenience feature for creating a new array3,
 # in some cases even with type inference
 #
-public new_array3 (T type, length0, length1, length2 i64, init T) container.Mutable_Array3 T mutate.this =>
+public new_array3 (T : Any, length0, length1, length2 i64, init T) container.Mutable_Array3 T mutate.this =>
   (mutate.this.array3 T).new length0 length1 length2 init
