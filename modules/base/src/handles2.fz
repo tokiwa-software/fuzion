@@ -40,7 +40,7 @@
 # is currently used as a monad.
 #
 private:public handles2(
-  T, X type,
+  T, X : Any,
 
   # the inner value of this monad
   public v X,
@@ -132,22 +132,22 @@ is
 
   public fixed redef infix >>= (f X -> handles2 T X) handles2 T X => bind X f
 
-  public fixed bind(B type, f X -> handles2 T B) handles2 T B =>
+  public fixed bind(B : Any, f X -> handles2 T B) handles2 T B =>
     handles2 (f v).v last_opt oneway_monad_mode.plain
 
-  public fixed return(B type, w B) handles2 T B => handles2 T B w last_opt oneway_monad_mode.plain
+  public fixed return(B : Any, w B) handles2 T B => handles2 T B w last_opt oneway_monad_mode.plain
 
 
 # shorthand for creating and installing an empty set of handles2 of given type.
 #
-public handles2(T type, rr ()->unit) unit =>
+public handles2(T : Any, rr ()->unit) unit =>
   (handles2 T unit unit nil oneway_monad_mode.inst) ! rr
 
 
 # handle value created by `handles2.new`
 #
 private:public Handle2_Id(
-  T type,
+  T : Any,
 
   # get value stored in this handle
   #
@@ -175,6 +175,6 @@ handles2_type(T type) is
 
 # create a new handle2 using the handles2 instance from the current environment
 #
-public handle2(T type, v T) Handle2_Id T ! handles2 T unit
+public handle2(T : Any, v T) Handle2_Id T ! handles2 T unit
 =>
   (handles2 T unit).env.create v

@@ -31,7 +31,7 @@
 # three index parameters.
 #
 private:public array3(
-      T type,
+      T : Any,
       public length0, length1, length2 i64,
 
       # the underlying one dimensional array
@@ -226,7 +226,7 @@ is
 # one-dimensional immutable arrays with an additional access function with
 # three index parameters.
 #
-public array3(T type,
+public array3(T : Any,
         I : integer,
         length0, length1, length2 I,
         init (I, I, I) -> T) array3 T

@@ -25,7 +25,7 @@
 
 # Entry -- an entry of a mutable tree map
 #
-Entry(LM  type : mutate, KEY type : property.orderable, VAL type, key KEY, val VAL) ref is
+Entry(LM  type : mutate, KEY type : property.orderable, VAL : Any, key KEY, val VAL) ref is
 
 
   # reference to the left subtree at this entry, or, if it is empty, nil
@@ -352,7 +352,7 @@ is
   # f. the latter takes the last result of the computation and the node
   # currently visited and combines this information in some way.
   #
-  fold(B type, init B, f (B, Entry LM KEY VAL) -> B) =>
+  fold(B : Any, init B, f (B, Entry LM KEY VAL) -> B) =>
     fold0(init B, node option (Entry LM KEY VAL)) =>
       node ? nil => fold0.this.init
            | n Entry => fold0 (f (fold0 fold0.this.init n.left.get) n) n.right.get

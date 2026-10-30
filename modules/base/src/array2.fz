@@ -31,7 +31,7 @@
 # two index parameters.
 #
 private:public array2(
-      T type,
+      T : Any,
       public length0, length1 i64,
 
       # the underlying one dimensional array
@@ -221,7 +221,7 @@ is
 # one-dimensional immutable arrays with an additional access function with
 # two index parameters.
 #
-public array2(T type,
+public array2(T : Any,
               I : integer,
               length0, length1 I,
               init (I, I) -> T) array2 T

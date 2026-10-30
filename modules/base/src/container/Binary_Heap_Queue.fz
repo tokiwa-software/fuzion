@@ -38,7 +38,7 @@ module:public Binary_Heap_Queue(
 
   # type of the elements in the queue
   #
-  T type,
+  T : Any,
 
   # comparator to determine priority of the elements
   #

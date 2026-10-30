@@ -25,7 +25,7 @@
 # Mutable_Array3 -- three-dimensional mutable array with effect
 #
 module:public Mutable_Array3
-  (T type,
+  (T : Any,
    E type : mutate) ref
 is
 

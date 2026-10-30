@@ -31,7 +31,7 @@
 # NYI: CLEANUP: REMOVE: replace all uses of concur.atomic by concur.atomic_mutate
 #
 private:public atomic (
-  T type,
+  T : Any,
   initial_value T
   ) : auto_unwrap T atomic_access
 is

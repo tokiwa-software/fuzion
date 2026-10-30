@@ -28,7 +28,7 @@
 # use `concur.thread_pool.env.submit` to
 # submit a task to the thread_pool.
 #
-public thread_pool(R type, size i64, code ()->R) outcome R =>
+public thread_pool(R : Any, size i64, code ()->R) outcome R =>
   (thread_pool size) ! code
 
 
@@ -37,7 +37,7 @@ public thread_pool(R type, size i64, code ()->R) outcome R =>
 #
 Computable_Future(
   # result type of the computation
-  T type,
+  T : Any,
   # the thread pool to use for subsequent computation
   TP type : concur.thread_pool,
   # the code of the future
@@ -62,7 +62,7 @@ Computable_Future(
 
     compute_result.read.or_panic
 
-  public redef and_then(T2 type, new_task T->T2) concur.Future T2 ! atomic_access, TP =>
+  public redef and_then(T2 : Any, new_task T->T2) concur.Future T2 ! atomic_access, TP =>
     TP.env.submit T2 ()->(new_task get)
 
 
@@ -95,7 +95,7 @@ is
   # returns a future if successful or panics in case
   # the thread pool has already shut down.
   #
-  public submit(T type, task ()->T) concur.Future T ! atomic_access =>
+  public submit(T : Any, task ()->T) concur.Future T ! atomic_access =>
     res := Computable_Future _ thread_pool.this task
     if bq.enqueue ()->res.compute
       res

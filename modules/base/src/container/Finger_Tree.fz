@@ -127,7 +127,7 @@ empty(T type) : container.Finger_Tree T is
 
 # a finger tree with only one item
 #
-single(T type, data Sequence T) : container.Finger_Tree T
+single(T : Any, data Sequence T) : container.Finger_Tree T
   pre
     debug 2 : data.as_finger_tree = nil
 is
@@ -157,7 +157,7 @@ is
 # NYI: UNDER DEVELOPMENT: implement this properly, not via
 # abusing Finger_Tree
 #
-node3(T type, a,b,c Sequence T) Sequence T =>
+node3(T : Any, a,b,c Sequence T) Sequence T =>
   container.Finger_Tree T .empty
     .append a
     .append b
@@ -169,7 +169,7 @@ node3(T type, a,b,c Sequence T) Sequence T =>
 #
 # consist of two hands, left and right, and another Finger_Tree in the middle
 #
-deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.hand T) : container.Finger_Tree T is
+deep(T : Any, lft container.hand T, ft container.Finger_Tree T, rght container.hand T) : container.Finger_Tree T is
 
   # cached count of this deep finger tree
   #
@@ -255,7 +255,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
 # this is called digit in the paper
 #
-hand(T type, finger Sequence (Sequence T)) : property.countable
+hand(T : Any, finger Sequence (Sequence T)) : property.countable
   pre
     debug 2 : 1 <= finger.count <= 4
     debug 2 : finger.is_array_backed

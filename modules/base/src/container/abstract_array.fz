@@ -228,14 +228,14 @@ public abstract_array
 
   # map the array to a new array applying function f to all elements
   #
-  public map_to_array(B type, f T -> B) array B =>
+  public map_to_array(B : Any, f T -> B) array B =>
     array B _ abstract_array.this.length (i -> f abstract_array.this[i])
 
 
   # variant of map which additionally passes the index to
   # the mapping function f
   #
-  public map_indexed(B type, f (T, i64) -> B) array B =>
+  public map_indexed(B : Any, f (T, i64) -> B) array B =>
     array B _ abstract_array.this.length (i -> f abstract_array.this[i] i)
 
 

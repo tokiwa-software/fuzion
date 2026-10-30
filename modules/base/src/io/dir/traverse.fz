@@ -30,7 +30,7 @@
 #
 public traverse(
   # the type of the result
-  R type,
+  R : Any,
   # the directory to traverse
   p io.path,
   # descend into subdirectories?

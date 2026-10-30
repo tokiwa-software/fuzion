@@ -128,7 +128,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
   #
-  public ternary ? : (T type, a, b Lazy T) T =>
+  public ternary ? : (T : Any, a, b Lazy T) T =>
     if bool.this
       a
     else

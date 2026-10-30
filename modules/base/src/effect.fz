@@ -32,10 +32,10 @@
 # abort the current computation, i.e., return directly to the call that
 # instated the effect.
 #
-# Effects are identified by their type, including any actual type parameters.
+# Effects are identified by their : Any, including any actual type parameters.
 # Effect instances must be assignable to the effect type.  This means that if
-# the effect type is a value type, the instance must be an instance of exactly
-# that type while if the effect type is a ref type, the instance might be of
+# the effect type is a value : Any, the instance must be an instance of exactly
+# that type while if the effect type is a ref : Any, the instance might be of
 # a type that inherits from the effect type that is --possibly after boxing--
 # assignable to that type.
 #
@@ -82,7 +82,7 @@ public effect is
   #
   # - First, it permits `code` and `def` to be of value types, and
   # - second, it simplifies the backends since calls to `code.call` or
-  #   `def.call` are statically defined by that value type, no need for
+  #   `def.call` are statically defined by that value : Any, no need for
   #   dynamic binding.
   #
   # As a neat side-effect this avoids heap allocation of the lambdas.
@@ -154,7 +154,7 @@ public effect is
   # In case `f` aborts this effect, return `def()`.
   #
   public type.instate(# result type
-                      R type,
+                      R : Any,
 
                       # the effect value to instate
                       e effect.this,
@@ -178,7 +178,7 @@ public effect is
   # this will result in a compile time failure.
   #
   public type.instate(# result type
-                      R type,
+                      R : Any,
 
                       # the effect value to instate
                       e effect.this,
@@ -202,7 +202,7 @@ public effect is
   # In case `f` aborts this effect, this will panic.
   #
   public instate_self(# result type
-                      R type,
+                      R : Any,
 
                       # the code to execute with `e` instated.
                       code () -> R
@@ -219,7 +219,7 @@ public effect is
   #     effect_instance ! ()->code
   #
   public infix !(# result type
-                 R type,
+                 R : Any,
 
                  # the code to execute with `e` instated.
                  code () -> R
@@ -230,7 +230,7 @@ public effect is
 
   # fluent interface for using multiple effects together
   #
-  public and(R type, E : effect, e Lazy E) Functional R =>
+  public and(R : Any, E : effect, e Lazy E) Functional R =>
     as_functional R
       .compose (e.as_functional R)
 
@@ -269,7 +269,7 @@ public effect is
   # replace existing effect for type `effect.this` by the new effect value `e`.
   #
   # For effects that model the outside world (e.g., i/o, time, sensors and actuators, etc.),
-  # the effect might be a unit type, so the replace is effectively a no-operation.  However,
+  # the effect might be a unit : Any, so the replace is effectively a no-operation.  However,
   # the call to `replace` is used to model the change of the outside world and must be
   # included for analysis tools to appreciate this.
   #
@@ -290,7 +290,7 @@ public effect is
   #
   # This is a convenience feature for value type effects for which the type of
   # the effect instance equals the effect type.  `ref` type effects typically have
-  # values that may be children of the effect type that are of a different type, so
+  # values that may be children of the effect type that are of a different : Any, so
   # `effect_type.replace new_value` must be used.
   #
   # replace may only be called during the execution of an operation of a currently instated
@@ -377,7 +377,7 @@ public effect is
 # instate helper to hold the result of the effect
 #
 instate_helper(# result type
-               R type,
+               R : Any,
 
                # effect type
                ET type: effect,
