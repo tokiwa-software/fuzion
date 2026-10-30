@@ -64,6 +64,9 @@ public class Call extends AbstractCall
     List<FeatureAndOuter> _fos;
     AbstractFeature _targetFeature;
     FeatureName _calledName;
+    List<Expr> _originalActuals; // copy of original actuals.  Call.this._actuals might get changed
+                                 // for partial applications, so we restore this to report an error
+                                 // referring to the original call.
 
     /**
      * constructor
@@ -86,6 +89,7 @@ public class Call extends AbstractCall
       // we must create _calledName early since _actuals may change due to
       // attempted partial application
       _calledName = FeatureName.get(_name, _actuals.size());
+      _originalActuals = new List<>(_actuals);
     }
 
     @Override
@@ -95,7 +99,21 @@ public class Call extends AbstractCall
                                       : _target.type().feature();
       if (tf != Types.f_ERROR)
         {
-          triggerFeatureNotFoundError(_res, _fos, tf, _calledName);
+          var names = ParsedOperatorCall.lookupNames(_name).map2(n -> FeatureName.get(n, _calledName.argCount()));
+          var direktLookup = _res._module.lookupFeature(tf, _calledName);
+          _actuals = _originalActuals;
+          AstErrors.calledFeatureNotFound
+            (Call.this,
+             _calledName,
+             tf,
+             _target,
+             FeatureAndOuter.findExactOrCandidate
+               (_fos,
+                (FeatureName fn) -> false,
+                (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
+             _res._options.isLanguageServer() || tf == null ? new List<FeatureAndOuter>()
+                                                            : hiddenCandidates(_res, tf, _calledName),
+             direktLookup);
         }
     }
   }
@@ -837,43 +855,6 @@ public class Call extends AbstractCall
   private boolean mayUnwrapTarget()
   {
     return _target != null && _target.typeForInferencing() != null && !_target.typeForInferencing().isParametricType() && _target.typeForInferencing().feature().inheritsFrom(Types.resolved.f_auto_unwrap);
-  }
-
-
-  /**
-   * helper for triggering a feature not found error.
-   */
-  private void triggerFeatureNotFoundError(Resolution res, Context context)
-  {
-    var tf = targetFeature(res, context, true);
-    triggerFeatureNotFoundError(res,
-                                findOnTarget(res, tf, true).v0(),
-                                tf,
-                                FeatureName.get(_name, _actuals.size()));
-  }
-
-
-  /**
-   * helper for triggering a feature not found error.
-   */
-  private void triggerFeatureNotFoundError(Resolution res,
-                                           List<FeatureAndOuter> fos,
-                                           AbstractFeature tf,
-                                           FeatureName calledName)
-  {
-    var names = ParsedOperatorCall.lookupNames(_name).map2(n -> FeatureName.get(n, calledName.argCount()));
-    var direktLookup = res._module.lookupFeature(tf, calledName);
-    AstErrors.calledFeatureNotFound(this,
-                                    calledName,
-                                    tf,
-                                    _target,
-                                    FeatureAndOuter.findExactOrCandidate(fos,
-                                                                        (FeatureName fn) -> false,
-                                                                         (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
-                                    res._options.isLanguageServer() || tf == null
-                                      ? new List<FeatureAndOuter>()
-                                      : hiddenCandidates(res, tf, calledName),
-                                    direktLookup);
   }
 
 
