@@ -104,6 +104,13 @@ public class Parser extends Lexer
   private final boolean _isLanguageServer;
 
 
+  /**
+   * Indentation reference points of the surrounding ternary expression, or
+   * {@code null} if we are not parsing a chained ternary expression.
+   */
+  private TernaryRefs _ternaryRefs = null;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -124,6 +131,7 @@ public class Parser extends Lexer
   {
     super(original);
     this._isLanguageServer = original._isLanguageServer;
+    this._ternaryRefs = original._ternaryRefs;
   }
 
 
@@ -1832,32 +1840,151 @@ exprNoColon : operatorExpr          // may not contain {@code :} unless enclosed
   */
   Expr operatorExpr()
   {
-    Expr result = opExpr();
-    if (current() == Token.t_question)
+    var refs = _ternaryRefs;
+    _ternaryRefs = null;
+    try
       {
-        SourcePosition pos = tokenSourcePos();
-        var i = new Indentation("operatorExpr");
-        skip(Token.t_question);
-        var f0 = fork();
-        if (f0.isCasesAndNotExpr())
+        Expr result = opExpr();
+        if (current() == Token.t_question)
           {
-            result = new Match(pos, result, casesBars(i));
+            SourcePosition pos = tokenSourcePos();
+            checkQuestionIndentation(refs, result, pos);
+            var i = new Indentation("operatorExpr");
+            skip(Token.t_question);
+            var f0 = fork();
+            if (f0.isCasesAndNotExpr())
+              {
+                result = new Match(pos, result, casesBars(i));
+              }
+            else
+              {
+                i.ok();
+                var eac = endAtColon(true);
+                Expr f = operatorExpr();
+                endAtColon(eac);
+                i.end();
+                SourcePosition colonPos = tokenSourcePos();
+                var isColon = currentNoLimit() == Token.t_op && asString(tokenPos(), tokenEndPos()).equals(":");
+                if (isColon && current() == Token.t_op)
+                  {
+                    if (startsNewLine(colonPos.bytePos()))
+                      {
+                        checkColonIndentation(refs, pos, colonPos);
+                      }
+                    next();
+                  }
+                else
+                  {
+                    matchOperator(":", "expr of the form >>a ? b : c<<");
+                  }
+                _ternaryRefs = new TernaryRefs(pos, colonPos);
+                Expr g = operatorExpr();
+                result = f == Call.ERROR || g == Call.ERROR ? Call.ERROR : new ParsedCall(result, new ParsedName(result.pos().rangeTo(g.pos().byteEndPos()), "ternary ? :"), new List<>(f, g));
+              }
           }
-        else
+        return result;
+      }
+    finally
+      {
+        _ternaryRefs = refs;
+      }
+  }
+
+
+  /**
+   * Does the token at the given position start a new line, i.e., is it on a
+   * different line than the end of the previous token?
+   */
+  boolean startsNewLine(int pos)
+  {
+    var lastEnd = lastTokenEndPos();
+    return lastEnd >= 0 && lineNum(lastEnd) != lineNum(pos);
+  }
+
+
+  /**
+   * Indentation reference points of a ternary expression.  The '?' and ':' of
+   * a ternary expression are the reference points for the '?' and ':' of a
+   * chained ternary in its false branch.
+   */
+  static class TernaryRefs
+  {
+    final SourcePosition _questionPos;
+    final SourcePosition _colonPos;
+
+    TernaryRefs(SourcePosition questionPos, SourcePosition colonPos)
+    {
+      _questionPos = questionPos;
+      _colonPos = colonPos;
+    }
+
+    /**
+     * Does the given column match one of this ternary's reference points?
+     */
+    boolean allows(int column)
+    {
+      return column == _questionPos.column() || column == _colonPos.column();
+    }
+  }
+
+
+  /**
+   * Check indentation of the '?' of a ternary expression.
+   *
+   * @param refs reference points of the surrounding ternary, null if none
+   *
+   * @param left the expression to the left of the '?'
+   *
+   * @param pos position of the '?'
+   */
+  void checkQuestionIndentation(TernaryRefs refs, Expr left, SourcePosition pos)
+  {
+    if (refs == null)
+      {
+        if (startsNewLine(pos.bytePos()) && pos.column() <= left.pos().column())
           {
-            i.ok();
-            var eac = endAtColon(true);
-            Expr f = operatorExpr();
-            endAtColon(eac);
-            i.next();
-            i.ok();
-            matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = operatorExpr();
-            i.end();
-            result = f == Call.ERROR || g == Call.ERROR ? Call.ERROR : new ParsedCall(result, new ParsedName(result.pos().rangeTo(g.pos().byteEndPos()), "ternary ? :"), new List<>(f, g));
+            Errors.indentationProblemEncountered(pos, left.pos(),
+              "When " + Errors.skw("?") + " is not in the same line as its condition, it must be indented deeper than the condition.");
           }
       }
-    return result;
+    else
+      {
+        // A condition that continues in the same line where the surrounding
+        // ':' ended may put its '?' anywhere in that line.  Everything else is
+        // part of a chained ternary and must be aligned with the reference
+        // points of the surrounding ternary.
+        var inline = lineNum(left.pos().bytePos()) == refs._colonPos.line() &&
+                     !startsNewLine(pos.bytePos());
+        if (!inline && !refs.allows(pos.column()))
+          {
+            Errors.indentationProblemEncountered(pos, refs._questionPos,
+              "When " + Errors.skw("?") + " is part of a chained ternary, it must be aligned with "
+              + Errors.skw("?") + " or " + Errors.skw(":") + " of the surrounding ternary expression.");
+          }
+      }
+  }
+
+
+  /**
+   * Check indentation of a ':' that starts a new line.
+   *
+   * @param refs reference points of the surrounding ternary, null if none
+   *
+   * @param questionPos position of the '?' of this ternary
+   *
+   * @param pos position of the ':'
+   */
+  void checkColonIndentation(TernaryRefs refs, SourcePosition questionPos, SourcePosition pos)
+  {
+    var column = pos.column();
+    if (column != questionPos.column() &&
+        (refs == null || !refs.allows(column)))
+      {
+        Errors.indentationProblemEncountered(pos, questionPos,
+          "When " + Errors.skw(":") + " is not in the same line as its " + Errors.skw("?")
+          + ", it must be aligned with the " + Errors.skw("?")
+          + (refs == null ? "." : " or " + Errors.skw(":") + " of the surrounding ternary expression."));
+      }
   }
 
 
