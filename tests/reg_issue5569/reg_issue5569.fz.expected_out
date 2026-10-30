@@ -1,6 +1,9 @@
 expecting t.i : reg_issue5569.t.i
 expecting t.i : reg_issue5569.t.i
+expecting t2.i: reg_issue5569.t2.i
 expecting t.i /t.e.j  : reg_issue5569.t.i reg_issue5569.t.e.j
 expecting t.i /t.e2.j : reg_issue5569.t.i reg_issue5569.t.e2.j
+expecting t2.i/t2.e2.j: reg_issue5569.t2.i reg_issue5569.t2.e2.j
 expecting option (array t.i /t.e.j  ): option (array reg_issue5569.t.i) option (array reg_issue5569.t.e.j)
 expecting option (array t.i /t.e2.j ): option (array reg_issue5569.t.i) option (array reg_issue5569.t.e2.j)
+expecting option (array t2.i/t2.e2.j): option (array reg_issue5569.t2.i) option (array reg_issue5569.t2.e2.j)
