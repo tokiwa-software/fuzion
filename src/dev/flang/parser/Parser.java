@@ -876,11 +876,13 @@ argType     : typeType                   # NYI: REMOVE!
                                       }
                                     else if (skipColon())
                                       {
+                                        isTypePar = true;
                                         i = Impl.EXPLICIT_TYPE_PARAMETER;
                                         t = type();
                                       }
                                     else if (skip("..."))
                                       {
+                                        isTypePar = true;
                                         i = Impl.TYPE_PARAMETER_OPEN;
                                         t = skipColon() ? type()
                                                         : new BuiltInType(FuzionConstants.ANY_NAME);
@@ -1030,8 +1032,21 @@ typeType    : "type"                  # NYI: REMOVE!
                   }
                 while (skipComma());
                 if (skip(Token.t_type))
-                  {
+                  { // NYI: REMOVE!
                     splitSkip("...");
+                    if (skipColon())
+                      {
+                        skipType();
+                      }
+                    result[0] = FormalOrActual.formal;
+                  }
+                else if (skipColon())
+                  {
+                    skipType();
+                    result[0] = FormalOrActual.both;
+                  }
+                else if (splitSkip("..."))
+                  {
                     if (skipColon())
                       {
                         skipType();
