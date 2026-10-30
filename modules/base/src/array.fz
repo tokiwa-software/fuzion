@@ -117,13 +117,13 @@ is
 
   # check if argument is a valid index in this array.
   #
-  public redef is_valid_index(I type : integer, i I) bool =>
+  public redef is_valid_index(I : integer, i I) bool =>
     i.fits_in_i64 && 0 ≤ i.as_i64 < length
 
 
   # get the contents of this array at the given index
   #
-  public redef index [ ] (I type : integer, i I) T
+  public redef index [ ] (I : integer, i I) T
   =>
     internal_array[i.as_i64]
 
@@ -132,7 +132,7 @@ is
   #
   # Complexity: O(array.this.length)
   #
-  public put (I type : integer, i I, v T) array T
+  public put (I : integer, i I, v T) array T
     pre
       safety: is_valid_index i || i.as_i64 = length
   =>
@@ -147,7 +147,7 @@ is
   #
   # Complexity: O(max(i, array.this.length))
   #
-  public put (I type : integer, i I, v T, z T, _ unit) array T
+  public put (I : integer, i I, v T, z T, _ unit) array T
     pre
       safety: 0 ≤ i && i.fits_in_i64
   =>
@@ -171,7 +171,7 @@ is
 
   # array -- create initialized one-dimensional immutable array
   #
-  public type.new(I type : integer, length I, init I -> T) array T
+  public type.new(I : integer, length I, init I -> T) array T
     pre
       safety: length ≥ 0
       safety: length.fits_in_i64
@@ -192,5 +192,5 @@ is
 
 # array -- create initialized one-dimensional immutable array
 #
-public array(T type, I type : integer, length I, init I -> T) array T =>
+public array(T type, I : integer, length I, init I -> T) array T =>
   (array T).new length init

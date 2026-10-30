@@ -47,7 +47,7 @@ public effect_wormhole is
     Old_EV ref is
       re_instate unit => abstract
 
-    old_ev(T type : effect) : Old_EV is
+    old_ev(T : effect) : Old_EV is
       v := if T.is_instated then option T.env
                             else nil
       redef re_instate =>

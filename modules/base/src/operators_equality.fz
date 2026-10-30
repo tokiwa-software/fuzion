@@ -26,14 +26,14 @@
 # equals -- feature that compares two values using the equality relation
 # defined in their type
 #
-public equals(T type : property.equatable, a, b T) bool => T.equality a b
+public equals(T : property.equatable, a, b T) bool => T.equality a b
 
 
 # infix = -- infix operation as shorthand for 'equals'
 #
-public infix =(T type : property.equatable, a, b T) bool => equals a b
+public infix =(T : property.equatable, a, b T) bool => equals a b
 
 
 # infix = -- infix operation as shorthand for 'equals'
 #
-public infix !=(T type : property.equatable, a, b T) bool => !equals a b
+public infix !=(T : property.equatable, a, b T) bool => !equals a b
