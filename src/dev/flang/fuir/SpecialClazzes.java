@@ -28,9 +28,7 @@ package dev.flang.fuir;
 
 import java.util.function.Supplier;
 
-import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
-import dev.flang.util.FuzionConstants;
 
 /**
  * Enum of clazzes that require special handling in the backend

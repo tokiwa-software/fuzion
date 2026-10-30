@@ -46,7 +46,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.LibraryFeature;
@@ -230,30 +229,59 @@ public class Html extends ANY
 
     return
       "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
-        + "<div class='d-flex flex-wrap word-break-break-word'>"
-          + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
-            + anchor(af, relativeTo)
-            + arguments(af, (outer != null ? outer : af))
-            + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
-            + inherited(af, relativeTo)
-            + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchorType(af, af, relativeTo)
-               : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
-               : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.baseName() + "_out:" + (outer != null ? outer.baseName() : "_out=null")
-                                      : "")
-            + annotateUnitType(af)
-            + annotateInherited(af, outer)
-            + annotateRedef(af, outer)
-            + annotateAbstract(af)
-            + annotateContainsAbstract(af)
-            + annotatePrivateConstructor(af)
-            + annotateModule(af)
-            + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>¶</a>"
-            // fills remaining space
-            + "<div class='flex-grow-1'></div>"
-          + "</div>"
+        + "<div class='overflow-wrap-break-word fz-code fd-signature'>"
+          + signature(af, outer, relativeTo)
         + "</div>"
         + source(af)
       + "</div>";
+  }
+
+
+  /**
+   * The signature of a feature, i.e. its name, arguments and result type.
+   *
+   * Features with arguments use a three column layout: the feature name
+   * including the opening parenthesis, the arguments, and the closing
+   * parenthesis followed by the result type. Features without arguments are
+   * kept in a single line.
+   *
+   * @param af the feature whose signature is rendered
+   * @param outer the feature in whose context af is used
+   * @param relativeTo the feature to which links should be relative to
+   * @return HTML for the feature signature
+   */
+  private String signature(AbstractFeature af, AbstractFeature outer, AbstractFeature relativeTo)
+  {
+    var args = arguments(af, relativeTo);
+    var tail =
+      (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
+      + inherited(af, relativeTo)
+      + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchorType(af, af, relativeTo)
+         : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
+         : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.baseName() + "_out:" + (outer != null ? outer.baseName() : "_out=null")
+                                : "")
+      + annotateUnitType(af)
+      + annotateInherited(af, outer)
+      + annotateRedef(af, outer)
+      + annotateAbstract(af)
+      + annotateContainsAbstract(af)
+      + annotatePrivateConstructor(af)
+      + annotateModule(af)
+      + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>¶</a>";
+
+    if (args.isEmpty())
+      {
+        return anchor(af, relativeTo) + tail;
+      }
+
+    return "<div class='fd-signature-col1'>" + anchor(af, relativeTo) + "(" + "</div>"
+      + "<div class='fd-signature-col2'>"
+      + java.util.stream.IntStream.range(0, args.size())
+        .mapToObj(i -> "<div class='fd-signature-arg'>" + args.get(i)
+                       + (i < args.size() - 1 ? "," : "") + "</div>")
+        .collect(Collectors.joining())
+      + "</div>"
+      + "<div class='fd-signature-col3'>)" + tail + "</div>";
   }
 
   /**
@@ -512,10 +540,18 @@ public class Html extends ANY
     if (!signatureWithArrow(outer))
       {
         fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
-        var normalArguments = outer.arguments().clone();
-        normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
-        fields.addAll(normalArguments);
+        var valueArguments = outer.valueArguments().clone();
+        valueArguments.removeIf(a->a.visibility().eraseTypeVisibility() != Visi.PUB);
+        fields.addAll(valueArguments);
       }
+
+    // Value arguments of function features
+    // List them independent of visibility, they can not be called,
+    // but they might contain a comment which otherwise is not shown..
+    var functionArguments = signatureWithArrow(outer)
+                              ? outer.valueArguments().clone()
+                              : new List<AbstractFeature>();
+
 
     // Constructors
     var allConstructors =  new TreeSet<AbstractFeature>();
@@ -566,6 +602,7 @@ public class Html extends ANY
     return mainSection0("Type Parameters",              null,         explicitTypeParameters, outer, false)
          + mainSection0("Open Type Parameter",          null,         openTypeParameters,     outer, false)
          + mainSection0("Free Type Parameters",         null,         freeTypeParameters,     outer, false)
+         + mainSection0("Arguments",                    null,         functionArguments,      outer, false)
          + mainSection0("Fields",                       null,         fields,                 outer, false)
          + mainSection0("Constructors",                 null,         normalConstructors,     outer, true)
          + mainSection0("Type Constructors",            null,         typeConstructors,       outer, true)
@@ -1163,11 +1200,11 @@ public class Html extends ANY
   }
 
   /**
-   * arguments of this feature
+   * arguments of this feature, rendered as a list of HTML strings
    * @param f
    * @return
    */
-  private String arguments(AbstractFeature f, AbstractFeature relativeTo)
+  private java.util.List<String> arguments(AbstractFeature f, AbstractFeature relativeTo)
   {
     // free type parameters are inferred from the type of the value argument
     // they are used in, so they are not shown as separate arguments but
@@ -1175,7 +1212,7 @@ public class Html extends ANY
     var freeTypes = f.typeArguments()
       .filter(AbstractFeature::isFreeTypeParameter);
 
-    var res = f.arguments()
+    return f.arguments()
       .stream()
       .filter(a -> !freeTypes.contains(a))
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
@@ -1186,8 +1223,7 @@ public class Html extends ANY
          freeType.isFreeTypeParameter()) ? htmlEncodedBasename(freeType) + "&nbsp;" +
                                            typeArgAsString(freeType, relativeTo)
                                          : anchorType(a, f, relativeTo)))
-      .collect(Collectors.joining(htmlEncodeNbsp(", ")));
-    return res.isEmpty() ? "" : "(" + res + ")";
+      .collect(Collectors.toList());
   }
 
 
@@ -1438,14 +1474,9 @@ public class Html extends ANY
           <div class="cursor_pointer">
             <details id="$2" $0>
               <summary>
-                <div class="d-grid" style="grid-template-columns: 1fr min-content;">
-                  <div class="d-flex flex-wrap word-break-break-word">
-                    <div class="d-flex flex-wrap word-break-break-word fz-code">
-                      <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
-                      <div class="flex-grow-1"></div>
-                      <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
-                    </div>
-                  </div>
+                <div class="overflow-wrap-break-word fz-code fd-signature">
+                  <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
+                  <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
                 </div>
               </summary>
             </details>

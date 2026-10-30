@@ -1016,11 +1016,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var oc = o == null || o.isUniverse()                            ? Universe.instance
       : target instanceof AbstractCall ac && !ac.isCallToOuterRef() && ! ac.calledFeature().isField()
       ? ac.cotypeInheritanceCall(res)
-      : o.cotypeInheritanceCall(p, new List<>(o.selfType(),
-                                              o.genericsAsActuals()),
-                                res, null);
+      : o.cotypeInheritanceCall(p,
+                                o.isCotype()
+                                  ? o.genericsAsActuals()
+                                  : new List<>(o.selfType(),
+                                                o.genericsAsActuals()),
+                                res,
+                                null);
 
-    var tf = res.cotype(this);
+    var tf = isCotype()
+      ? this
+      : res.cotype(this);
     return new Call(p,
                     oc,
                     typeParameters,
