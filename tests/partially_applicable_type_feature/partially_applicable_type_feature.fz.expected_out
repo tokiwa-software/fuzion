@@ -1,2 +1,18 @@
 /
 /
+p1(x)
+p1(y)
+[p1(u), p1(v)]
+p1(x)
+p2(x)
+p3(via type.of Unary: x)
+p3(via type.of(s): y)
+p4(via type.f(a,b): x y z)
+p4(via type.f(a,b,c): x y z)
+p5(via type.g(a): x 1 2)
+[3]
+[2, 3]
+p8(x)
+p8(y/x)
+p9(via type.of(s): x)
+p9(via of: y x)

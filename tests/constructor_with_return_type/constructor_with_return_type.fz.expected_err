@@ -1,5 +1,5 @@
 
---CURDIR--/constructor_with_return_type.fz:25:17: error 1: Combination of 'is' and return type is not allowed.
+constructor_with_return_type.fz:25:17: error 1: Combination of 'is' and return type is not allowed.
   some_feat i32 is
 ----------------^
 Keyword 'is' denotes a constructor which must not have a return type.

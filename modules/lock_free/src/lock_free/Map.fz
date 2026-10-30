@@ -303,7 +303,7 @@ is
       .map (branch CTK CTV) x->
         match x
           i Indirection_Node =>
-            copy_to_gen i new_gen
+            if i.gen = new_gen then i else copy_to_gen i new_gen
           sn singleton_node => sn
       .as_array
     container_node cn.bmp copy new_gen
@@ -366,8 +366,6 @@ is
   # completes the generation sensitive compare and set
   gcas_commit(i Indirection_Node CTK CTV, m Main_Node CTK CTV) Main_Node CTK CTV =>
     prev := m.prev.read
-    # abortably read root and get the current gen
-    root_gen := (read_root true).gen
     match prev
       nil => m
       fn failed_node =>
@@ -376,6 +374,7 @@ is
         else
           gcas_commit i i.data.read
       n Main_Node =>
+        root_gen := (read_root true).gen
         if root_gen = i.gen && !read_only
           if m.cas_prev prev nil
             m
@@ -475,7 +474,7 @@ is
       m := gcas_read p
       match m.data
         cn container_node =>
-          flag, pos := flagpos hash lev cn.bmp
+          flag, pos := flagpos hash (lev - width) cn.bmp
           if (cn.bmp & flag) != 0
             match cn[pos]
               inode Indirection_Node =>
@@ -670,7 +669,8 @@ is
     descriptor := Rdcss_Descriptor r expmain (copy_to_gen r new_gen)
     if rdcss_root descriptor
       # new ctrie by changing generation of r
-      Map (concur.atomic (root_node CTK CTV) .new (copy_to_gen r new_gen)) snapshot.this.read_only
+      nr := if snapshot.this.read_only then r else copy_to_gen r new_gen
+      Map (concur.atomic (root_node CTK CTV) .new nr) snapshot.this.read_only
     else
       snapshot snapshot.this.read_only
 
@@ -705,7 +705,7 @@ is
   public fixed as_map container.Map CTK CTV =>
     s := snapshot true
     _ : container.Map CTK CTV is
-      public redef size i64 => s.size.as_i64
+      public redef size i64 => s.size
       public redef index [] (k CTK) option CTV => s[k]
       public redef items Sequence (tuple CTK CTV) => s.items
 

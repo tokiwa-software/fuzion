@@ -33,9 +33,7 @@ import java.util.stream.Stream;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types.Resolved;
 import dev.flang.fe.FrontEnd;
-import dev.flang.fe.FrontEndOptions;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionOptions;
 
 /**
  * holds all artifacts of parsing that we later need

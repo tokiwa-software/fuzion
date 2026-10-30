@@ -420,7 +420,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
       }
       case c_i64 -> {
         yield Expr.checkcast(new ClassType("java/lang/Long"))
-          .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long));
+          .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()J", PrimitiveType.type_long));
       }
       case c_f32 -> {
         yield Expr.checkcast(new ClassType("java/lang/Float"))
@@ -504,7 +504,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         yield Expr.aload(slot, JAVA_LANG_OBJECT)
           .andThen(
             Expr.checkcast(new ClassType("java/lang/Long"))
-              .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()L", PrimitiveType.type_long)));
+              .andThen(Expr.invokeVirtual("java/lang/Long", "longValue", "()J", PrimitiveType.type_long)));
       }
       case c_f32 -> {
         yield Expr.aload(slot, JAVA_LANG_OBJECT)
@@ -695,31 +695,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
                     .andThen(args.get(1))
                     .andThen(args.get(2))
                     .andThen(jt.xastore());
-                }
-            }
-          return new Pair<>(val, code);
-        });
-
-    put("fuzion.sys.internal_array.freeze",
-        "fuzion.sys.internal_array.ensure_not_frozen",
-
-        (jvm, si, cc, tvalue, args) ->
-        {
-          var in = jvm._fuir.clazzOriginalName(cc);
-          var at = jvm._fuir.clazzOuterClazz(cc);       // array type
-          var val = Expr.UNIT;
-          var code = Expr.UNIT;
-          if (CHECKS)
-            {
-              var data = jvm._fuir.clazzArg(at, 0);
-              if (jvm.fieldExists(data))
-                {
-                  code = tvalue
-                    .andThen(jvm.getfield(data))
-                    .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                               in.replace("fuzion.sys.internal_array.",""),
-                                               "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
-                                               ClassFileConstants.PrimitiveType.type_void));
                 }
             }
           return new Pair<>(val, code);
@@ -1053,8 +1028,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
               .invokeStatic(
                 Names.RUNTIME_CLASS,
                 "native_string_length",
-                "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() +  ")I",
-                PrimitiveType.type_int
+                "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() +  ")J",
+                PrimitiveType.type_long
               ))
           , Expr.UNIT);
       });
@@ -1078,7 +1053,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 // java.lang.Class
                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                           "native_array",
-                                          "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor() + Types.JAVA_LANG_OBJECT.descriptor() + "I)" + Types.JAVA_LANG_OBJECT.descriptor(),
+                                          "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor() + Types.JAVA_LANG_OBJECT.descriptor() + "J)" + Types.JAVA_LANG_OBJECT.descriptor(),
                                           Types.JAVA_LANG_OBJECT)),
             Expr.UNIT
           );

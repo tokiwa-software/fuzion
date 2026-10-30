@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.SpecialClazzes;
 
 /**
  * u64Value is a value of type u64
@@ -97,23 +96,6 @@ public class u64Value extends Value
 
     slot.container.nonrefs[slot.offset    ] = (int) _val;
     slot.container.nonrefs[slot.offset + 1] = (int) (_val >> 32);
-  }
-
-
-  /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  void checkStaticClazz(int expected)
-  {
-    if (expected != fuir().clazz(SpecialClazzes.c_u16))
-      {
-        throw new Error("u64 value not allowed for clazz " + expected);
-      }
   }
 
 

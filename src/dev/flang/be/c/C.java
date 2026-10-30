@@ -384,7 +384,7 @@ public class C extends ANY
         }
       sb.append("." + length.code());
       sb.append(" = ");
-      sb.append(CExpr.int32const(elCount).code());
+      sb.append(CExpr.int64const(elCount).code());
       var ia = CExpr.compoundLiteral(_types.clazz(c_sys_array), sb.toString());
 
       sb = new StringBuilder();
@@ -1112,7 +1112,7 @@ public class C extends ANY
     cf.println("\nvoid __main__()\n{ ");
     cf.indent();
     // for choice of only refs and unit types, tag nums are cast to pointers. Legal pointers
-    // should not refer to the first page, so the values do not overlap. 
+    // should not refer to the first page, so the values do not overlap.
     cf.println("if ("+ _maxTagNum + " >= fzE_page_size()) { fprintf(stderr, \"*** number of choice tags exceed page size!\"); exit(EXIT_FAILURE); }");
     cf.print(CStmnt.seq(
       initializeEffectsEnvironment(),
@@ -1556,7 +1556,7 @@ public class C extends ANY
    */
   CExpr boxedConstString(byte[] bytes)
   {
-    return boxedConstString(CExpr.string(bytes), CExpr.int32const(bytes.length));
+    return boxedConstString(CExpr.string(bytes), CExpr.int64const(bytes.length));
   }
 
 

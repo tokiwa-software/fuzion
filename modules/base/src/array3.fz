@@ -152,22 +152,22 @@ is
   #
   public redef as_string String : encodings =>
     dim_1(i i64) =>
-      ("  [" + ascii.lf_str
+      "  [" + ascii.lf_str
         + indices1
             .map (j -> dim_2 i j)
             .fold (String.concat ("," + ascii.lf_str))
-        + ascii.lf_str + "  ]")
+        + ascii.lf_str + "  ]"
 
     dim_2(i i64, j i64) =>
       from := (i * length1 + j) * length2
       to := from + length2
       "    " + base.slice from to
 
-    ("[" + ascii.lf_str
+    "[" + ascii.lf_str
       + indices0
           .map (i -> dim_1 i)
           .fold (String.concat ("," + ascii.lf_str))
-      + ascii.lf_str + "]")
+      + ascii.lf_str + "]"
 
 
   # get a list of tuples indices and elements in this array

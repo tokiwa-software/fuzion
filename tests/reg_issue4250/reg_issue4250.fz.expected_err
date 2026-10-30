@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4250.fz:26:24: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
+reg_issue4250.fz:26:24: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
   type.x(a e.this) => $a.me
 -----------------------^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.

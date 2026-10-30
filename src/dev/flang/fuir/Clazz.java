@@ -110,6 +110,12 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Cached feature underlying this clazz.
+   */
+  final FuirFeature _feature;
+
+
+  /**
    * If this clazz represents a field of an open generic type, then _select
    * chooses the actual generic parameter to be used as the type of this field.
    * Otherwise, _select is NO_SELECT.
@@ -326,13 +332,14 @@ class Clazz extends ANY implements Comparable<Clazz>
     _type = _outer != null
       ? type.replaceGenericsAndOuter(type.generics(), _outer._type)
       : type;
+    _feature = (FuirFeature) _type.feature();
 
-    if (_type.feature().isFixed() &&
-        !_type.feature().isTypeParameter() &&
-        _type.outer().outer().feature() != _type.feature().outer().outer())
+    if (_feature.isFixed() &&
+        !_feature.isTypeParameter() &&
+        _type.outer().outer().feature() != _feature.outer().outer())
       {
         var x = "IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature:\n" +
-        _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _type.feature().outer().outer().toString();
+        _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _feature.outer().outer().toString();
         Errors.fatal(x);
       }
 
@@ -355,6 +362,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     _outer = null;
     _select = -5555555;
     _type = null;
+    _feature = null;
   }
 
 
@@ -611,6 +619,8 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   void doesNeedCode()
   {
+    if (CHECKS) check
+      (!_feature.isTypeParameter());
     if (!_needsCode && !_fuir._lookupDone)
       {
         _needsCode = true;
@@ -713,8 +723,9 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
       case Function,RefConstructor,Constructor -> IR.FeatureKind.Routine;
       case Field             -> IR.FeatureKind.Field;
-      case TypeParameter     -> IR.FeatureKind.TypeParameter;
-      case OpenTypeParameter -> IR.FeatureKind.TypeParameter;
+      case ExplicitTypeParameter,
+           FreeTypeParameter    ,
+           OpenTypeParameter      -> IR.FeatureKind.TypeParameter;
       case Intrinsic         -> IR.FeatureKind.Intrinsic;
       case Abstract          -> IR.FeatureKind.Abstract;
       case Choice            -> IR.FeatureKind.Choice;
@@ -729,7 +740,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   FuirFeature feature()
   {
-    return (FuirFeature) _type.feature();
+    return _feature;
   }
 
 
@@ -1924,7 +1935,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         t = t.replace_inherited_this_type(c.calledFeature(), feature(), foundRef);
       }
     var t1 = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
-    var t2 = t1.applyTypePars(tt, select);
+    var t2 = t1.applyTypePars(_type.feature(), _type.generics(), select);
     // NYI: CLEANUP: unclear why this is needed?
     var t3 = t2.replace_this_type_by_actual_outer_locally(tt, foundRef);
     return _outer != null

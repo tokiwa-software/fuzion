@@ -1,0 +1,72 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7836
+#
+# -----------------------------------------------------------------------
+
+# This tests a tricky case of formal argument type inference from actual
+# argument types when for part of the actual calls, the actual argument
+# depends on its formal argument type.
+#
+reg_issue7836 =>
+
+  # the original example from the issue:
+  #
+  dec14 =>
+
+    input := [(71, 0,  12, -37),
+              (31, 67, 53,  91),
+              (53, 49, 76,  37)]
+              .map ||||>robot
+
+    robot(x,y,vx,vy) is
+      move(n) =>
+        robot (x+vx*n) (y+vy*n) vx vy
+
+    part1 =>
+      (1..4).map q->(input.map (.move 100) .count) .fold i64.product
+
+    say "$part1"
+
+  dec14
+
+  # a simplified version
+  #
+  r(x) is
+    m(n) => r x*n
+  say <| (7 |> (x-> r x)).m 1
+
+  # a simplified version, usling partial application
+  #
+  r1(x) is
+    m(n) => r1 x*n
+  say <| (7 |> r1).m 1
+
+  # a variant with crossed dependencies between arguments
+  #
+  r2(x,y) is
+    m(n) => r2 n*y x*n
+  say <| ((6,7) ||> (i,j -> r2 i j)).m 1
+
+  # a variant with crossed dependencies between arguments
+  #
+  r3(x,y) is
+    m(n) => r3 n*y x*n
+  say <| ((6,7) ||> r3).m 1

@@ -235,7 +235,7 @@ is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  public map_to_list(B type, f A -> B) list B =>
+  public map_to_list(B type, f _ : A -> B) list B =>
     match list.this
       nil    => nil
       c Cons =>
@@ -747,7 +747,7 @@ is
   # fmap lifts a function from A to B to a function from list A to list B
   #
   public type.fmap(B type, f A -> B) list A -> list B =>
-    (.map_to_list B f)
+    .map_to_list f
 
 
   # monoid of lists with infix concatenation operation.

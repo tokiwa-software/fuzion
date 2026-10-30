@@ -1,5 +1,5 @@
 
---CURDIR--/test_this_type_negative.fz:57:16: error 1: Incompatible types when passing argument in a call
+test_this_type_negative.fz:57:16: error 1: Incompatible types when passing argument in a call
   _ := xa1.op0 (xb "xb")   # 3. should flag an error: incompatible type
 ---------------^^^^^^^^^
 Actual type for argument #1 'v' does not match expected type.
@@ -14,7 +14,7 @@ To solve this you could:
   • convert the type of the assigned value to 'test_this_type_negative.this.xa'.
 
 
---CURDIR--/test_this_type_negative.fz:58:16: error 2: Incompatible types when passing argument in a call
+test_this_type_negative.fz:58:16: error 2: Incompatible types when passing argument in a call
   _ := xa1.op0 xc          # 4. should flag an error: incompatible type
 ---------------^^
 Actual type for argument #1 'v' does not match expected type.
@@ -29,7 +29,7 @@ To solve this you could:
   • convert the type of the assigned value to 'test_this_type_negative.this.xa'.
 
 
---CURDIR--/test_this_type_negative.fz:72:16: error 3: Incompatible types when passing argument in a call
+test_this_type_negative.fz:72:16: error 3: Incompatible types when passing argument in a call
   _ := xb1.op0 xa   # 5. should flag an error: incompatible type
 ---------------^^
 Actual type for argument #1 'v' does not match expected type.
@@ -41,7 +41,7 @@ for value assigned  : 'xa'
 To solve this, you could change the type of the target 'v' to 'test_this_type_negative.this.xa' or convert the type of the assigned value to 'test_this_type_negative.this.xb'.
 
 
---CURDIR--/test_this_type_negative.fz:73:16: error 4: Incompatible types when passing argument in a call
+test_this_type_negative.fz:73:16: error 4: Incompatible types when passing argument in a call
   _ := xb1.op0 xc   # 6. should flag an error: incompatible type
 ---------------^^
 Actual type for argument #1 'v' does not match expected type.
@@ -56,7 +56,7 @@ To solve this you could:
   • convert the type of the assigned value to 'test_this_type_negative.this.xb'.
 
 
---CURDIR--/test_this_type_negative.fz:34:5: error 5: Incompatible types in assignment
+test_this_type_negative.fz:34:5: error 5: Incompatible types in assignment
     _ a     := a.this  #  2. should flag an error: a.this not compatible to 'a'
 ----^
 assignment to field : 'test_this_type_negative.a._'
@@ -70,7 +70,7 @@ To solve this you could:
   • convert the type of the assigned value to 'test_this_type_negative.this.a'.
 
 
---CURDIR--/test_this_type_negative.fz:31:7: error 6: Incompatible types in assignment
+test_this_type_negative.fz:31:7: error 6: Incompatible types in assignment
       _ a     := a.this  #  1. should flag an error: a.this not compatible to 'a'
 ------^
 assignment to field : 'test_this_type_negative.a.x._'

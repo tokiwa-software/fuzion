@@ -210,7 +210,7 @@ public class Block extends AbstractBlock
    *
    * @return this.
    */
-  public Block visit(FeatureVisitor v, AbstractFeature outer)
+  protected Block visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this);
     ListIterator<Expr> i = _expressions.listIterator();
@@ -371,8 +371,7 @@ public class Block extends AbstractBlock
       .forEach(e -> {
         if (e.producesResult() &&
             e.type().compareTo(Types.resolved.t_unit) != 0 &&
-            !e.type().isVoid() &&
-            e.type() != Types.t_ERROR)
+            !e.type().isVoid())
           {
             AstErrors.unusedResult(e);
           }

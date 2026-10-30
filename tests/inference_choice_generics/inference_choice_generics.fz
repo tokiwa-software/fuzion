@@ -35,11 +35,41 @@ inference_choice_generics =>
               (Branch $"E" "F")
               (Branch $"G" nil)))
 
-  print(t tree String) unit =>
+  print(t tree X) unit =>
     match t
       nil      => yap "."
-      s String => yap s
+      s X      => yap s
       b Branch => print b.left; print b.right
 
   print tree
   say ""
+
+  # -----------------------------
+
+  special_branch(T type, l, r tree T) : Branch T l r is
+
+  tree2 := (special_branch
+             (special_branch
+               (Branch 42 67)
+               (Branch 47 11))
+             (Branch
+               (special_branch 08 15)
+               (special_branch 32 168)))
+
+  print tree2
+  say ""
+
+  # -----------------------------
+
+  Myref(T type) ref is
+
+  myval               : Myref f32           is
+  myval(T, U, V type) : Myref (tuple T U V) is
+
+  f(U type,
+    v choice nil (Myref U))
+  =>
+    say U
+
+  f myval
+  f (myval bool unit void)

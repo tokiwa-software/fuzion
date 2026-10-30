@@ -111,7 +111,7 @@ class LibraryOut extends ANY
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module hash                                   |
+   *   |        | 1      | u256          | module hash                                   |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | int           | number of modules this module depends on n    |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -190,7 +190,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module hash                                   |
+   *   |        | 1      | u256          | module hash                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    * </pre>
    */
@@ -494,7 +494,7 @@ class LibraryOut extends ANY
         bn = "";
       }
     _data.writeString(bn);
-    var argCount = n.argCount() + f.freeTypesCount();
+    var argCount = f.arguments().size();
     _data.writeInt (argCount);      // NYI: use better integer encoding
     _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());

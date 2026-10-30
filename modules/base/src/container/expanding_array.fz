@@ -58,7 +58,7 @@ is
   # Get the capacity of this `expanding_array`, i.e., the number of
   # elements that can be added without re-allocating the array data.
   #
-  public capacity i64 => data.length.as_i64
+  public capacity i64 => data.length
 
 
   # get the contents of this array at the given index
@@ -246,7 +246,7 @@ is
       debug: initial_capacity >= 0
   =>
     internal := fuzion.sys.internal_array_init (container.slot T) initial_capacity.as_i64
-    for x in 0..(internal.length.as_i64-1) do
+    for x in 0..(internal.length-1) do
       internal[x] := container.unused
     container.expanding_array T internal 0
 

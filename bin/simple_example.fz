@@ -21,6 +21,23 @@
 #
 # -----------------------------------------------------------------------
 
+usage =>
+  """
+    simple_example is a small program to record or check a Fuzion test.
+
+    - record executes the test and saves stdout/err to files.
+    - check  executes the test and compares the output
+      to the recorded stdout/err files. If there is any difference
+      simple_example emits the diff and returns with non zero exit code.
+
+    If a file name input or <test.fz>.input exists its contents
+    will be written to the test's stdin.
+
+    Usage  : simple_example <check|record> <any|jvm|c|int|effect> <fz+args> <test.fz>
+
+    Example: simple_example check jvm "build/bin/fz -modules=nom" tests/hello/HelloWorld.fz
+  """
+
 ########### Extensions ###############
 
 is_windows =>
@@ -91,13 +108,28 @@ String.run(input0 option io.path) tokiwa.process_result =>
 # Run this String as a command using `envir_vars, cpu_time_limit` and panic in case we could
 # not execute the command, but do not panic in case the command results in an error.
 #
-String.run => String.this.run nil
+String.run tokiwa.process_result => String.this.run nil
 
 
 # Run this String as a command using `envir_vars, cpu_time_limit` and panic in case it
 # returns with an error.
 #
-String.run_and_check => run.panic_on_error
+String.run_and_check unit => run.panic_on_error
+
+
+# If the test file starts with a comment of the form `# fuzion.debugLevel=N`,
+# return `-debug=N`; otherwise, return an empty string.
+#
+# This is used in some flang_dev examples.
+#
+debug_options(f io.path) String =>
+  dbg_opt := "# fuzion.debugLevel="
+  txt := (io.file.read f).or_panic
+  first_line := txt.lines.first.or_panic
+  if first_line.starts_with dbg_opt
+    "-debug=$((first_line.substring dbg_opt.byte_count).split[0].parse_i64.or_panic)"
+  else
+    ""
 
 
 ############################################################################
@@ -110,7 +142,7 @@ stack_size_limit := units.data_size.b 1024 # NYI: UNDER DEVELOPMENT: stack limit
 
 # check exit code for validity
 #
-check_exit_code(run tokiwa.process_result) =>
+check_exit_code(run tokiwa.process_result) tokiwa.process_result =>
   # 152 - 128 = 24 -> signal SIGXCPU
   if run.exit_code = 152
     say "$("*** CANCELLED:".bold.red) test $file exceeded cpu time limit of $cpu_time_limit s"
@@ -130,62 +162,51 @@ check_exit_code(run tokiwa.process_result) =>
 # clean error output from random names
 # like loop4, preandcall19 etc.
 #
-clean_err(f io.path) =>
+clean_err(err io.path) unit =>
 
   if is_windows
-    "sed -i s|/|#|g $f".run_and_check
+    "sed -i s|/|#|g $err".run_and_check
     # 8 slashes here intentional, unclear why so many are needed though...
-    "sed -i s|\\\\\\\\|#|g $f".run_and_check
-    "sed -i s|$(os.cwd.or_panic.as_string.replace "\\" "#" .replace "/" "#")|--CURDIR--| $f".run_and_check
-    "sed -i s|$(("$(os.cwd.or_panic.as_string.substring 1 2):$(os.cwd.or_panic.as_string.substring 2)").replace "\\" "#" .replace "/" "#")|--CURDIR--| $f".run_and_check
-  "sed -i s#$(os.cwd.or_panic.as_string)#--CURDIR--# $f".run_and_check
-  # line numbers
-  "sed -E -i s/\\.fz:[0-9]+:[0-9]+(:?)/\\.fz:n:n\\1/g $f".run_and_check
-  "sed -E -i s/\\.(fz|java):[0-9]+/\\.\\1:n/g $f".run_and_check
-  "sed -E -i s/$(tokiwa.protected_space)at$(tokiwa.protected_space)-:.*/$(tokiwa.protected_space)at$(tokiwa.protected_space)-:n/g $f".run_and_check
-  # replace CLASS_PREFIX_WITH_ID
-  "sed -E -i s/fzC__L[0-9]+/fzC_LXXX/g $f".run_and_check
-  # replace lambda function names in Java stack traces
-  "sed -E -i s/__INTERN_fun[0-9]+_/__fun_/g $f".run_and_check
+    "sed -i s|\\\\\\\\|#|g $err".run_and_check
+    "sed -i s|$(os.cwd.or_panic.resolve file .as_string.replace "\\" "#" .replace "/" "#")|$(file.base_name)| $err".run_and_check
+    "sed -i s|$(("$(os.cwd.or_panic.resolve file .as_string.substring 1 2):$(os.cwd.or_panic.resolve file .as_string.substring 2)").replace "\\" "#" .replace "/" "#")|$(file.base_name)| $err".run_and_check
 
-# delete temporary files
-#
-delete_tmp_files =>
-  _ := io.file.delete (io.path.of "tmp_out.txt")
-  _ := io.file.delete (io.path.of "tmp_err.txt")
-  _ := io.file.delete (io.path.of "testbin")
-  _ := io.file.delete exp_err_cleaned
+  # replace path by only file name
+  "sed -i s@$(os.cwd.or_panic.resolve file)@$(file.base_name)@ $err".run_and_check
+
+  # line numbers
+  "sed -E -i s@\\.(fz|java)(:[0-9]+)+@\\.\\1:n@g $err".run_and_check
+
+  # replace CLASS_PREFIX_WITH_ID
+  "sed -E -i s@fzC__L[0-9]+@fzC_LXXX@g $err".run_and_check
+
+  # replace lambda function names in Java stack traces
+  "sed -E -i s@__INTERN_fun[0-9]+_@__fun_@g $err".run_and_check
 
 
 if envir.Args.env.count != 5
 
   # NYI: UNDER DEVELOPMENT: what should happen for check any? only jvm/int? or forbid?
-  say """
-      Usage  : simple_example <check|record> <any|jvm|c|int|effect> <fz+args> <test.fz>
-      Usage  : simple_example add <test_name>
-
-      Example: simple_example check jvm "build/bin/fz -modules=nom" tests/hello/HelloWorld.fz
-      """
+  say usage
   Exit.env.exit 1
 
 action := envir.Args.env[1]
 be     := envir.Args.env[2]
+file   := io.path.of envir.Args.env[4]
 # can not execute bash script fz on windows with CreateProcess
-fz_run := envir.Args.env[3].replace "../../bin/fz"
-                                    """
+fz_run := "$(envir.Args.env[3]) $(debug_options file)" .replace "../../bin/fz"
+                                                                """
   java \
   $(is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : "") \
   --enable-native-access=ALL-UNNAMED \
   --class-path ../../classes \
   $(envir.Vars.env["FUZION_JAVA_OPTIONS"].or_else "") \
-  -Xss5m \
   -Dline.separator=\n \
   -Dfile.encoding=UTF-8 \
   -Dfuzion.home=../../ \
   -Dfuzion.command=fz \
   dev.flang.tools.Fuzion"""
 
-file   := envir.Args.env[4]
 input option io.path :=
   {
     stdin := io.path.of "$file.stdin"
@@ -201,17 +222,15 @@ exp_out :=
   if be = "effect"
     io.path.of "$file.effect"
   else if io.file.exists (io.path.of "$file.expected_out_$be") || action = "record" && be != "any"
-    (io.path.of "$file.expected_out_$be")
+    io.path.of "$file.expected_out_$be"
   else
-    (io.path.of "$file.expected_out")
+    io.path.of "$file.expected_out"
 
 exp_err :=
   if io.file.exists (io.path.of "$file.expected_err_$be") || action = "record" && be != "any"
-    (io.path.of "$file.expected_err_$be")
+    io.path.of "$file.expected_err_$be"
   else
-    (io.path.of "$file.expected_err")
-
-exp_err_cleaned := io.path.of "$exp_err.cleaned"
+    io.path.of "$file.expected_err"
 
 
 backend_options(x) =>
@@ -236,8 +255,6 @@ else
 
 run_example =>
 
-    delete_tmp_files
-
     # NYI: UNDER DEVELOPMENT:
     # setrlimit for executed processes
     # stack_size_limit, cpu_time_limit
@@ -254,11 +271,16 @@ run_example =>
       check_exit_code <| "$fz_run -XmaxErrors=-1 -jvm $(backend_options "FUZION_JVM_BACKEND_OPTIONS") $file".run input
 
     else if be = "c"
-      compile := "$fz_run -XmaxErrors=-1 -c $(backend_options "FUZION_C_BACKEND_OPTIONS") $file -o=testbin".run
-      if compile.ok
-        check_exit_code <| "./testbin".run input
-      else
-        compile
+      testbin := io.path.of "$(file.stem)_bin"
+      _ := io.file.delete testbin
+      compile := "$fz_run -XmaxErrors=-1 -c $(backend_options "FUZION_C_BACKEND_OPTIONS") $file -o=$testbin".run
+      res :=
+        if compile.ok
+          check_exit_code <| "./$testbin".run input
+        else
+          compile
+      _ := io.file.delete testbin
+      res
     else if be = "int"
       check_exit_code <| "$fz_run -XmaxErrors=-1 -interpreter $file".run input
 
@@ -274,8 +296,8 @@ record_example =>
 
   if be != "effect"
     io.write exp_out run.out .or_panic
-    cur_dir := os.cwd.or_panic.as_string
-    io.write exp_err (run.err.replace cur_dir "--CURDIR--") .or_panic
+    path := os.cwd.or_panic .resolve file .as_string
+    io.write exp_err (run.err.replace path (file.base_name.as_string)) .or_panic
   else
     io.write exp_out ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
 
@@ -284,8 +306,12 @@ record_example =>
 
 check_example =>
   if ((be = "effect" && !(io.file.exists (io.path.of "$file.effect")))
+         # flang_dev appends 'skip' to the example file name
       || io.file.exists (io.path.of "$file.skip")
-      || io.file.exists (io.path.of "$file.skip_$be"))
+      || io.file.exists (io.path.of "$file.skip_$be")
+         # Fuzion tests each have their own directory, so skip files omit the test name
+      || file.parent.bind (p->io.file.exists (p.resolve "skip"    )) .or_default false
+      || file.parent.bind (p->io.file.exists (p.resolve "skip_$be")) .or_default false)
   then
     say "SKIP $file"
   else
@@ -293,24 +319,31 @@ check_example =>
 
     run := run_example
 
-    if be = "effect"
-      io.write (io.path.of "tmp_out.txt") ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
-    else
-      io.write (io.path.of "tmp_out.txt") run.out .or_panic
-      io.write (io.path.of "tmp_err.txt") run.err .or_panic
+    tmp_out := io.path.of "$file.tmp_out"
+    tmp_err := io.path.of "$file.tmp_err"
+    exp_err_cleaned := io.path.of "$file.exp_err_cleaned"
 
-    out := "diff --strip-trailing-cr $(exp_out) tmp_out.txt".run
+    tmp_files := [tmp_out, tmp_err, exp_err_cleaned]
+    tmp_files.for_each (f->_:=io.file.delete f)
+
+    if be = "effect"
+      io.write tmp_out ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
+    else
+      io.write tmp_out run.out .or_panic
+      io.write tmp_err run.err .or_panic
+
+    out := "diff --strip-trailing-cr $(exp_out) $tmp_out".run
 
     err :=
       if be != "effect"
         io.copy exp_err exp_err_cleaned .or_panic
-        clean_err (io.path.of "tmp_err.txt")
+        clean_err tmp_err
         clean_err exp_err_cleaned
-        "diff --strip-trailing-cr $(exp_err_cleaned) tmp_err.txt".run
+        "diff --strip-trailing-cr $(exp_err_cleaned) $tmp_err".run
       else
         tokiwa.process_result.empty_success
 
-    delete_tmp_files
+    tmp_files.for_each (f->_:=io.file.delete f)
 
     if !out.ok
       say "$("*** FAILED".bold.red) out on $file"

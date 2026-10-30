@@ -147,12 +147,21 @@ public class This extends ExprWithPos
 
     var outer = context.outerFeature();
 
-    var result = new This(pos, outer, f);
+    Expr result;
+    if (Types.resolved != null && f == Types.resolved.universe)
+      {
+        result = Universe.instance;
+      }
+    else
+      {
+        var thiz = new This(pos, outer, f);
 
-    return res.state(outer) != State.RESOLVING_INHERITANCE &&
-           res.state(outer) != State.RESOLVING
-      ? result.resolveTypes(res, context)
-      : result;
+        result = res.state(outer) != State.RESOLVING_INHERITANCE &&
+                 res.state(outer) != State.RESOLVING
+          ? thiz.resolveTypes(res, context)
+          : thiz;
+      }
+    return result;
   }
 
 
@@ -192,7 +201,7 @@ public class This extends ExprWithPos
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     return v.action(this);
   }

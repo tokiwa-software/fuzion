@@ -475,7 +475,10 @@ public class ParsedCall extends Call
         _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
         checkPartialAmbiguity(res, context, expectedType);
-        if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
+        checkTypeFeaturePartialAmbiguity(res, context, expectedType);
+        if (!isDefunct() &&/* checkTypeFeaturePartialAmbiguity may have set
+_calledFeature to error */
+          (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
             _pendingError != null                       ||
 
             // convert pre/postfix to infix, e.g., `1-` -> `x->1-x` */
@@ -484,15 +487,72 @@ public class ParsedCall extends Call
             // otherwise, try to solve inconsistent type
             paa != null                              &&
             (typeForInferencing() == null                             ||
-             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.feature())
+             typeForInferencing() != Types.t_ERROR &&
+             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.selfOrConstraint().feature())
              // !typeForInferencing().isFunctionType(res)                    -- original code
              // expectedType.isAssignableFrom(typeForInferencing()).no()     -- new code, does not work, unclear why!
-            ))
+            )))
           {
             l = applyPartially(res, context, expectedType);
           }
       }
     return l;
+  }
+
+
+ /**
+   * Check for ambiguity between partial application and a direct call if the
+   * target is a type {@code t}.
+   *
+   * Candidates for a direct call are the type features of {@code t} and, if
+   * {@code t} can be called without arguments, its inner features.
+   *
+   * Example: {@code "x" |> t.of} with
+   *
+   *   t is
+   *     type.of Unary t String => ...   # direct call
+   *     type.of(s String) t => ...      # partial application
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param expectedType the expected type, a function type for partial application
+   */
+  private void checkTypeFeaturePartialAmbiguity(Resolution res, Context context, AbstractType expectedType)
+  {
+    var paa = partiallyApplicableAlternative(res, context, expectedType);
+    var pt = _target == null ? null : _target.asParsedType();
+    var tt = pt == null ? null : pt.resolve(res, context, true);
+    var tf = tt != null && tt != Types.t_ERROR && tt.isNormalType() ? tt.feature() : null;
+    if (paa != null && (paa._feature.isTypeFeature() || paa._feature.outer() == tf))
+      {
+
+        var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
+        var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
+        // inner features of the target type are candidates only if the target
+        // can be called without arguments, otherwise `t.f` cannot call inner `f`
+        if (tf != null && tf != paa._feature.outer() && tf.valueArguments().isEmpty())
+          {
+            fos.addAll(res._module.lookup(tf, _name, this, false, false));
+          }
+        // type features in the cotype of the target are candidates as well
+        if (tf != null && tf.hasCotype() && tf.cotype() != paa._feature.outer())
+          {
+            fos.addAll(res._module.lookup(tf.cotype(), _name, this, false, false));
+          }
+        var direct = FeatureAndOuter.filter(fos,
+                                            pos(),
+                                            FuzionConstants.OPERATION_CALL,
+                                            FeatureName.get(_name, n),
+                                            ff -> ff.valueArguments().size() == n);
+        if (direct != null && direct._feature != paa._feature)
+          {
+            AstErrors.partialApplicationAmbiguity(pos(), direct._feature, paa._feature);
+            _pendingError = null;
+            _calledFeature = Types.f_ERROR;
+            setToErrorState();
+          }
+      }
   }
 
 
@@ -620,7 +680,7 @@ public class ParsedCall extends Call
       {
         var g = NO_GENERICS;
         var a = new List<Expr>();
-        var ts = cf.typeArguments();
+        var ts = cf.explicitOrOpenTypeParameters();
         var tn = ts.size();
         var ti = 0;
         var vs = cf.valueArguments();  // NYI: must hand down to get the correct number!
@@ -707,9 +767,11 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             // only the last type parameter may be open
             if (CHECKS) check
               (ti >= tn-1 ||
-               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter    ,
+               ts.get(ti).kind() == AbstractFeature.Kind.ExplicitTypeParameter ||
+               ts.get(ti).kind() == AbstractFeature.Kind.FreeTypeParameter        ,
                ti != tn-1 ||
-               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
+               ts.get(ti).kind() == AbstractFeature.Kind.ExplicitTypeParameter ||
+               ts.get(ti).kind() == AbstractFeature.Kind.FreeTypeParameter     ||
                ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
 
             var t = ti < tn &&

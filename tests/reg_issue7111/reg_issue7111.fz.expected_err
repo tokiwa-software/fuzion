@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue7111.fz:31:9: error 1: Different count of arguments needed when calling feature
+reg_issue7111.fz:31:9: error 1: Different count of arguments needed when calling feature
        .for_each kv->say "{kv.0} => {kv.1}"   # parentheses missing
 --------^^^^^^^^
 Feature not found: 'for_each' (2 arguments)
@@ -11,7 +11,7 @@ mymap.items.sort_by (.1)
 To solve this, you might change the actual number of arguments to match the feature 'for_each' (one value argument f) at {base.fum}/container/abstract_array.fz:158:16
   public redef for_each (f T -> unit) unit =>
 ---------------^^^^^^^^
-To call 'for_each', you must provide one argument.
+To call 'for_each', you must provide one argument 'f'.
 
 
 one error.

@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue3292.fz:25:8: error 1: Could not find called feature
+reg_issue3292.fz:25:8: error 1: Could not find called feature
   _ := "漢字" ≥≥≥≥≥≥ "ひらがな"
 -------^^^^^^^^^^^^^^^^^^
 Feature not found: 'infix/infix_right ≥≥≥≥≥≥' (one argument)

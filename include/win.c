@@ -1036,7 +1036,7 @@ int fzE_pipe_create(int64_t *fds)
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
   DWORD bytesRead;
   if (!ReadFile((HANDLE)desc, buf, nbytes, &bytesRead, NULL)){
-    return GetLastError() == ERROR_BROKEN_PIPE
+    return GetLastError() == ERROR_BROKEN_PIPE || GetLastError() == ERROR_OPERATION_ABORTED /* canceled by CancelIoEx in fzE_pipe_close */
       ? 0
       : -1;
   }

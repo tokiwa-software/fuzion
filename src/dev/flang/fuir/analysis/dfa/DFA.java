@@ -38,7 +38,6 @@ import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -818,12 +817,12 @@ public class DFA extends ANY
    * performance?  This is used to avoid large number of instances of, e.g.,
    * {@code array u8} where tracking the individual instances gives no benefit.
    *
-   * To disable, use fz with
+   * To enable, use fz with
    *
-   *   dev_flang_fuir_analysis_dfa_DFA_ONLY_ONE_INSTANCE=false
+   *   dev_flang_fuir_analysis_dfa_DFA_ONLY_ONE_INSTANCE=true
    */
   static final boolean ONLY_ONE_INSTANCE  =
-    FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.ONLY_ONE_INSTANCE", true);
+    FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.ONLY_ONE_INSTANCE", false);
 
 
   /**
@@ -1020,13 +1019,6 @@ public class DFA extends ANY
    * Value.ENV_COMPARATOR to avoid env value explosion.
    */
   TreeMap<Value, Value> _envValues = new TreeMap<>(Value.ENV_COMPARATOR);
-
-
-  /**
-   * During first phase that determined CallGroups, this will collect the
-   * effects that each clazz requires
-   */
-  TreeMap<Integer, TreeSet<Integer>> _clazzesThatRequireEffect = new TreeMap<>();
 
 
   /**
@@ -1260,7 +1252,7 @@ public class DFA extends ANY
           else
             {
               var code = _fuir.codeAt(s);
-              return (code == ExprKind.Call && _fuir.accessedClazz(s) != NO_CLAZZ && _fuir.clazzKind(_fuir.accessedClazz(s)) != FeatureKind.TypeParameter || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
+              return (code == ExprKind.Call || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
             }
         }
 
@@ -1362,7 +1354,8 @@ public class DFA extends ANY
     _uninitializedSysArray = new IntMap<>();
     _numericValues = new List<>();
     _numericValuesAny = new List<>();
-    _preEffectValues = new TreeMap<>();
+    // set to null to detect unintentional access
+    _preEffectValues = null;
 
     _trueX = null; _falseX = null; _boolX = null;
 
@@ -1802,46 +1795,6 @@ public class DFA extends ANY
 
 
   /**
-   * Helper routine for intrinsics that set the elements of an array given as an argument
-   *
-   * @param cl the intrinsic call
-   *
-   * @param argnum the argument that is an internal array
-   *
-   * @param intrinsicName name of the intrinsic, just of error handling
-   *
-   * @param elementClazz the element type of the array.
-   */
-  static void setArrayElementsToAnything(Call cl, int argnum, String intrinsicName, SpecialClazzes elementClazz)
-  {
-    var array = cl._args.get(argnum);
-    if (array instanceof SysArray sa)
-      {
-        sa.setel(NumericValue.create(cl._dfa, fuir(cl).clazz(SpecialClazzes.c_i32)),
-                 NumericValue.create(cl._dfa, fuir(cl).clazz(elementClazz)));
-      }
-    else
-      {
-        Errors.fatal("DFA internal error: intrinsic '" + intrinsicName+ ": Expected class SysArray, found " + array.getClass() + " " + array);
-      }
-  }
-
-
-  /**
-   * Helper routine to call setArrayElementsToAnything with specific clazz.
-   *
-   * @param cl the intrinsic call
-   *
-   * @param argnum the argument that is an internal array
-   *
-   * @param intrinsicName name of the intrinsic, just of error handling
-   */
-  static void setArrayU8ElementsToAnything (Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_u8 ); }
-  static void setArrayI32ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_i32); }
-  static void setArrayI64ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_i64); }
-
-
-  /**
    * Allocate the result instance of an intrinsic call returning
    * fuzion.java.Java_Object or children like fuzion.java.Array.
    *
@@ -2176,10 +2129,6 @@ public class DFA extends ANY
               throw new Error("intrinsic fuzion.sys.internal_array.gel: Expected class SysArray, found "+array.getClass()+" "+array);
             }
         });
-    put("fuzion.sys.internal_array.freeze"
-                                         , cl -> Value.UNIT);
-    put("fuzion.sys.internal_array.ensure_not_frozen"
-                                         , cl -> Value.UNIT);
     put("fuzion.sys.env_vars.has0"       , cl -> cl._dfa.bool() );
     put("fuzion.sys.env_vars.get0"       , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.thread.current"      , cl ->
@@ -3352,8 +3301,6 @@ public class DFA extends ANY
     return k;
   }
 
-
-  static final int _cntArrayCons = 0;
 
   /**
    * Create call to given clazz with given target and args.

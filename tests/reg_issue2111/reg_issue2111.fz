@@ -31,9 +31,4 @@ test(T type : property.equatable, a T) =>
     public redef type.equality(a, b my_switch.this) bool => true
   test my_switch on
 
-# NYI: BUG: #7975: calling `test` will result hanging monomorphization,
-# once #7975 is fixed, this should produce an error for recursive types
-# if `false` was replaced by `true`
-#
-if false
-  test 42
+_ := test 42

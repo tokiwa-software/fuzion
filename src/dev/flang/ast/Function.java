@@ -348,7 +348,7 @@ public class Function extends AbstractLambda
                                           at,
                                           n._name,
                                           Contract.EMPTY_CONTRACT,
-                                          i < cl.typeArguments().size() ? Impl.TYPE_PARAMETER : Impl.FIELD);
+                                          i < cl.typeArguments().size() ? Impl.EXPLICIT_TYPE_PARAMETER : Impl.FIELD);
                     if (i < cl.typeArguments().size())
                       {
                         tps_as_actuals.add(arg.asParametricType());
@@ -535,7 +535,7 @@ public class Function extends AbstractLambda
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (this._call != null)
       {

@@ -51,7 +51,7 @@ public contains(x T) bool
   pre
     T : property.equatable
 =>
-  find [x] .ok
+  find [x] ??
 
 
 # get the index of pattern within this Sequence or nil if it does not exist
@@ -216,7 +216,7 @@ module split0(s Sequence T, limit option u32, split_after bool) Sequence (Sequen
             (ar.rest.drop i+s.count)
     }
     c := u32 0, c+1
-  while idx.ok && c<l
+  while idx?? && c<l
   else
     ar.split_of ++ [ar.rest]
 

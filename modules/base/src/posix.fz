@@ -44,9 +44,19 @@ public posix is
   public clock_monotonic : clockid is
 
 
+  # CPU time consumed by the current thread
+  #
+  public clock_thread_cputime : clockid is
+
+
+  # CPU time consumed by the current process
+  #
+  public clock_process_cputime : clockid is
+
+
   # The posix clocks that are currently supported
   #
-  public clockid_t : choice clock_realtime clock_monotonic is
+  public clockid_t : choice clock_realtime clock_monotonic clock_thread_cputime clock_process_cputime is
 
     # the native value used for this clock
     #
@@ -55,3 +65,5 @@ public posix is
       match clockid_t.this
         clock_realtime  => 0
         clock_monotonic => 1
+        clock_thread_cputime  => 2
+        clock_process_cputime => 3

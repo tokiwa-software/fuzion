@@ -267,27 +267,6 @@ public class LValue extends ValueWithClazz
 
 
   /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  void checkStaticClazz(int expected)
-  {
-    if (fuir().clazzIsRef(expected))
-      {
-        throw new Error("LValue (" + _clazz + " not allowed for dynamic clazz " + expected);
-      }
-    if (expected != _clazz)
-      {
-        throw new Error("Runtime clazz "+_clazz+" does not equal static "+expected);
-      }
-  }
-
-
-  /**
    * Return the instance this value contains.  If this is an Instance, return
    * this, if this is an LValue containing an instance, get that instance.
    */

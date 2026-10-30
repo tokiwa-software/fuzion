@@ -245,7 +245,6 @@ public class Types extends ANY implements ClassFileConstants
     return _fuir.clazzIsBoxed(cl) ||
       switch (_fuir.clazzKind(cl))
       {
-      case Abstract  -> false;
       case Choice    ->
           switch (_choices.kind(cl))
             {
@@ -253,7 +252,6 @@ public class Types extends ANY implements ClassFileConstants
             case refsAndUnits, general                           -> true;
             };
       case Routine   -> true; // NYI: UNDER DEVELOPMENT: clazzNeedsCode(cl);
-      case Intrinsic -> true;
       case Native    -> true; // contains a static field methodHandle
       default        -> false;
       };

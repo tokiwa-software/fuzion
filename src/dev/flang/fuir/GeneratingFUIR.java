@@ -28,6 +28,7 @@ package dev.flang.fuir;
 
 import java.nio.charset.StandardCharsets;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Map;
@@ -192,7 +193,7 @@ public class GeneratingFUIR extends FUIR
                                    FuzionConstants.NO_SELECT,
                                    false /* isInheritanceCall */);
              var cur = new Current(call.pos(),                     // e.g. tuple.#Values_Of_Open_Type<n>.typed_foldf
-                                   currentClazz._type.feature());
+                                   currentClazz.feature());
              var openTypeInstance = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
@@ -245,7 +246,7 @@ public class GeneratingFUIR extends FUIR
                                    FuzionConstants.NO_SELECT,
                                    false /* isInheritanceCall */);
              var cur = new Current(call.pos(),                     // e.g. tuple.#Values_Of_Open_Type<n>.typed_foldf
-                                   currentClazz._type.feature());
+                                   currentClazz.feature());
              var openTypeInstance = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
@@ -754,7 +755,16 @@ public class GeneratingFUIR extends FUIR
 
   private final List<List<AbstractCall>> _inh;
 
+  /**
+   * For special clazzes, map from their features to the SpecialClazz.  This is
+   * used to quickly find with new Clazz'es need a special clazz id and need to
+   * be entered to _specialClazzes.
+   */
+  private final TreeMap<AbstractFeature, SpecialClazzes> _specialFeatures;
 
+  /**
+   * Map from `SpecialClazzes.ordinal` to `Clazz`, will be filled lazily on demand.
+   */
   private final Clazz[] _specialClazzes;
 
   private final Map<AbstractType, Clazz> _clazzesForTypes;
@@ -818,9 +828,25 @@ public class GeneratingFUIR extends FUIR
       {
         _argClazzes = null;
       }
-    _specialClazzes = new Clazz[SpecialClazzes.values().length];
-    _universe  = newClazz(null, mir.universe().selfType(), FuzionConstants.NO_SELECT)._id;
+
+    _specialFeatures = new TreeMap<>();
+    for (var s : SpecialClazzes.values())
+      {
+        var f = s._getFeature.get();
+        if (f != null)
+          {
+            _specialFeatures.put(f, s);
+          }
+      }
+
+    var universe  = newClazz(null, mir.universe().selfType(), FuzionConstants.NO_SELECT);
+    _universe  = universe._id;
     doesNeedCode(_universe);
+
+    _specialClazzes = new Clazz[SpecialClazzes.values().length];
+    _specialClazzes[SpecialClazzes.c_NOT_FOUND.ordinal()] = null;
+    _specialClazzes[SpecialClazzes.c_universe .ordinal()] = universe;
+
     _mainClazz = newClazz(mir.main().selfType())._id;
     doesNeedCode(_mainClazz);
     _inh = new List<>();
@@ -851,6 +877,7 @@ public class GeneratingFUIR extends FUIR
     _clazzes = original._clazzes;
     _resultClazzes = original._resultClazzes;
     _argClazzes = original._argClazzes;
+    _specialFeatures = original._specialFeatures;
     _specialClazzes = original._specialClazzes;
     _inh = original._inh;
     _clazzesForTypes = original._clazzesForTypes;
@@ -910,9 +937,9 @@ public class GeneratingFUIR extends FUIR
             // the convenience of the backend.
             //
             // So instead of testing !o.isRef() we use
-            // !o._type.feature().isThisRef().
-            !o._type.feature().isRef() &&
-            !o._type.feature().isIntrinsic())
+            // !o.feature().isThisRef().
+            !o.feature().isRef() &&
+            !o.feature().isIntrinsic())
           {  // but a recursive chain of value types is not permitted
 
             // NYI: recursive chain of value types should be detected during
@@ -933,7 +960,7 @@ public class GeneratingFUIR extends FUIR
                          "Value type " + actualType + " equals type of outer feature.\n"+
                          "The chain of outer types that lead to this recursion is:\n"+
                          chain + "\n" +
-                         "To solve this, you could add a 'ref' after the arguments list at "+o._type.feature().pos().show());
+                         "To solve this, you could add a 'ref' after the arguments list at "+o.feature().pos().show());
           }
         o = o._outer;
       }
@@ -981,43 +1008,15 @@ public class GeneratingFUIR extends FUIR
             outerR.addInner(result);
           }
 
-        var s = SpecialClazzes.c_NOT_FOUND;
-        if (cl.isRef() == cl.feature().isRef())  // not an boxed or explicit value clazz
+        if (cl.isRef() == cl.feature().isRef())  // not a boxed or explicit value clazz
           {
-            // NOTE: this only works for features in universe!
-            s = switch (cl.feature().baseName())
-              {
-              case FuzionConstants.ANY_NAME    -> SpecialClazzes.c_Any         ;
-              case FuzionConstants.I8_NAME     -> SpecialClazzes.c_i8          ;
-              case FuzionConstants.I16_NAME    -> SpecialClazzes.c_i16         ;
-              case FuzionConstants.I32_NAME    -> SpecialClazzes.c_i32         ;
-              case FuzionConstants.I64_NAME    -> SpecialClazzes.c_i64         ;
-              case FuzionConstants.U8_NAME     -> SpecialClazzes.c_u8          ;
-              case FuzionConstants.U16_NAME    -> SpecialClazzes.c_u16         ;
-              case FuzionConstants.U32_NAME    -> SpecialClazzes.c_u32         ;
-              case FuzionConstants.U64_NAME    -> SpecialClazzes.c_u64         ;
-              case FuzionConstants.F32_NAME    -> SpecialClazzes.c_f32         ;
-              case FuzionConstants.F64_NAME    -> SpecialClazzes.c_f64         ;
-              case "void"                      -> SpecialClazzes.c_void        ;
-              case "bool"                      -> SpecialClazzes.c_bool        ;
-              case "const_string"              -> SpecialClazzes.c_const_string;
-              case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
-              case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
-              case "Condition"                 -> SpecialClazzes.c_Condition   ;
-              case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;
-              case "Directory_Descriptor"      -> SpecialClazzes.c_Directory_Descriptor;
-              case "Java_Ref"                  -> SpecialClazzes.c_Java_Ref;
-              case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
-              case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
-              case "Internal_Thread"           -> SpecialClazzes.c_Internal_Thread;
-              case "stackoverflow_cause"       -> SpecialClazzes.c_stackoverflow_cause;
-              default                          -> SpecialClazzes.c_NOT_FOUND   ;
-              };
-            if (s != SpecialClazzes.c_NOT_FOUND && s._argCount == cl.feature().arguments().size())
+            var s = _specialFeatures.get(cl.feature());
+            if (s != null)
               {
                 if (CHECKS) check
                   (_specialClazzes[s.ordinal()] == null);
-                _specialClazzes[s.ordinal()] = result;
+
+                _specialClazzes[s.ordinal()] = cl;
                 cl._specialClazzId = s;
               }
           }
@@ -1809,7 +1808,7 @@ public class GeneratingFUIR extends FUIR
             var of = pf.outerRef();
             Clazz or = (of == null) ? null : c.lookup(of);
             var needsOuterRef = outerRefNeeded(or);
-            toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
+            toStack(code, p.target(), !needsOuterRef /* dump result if not needed */, false);
             if (needsOuterRef)
               {
                 code.add(ExprKind.Current);
@@ -2042,20 +2041,13 @@ public class GeneratingFUIR extends FUIR
     var result = _specialClazzes[s.ordinal()];
     if (result == null && !_lookupDone)
       {
-        if (s == SpecialClazzes.c_universe)
-          {
-            result = clazz(_universe);
-          }
-        else
-          {
-            var o = clazz(s._outer);
-            var oc = clazz(o);
-            var of = (LibraryFeature) oc.feature();
-            var f = of.get(of._libModule, s._name, s._argCount);
-            result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
-            if (CHECKS) check
-              (f.isRef() == (result.isRef()));
-          }
+        var o = clazz(s._outer);
+        var oc = clazz(o);
+        var of = (LibraryFeature) oc.feature();
+        var f = s._getFeature.get();
+        result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
+        if (CHECKS) check
+          (f.isRef() == (result.isRef()));
         _specialClazzes[s.ordinal()] = result;
       }
     return result;
@@ -2248,6 +2240,8 @@ public class GeneratingFUIR extends FUIR
    * Add entries of type ExprKind created from the given expression (and its
    * nested expressions) to list l. pop the result in case dumpResult==true.
    *
+   * @param stack the work stack for the nested expressions.
+   *
    * @param l list of ExprKind that should be extended by s's expressions
    *
    * @param e a expression.
@@ -2255,7 +2249,7 @@ public class GeneratingFUIR extends FUIR
    * @param dumpResult flag indicating that we are not interested in the result.
    */
   @Override
-  protected void toStack(List<Object> l, Expr e, boolean dumpResult)
+  protected void toStack(ArrayDeque<Runnable> stack, List<Object> l, Expr e, boolean dumpResult)
   {
     if (isConst(e) && !dumpResult)
       {
@@ -2274,11 +2268,10 @@ public class GeneratingFUIR extends FUIR
             else if (cf.isOpenTypeParameter())
               {
                 var t = call.target();
-                toStack(l, t, true);   // we must evaluate `t` since strange code structure like #5816 could have side-effects
                 var op = cf.openTypesFeature();
                 var cur = _currentClazz;
-                Expr target = new Current(call.pos(), cur._type.feature());
-                while (!cur._type.feature().inheritsFrom(cf.outer()))
+                Expr target = new Current(call.pos(), cur.feature());
+                while (!cur.feature().inheritsFrom(cf.outer()))
                   {
                     var ft = target;
                     var fcur = cur;
@@ -2293,16 +2286,19 @@ public class GeneratingFUIR extends FUIR
                   }
                 var ft = target;
                 var fcur = cur;
-                e = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
+                var replacement = new AbstractCall()   // e.g. tuple.#Values_Of_Open_Type<n>
                   {
                     @Override public SourcePosition     pos()                  { return call.pos(); }
                     @Override public Expr               target()               { return ft; }
                     @Override public AbstractFeature    calledFeature()        { return op; }
                     @Override public AbstractType       type()                 { return fcur.replaceThisType(op.resultType(), new List<>()); }
                   };
+                stack.push(() -> toStack(stack, l, replacement, dumpResult));
+                stack.push(() -> toStack(stack, l, t, true));   // we must evaluate `t` since strange code structure like #5816 could have side-effects
+                return;
               }
           }
-        super.toStack(l, e, dumpResult);
+        super.toStack(stack, l, e, dumpResult);
       }
   }
 
@@ -2373,7 +2369,7 @@ public class GeneratingFUIR extends FUIR
         if (result)
           {
             var s = new List<>();
-            super.toStack(s, ac, false);
+            toStack(s, ac, false, true);
             result = s
               .stream()
               .allMatch(x -> x == ac || isConst(x));
@@ -2738,14 +2734,13 @@ public class GeneratingFUIR extends FUIR
     var outerClazz = clazz(cl);
     var e = getExpr(s);
 
-    var innerClazz = switch (e)
+    return switch (e)
       {
       case AbstractCall   call -> calledInner(call, outerClazz, tclazz, _inh.get(s - SITE_BASE));
       case AbstractAssign a    -> assignedField(outerClazz, tclazz, a, _inh.get(s - SITE_BASE));
       case Clazz          fld  -> fld;
       default                  -> { throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
       };
-    return innerClazz == null ? null : innerClazz;
   }
 
 
@@ -2782,9 +2777,14 @@ public class GeneratingFUIR extends FUIR
       {
         var cf      = c.calledFeature();
         var dynamic = c.isDynamic() && tclazz.isRef();
-        var needsCode = !dynamic || explicitTarget != null;
+        var needsCode = (!dynamic || explicitTarget != null) && !c.calledFeature().isTypeParameter();
         var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
         innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature) cf, typePars), c.select(), c.isInheritanceCall());
+        if (innerClazz._type.isSelfRecursive())
+          {
+            FuirErrors.callResultsInRecursiveType(c, innerClazz._type);
+            innerClazz = tclazz;
+          }
         if (cf == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
@@ -3021,8 +3021,8 @@ public class GeneratingFUIR extends FUIR
           {
             innerClazz = switch (clazzKind(innerClazz))
               {
-              case Routine, Intrinsic, Native, Field, TypeParameter -> innerClazz;
-              case Abstract, Choice -> NO_CLAZZ;
+              case Routine, Intrinsic, Native, Field -> innerClazz;
+              case Abstract, Choice, TypeParameter -> NO_CLAZZ;
               };
           }
         if (innerClazz != NO_CLAZZ && codeAt(s) == ExprKind.Call)
@@ -3305,32 +3305,7 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Match);
 
-    var me = getExpr(s);
     var e = getExpr(s + 1 + cix);
-
-    if (me instanceof AbstractMatch m &&
-        m.subject() instanceof AbstractCall sc)
-      {
-        var c = m.cases().get(cix);
-        var cf = sc.calledFeature();
-        if (cf == Types.resolved.f_Type_infix_colon_true  ||
-            cf == Types.resolved.f_Type_infix_colon_false ||
-            cf == Types.resolved.f_Type_infix_colon          )
-          {
-            var outer = clazz(clazzAt(s));
-            var innerClazz = calledInner(sc, outer, null, _inh.get(s - SITE_BASE));
-            var tclazz = innerClazz._outer;
-            var T = innerClazz.actualTypeParameters()[0];
-            var pos = cf == Types.resolved.f_Type_infix_colon_true ||
-              cf == Types.resolved.f_Type_infix_colon  &&
-              T._type.constraintAssignableFrom(tclazz._type.generics().get(0));
-            var tf = pos ? Types.resolved.f_TRUE : Types.resolved.f_FALSE;
-            if (!c.types().stream().anyMatch(x->x.compareTo(tf.selfType())==0))
-              {
-                return NO_SITE;
-              }
-          }
-      }
 
     return ((NumLiteral) e).intValue().intValueExact();
   }

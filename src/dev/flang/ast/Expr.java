@@ -66,7 +66,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
     @Override public AbstractType type() { return Types.t_ERROR; }
     @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
-    @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
+    @Override protected Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
   };
 
 
@@ -357,7 +357,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public abstract Expr visit(FeatureVisitor v, AbstractFeature outer);
+  Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    throw new UnsupportedOperationException("Unimplemented method 'visit' for " + Expr.this.getClass());
+  }
 
 
   /**
@@ -694,8 +697,8 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
-    var t = type();
-    return this != Call.ERROR && !t.isArtificialType()
+    var t = typeForInferencing();
+    return this != Call.ERROR && t != null && !t.isArtificialType()
       && expectedType.isAssignableFromWithoutBoxing(t, context).no()
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isParametricType()

@@ -33,11 +33,34 @@ fuzion_runtime_init =>
 # of the fuzion runtime system
 #
 fuzion_runtime_deinit =>
-  # NYI: BUG: must run this in reverse order of instantiation
   # NYI: BUG: need to make sure that exit effect runs last
   #           basically we need a way to order default effects
-  effect_types.type_foldf unit T,e->
-    if T : effect then
-      match T.default_value
-        T => T.env.finally
-        nil =>
+
+  # cleanups must be done in reverse order of instation
+  #
+  cleanups : container.type_applicator (list (Nullary unit)) is
+    public redef apply(T type, e list (Nullary unit)) list (Nullary unit) =>
+      if T : effect then
+        match T.default_value
+          T => (() -> T.env.finally) : e
+          nil => e
+      else
+        e
+
+  for c in effect_types.type_foldf nil cleanups do
+    c()
+
+  #
+  # NYI: BUG: #8114 type constraints in lambdas do not work yet.
+  #
+
+  #
+  # backwards := effect_types.foldf (id (list (Nullary unit)) nil) T,e->
+  #     if T : effect then
+  #       match T.default_value
+  #         T => (() -> T.env.finally) : e
+  #         nil => e
+  #     else
+  #       compile_time_error  # effect_types should contain only effects
+
+  # backwards.for_each (.call)

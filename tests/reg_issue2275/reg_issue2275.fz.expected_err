@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue2275.fz:24:1: error 1: Incompatible types in assignment
+reg_issue2275.fz:24:1: error 1: Incompatible types in assignment
 _ String := 3
 ^
 assignment to field : '_'

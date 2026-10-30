@@ -1,11 +1,11 @@
 
---CURDIR--/reg_issue5106.fz:26:13: error 1: Type inference from actual arguments failed since no actual call was found
+reg_issue5106.fz:26:13: error 1: Type inference from actual arguments failed since no actual call was found
   public f1(x) =>        # 1. should flag an error: 2x feature/argument must have explicit type
 ------------^
 For the formal argument 'reg_issue5106.f1.x' the type can only be derived if there is a call to 'reg_issue5106.f1'.
 
 
---CURDIR--/reg_issue5106.fz:29:6: error 2: Incompatible types when passing argument in a call
+reg_issue5106.fz:29:6: error 2: Incompatible types when passing argument in a call
   f2 42                  # 3. should flag an error: Incompatible types when passing argument in a call
 -----^^
 Actual type for argument #1 'x' does not match expected type.
@@ -17,49 +17,49 @@ for value assigned  : '42'
 To solve this, you could change the type of the target 'x' to 'i64' or convert the type of the assigned value to 'String'.
 
 
---CURDIR--/reg_issue5106.fz:26:10: error 3: Explicit type required
+reg_issue5106.fz:26:10: error 3: Explicit type required
   public f1(x) =>        # 1. should flag an error: 2x feature/argument must have explicit type
 ---------^^
 Feature 'reg_issue5106.f1' is 'public', but has no type specified.
 To solve this, please specify a type explicitly. Inferred type is 'unit'
 
 
---CURDIR--/reg_issue5106.fz:26:13: error 4: Explicit type required
+reg_issue5106.fz:26:13: error 4: Explicit type required
   public f1(x) =>        # 1. should flag an error: 2x feature/argument must have explicit type
 ------------^
 Feature 'reg_issue5106.f1.x' is argument of a 'public' feature, but has no type specified.
 To solve this, please specify a type explicitly.
 
 
---CURDIR--/reg_issue5106.fz:28:10: error 5: Explicit type required
+reg_issue5106.fz:28:10: error 5: Explicit type required
   public f2(x String) => # 2. should flag an error: feature must have explicit type
 ---------^^
 Feature 'reg_issue5106.f2' is 'public', but has no type specified.
 To solve this, please specify a type explicitly. Inferred type is 'unit'
 
 
---CURDIR--/reg_issue5106.fz:31:10: error 6: Explicit type required
+reg_issue5106.fz:31:10: error 6: Explicit type required
   public f3(x) =>        # 4. should flag an error: 2x feature/argument must have explicit type
 ---------^^
 Feature 'reg_issue5106.f3' is 'public', but has no type specified.
 To solve this, please specify a type explicitly. Inferred type is 'unit'
 
 
---CURDIR--/reg_issue5106.fz:31:13: error 7: Explicit type required
+reg_issue5106.fz:31:13: error 7: Explicit type required
   public f3(x) =>        # 4. should flag an error: 2x feature/argument must have explicit type
 ------------^
 Feature 'reg_issue5106.f3.x' is argument of a 'public' feature, but has no type specified.
 To solve this, please specify a type explicitly. Inferred type is 'i64'
 
 
---CURDIR--/reg_issue5106.fz:34:13: error 8: Explicit type required
+reg_issue5106.fz:34:13: error 8: Explicit type required
   public f4(x) unit =>   # 5. should flag an error: feature must have explicit type
 ------------^
 Feature 'reg_issue5106.f4.x' is argument of a 'public' feature, but has no type specified.
 To solve this, please specify a type explicitly. Inferred type is 'i64'
 
 
---CURDIR--/reg_issue5106.fz:47:13: error 9: Explicit type required
+reg_issue5106.fz:47:13: error 9: Explicit type required
   public f9(x) is        # 6. should flag an error: argument must have explicit type
 ------------^
 Feature 'reg_issue5106.f9.x' is argument of a 'public' feature, but has no type specified.

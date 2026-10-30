@@ -4,9 +4,9 @@ Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
-SquareRoot.pre sqrt at --CURDIR--/SquareRoot.fz:30
-SquareRoot.precall sqrt at --CURDIR--/SquareRoot.fz:29
-SquareRoot at --CURDIR--/SquareRoot.fz:44
+SquareRoot.pre sqrt at SquareRoot.fz:30
+SquareRoot.precall sqrt at SquareRoot.fz:29
+SquareRoot at SquareRoot.fz:44
 
 *** fatal errors encountered, stopping.
 one error.

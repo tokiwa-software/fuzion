@@ -26,10 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ir;
 
-import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
-import dev.flang.ast.FeatureVisitor;
 import dev.flang.util.SourcePosition;
 
 
@@ -98,14 +96,6 @@ public class Box extends Expr
   public AbstractType type()
   {
     return _type;
-  }
-
-
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visit'");
   }
 
 

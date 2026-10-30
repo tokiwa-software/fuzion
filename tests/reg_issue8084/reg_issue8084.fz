@@ -1,0 +1,40 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8084
+#
+# -----------------------------------------------------------------------
+
+# This test resulted in an IndexOutOfBoundsException since an actual argument
+# for the call to `x` was set after it was detected and reported that type
+# inference failed and the call was marked as `defunct()`
+#
+reg_issue8084 =>
+
+  # original example from the issue:
+
+  x(V type, v T) =>
+  y => x y.0
+
+  # some more variants:
+  y1 => x (y1,unit)
+  y2 => x y2.as_string
+  y3 => x (option y3)
+  y4 => x (if true then panic "***" else y4)
+  y5 => x <| y5

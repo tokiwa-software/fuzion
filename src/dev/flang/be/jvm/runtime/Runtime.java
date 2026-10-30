@@ -29,6 +29,7 @@ package dev.flang.be.jvm.runtime;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.lang.foreign.AddressLayout;
@@ -57,6 +58,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -1360,6 +1364,37 @@ public class Runtime extends ANY
 
 
   /**
+   * Extract the fuzion runtime native library that may be bundled in the JAR
+   * file, so that it can be loaded from there.
+   *
+   * @return the path to the extracted library or {@code null} if no bundled
+   * library was found.
+   */
+  @SuppressWarnings("restricted")
+  private static Path extractFuzionRt()
+  {
+    var lib = System.mapLibraryName("fuzion_rt");
+    try (InputStream in = Runtime.class.getResourceAsStream("/" + lib))
+      {
+        if (in != null)
+          {
+            var dot = lib.lastIndexOf('.');
+            var suffix = dot < 0 ? "" : lib.substring(dot);
+            var file = Files.createTempFile("fuzion_rt_", suffix);
+            file.toFile().deleteOnExit();
+            Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
+            return file;
+          }
+      }
+    catch (IOException e)
+      {
+        Errors.error("Failed to extract native library '" + lib + "' from JAR: " + e.getMessage());
+      }
+    return null;
+  }
+
+
+  /**
    * @return SymbolLookup for fuzion_rt and libmath
    */
   @SuppressWarnings("restricted")
@@ -1368,7 +1403,10 @@ public class Runtime extends ANY
     SymbolLookup result = null;
     try
       {
-        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
+        var fuzionRt = extractFuzionRt();
+        result = fuzionRt == null
+          ? SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena)
+          : SymbolLookup.libraryLookup(fuzionRt, arena);
         try
           {
             result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"), arena));
@@ -1540,13 +1578,42 @@ public class Runtime extends ANY
   {
     try
       {
-        if (f.getType() == int.class)
+        var ft = f.getType();
+        if (ft == byte.class)
+          {
+            target.set(ValueLayout.JAVA_BYTE, offset, f.getByte(source));
+          }
+        else if (ft == char.class)
+          {
+            target.set(ValueLayout.JAVA_CHAR, offset, f.getChar(source));
+          }
+        else if (ft == short.class)
+          {
+            target.set(ValueLayout.JAVA_SHORT, offset, f.getShort(source));
+          }
+        else if (ft == int.class)
           {
             target.set(ValueLayout.JAVA_INT, offset, f.getInt(source));
           }
-        if (f.getType() == Object.class)
+        else if (ft == long.class)
+          {
+            target.set(ValueLayout.JAVA_LONG, offset, f.getLong(source));
+          }
+        else if (ft == float.class)
+          {
+            target.set(ValueLayout.JAVA_FLOAT, offset, f.getFloat(source));
+          }
+        else if (ft == double.class)
+          {
+            target.set(ValueLayout.JAVA_DOUBLE, offset, f.getDouble(source));
+          }
+        else if (ft == Object.class)
           {
             target.set(ValueLayout.ADDRESS, offset, (MemorySegment)f.get(source));
+          }
+        else
+          {
+            throw new Error("Implementation restriction: setMemSeg missing impl. for: " + ft);
           }
       }
     catch (Exception e)
@@ -1607,11 +1674,7 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (c != void.class);
 
-    if (c == boolean.class)
-      {
-        return 4;
-      }
-    else if (c == byte.class)
+    if (c == byte.class)
       {
         return 1;
       }
@@ -1648,12 +1711,12 @@ public class Runtime extends ANY
 
 
   @SuppressWarnings("restricted")
-  public static Object native_array(MemoryLayout memLayout, Object obj, int length)
+  public static Object native_array(MemoryLayout memLayout, Object obj, long length)
   {
     var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
     if (memLayout instanceof OfByte o)
       {
-        var result = new byte[length];
+        var result = new byte[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(o, i);
@@ -1662,7 +1725,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfBoolean ob)
       {
-        var result = new boolean[length];
+        var result = new boolean[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1671,7 +1734,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfChar ob)
       {
-        var result = new char[length];
+        var result = new char[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1680,7 +1743,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfDouble ob)
       {
-        var result = new double[length];
+        var result = new double[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1689,7 +1752,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfFloat ob)
       {
-        var result = new float[length];
+        var result = new float[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1698,7 +1761,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfInt ob)
       {
-        var result = new int[length];
+        var result = new int[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1707,7 +1770,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfLong ob)
       {
-        var result = new long[length];
+        var result = new long[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1716,7 +1779,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfShort ob)
       {
-        var result = new short[length];
+        var result = new short[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1726,7 +1789,7 @@ public class Runtime extends ANY
     else
       {
         var ob = (AddressLayout)memLayout;
-        var result = new Object[length];
+        var result = new Object[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1839,9 +1902,9 @@ public class Runtime extends ANY
    * @return
    */
   @SuppressWarnings("restricted")
-  public static int native_string_length(MemorySegment segment)
+  public static long native_string_length(MemorySegment segment)
   {
-    int length = 0;
+    long length = 0;
     segment = segment.reinterpret(10000 /* NYI: magic constant */);
 
     while (segment.get(ValueLayout.JAVA_BYTE, length) != 0)
@@ -1861,11 +1924,7 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (ct != void.class);
 
-    if (ct == boolean.class)
-      {
-        return memSeg.get(ValueLayout.JAVA_BOOLEAN, offset);
-      }
-    else if (ct == byte.class)
+    if (ct == byte.class)
       {
         return memSeg.get(ValueLayout.JAVA_BYTE, offset);
       }
@@ -1912,11 +1971,7 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (ct != void.class);
 
-    if (ct == boolean.class)
-      {
-        return ValueLayout.JAVA_BOOLEAN;
-      }
-    else if (ct == byte.class)
+    if (ct == byte.class)
       {
         return ValueLayout.JAVA_BYTE;
       }

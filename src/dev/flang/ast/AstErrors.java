@@ -226,7 +226,7 @@ public class AstErrors extends ANY
   private static String argCountStr(AbstractFeature f)
   {
     var msg = new List<String>();
-    var ta = f.typeArguments();
+    var ta = f.explicitOrOpenTypeParameters();
     var va = f.valueArguments();
     var typeCount  = ta.size();
     var valueCount = va.size();
@@ -244,14 +244,22 @@ public class AstErrors extends ANY
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
+    var args         = f.explicitArguments();
+    var typeArgs     = f.explicitOrOpenTypeParameters();
+    var typeArgCount = typeArgs.size();
+    var argsStr      = args    .map2(a->sbnf(a)).toString("", ", ", "");
+    var tArgsStr     = typeArgs.map2(a->sbnf(a)).toString("", ", ", "");
     return "To call " + sbn(f.baseName())
-      + (f.arguments().isEmpty()
+      + (args.isEmpty()
           ? ", you must not provide arguments."
           : ", you must provide "
-            + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
-            + (f.typeArguments().size() > 0
-                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments."
-                : ""));
+            + StringHelpers.singularOrPlural(args.size(), "argument") + " " + argsStr + "."
+            + (typeArgs.isEmpty()
+               ? ""
+               : " The " + StringHelpers.singularOrPlural(typeArgCount, "type parameter") + " " + tArgsStr +
+                 " may be omitted or `_` may be used in place of " +
+                 (typeArgCount==1 ? "it"
+                                  : "a type parameter") + " if it can be inferred from other arguments."));
   }
 
 
@@ -1371,9 +1379,9 @@ public class AstErrors extends ANY
     if (target            instanceof Call    c                                  &&
         c.calledFeature() instanceof Feature cf                                 &&
         cf.state().atLeast(State.RESOLVED_TYPES)                                &&
-        cf.resultType().isParametricType()                                     &&
-        cf.resultType().typeParameter() instanceof Feature tp                 &&
-        tp.isFreeType()                                                         &&
+        cf.resultType().isParametricType()                                      &&
+        cf.resultType().typeParameter() instanceof Feature tp                   &&
+        tp.isFreeTypeParameter()                                                &&
         tp.constraint().compareTo(Types.resolved.t_Any) == 0)
       {
         solution = "To solve this, you might replace the free type " + s(tp) + " by a different type.  " +
@@ -1901,15 +1909,32 @@ public class AstErrors extends ANY
       }
   }
 
-  static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<AbstractFeature> missing)
+  static void failedToInferActualGeneric(SourcePosition pos,
+                                         AbstractFeature cf,
+                                         List<AbstractFeature> missing,
+                                         List<Expr> actuals)
   {
     if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
       {
-        error(pos,
-              "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
-              "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
-              "Expected type parameters: " + s(cf.generics()) + "\n"+
-              "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
+        var actualValueArgument = actuals.stream()
+          .filter(a -> a.asType() != Types.t_UNDEFINED)
+          .findFirst();
+        if (cf.valueArguments().isEmpty() && actualValueArgument.isPresent())
+          {
+            error(pos,
+                  "Expected a type argument, got a value argument",
+                  "Value argument: " + s(actualValueArgument.get()) + "\n" +
+                  "Expected " + StringHelpers.plural(cf.typeArguments().size(), "type parameter") +
+                  ": " + s(cf.generics()));
+          }
+        else
+          {
+            error(pos,
+                  "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
+                  "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
+                  "Expected type parameters: " + s(cf.generics()) + "\n"+
+                  "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
+          }
       }
   }
 
@@ -2095,7 +2120,7 @@ public class AstErrors extends ANY
       "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
   }
 
-  public static void argumentNamesNotDistinct(Feature f, Set<String> duplicateNames)
+  public static void argumentNamesNotDistinct(AbstractFeature f, Set<String> duplicateNames)
   {
     int[] cnt = new int[1];
     error(f.pos(),
@@ -2109,8 +2134,8 @@ public class AstErrors extends ANY
           + f.arguments()
             .stream()
             .map(a -> "Argument #" + (cnt[0]++) + ": " + sbnf(a) +
-                 (duplicateNames.contains(a.baseNameHuman()) ? " is duplicate "
-                                                             : " is ok"        ) + "\n")
+                 (duplicateNames.contains(a.baseNameHuman()) ? " is duplicate at "+a.pos().show()
+                                                             : " is ok"                          ) + "\n")
             .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
         );
@@ -2344,7 +2369,8 @@ public class AstErrors extends ANY
               " declared at " + directCall.pos().show() +  "\n" +
               "or by partially applying arguments to a call to " + s(partialCall) +
               " declared at " + partialCall.pos().show() +  ".\n" +
-              "To solve this, rename one of the ambiguous features.");
+              "To solve this, use an explicit lambda, e.g., " + ss("x -> foo x") +
+              ", or rename one of the ambiguous features.");
       }
   }
 
@@ -2397,10 +2423,13 @@ public class AstErrors extends ANY
   public static void unusedResult(Expr e)
   {
     var t = e.type();
-    error(e.pos(), "Expression produces result of type " + s(t) +  " but result is not used.",
-        (!t.isParametricType() && t.feature().isConstructor()
-          ? "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(t.feature()) + " from constructor to routine by replacing " + skw("is") + " by " + skw("=>") + "."
-          : "To solve this, use the result or explicitly ignore the result " + st("_ := <expression>") + "."));
+    if (!any() || !t.isArtificialType())
+      {
+        error(e.pos(), "Expression produces result of type " + s(t) +  " but result is not used.",
+              (!t.isParametricType() && t.feature().isConstructor()
+               ? "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(t.feature()) + " from constructor to routine by replacing " + skw("is") + " by " + skw("=>") + "."
+               : "To solve this, use the result or explicitly ignore the result " + st("_ := <expression>") + "."));
+      }
   }
   public static void redefiningFieldsIsForbidden(AbstractFeature existing, AbstractFeature f)
   {
@@ -2442,9 +2471,7 @@ public class AstErrors extends ANY
   {
     error(f.pos(),
       "Must not define type inside of type feature.",
-      "To solve this, move the type outside of the type feature." + System.lineSeparator() +
-      "E.g., instead of: " + System.lineSeparator() + code("type.union : Monoid bitset is") + System.lineSeparator() +
-      "do this: " + code("public type.union =>" + System.lineSeparator() + "  _ : Monoid bitset"));
+      "To solve this, move the type outside of the type feature.");
   }
 
   public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)

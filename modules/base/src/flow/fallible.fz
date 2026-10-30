@@ -49,27 +49,3 @@ public fallible(ERROR type, h ERROR->void) : effect is
                   h ERROR->void
                   ) fallible.this
   => abstract
-
-
-  # try -- run code and handle fault of type `fallible.this`.
-  #
-  # try is a type feature that can be called on any child of `fallible`
-  # to run the code given as an argument and handle an error using the
-  # `Unary` provided to `catch`.
-  #
-  # This enables Java-like try-catch syntax as follows
-  #
-  #     res := FALLIBLE_TYPE.try ()->
-  #               code
-  #            .catch s->
-  #               handle failure `s`
-  #
-  # or even
-  #
-  #     res := FALLIBLE_TYPE.try code || (s->handle failure `s`)
-  #
-  # Note that the code is not executed unless `.catch` or `infix ||` is applied
-  # to the result of the call to `try`.
-  #
-  public type.try(T type, code_try ()->T) flow.try ERROR fallible.this T =>
-    flow.try ERROR fallible.this T code_try

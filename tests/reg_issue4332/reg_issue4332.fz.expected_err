@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4332.fz:30:28: error 1: Selector not permitted since no actual type parameters are given for the open type parameter type
+reg_issue4332.fz:30:28: error 1: Selector not permitted since no actual type parameters are given for the open type parameter type
   say "$(x0.v) $(x0.values.0) $(x0.values.1)"
 ---------------------------^
 In call to 'tuple.values'
@@ -8,7 +8,7 @@ Number of actual type parameters: 0
 Actual type parameters: none
 
 
---CURDIR--/reg_issue4332.fz:30:43: error 2: Selector not permitted since no actual type parameters are given for the open type parameter type
+reg_issue4332.fz:30:43: error 2: Selector not permitted since no actual type parameters are given for the open type parameter type
   say "$(x0.v) $(x0.values.0) $(x0.values.1)"
 ------------------------------------------^
 In call to 'tuple.values'

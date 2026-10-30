@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.ListIterator;
 
 import dev.flang.util.List;
 
@@ -61,28 +60,6 @@ public abstract class AbstractBlock extends Expr
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  public AbstractBlock visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    ListIterator<Expr> i = _expressions.listIterator();
-    while (i.hasNext())
-      {
-        Expr e = i.next();
-        i.set(e.visit(v, outer));
-      }
-    return this;
-  }
 
 
   /**

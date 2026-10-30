@@ -170,7 +170,7 @@ public abstract_array
   public as_list(i i64) list T
     pre
       debug: i ≥ 0
-      debug: i=0 || i.as_i64<length
+      debug: i=0 || i<length
   =>
     (slice i.as_i64 length).as_list
 

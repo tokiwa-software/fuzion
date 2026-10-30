@@ -47,7 +47,7 @@ is
 
   # length of this array
   #
-  public redef length i64 => data.length.as_i64
+  public redef length i64 => data.length
 
 
   # get element at given index i

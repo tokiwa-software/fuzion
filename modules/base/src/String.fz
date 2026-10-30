@@ -405,7 +405,7 @@ public String ref : property.hashable, property.orderable is
       debug: from=to || String.is_valid_utf8_first_byte utf8[from]
       debug: from=to || !String.is_multi_byte_start_byte utf8[to-1]
     post
-      debug 10 : result.codepoints_and_errors ∀ (.ok)
+      debug 10 : result.codepoints_and_errors ∀ (??)
   =>
     String.from_bytes (String.this.utf8.slice from to)
 
@@ -429,7 +429,7 @@ public String ref : property.hashable, property.orderable is
     codepoints
       .slice from to
       # we need to box codepoint to String first
-      .map String c->c
+      .map ($)
       .fold String.concat
 
 
@@ -512,17 +512,19 @@ public String ref : property.hashable, property.orderable is
 
   # replace all occurrences of old by new
   #
-  public replace (old, new String) String => String.from_bytes (utf8.replace old.utf8 new.utf8)
+  public replace (old, new String) String =>
+    String.from_bytes (utf8.replace old.utf8 new.utf8)
 
 
   # replace the first n occurrences of old by new
   #
-  public replace(old, new String, n u64) String => String.from_bytes (utf8.replace old.utf8 new.utf8 n)
+  public replace(old, new String, n u64) String =>
+    String.from_bytes (utf8.replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
   #
-  public contains (substring String) bool => find(substring).ok
+  public contains (substring String) bool => find substring ??
 
 
   # count number of occurrences of given 'substring' in this string
@@ -546,9 +548,6 @@ public String ref : property.hashable, property.orderable is
   public split_at_byte(i i64) (String, String)
     pre
       debug: 0 ≤ i ≤ byte_count
-      # NYI: ENHANCEMENT: #6342, #6381: re-enable when Sequence.conat
-      # consistently can return an expanding_array for finite Strings
-      # debug: utf8.is_array_backed
   =>
     (substring 0 i, substring i byte_count)
 
@@ -642,7 +641,7 @@ public String ref : property.hashable, property.orderable is
   # lambda testing if byte is is_ascii_white_space
   #
   is_ascii_white_space =>
-    (id (u8->bool) (.is_ascii_white_space))
+    id (u8->bool) (.is_ascii_white_space)
 
 
   # remove leading and trailing white space from this string
@@ -867,7 +866,13 @@ public String ref : property.hashable, property.orderable is
 
   # helper type for the result of the cut feature
   #
-  private:public cut_result (public before String, public after String, public found bool) is
+  private:public universe.string_cut_result (public before String, public after String, public found bool) is
+
+    public redef as_string String =>
+      """
+        before: $before
+        after : $after
+        found : $found"""
 
 
   # Cuts out the first appearance of the string sep from this string, in other words,
@@ -878,16 +883,16 @@ public String ref : property.hashable, property.orderable is
   # If sep does not appear in this string at all, return this string as the first string,
   # the empty string as the second, and false as the bool.
   #
-  public cut(sep String) cut_result =>
+  public cut(sep String) string_cut_result =>
     match find sep
-      nil => cut_result String.this "" false
+      nil => string_cut_result String.this "" false
       i i64 =>
         l := byte_count
         sepl := sep.byte_count
 
         before := String.from_bytes (utf8.slice 0 i)
         after := String.from_bytes (utf8.slice (i + sepl) l)
-        cut_result before after true
+        string_cut_result before after true
 
 
   # convert this string to upper case

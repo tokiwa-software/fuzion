@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = reg_issue7379
+FUZION_OPTIONS = -modules=tokiwa
 include ../simple.mk

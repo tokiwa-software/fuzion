@@ -144,25 +144,6 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // visit should be only required by the `Call` or `ParsedCall`, not by `LibraryCall`
-    throw new Error("AbstractCall.visit on implemented by " + getClass());
-  }
-
-
-
-  /**
    * Does this call use dynamic binding.  Dynamic binding is used if the target
    * is not Current (either explicitly or in an inheritance call).  In case the
    * target is current, this call will be specialized to avoid dynamic binding.
@@ -212,7 +193,7 @@ public abstract class AbstractCall extends Expr
       }
 
       @Override
-      public Expr visit(FeatureVisitor v, AbstractFeature outer)
+      protected Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
       }
@@ -231,11 +212,9 @@ public abstract class AbstractCall extends Expr
    *
    * @param res Resolution instance used to resolve types in this call.
    *
-   * @param that the original feature that is used to lookup types.
-   *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call cotypeInheritanceCall(Resolution res, AbstractFeature that)
+  Call cotypeInheritanceCall(Resolution res)
   {
     var selfType = new ParsedType(pos(),
                                   FuzionConstants.COTYPE_RELAY_TYPE);
@@ -252,16 +231,16 @@ public abstract class AbstractCall extends Expr
             if (!typeParameters.isFrozen())
               {
                 typeParameters.removeTail(1);
-                typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+                typeParameters.addAll(actualTypeParameters());
               }
           });
       }
     else
       {
-        typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+        typeParameters.addAll(actualTypeParameters());
       }
 
-    return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
+    return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, target());
   }
 
 
@@ -325,16 +304,18 @@ public abstract class AbstractCall extends Expr
                                              AbstractType t,
                                              BiConsumer<AbstractType, AbstractType> foundRef)
   {
-    var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : t;
-    var t1 = t0 == Types.t_ERROR              ? Types.t_ERROR : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));
-    var t2 = t1 == Types.t_ERROR              ? Types.t_ERROR : replace_type_parameter_used_for_relay_type_in_cotype(t1, target());
-    var t3 = t2 == Types.t_ERROR              ? Types.t_ERROR : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
-    var t4 = t3 == Types.t_ERROR              ? Types.t_ERROR : t3.applyTypePars(target().type());
-
-    if (POSTCONDITIONS) ensure
-      (t4 != null);
-
-    return t4;
+    return calledFeature() == Types.f_ERROR || t == Types.t_ERROR
+      ? Types.t_ERROR
+      : calledFeature().outer().handDownAndApply
+        (t,
+         target().type().selfOrConstraint(context),
+         x -> x == Types.t_ERROR
+           ? Types.t_ERROR
+           : adjustThisTypeForTarget(context,
+                                     replace_type_parameter_used_for_relay_type_in_cotype(x, target()),
+                                     calledFeature(),
+                                     target().type(),
+                                     foundRef));
   }
 
 

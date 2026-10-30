@@ -592,7 +592,6 @@ public class Resolution extends ANY
   {
     if (PRECONDITIONS) require
       (Errors.any() || !af.isUniverse(),
-       Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS),
        !af.isCotype());
 
     if (af._cotype == null)
@@ -625,7 +624,7 @@ public class Resolution extends ANY
                                       af.selfType(),
                                       FuzionConstants.COTYPE_RELAY_TYPE,
                                       Contract.EMPTY_CONTRACT,
-                                      Impl.TYPE_PARAMETER)
+                                      Impl.EXPLICIT_TYPE_PARAMETER)
               {
                 @Override
                 public boolean isCoTypesRelayTypeParameter()
@@ -636,11 +635,11 @@ public class Resolution extends ANY
             var typeArgs = new List<AbstractFeature>(typeArg);
             for (var t : af.typeArguments())
               {
-                var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
-                                                : Impl.TYPE_PARAMETER;
-                var constraint0 = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
+                var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN :
+                        t.isFreeTypeParameter() ? Impl.FREE_TYPE_PARAMETER
+                                                : Impl.EXPLICIT_TYPE_PARAMETER;
+                var constraint = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
                   .resolve(this, af.context());
-                var constraint = af.rebaseTypeForCotype(constraint0);
                 var ta = new Feature(
                     p,
                     Visi.UNSPECIFIED,
@@ -677,7 +676,7 @@ public class Resolution extends ANY
     return af.inherits()
       .stream()
       .filter(pc -> pc.calledFeature() != Types.f_ERROR)
-      .map(pc -> pc.cotypeInheritanceCall(this, af))
+      .map(pc -> pc.cotypeInheritanceCall(this))
       .collect(List.collector());
   }
 

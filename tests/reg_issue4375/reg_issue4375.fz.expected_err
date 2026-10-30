@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4375.fz:26:8: error 1: Wrong syntax in '.type' expression.
+reg_issue4375.fz:26:8: error 1: Wrong syntax in '.type' expression.
   say ((3.4,(3,"asdf")).type.name)
 -------^
 To solve this, make sure the expression to the left of '.type' denotes a type.

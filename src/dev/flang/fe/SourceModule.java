@@ -43,6 +43,9 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import java.util.stream.Collectors;
+import java.util.stream.Gatherer;
+
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
@@ -303,7 +306,6 @@ public class SourceModule extends Module implements SrcModule
       @Override public List<Expr> actuals() { return NO_EXPRS; }
       @Override public int select() { return NO_SELECT; }
       @Override public boolean isInheritanceCall() { return false; }
-      @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
     };
   }
 
@@ -999,20 +1001,26 @@ A post-condition of a feature that does not redefine an inherited feature must s
             fn = FeatureName.get(fn.baseName(), fn.argCount(), existingFeatures.size());
             f.setFeatureName(fn);
           }
+        else if (existing.isArgument() && f.isArgument() && existing.outer() == f.outer())
+          {
+            var duplicateNames = f.outer()
+                                  .arguments()
+                                  .stream()
+                                  .map(arg -> arg.featureName().baseName())
+                                  .gather(Gatherer.ofSequential(TreeSet<String>::new,
+                                                                Gatherer.Integrator.<TreeSet<String>,String,String>ofGreedy
+                                                                ((state, argName, downstream) -> argName.equals("_")      // ignore '_'
+                                                                                              || state.add(argName)       // record name
+                                                                                              || downstream.push(argName) // pass down if already recorded
+                                                                )
+                                                               )
+                                         )
+                                  .collect(Collectors.toSet());
+            AstErrors.argumentNamesNotDistinct(f.outer(), duplicateNames);
+          }
         else
           {
-            if (existing instanceof Feature ef && ef.isArgument() && f.isArgument() && !f.isTypeParameter())
-              {
-                // NYI: CLEANUP: there should not be two places where
-                // similar error is raised.
-                // An error should have been raised already in feature constructor:
-                // "Names of arguments used in this feature must be distinct"
-                check(Errors.any());
-              }
-            else
-              {
-                AstErrors.duplicateFeatureDeclaration(f, existing);
-              }
+            AstErrors.duplicateFeatureDeclaration(f, existing);
           }
       }
     df.put(fn, f);
@@ -1311,7 +1319,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                 stacks.get(0).push(e);
                 var old = visitingInnerFeature[0];
                 visitingInnerFeature[0] = true;
-                e.visit(this, null);
+                this.visit(e, null);
                 visitingInnerFeature[0] = old;
                 stacks.get(0).pop();
               }
@@ -1359,7 +1367,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
         };
         var declaredIn = f._declaredInScope != null ? f._declaredInScope
                                                     : f.outer();
-        declaredIn.code().visit(visitor, null);
+        visitor.visit(declaredIn.code(), null);
 
         if (f.isField())
           {
@@ -1818,7 +1826,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     return switch (f.kind())
       {
         case Function, Field, Intrinsic, Abstract, Native -> true;
-        case TypeParameter, OpenTypeParameter, Choice, Constructor, RefConstructor -> false;
+        case ExplicitTypeParameter, FreeTypeParameter, OpenTypeParameter, Choice, Constructor, RefConstructor -> false;
       };
   }
 
@@ -1848,7 +1856,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
 
   private void checkLegalDefinesType(Feature f)
   {
-    if (f.definesUsableType() && inTypeFeature(f))
+    if (f.definesUsableType() && !f.outer().isCotype() && inTypeFeature(f))
       {
         AstErrors.illegalFeatureDefiningType(f);
       }
@@ -1878,7 +1886,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   {
     if (f.isRoutine())
       {
-        f.code().visit(new FeatureVisitor()
+        var visitor = new FeatureVisitor()
         {
           private int scopeDepth = 0;
           @Override public void actionBefore(Block b) { if (b._newScope) { scopeDepth++; } }
@@ -1892,7 +1900,8 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
               }
             return super.action(fd, outer);
           }
-        }, f);
+        };
+        visitor.visit(f.code(), f);
       }
   }
 
@@ -1933,30 +1942,31 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkPreconditionVisibility(Feature f)
   {
+    var visitor = new FeatureVisitor() {
+      @Override
+      public void action(AbstractCall c)
+      {
+        super.action(c);
+        if (// visibility of arg is allowed to be more restrictive
+            // since it is always known by caller
+          !(f.arguments().contains(c.calledFeature())
+            // do not check exprResult generated by label
+            || (c.target() instanceof Current)
+            // type param is known by caller
+            || c.calledFeature().isTypeParameter()
+            // e.g. call to outerref is fine
+            || c.calledFeature().featureName().isInternal()
+            // the called feature must be at least as visible as the feature.
+            || c.calledFeature().visibility().eraseTypeVisibility().ordinal() >= f.visibility().eraseTypeVisibility().ordinal()))
+          {
+            AstErrors.calledFeatureInPreconditionHasMoreRestrictiveVisibilityThanFeature(f, c);
+          }
+      }
+    };
     f
       .contract()
       ._declared_preconditions
-      .forEach(r -> r.cond().visit(new FeatureVisitor() {
-        @Override
-        public void action(AbstractCall c)
-        {
-          super.action(c);
-          if (// visibility of arg is allowed to be more restrictive
-              // since it is always known by caller
-            !(f.arguments().contains(c.calledFeature())
-              // do not check exprResult generated by label
-              || (c.target() instanceof Current)
-              // type param is known by caller
-              || c.calledFeature().isTypeParameter()
-              // e.g. call to outerref is fine
-              || c.calledFeature().featureName().isInternal()
-              // the called feature must be at least as visible as the feature.
-              || c.calledFeature().visibility().eraseTypeVisibility().ordinal() >= f.visibility().eraseTypeVisibility().ordinal()))
-            {
-              AstErrors.calledFeatureInPreconditionHasMoreRestrictiveVisibilityThanFeature(f, c);
-            }
-        }
-      }, f));
+      .forEach(r -> visitor.visit(r.cond(), f));
   }
 
 
@@ -2092,14 +2102,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
                 if (isInherited1 && isInherited2)
                   { // NYI: Should be ok if existing or f is abstract.
                     AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, f1, f2);
-                  }
-                else
-                  {
-                    // NYI: if (!isInherited && !sameModule(f, outer))
-                    if (!Feature.isAbstractAndFixedPair(f1, f2))
-                      {
-                        AstErrors.duplicateFeatureDeclaration(f1, f2);
-                      }
                   }
               }
           }

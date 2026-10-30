@@ -86,6 +86,7 @@ static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(EWOULDBLOCK == EAGAIN, "EWOULDBLOCK != EAGAIN, failed assumption of fzE_file_read implementation");
+static_assert(NAME_MAX < 1024, "Expected max filename component length to be less than 1024");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
 
@@ -111,6 +112,8 @@ static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or
 /**
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
  *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *   - 2 for CLOCK_THREAD_CPUTIME_ID (CPU time consumed by the current thread)
+ *   - 3 for CLOCK_PROCESS_CPUTIME_ID (CPU time consumed by all threads of the process)
  */
 clockid_t get_clock_id(int clock)
 {
@@ -120,6 +123,10 @@ clockid_t get_clock_id(int clock)
         return CLOCK_REALTIME;
       case 1:
         return CLOCK_MONOTONIC;
+      case 2:
+        return CLOCK_THREAD_CPUTIME_ID;
+      case 3:
+        return CLOCK_PROCESS_CPUTIME_ID;
       default:
         assert(false);
         return -1;
@@ -178,7 +185,9 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
   }
   else {
     size_t len = strlen(entry->d_name);
-    assert(len<1024); // NYI:
+    if (len >= 1024) {
+      return -1;
+    }
     fzE_memcpy(result, entry->d_name, len + 1);
     return len;
   }
@@ -1041,6 +1050,7 @@ void * fzE_cnd_init(int clock)
               res = (void *)cnd;
             }
         }
+      pthread_condattr_destroy(&attr);
     }
   return res;
 }
@@ -1089,10 +1099,9 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
   int res;
   do
     {
-      res = poll(&fds, 1, -1);
+      FZ_RETRY_ON_EINTR(res, poll(&fds, 1, -1));
     }
-  while ( res == 0 ||                   // timeout, should never happen, retry just in case
-         (res < 0 && errno == EINTR));  // we got interrupted, so retry
+  while (res == 0);  // timeout, should never happen, retry just in case
 
   if (res > 0)
     {
