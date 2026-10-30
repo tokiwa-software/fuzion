@@ -230,7 +230,7 @@ public class Html extends ANY
 
     return
       "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
-        + "<div class='word-break-break-word fz-code fd-signature'>"
+        + "<div class='overflow-wrap-break-word fz-code fd-signature'>"
           + signature(af, outer, relativeTo)
         + "</div>"
         + source(af)
@@ -1475,7 +1475,7 @@ public class Html extends ANY
           <div class="cursor_pointer">
             <details id="$2" $0>
               <summary>
-                <div class="word-break-break-word fz-code fd-signature">
+                <div class="overflow-wrap-break-word fz-code fd-signature">
                   <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
                   <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
                 </div>
