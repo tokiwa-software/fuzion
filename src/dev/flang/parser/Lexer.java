@@ -2846,10 +2846,14 @@ PIPE        : "|"
    * This is useful, e.g., to parse nested generics lists such as
    * {@code Stack<List<i32>>}, where the last token is seen by the lexer as a single
    * operator {@code >>}, while the parser prefers to see two consecutive operators {@code >}.
+   *
+   * @return true if the current operator is {@code op}, independent of whether it was split off or
+   * not.
    */
-  void splitOperator(String op)
+  boolean splitOperator(String op)
   {
-    if (current() == Token.t_op && operator().startsWith(op))
+    var result = current() == Token.t_op && operator().startsWith(op);
+    if (result)
       {
         setPos(_tokenPos);
         for (int i = 0; i < op.length(); i++)
@@ -2861,6 +2865,7 @@ PIPE        : "|"
         if (CHECKS) check
           (isOperator(op));
       }
+    return result;
   }
 
 
