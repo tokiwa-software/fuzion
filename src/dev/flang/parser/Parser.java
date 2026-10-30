@@ -844,8 +844,10 @@ argument    : visibility
               argNames
               argType
             ;
-argType     : typeType
-            | typeType COLON type
+argType     : typeType                   # NYI: REMOVE!
+            | typeType COLON type        # NYI: REMOVE!
+            | COLON type
+            | "..."
             |
             ;
    */
@@ -867,8 +869,19 @@ argType     : typeType
                                     Impl i;
                                     var isTypePar = current() == Token.t_type;
                                     if (isTypePar)
-                                      {
+                                      { // NYI: REMOVE!
                                         i = typeType();
+                                        t = skipColon() ? type()
+                                                        : new BuiltInType(FuzionConstants.ANY_NAME);
+                                      }
+                                    else if (skipColon())
+                                      {
+                                        i = Impl.EXPLICIT_TYPE_PARAMETER;
+                                        t = type();
+                                      }
+                                    else if (skip("..."))
+                                      {
+                                        i = Impl.TYPE_PARAMETER_OPEN;
                                         t = skipColon() ? type()
                                                         : new BuiltInType(FuzionConstants.ANY_NAME);
                                       }
@@ -916,7 +929,7 @@ argType     : typeType
   /**
    * Parse type parameter type suffix
    *
-typeType    : "type"
+typeType    : "type"                  # NYI: REMOVE!
             | "type" "..."
             ;
    */
@@ -949,8 +962,19 @@ typeType    : "type"
                 if (result)
                   {
                     if (skip(Token.t_type))
-                      {
+                      {  // NYI: REMOVE
                         splitSkip("...");
+                        if (skipColon())
+                          {
+                            result = skipType();
+                          }
+                      }
+                    else if (skipColon())
+                      {
+                        result = skipType();
+                      }
+                    else if (splitSkip("..."))
+                      {
                         if (skipColon())
                           {
                             result = skipType();
