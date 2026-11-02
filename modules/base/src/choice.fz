@@ -160,7 +160,7 @@ is
   #
   module choice_as_string String
   =>
-    apply (_,v -> $v)
+    apply _,v->$v
 
 
   # create a detailed string from this choice.

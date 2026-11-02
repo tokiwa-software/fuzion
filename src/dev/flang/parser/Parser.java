@@ -2037,6 +2037,7 @@ lambda      : "->" block
   Expr lambda(List<Expr> n)
   {
     var pos = tokenPos();
+    splitOperator("->");
     matchOperator("->", "lambda");
     var startPos = n.isEmpty() ? pos : n.getFirst().pos().bytePos();
     var b = block();
@@ -2052,7 +2053,7 @@ lambda      : "->" block
    */
   boolean isLambdaPrefix()
   {
-    return isOperator("->");
+    return splitOperator("->");
   }
 
 
@@ -3689,7 +3690,7 @@ typeOpt     : type
     if (current() == Token.t_lparen)
       {
         var a = bracketTermWithNLs(PARENS, "pTypeList", () -> current() != Token.t_rparen ? typeList() : UnresolvedType.NONE);
-        if (skip("->"))
+        if (splitSkip("->"))
           {
             result = UnresolvedType.funType(pos, type(), a);
           }
@@ -3705,7 +3706,7 @@ typeOpt     : type
     else
       {
         result = simpletype(null);
-        if (skip("->"))
+        if (splitSkip("->"))
           {
             result = UnresolvedType.funType(pos, type(), new List<>(result));
           }
@@ -3737,7 +3738,7 @@ typeOpt     : type
         result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList());
         var p = tokenPos();
         var l = line();
-        if (skip("->"))
+        if (splitSkip("->"))
           {
             result = (!isFunctionReturnType || l == line()) && skipType();
           }
@@ -3751,7 +3752,7 @@ typeOpt     : type
       {
         result = skipSimpletype();
         var l = line();
-        if (result && skip("->"))
+        if (result && splitSkip("->"))
           {
             result =
               (!isFunctionReturnType || l == line()) &&
@@ -3899,9 +3900,8 @@ typeInParens: "(" typeInParens ")"
                                    () -> typeList(),
                                    () -> new List<AbstractType>());
         var eas = endAtSpaceOrSemi(tokenPos());
-        if (!ignoredTokenBefore() && isOperator("->"))
+        if (!ignoredTokenBefore() && splitSkip("->"))
           {
-            matchOperator("->", "onetype");
             result = UnresolvedType.funType(sourcePos(pos), type(), l);
           }
         else if (l.size() == 1)
