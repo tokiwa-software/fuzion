@@ -72,7 +72,7 @@ jobs:
           VERSION: ${{ steps.v.outputs.version }}
         run: echo "sha256=$(sha256sum "fuzion_${VERSION}_src.tar.gz")" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: packages-src
           path: fuzion_*_src.tar.gz
@@ -210,7 +210,7 @@ jobs:
           "fuzion_${VERSION}/bin/fz" -version
           "fuzion_${VERSION}/bin/fz" hello.fz | tr -d '\r' | grep -qx "Hello World!"
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: packages-${{ env.TARGET }}
           path: fuzion_*_${{ env.TARGET }}.tar.gz
