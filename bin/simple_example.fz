@@ -30,7 +30,7 @@ usage =>
       to the recorded stdout/err files. If there is any difference
       simple_example emits the diff and returns with non zero exit code.
 
-    If a file name input or <test.fz>.input exists its contents
+    If a file name `<test.fz>.stdin` or `input` exists its contents
     will be written to the test's stdin.
 
     Usage  : simple_example <check|record> <any|jvm|c|int|effect> <fz+args> <test.fz>
