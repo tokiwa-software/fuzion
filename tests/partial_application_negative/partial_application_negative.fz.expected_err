@@ -2,7 +2,7 @@
 partial_application_negative.fz:49:19: error 1: Could not find called feature
   _ := data.map 3.prefix*    # 4. should flag an error, do not change named prefix call to infix call
 ------------------^^^^^^^
-Feature not found: 'prefix *' (one argument)
+Feature not found: 'prefix *' (no arguments)
 Target feature: 'i64'
 In call: '3.prefix*'
 
@@ -10,10 +10,9 @@ In call: '3.prefix*'
 partial_application_negative.fz:50:19: error 2: Could not find called feature
   _ := data.map 3.postfix*   # 5. should flag an error, do not change named postfix call to infix call
 ------------------^^^^^^^^
-Feature not found: 'postfix *' (one argument)
+Feature not found: 'postfix *' (no arguments)
 Target feature: 'i64'
 In call: '3.postfix*'
-This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 
 partial_application_negative.fz:60:13: error 3: Ambiguity between direct and partially applied call target
@@ -55,7 +54,7 @@ To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the 
 partial_application_negative.fz:42:47: error 6: Could not find called feature
   test "data.map 3.prefix*   " (data.map    3.prefix* ) "[3,6,9,12,15,18,21,24,27,30]"  # 1. should flag an error, do not change named prefix call to infix call
 ----------------------------------------------^^^^^^^
-Feature not found: 'prefix *' (one argument)
+Feature not found: 'prefix *' (no arguments)
 Target feature: 'i64'
 In call: '3.prefix*'
 
@@ -75,10 +74,9 @@ To solve this, you could change the type of the target 'f' to 'i64' or convert t
 partial_application_negative.fz:44:47: error 8: Could not find called feature
   test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  # 3. should flag an error, do not change named prefix call to infix call
 ----------------------------------------------^^^^^^^^
-Feature not found: 'postfix *' (one argument)
+Feature not found: 'postfix *' (no arguments)
 Target feature: 'i64'
 In call: '3.postfix*'
-This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 
 partial_application_negative.fz:77:38: error 9: Different count of arguments needed when calling feature
