@@ -86,7 +86,7 @@ static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(EWOULDBLOCK == EAGAIN, "EWOULDBLOCK != EAGAIN, failed assumption of fzE_file_read implementation");
-static_assert(NAME_MAX < 1024, "Expected max filename component length to be less than 1024");
+static_assert(NAME_MAX < PATH_MAX, "Expected max filename component length to be less than PATH_MAX, used in fzE_dir_read");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
 
@@ -185,7 +185,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
   }
   else {
     size_t len = strlen(entry->d_name);
-    if (len >= 1024) {
+    if (len >= PATH_MAX) {  // NYI: CLEANUP: io.dir.Read uses os.max_path, should maybe be NAME_MAX
       return -1;
     }
     fzE_memcpy(result, entry->d_name, len + 1);
