@@ -1799,8 +1799,12 @@ there is no common super type of the two types (Types.t_ERROR)
                                                  BiConsumer<AbstractType, AbstractType> foundRef,
                                                  Context context)
   {
+    if (PRECONDITIONS) require
+      (tt != null,
+       context != null);
+
     var result = this;
-    while (tt != null)
+    do
       {
         var target_type = tt;
         result = result.replaceType
@@ -1830,6 +1834,7 @@ there is no common super type of the two types (Types.t_ERROR)
            });
         tt = tt.isNormalType() ? tt.outer() : null;
       }
+    while (tt != null);
     return result;
   }
 
