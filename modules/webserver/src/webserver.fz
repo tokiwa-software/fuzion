@@ -98,9 +98,7 @@ public except(log String->unit) : Middleware is
   public redef call(h Http_Handler) Http_Handler =>
     _ : Http_Handler is
       public redef call(r http.request_message) http.response_message =>
-        fuzion
-          .runtime
-          .fault
+        flow.exception unit
           .try ()->
             h r
           .catch  e->

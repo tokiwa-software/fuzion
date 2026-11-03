@@ -93,7 +93,7 @@ public ip_address (val u128) : property.orderable is
   # parse an IPv4 address from a String
   #
   type.from_string_v4 (s Sequence String) outcome net.ip_address =>
-    fuzion.runtime.fault
+    flow.exception unit
       .try (outcome net.ip_address) ()->
         x := s
           .map (.parse_i32)
@@ -111,7 +111,7 @@ public ip_address (val u128) : property.orderable is
   # NYI: ENHANCEMENT: parse zone identifiers
   #
   type.from_string_v6 (s Sequence String) outcome net.ip_address =>
-    fuzion.runtime.fault
+    flow.exception unit
       .try (outcome net.ip_address) ()->
         x := s
           .map (.pad_left "0" 4)
