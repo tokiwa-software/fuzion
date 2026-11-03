@@ -2265,7 +2265,7 @@ public class AstErrors extends ANY
           }
 
         error(lazy.pos(),
-              # NYI: BUG: #8192: No declarations in lazy expression
+              // NYI: BUG: #8192: No declarations in lazy expression
               "IMPLEMENTATION RESTRICTION: An expression used as " + what + " must not contain feature declarations",
               "Declared features:\n" +
               declarationsMsg +
