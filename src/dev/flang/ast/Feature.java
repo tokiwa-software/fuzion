@@ -90,12 +90,6 @@ public class Feature extends AbstractFeature
   private final SourcePosition _pos;
 
 
-  /**
-   * The sourcecode position of this feature's return type, if given explicitly.
-   */
-  private final SourcePosition _posOfReturnType;
-
-
   Context _sourceCodeContext = Context.NONE;
 
 
