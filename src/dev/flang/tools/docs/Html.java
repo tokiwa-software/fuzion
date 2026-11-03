@@ -92,8 +92,8 @@ public class Html extends ANY
             <label for="##ID##.code" class="visually-hidden">Code input</label>
             <textarea class="code-input" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
             <div class="position-absolute run-buttons">
-              <input type="button" onclick="runit('##ID##')" class="run-button" name="run" value="Run!" />
-              <input type="button" onclick="runiteff('##ID##')" class="run-button" name="run" value="Effects!" />
+              <input type="button" onclick="runit('##ID##')" class="run-button" value="Run!" />
+              <input type="button" onclick="runiteff('##ID##')" class="run-button" value="Effects!" />
               <a href="/tutorial/effects.html"><i>What are effects?</i></a>
             </div>
           </form>
