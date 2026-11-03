@@ -544,6 +544,8 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   @Override
   public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
+    // NYI: BUG: #8187 Must not used named lookup, redefinitions should be found in
+    // `d._redefinitions`. If they are not there, we should find out why and fix that.
     if (f.isFixed() && !f.isTypeParameter())
       {
         var sameName = lookupFeature(heir, f.featureName());
