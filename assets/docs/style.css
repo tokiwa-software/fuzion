@@ -170,7 +170,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .fd details{
   margin: 1em;
-  
+
   /* marker needs more space */
   margin-left: 2em;
   border: 2px outset rgb(0 0 0 / 10%);
@@ -202,6 +202,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+/* Only feature-list entries need a permalink. */
+.heading-summary .fd-anchor-sign {
+  display: none;
 }
 
 .fd summary:hover .fd-anchor-sign,
