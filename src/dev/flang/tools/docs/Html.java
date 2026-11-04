@@ -954,7 +954,7 @@ public class Html extends ANY
 
     Pattern p = Pattern.compile("(&|\"|'|<|>|\r|\n|\t|\\s)");
     Matcher m = p.matcher(s);
-    StringBuffer sb = new StringBuffer();
+    var sb = new StringBuilder();
     while (m.find())
       {
         switch (s.charAt(m.toMatchResult().start()))

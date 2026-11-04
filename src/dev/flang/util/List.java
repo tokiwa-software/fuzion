@@ -233,7 +233,7 @@ public class List<T>
    */
   public String toString(String pre, String sep, String term)
   {
-    StringBuffer res = new StringBuffer();
+    var res = new StringBuilder();
     Iterator<T> it = iterator();
     if (it.hasNext())
       {
@@ -271,7 +271,7 @@ public class List<T>
    */
   public String toString(String pre, String sep, String term, Function<T, String> itemToString)
   {
-    StringBuffer res = new StringBuffer();
+    var res = new StringBuilder();
     Iterator<T> it = iterator();
     if (it.hasNext())
       {

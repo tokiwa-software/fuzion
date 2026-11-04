@@ -1155,7 +1155,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
    */
   public String toString()
   {
-    StringBuffer res = new StringBuffer();
+    var res = new StringBuilder();
     if (_hasPre != null)
       {
         res
