@@ -1,7 +1,7 @@
 Pong
 Pong
 Pong
-(some fault, ___)
+--error: some fault--
 --error: 500 Internal Server Error--
 Pong
 Pong
