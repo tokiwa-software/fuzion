@@ -571,8 +571,7 @@ public class Names extends ANY implements ClassFileConstants
    */
   String javaClass(int cl)
   {
-    var res = _classNames.get(cl);
-    return res;
+    return _classNames.get(cl);
   }
 
 
