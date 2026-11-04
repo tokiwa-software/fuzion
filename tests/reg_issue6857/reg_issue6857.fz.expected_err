@@ -1,0 +1,14 @@
+
+reg_issue6857.fz:29:7: error 1: Incompatible types in assignment
+      list.this
+------^^^^^^^^^
+assignment to field : 'list.some_feat.(λlist.this).call.result'
+expected formal type: 'list (list A)'
+actual type found   : 'list.this'
+assignable to       : 'ref list A'
+for value assigned  : 'list.this'
+To solve this you could:
+  • change the type of the target 'list.some_feat.(λlist.this).call.result' to 'list.this', or
+  • convert the type of the assigned value to 'list (list A)'.
+
+one error.
