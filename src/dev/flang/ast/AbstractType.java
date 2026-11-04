@@ -1858,10 +1858,10 @@ there is no common super type of the two types (Types.t_ERROR)
    * For checking if a type constraint or any of the outer types of the
    * constraint corresponds to a {@code this} type.
    *
-   * This is used in a call {@code E.x} were {@code E} has a constraint {@code E : a.b} and {@code x}
-   * has a result type {@code a.this.p} or {@code a.b.this.q} to replace the {@code this} type by
-   * the constraint to bet {@code E.p} (alternatively {@code E.outer(1).p})
-   * or {@code E.q}, respectively.
+   * This is used in a call {@code E.x} were {@code E} has a constraint {@code E : a.b.c} and {@code x}
+   * has a result type {@code a.b.c.this.p},  {@code a.b.this.q}, or {@code a.this.r} to replace the
+   * {@code this} type by the type parameter {@code E.p}, outer type {@code E.outer(1).q}, or the outer
+   * outer type {@code E.outer(2).r}, etc., respectively.
    *
    * @param f the feature this might be inheriting from (or from f.outer()...).
    *
