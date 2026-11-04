@@ -1278,10 +1278,7 @@ public class C extends ANY
   {
     var msg2 = "*** %s:%d: " + msg + "\n";
     var args2 = new List<CExpr>(CIdent.FILE, CIdent.LINE);
-    for (var a : args)
-      {
-        args2.add(a);
-      }
+    args2.addAll(args);
     return CStmnt.seq(CExpr.fprintfstderr(msg2, args2.toArray(new CExpr[args2.size()])),
                       CExpr.exit(1));
   }

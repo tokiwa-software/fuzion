@@ -598,14 +598,9 @@ public class Interpreter extends FUIRContext
        slot != null,
        v != null || fuir().clazzIsChoice(thiz));
 
-    if (fuir().clazzIsRef(fclazz))
-      {
-        return slot.container.refs[slot.offset] == v;
-      }
-    else
-      {
-        return v.equalsBitWise(slot, Layout.get(fclazz).size());
-      }
+    return fuir().clazzIsRef(fclazz)
+      ? slot.container.refs[slot.offset] == v
+      : v.equalsBitWise(slot, Layout.get(fclazz).size());
   }
 
 }

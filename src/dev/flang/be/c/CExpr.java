@@ -425,11 +425,7 @@ abstract class CExpr extends CStmnt
   {
     var l = new List<CExpr>(CIdent.STDERR,
                             string(msg));
-    for (var a : args)
-      {
-        l.add(a);
-      }
-
+    l.addAll(args);
     return call("fprintf", l);
   }
 
