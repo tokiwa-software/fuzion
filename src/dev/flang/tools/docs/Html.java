@@ -1413,7 +1413,15 @@ public class Html extends ANY
             </div>
             <div class="container">
               <section>$0</section>
-              <section>$1</section>
+              <section>
+                <button type="button" class="toggle-feature-details cursor-pointer" onclick="
+                  const entries = this.parentElement.querySelectorAll(':scope > details');
+                  const expand = this.textContent.trim() === 'Expand all';
+                  entries.forEach(entry => entry.open = expand);
+                  this.textContent = expand ? 'Collapse all' : 'Expand all';
+                ">Expand all</button>
+                $1
+              </section>
               $3
             </div>
           </div>
