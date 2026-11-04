@@ -349,9 +349,7 @@ public class FrontEnd extends ANY
    */
   public MIR createMIR()
   {
-    var main = _sourceModule._main;
-    var mm = mainModule();
-    return mm.createMIR(main);
+    return mainModule().createMIR();
   }
 
 
@@ -382,7 +380,6 @@ public class FrontEnd extends ANY
   {
     if (_mainModule == null)
       {
-        _sourceModule.checkMain();
         Errors.showAndExit();
 
         var data = _sourceModule.data();

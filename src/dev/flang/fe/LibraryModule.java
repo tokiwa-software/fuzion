@@ -301,13 +301,20 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param main the main features name
    */
-  public MIR createMIR(String main)
+  public MIR createMIR()
   {
     if (_mir == null)
       {
-        var d = effectiveMain(universe(), main);
+        // if universe has code we execute universe
+        // otherwise the main feature is
+        // the only non co-type feature in universe
+        // NYI: PERFORMANCE: would be better if main feature did not have a cotype
+        var d = moduleUniverseCode().isEmpty()
+          ? features(universe()).filter(x -> !x.isCotype()).get(0)
+          : universe();
+
         if (CHECKS) check
-          (d != null);
+          (!moduleUniverseCode().isEmpty() || features(universe()).filter(x -> !x.isCotype()).size() == 1);
 
         _mir = new MIR(universe(), d, this);
         if (!Errors.any())
