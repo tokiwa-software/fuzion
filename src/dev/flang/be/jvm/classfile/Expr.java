@@ -623,14 +623,9 @@ public abstract class Expr extends ByteCode
    */
   public static Expr comment(String msg)
   {
-    if (ENABLE_COMMENTS)
-      {
-        return commentAlways(msg);
-      }
-    else
-      {
-        return UNIT;
-      }
+    return ENABLE_COMMENTS
+      ? commentAlways(msg)
+      : UNIT;
   }
 
 
