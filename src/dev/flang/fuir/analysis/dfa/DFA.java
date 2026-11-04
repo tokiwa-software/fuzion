@@ -451,8 +451,7 @@ public class DFA extends ANY
     @Override
     public Val box(int s, Val val, int vc, int rc)
     {
-      var boxed = val.value().box(DFA.this, vc, rc, _call);
-      return boxed;
+      return val.value().box(DFA.this, vc, rc, _call);
     }
 
 
@@ -678,8 +677,7 @@ public class DFA extends ANY
     @Override
     public Val tag(int s, Val value, int newcl, int tagNum)
     {
-      Val res = value.value().tag(_call._dfa, newcl, tagNum);
-      return res;
+      return value.value().tag(_call._dfa, newcl, tagNum);
     }
 
 
