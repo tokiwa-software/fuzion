@@ -118,16 +118,6 @@ public class SourceModule extends Module implements SrcModule
   final Resolution _res;
 
 
-  /**
-   * In case this module defines a main feature, this is its fully qualified
-   * name.
-   */
-  String _main;
-
-
-
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -175,11 +165,11 @@ public class SourceModule extends Module implements SrcModule
    * If source comes from stdin or an explicit input file, parse this and
    * extract the main feature.  Otherwise, return the default main.
    *
-   * @return the main feature found or _defaultMain if none
+   * @return the feature where execution starts (main or universe)
    */
-  String parseMain()
+  AbstractFeature parseMain()
   {
-    var res = _options._main;
+    AbstractFeature res = _universe;
     var p = inputFile();
     var ec = _options._executeCode;
     if (p != null || ec != null)
@@ -193,7 +183,7 @@ public class SourceModule extends Module implements SrcModule
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
                 if (expr.size() == 1 && !f.isField() && f._qname.size()==1)
                   {
-                    res = f.baseName();
+                    res = f;
                   }
               }
           }
@@ -259,11 +249,15 @@ public class SourceModule extends Module implements SrcModule
         new Types.Resolved(this, _universe, true);
       }
 
-    _main = parseMain();
+    var mainOrUniverse = parseMain();
     findDeclarations(_universe, null);
     _universe.scheduleForResolution(_res);
     _res.resolve();
-    addRuntimeInitCall();
+    if (!_options._compilingModule)
+      {
+        addRuntimeInitCall(mainOrUniverse);
+        checkMain(mainOrUniverse);
+      }
   }
 
 
@@ -271,17 +265,14 @@ public class SourceModule extends Module implements SrcModule
    * Add call at beginning of application
    * to initialize the fuzion runtime system
    */
-  private void addRuntimeInitCall()
+  private void addRuntimeInitCall(AbstractFeature mainOrUniverse)
   {
-    if (effectiveMain(_universe, _main) instanceof Feature f)
-      {
-        f
-          .impl()
-          .addCalls(
-            plainCall("fuzion_runtime_init"),
-            plainCall("fuzion_runtime_deinit")
-          );
-      }
+    ((Feature)(mainOrUniverse.preAndCallFeature() == null ? mainOrUniverse : mainOrUniverse.preAndCallFeature()))
+      .impl()
+      .addCalls(
+        plainCall("fuzion_runtime_init"),
+        plainCall("fuzion_runtime_deinit")
+      );
   }
 
 
@@ -310,31 +301,27 @@ public class SourceModule extends Module implements SrcModule
   }
 
 
-  public void checkMain()
+  public void checkMain(AbstractFeature mainOrUniverse)
   {
-    if (_main != null)
+    if (!Errors.any())
       {
-        var main = this._universe.get(this, _main);
-        if (main != null && !Errors.any())
+        if (mainOrUniverse.valueArguments().size() != 0)
           {
-            if (main.valueArguments().size() != 0)
+            FeErrors.mainFeatureMustNotHaveArguments(mainOrUniverse);
+          }
+        switch (mainOrUniverse.kind())
+          {
+          case Abstract -> FeErrors.mainFeatureMustNotBeAbstract(mainOrUniverse);
+          case Choice -> FeErrors.mainFeatureMustNotBeChoice(mainOrUniverse);
+          case Field->FeErrors.mainFeatureMustNotBeField(mainOrUniverse);
+          case Intrinsic -> FeErrors.mainFeatureMustNotBeIntrinsic(mainOrUniverse);
+          case Function, Constructor, RefConstructor -> {
+            if (!mainOrUniverse.typeArguments().isEmpty())
               {
-                FeErrors.mainFeatureMustNotHaveArguments(main);
+                FeErrors.mainFeatureMustNotHaveTypeArguments(mainOrUniverse);
               }
-            switch (main.kind())
-              {
-              case Abstract -> FeErrors.mainFeatureMustNotBeAbstract(main);
-              case Choice -> FeErrors.mainFeatureMustNotBeChoice(main);
-              case Field->FeErrors.mainFeatureMustNotBeField(main);
-              case Intrinsic -> FeErrors.mainFeatureMustNotBeIntrinsic(main);
-              case Function, Constructor, RefConstructor -> {
-                if (!main.typeArguments().isEmpty())
-                  {
-                    FeErrors.mainFeatureMustNotHaveTypeArguments(main);
-                  }
-              }
-              default -> FeErrors.mainFeatureMustNot(main, "be of kind " + main.kind() + ".");
-              }
+          }
+          default -> FeErrors.mainFeatureMustNot(mainOrUniverse, "be of kind " + mainOrUniverse.kind() + ".");
           }
       }
   }

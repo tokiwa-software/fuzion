@@ -587,33 +587,6 @@ public abstract class Module extends ANY implements FeatureLookup
   }
 
 
-  /**
-   * Find the effective main feature from the given main feature name. In case
-   * main is null, this is the universe.  Otherwise, it is a feature with given
-   * name {@code main} or, if exits, its {@code preAndCallFeature}.
-   *
-   * @param universe the universe feature, may be null
-   *
-   * @param main the main features name, may be null
-   *
-   * @return the effecive main feature, null in case universe is null or lookup failed.
-   */
-  AbstractFeature effectiveMain(AbstractFeature universe, String main)
-  {
-    var result = universe == null || main == null
-      ? universe
-      : lookupFeature(universe, FeatureName.get(main, 0));
-    if (result != null)
-      {
-        var pac = result.preAndCallFeature();
-        if (pac != null)
-          {
-            result = pac;
-          }
-      }
-    return result;
-  }
-
 }
 
 /* end of file */
