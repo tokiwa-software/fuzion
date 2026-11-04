@@ -145,7 +145,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   color: #af00db;
 }
 
-.fd-feature{
+.fd-feature, .fd .toggle-feature-details{
   color: #795e26;
 }
 
@@ -170,7 +170,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .fd details{
   margin: 1em;
-  
+
   /* marker needs more space */
   margin-left: 2em;
   border: 2px outset rgb(0 0 0 / 10%);
@@ -226,6 +226,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   padding-right: 15px;
 }
 
+.fd .toggle-feature-details {
+  display: block;
+  margin-left: auto;
+  padding: .25em 0 .25em .6em;
+  font: inherit;
+  background: transparent;
+  border: 0;
+}
+
+.fd .toggle-feature-details:focus-visible {
+  outline: auto;
+}
+
 .toggle-nav {
   all: unset; /* removes default button styles */
   cursor: pointer;
@@ -255,7 +268,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   color: unset;
 }
 
-.fd a:hover{
+.fd a:hover, .fd .toggle-feature-details:hover{
   text-decoration: underline;
 }
 
