@@ -1,0 +1,17 @@
+
+reg_issue8207.fz:27:13: error 1: Could not find called feature
+  type.b2 : a1 =>
+------------^^
+Feature not found: 'a1' (no arguments)
+Target feature: 'o.type'
+In call: 'a1'
+
+
+reg_issue8207.fz:28:13: error 2: Could not find called feature
+  type.b3 : aaargh =>
+------------^^^^^^
+Feature not found: 'aaargh' (no arguments)
+Target feature: 'o.type'
+In call: 'aaargh'
+
+2 errors.
