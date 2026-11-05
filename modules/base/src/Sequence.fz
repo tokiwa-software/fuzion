@@ -385,7 +385,7 @@ is
   #
   # NYI: UNDER DEVELOPMENT: do we want this public?
   #
-  first_index_of(F type: T->bool, cond F) i64
+  first_index_of(F : T->bool, cond F) i64
   =>
     for i:=0, i+1
         el in Sequence.this
@@ -733,7 +733,7 @@ is
 
   # insert element v at position at
   #
-  public insert(I type: integer, at I, v T) Sequence T
+  public insert(I : integer, at I, v T) Sequence T
   pre
     debug: at ≥ 0
   =>

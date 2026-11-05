@@ -380,7 +380,7 @@ instate_helper(# result type
                R : Any,
 
                # effect type
-               ET type: effect,
+               ET : effect,
 
                # the effect value
                e ET,

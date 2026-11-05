@@ -914,7 +914,7 @@ public String ref : property.hashable, property.orderable is
 
 
   # write the bytes of this String to
-  # writer of type: (io.buffered LM).Writer
+  # writer of : (io.buffered LM).Writer
   #
   public write_to(LM : mutate) outcome unit ! (io.buffered LM).Writer
   =>

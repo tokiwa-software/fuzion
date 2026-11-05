@@ -62,7 +62,7 @@ is
   #
   # Actual type for argument #1 'a' does not match expected type.
   # In call to          : 'property.orderable.type.post equality'
-  # expected formal type: 'String.this.type (in type feature)'
+  # expected formal : 'String.this.type (in type feature)'
   # actual type found   : 'String'
   # assignable to       : 'String'
   # for value assigned  : 'equality'

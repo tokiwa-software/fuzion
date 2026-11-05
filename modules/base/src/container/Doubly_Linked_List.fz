@@ -64,7 +64,7 @@ L_Node(
 #
 V_Node(# mutate effect to be used manipulate pointers and stored element
        #
-       LM type: mutate,
+       LM : mutate,
 
        # type of the element stored in the node
        #

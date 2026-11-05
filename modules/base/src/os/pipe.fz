@@ -101,7 +101,7 @@ private:public pipe : effect is
 #
 module pipe_reader (
   # the mutate that is used internally by the Reader
-  LM type: mutate,
+  LM : mutate,
   # the descriptor of the pipe
   desc i64,
   # the error message to display on read failure
@@ -130,7 +130,7 @@ module pipe_reader (
 #
 module pipe_writer (
   # the mutate that is used internally by the Reader
-  LM type: mutate,
+  LM : mutate,
   # the descriptor of the pipe
   desc i64,
   # the error message to display on write failure

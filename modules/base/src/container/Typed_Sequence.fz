@@ -195,7 +195,7 @@ public Typed_Value ref is
   # Feed this value's : Any, the cumulative value `e` and this value itself into
   # `a.apply` and return the resulting cumulative value.
   #
-  public apply_to(E : Any, A type: container.typed_applicator E, e E, a A) E
+  public apply_to(E : Any, A : container.typed_applicator E, e E, a A) E
   =>
     abstract
 
@@ -215,7 +215,7 @@ public typed_value(# the type
 
   # apply `a` to `T` `e` `v`
   #
-  public redef apply_to(E : Any, A type: container.typed_applicator E, e E, a A) E
+  public redef apply_to(E : Any, A : container.typed_applicator E, e E, a A) E
   =>
     a.apply T e v
 

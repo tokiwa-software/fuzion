@@ -567,7 +567,7 @@ public mutate : effect is
   # perform given code with exclusive access to the mutable values created with
   # this instance of `mutate`.
   #
-  public exclusive(R : Any, F type: ()->R, code F) R
+  public exclusive(R : Any, F : ()->R, code F) R
   pre
     safety: exclusive_allowed
   =>
@@ -579,7 +579,7 @@ public mutate : effect is
   # In case this mutate is not a multi-thread implementation and `condition()` is `false`,
   # this will `panic`.
   #
-  public wait(F type: ()->bool, condition F) unit
+  public wait(F : ()->bool, condition F) unit
   pre
     safety: is_exclusive
   post
@@ -593,8 +593,8 @@ public mutate : effect is
   # exclusive access to the mutable values created with this instance of `mutate`.
   #
   public exclusive_when(R : Any,
-                        C type: ()->bool,
-                        F type: ()->R,
+                        C : ()->bool,
+                        F : ()->R,
                         condition C,
                         code F
                         ) R

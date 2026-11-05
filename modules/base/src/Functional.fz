@@ -48,5 +48,5 @@ public Functional(R : Any) ref : Unary R (Function R) is
 
   # fluent interface for using multiple effects together
   #
-  public and(E type: effect, e Lazy E) Functional R =>
+  public and(E : effect, e Lazy E) Functional R =>
     compose (e.as_functional R)

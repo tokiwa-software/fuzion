@@ -112,7 +112,7 @@ is
     container_node (bmp ^ flag) tmp.as_array g
 
   # get item at pos in this container node
-  index [] (I type: integer, pos I) branch CTK CTV =>
+  index [] (I : integer, pos I) branch CTK CTV =>
     array[pos]
 
   public redef as_string String => "container_node[gen=$gen]($(array.as_string ", "))"

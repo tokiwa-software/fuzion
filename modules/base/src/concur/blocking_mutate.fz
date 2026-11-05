@@ -75,7 +75,7 @@ public blocking_mutate_using_clock(C : time.Clock) : blocking_mutate_using_clock
   # perform given code with exclusive access to the mutable values created with
   # this instance of `mutate`.
   #
-  public redef exclusive(R : Any, F type: ()->R, code F) R
+  public redef exclusive(R : Any, F : ()->R, code F) R
   =>
     me := concur.Threads.env.current
     if exclusive_thread = me then
@@ -123,7 +123,7 @@ public blocking_mutate_using_clock(C : time.Clock) : blocking_mutate_using_clock
   # In case this mutate is not a multi-thread implementation and `condition()` is `false`,
   # this will `panic`.
   #
-  public redef wait(F type: ()->bool, condition F) unit
+  public redef wait(F : ()->bool, condition F) unit
   =>
     while !condition() do
       wakeup_next_in_waiting_list
@@ -164,7 +164,7 @@ public blocking_mutate_using_clock(C : time.Clock) : blocking_mutate_using_clock
 
     # wait for the given condition to become true by a mutation of the underlying data.
     #
-    public wait(F type: ()->bool, condition F) bool
+    public wait(F : ()->bool, condition F) bool
     pre
       safety: is_exclusive
     post
@@ -189,8 +189,8 @@ public blocking_mutate_using_clock(C : time.Clock) : blocking_mutate_using_clock
     # will be wrapped in an option and returned.
     #
     public exclusive_when(R : Any,
-                          O type: ()->bool,
-                          F type: ()->R,
+                          O : ()->bool,
+                          F : ()->R,
                           condition O,
                           code F
                           ) option R
