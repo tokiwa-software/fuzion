@@ -2259,9 +2259,9 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * @return the corresponding {@code thisType} iff {@code isRelayType()}, otherwise {@code this}.
    */
-  AbstractType relayTypeAsThisType()
+  public AbstractType relayTypeAsThisType()
   {
-    return isRelayType() ? typeParameter().outer().thisType()
+    return isRelayType() ? typeParameter().outer().cotypeOrigin().thisType()
                          : this;
   }
 
