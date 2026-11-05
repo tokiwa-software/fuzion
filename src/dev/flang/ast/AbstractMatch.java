@@ -185,25 +185,25 @@ public abstract class AbstractMatch extends ExprWithPos
               }
             break;
           case Contract:
-            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
+            if (Types.resolved.t_bool.isAssignableFromWithoutBoxing(st, context).no())
               {
                 AstErrors.contractExpressionMustResultInBool(subject());
               }
             break;
           case If:
-            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
+            if (Types.resolved.t_bool.isAssignableFromWithoutBoxing(st, context).no())
               {
                 AstErrors.ifConditionMustBeBool(subject());
               }
             break;
           case While:
-            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
+            if (Types.resolved.t_bool.isAssignableFromWithoutBoxing(st, context).no())
               {
                 AstErrors.whileConditionMustBeBool(subject());
               }
             break;
           case Until:
-            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
+            if (Types.resolved.t_bool.isAssignableFromWithoutBoxing(st, context).no())
               {
                 AstErrors.untilConditionMustBeBool(subject());
               }
