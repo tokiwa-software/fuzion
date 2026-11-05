@@ -25,7 +25,7 @@
 
 # Typed_Sequence -- ancestor for features representing sequence of typed values
 #
-# Unlike `Sequence`, which contains values of all the same : Any, a `Typed_Sequence`
+# Unlike `Sequence`, which contains values of all the same type, a `Typed_Sequence`
 # contains values of different types.  This is similar to `Sequence Any`, only that
 # values are not forced to be boxed into references.
 #
@@ -192,7 +192,7 @@ public typed_applicator(E : Any) is
 public Typed_Value ref is
 
 
-  # Feed this value's : Any, the cumulative value `e` and this value itself into
+  # Feed this value's type, the cumulative value `e` and this value itself into
   # `a.apply` and return the resulting cumulative value.
   #
   public apply_to(E : Any, A : container.typed_applicator E, e E, a A) E
@@ -221,7 +221,7 @@ public typed_value(# the type
 
 
   # create a String of the form `"<type> <value>"` where `<type>`
-  # is the name of the : Any, enclosed by `(`/`)` in case it contains
+  # is the name of the type, enclosed by `(`/`)` in case it contains
   # spaces.
   #
   # Examples:

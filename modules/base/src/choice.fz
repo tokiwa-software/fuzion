@@ -86,7 +86,7 @@
 #     has_fever (centigrade 37)
 #     has_fever (fahrenheit 99)
 #
-# When matching the choice : Any, we use the wrapper types and access the
+# When matching the choice type, we use the wrapper types and access the
 # argument field 'degrees' to access the i32 stored inside
 #
 #     match temp
@@ -232,7 +232,7 @@ is
            v4 bool   (tag=4) => f.call bool   v4
 
      Note that no match is generated for `void`.  Matching is done by tag and not
-     by : Any, i.e., for an `option` of `nil` created, e.g., via
+     by type, i.e., for an `option` of `nil` created, e.g., via
 
        test(s Sequence nil) =>
          o := s.first
@@ -374,7 +374,7 @@ is
                                   *                 => e
 
      Note that no match is generated for `void`.  Matching is done by tag and not
-     by : Any, i.e., for an `option` of `nil` this will create
+     by type, i.e., for an `option` of `nil` this will create
 
          match choice.this
            v0 nil (tag=0) => match other

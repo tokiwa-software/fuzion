@@ -123,11 +123,11 @@ public memoize is
 
   # effect wrapped around map of memoized keys and corresponding values
   #
-  public memoized(# the key : Any, i.e, input type of memoized function
+  public memoized(# the key type, i.e, input type of memoized function
                   #
                   K : property.orderable,
 
-                  # the value : Any, i.e., result type of memoized function
+                  # tha value type, i.e., result type of memoized function
                   #
                   V : Any
                   )
@@ -162,11 +162,11 @@ public memoize is
   # use global memoized effect to retrieve the value for a given key or,
   # if that value was not calculated yet, to return it
   #
-  public keep(# the key : Any, i.e, input type of memoized function
+  public keep(# the key type, i.e, input type of memoized function
               #
               K : property.orderable,
 
-              # the value : Any, i.e., result type of memoized function
+              # tha value type, i.e., result type of memoized function
               #
               V : Any,
 
@@ -207,7 +207,7 @@ public memoize is
   #
   #   memoized_constant_effect pi f64
   #
-  public const(# the value : Any, i.e., result type of memoized function
+  public const(# tha value type, i.e., result type of memoized function
               #
               V : Any,
 
@@ -230,11 +230,11 @@ memoized_effect(# type to identify this memoized instance
                 #
                 M : Any,
 
-                # the key : Any, i.e, input type of memoized function
+                # the key type, i.e, input type of memoized function
                 #
                 K : property.orderable,
 
-                # the value : Any, i.e., result type of memoized function
+                # tha value type, i.e., result type of memoized function
                 #
                 V : Any,
 
@@ -325,7 +325,7 @@ private:public memoized_constant_effect(# type to identify this memoized instanc
                                         #
                                         M : Any,
 
-                                        # the value : Any, i.e., result type of memoized function
+                                        # tha value type, i.e., result type of memoized function
                                         #
                                         V : Any,
 

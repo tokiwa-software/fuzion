@@ -53,7 +53,7 @@
 # is instated, also, e.g., in lambdas that are passed to a call and then called
 # further down the call chain.
 #
-# The wrapper : Any, `demo` in the example, is not strictly required, we could use
+# The wrapper type, `demo` in the example, is not strictly required, we could use
 # just `u8` instead.  However, this would permit unrelated code to read and modify
 # the value using `state_get u8`, while the wrapper type `demo` restricts this to
 # code for which `demo` is visible.  To avoid accidental and intentional (malicious)

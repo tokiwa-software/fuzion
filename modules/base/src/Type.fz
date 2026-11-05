@@ -34,7 +34,7 @@
 module:public Type ref is
 
 
-  # name of this : Any, including type parameters, e.g. 'option (list i32)'.
+  # name of this type, including type parameters, e.g. 'option (list i32)'.
   #
   public name String => intrinsic
 
@@ -61,7 +61,7 @@ module:public Type ref is
   # endless hierarchy of types, so dynamic_type is redefined to just return
   # Type.type here.
   #
-  # Note: Typechecking is undecidable when 'type' is a : Any, Mark B. Reinhold, 1989
+  # Note: Typechecking is undecidable when 'type' is a type, Mark B. Reinhold, 1989
   # see: https://dspace.mit.edu/bitstream/handle/1721.1/149366/MIT-LCS-TR-458.pdf?sequence=6
   #
   public redef dynamic_type Type => Type.type
