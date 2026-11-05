@@ -185,7 +185,7 @@ is
       panic "Set.equality called on Set not known to be finite"
 
     a.size_option = b.size_option &&
-      a.is_superset_of b
+      (b ∀ a.contains)
 
 
   # monoid of Set with infix ∪ operation.
