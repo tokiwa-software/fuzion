@@ -9,4 +9,15 @@ o(a i32) is
 ^
 To solve this, either create the lambda inside of 'o' or remove the arguments from 'o'.
 
-one error.
+
+reg_issue6045.fz:30:1: error 2: Incompatible types in assignment
+_ o.F := x->x+1   # cannot work, but produces confusing error
+^
+assignment to field : '_'
+expected formal type: 'o.F'
+actual type found   : '(λx->x+1)'
+assignable to       : '(λx->x+1)'
+for value assigned  : 'x->x+1'
+To solve this, you could change the type of the target '_' to '(λx->x+1)' or convert the type of the assigned value to 'o.F'.
+
+2 errors.

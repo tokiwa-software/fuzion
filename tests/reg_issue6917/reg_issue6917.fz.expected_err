@@ -4,4 +4,15 @@ reg_issue6917.fz:30:13: error 1: Can not create lambda since an outer of its typ
 ------------^^^^^^
 The generic argument used in lambdas type 'O'.
 
-one error.
+
+reg_issue6917.fz:30:5: error 2: Incompatible types in assignment
+    _ O.F:= x->x+1   # can not work
+----^
+assignment to field : 'outer.d._'
+expected formal type: 'O.F'
+actual type found   : 'outer.d.this.(λx->x+1)'
+assignable to       : 'outer.d.this.(λx->x+1)'
+for value assigned  : 'x->x+1'
+To solve this, you could change the type of the target 'outer.d._' to 'outer.d.this.(λx->x+1)' or convert the type of the assigned value to 'O.F'.
+
+2 errors.

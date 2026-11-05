@@ -598,48 +598,88 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (this  .isParametricType() || this  .feature() != null || Errors.any(),
        actual.isParametricType() || actual.feature() != null || Errors.any());
 
-        /*
-    // tag::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
-    NYI: UNDER DEVELOPMENT:
-    // end::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
-        */
+    return isArtificialType() || actual.isArtificialType()
+      ? YesNo.dontKnow
+      : YesNo.fromBool(assignable(actual, context, allowBoxing, allowTagging, assignableTo));
+  }
 
+
+  /**
+   * This method contains the logic of the assignabilty rules for the Fuzion language.
+   *
+   * @param actual the actual type.
+   *
+   * @param context the source code context where this Type is used
+   *
+   * @param allowBoxing is boxing allowed when determining assignability?
+   *
+   * @param allowTagging is tagging allowed when determining assignability?
+   *
+   * @param assignableTo in case we want to show all types actual is assignable
+   * to in an error message, this collects those types.
+   *
+   * @return true if actual is assignable to this, false otherwise.
+   */
+  /*
+// tag::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
+NYI: UNDER DEVELOPMENT:
+// end::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
+   */
+  private boolean assignable(AbstractType actual, Context context, boolean allowBoxing, boolean allowTagging, Set<AbstractType> assignableTo)
+  {
     if (assignableTo != null)
       {
         assignableTo.add(actual);
       }
-    var result = isArtificialType() || actual.isArtificialType()
-        ? YesNo.dontKnow
-        : YesNo.fromBool(compareTo(actual) == 0 || actual.isVoid());
-    if (result.no() && !isParametricType() && isRef() && actual.isRef())
+
+    // case 1: exactly same types
+    // case 2: assigning void is always allowed
+    var result = compareTo(actual) == 0 || actual.isVoid();
+    // case 3: we are dealing with references
+    if (!result && isRef() && actual.isRef())
       {
-        if (actual.isParametricType())
+        for (var p: actual.feature().inherits())
           {
-            result = isAssignableFrom(actual.typeParameter().constraint(context).asRef(true), context, allowBoxing, allowTagging, assignableTo);
-          }
-        else
-          {
-            for (var p: actual.feature().inherits())
-              {
-                var pt = actual.actualType(p.type(), context).asRef(true);
-                result = pt == actual ? YesNo.no : isAssignableFrom(pt, context, allowBoxing, allowTagging, assignableTo);
-                // until result != no
-                if (!result.no()) { break; }
-              }
+            var pt = actual.actualType(p.type(), context).asRef();
+            result = pt == actual ? false : assignable(pt, context, false, false, assignableTo);
+            // until result
+            if (result) { break; }
           }
       }
-    if (result.no() && allowTagging && isChoice() && !isRelayType())
+    // case 4: tagging is allowed and actual is one of the - potentially nested - choices
+    if (!result)
       {
-        result = YesNo.fromBool(isChoiceMatch(actual, context));
+        result = allowTagging && isChoice() && isChoiceMatch(actual, context);
+      }
+    if (!result)
+      {
+        result = allowBoxing &&
+          (switch (actual.kind())
+            {
+    // case 5: boxing is allowed, actual is a type parameter and the boxed constraint is directly assignable
+              case ParametricType -> assignable(actual.typeParameter().constraint(context).asRef(), context, false, false, assignableTo);
+              case RefType -> false; // break recursion
+    // case 6: boxing is allowed, actual is a this type
+    //
+    //      example where we consider the this type to be a ref and then tag
+    //      this   : choice (Sequence u8) String
+    //      actual : String.this
+    //
+              case ThisType -> assignable(actual.asRef(true), context, false, allowTagging, assignableTo);
+    // case 7: boxing is allowed, actual is a value type and the boxed value is assignable (potentially via tagging)
+    //
+    //     example where we need to box (to Finger_Tree) then tag (to option):
+    //     this   : option (container.Finger_Tree T)
+    //     actual : container.single T
+    //
+              case ValueType -> assignable(actual.asRef(), context, false, allowTagging, assignableTo);
+            });
       }
     // NYI: UNDER DEVELOPMENT: probably unsound! see also isAssignableFrom
-    if (result.no() && isChoice() && actual.isChoice() && (isThisType() || actual.isThisType()))
+     // case 8:
+    if (!result)
       {
-        result = YesNo.fromBool(asThis().compareTo(actual.asThis()) == 0);
-      }
-    if (result.no() && allowBoxing && !actual.isRef())
-      {
-        result = isAssignableFrom(actual.selfOrConstraint(context).asRef(true), context, allowBoxing, allowTagging, assignableTo);
+        result = isChoice() && actual.isChoice() && (isThisType() || actual.isThisType()) && asThis().compareTo(actual.asThis()) == 0;
       }
     return result;
   }
