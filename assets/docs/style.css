@@ -204,6 +204,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   border: 0;
 }
 
+/* Only feature-list entries need a permalink. */
+.heading-summary .fd-anchor-sign {
+  display: none;
+}
+
 .fd summary:hover .fd-anchor-sign,
 .fd summary:focus-within .fd-anchor-sign {
   position: static;
