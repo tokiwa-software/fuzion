@@ -30,7 +30,7 @@ L_Node(
 
   # type of the element stored in the node
   #
-  T type
+  T : Any
 ) ref is
 
   # the previous list node
@@ -102,7 +102,7 @@ private:public Doubly_Linked_List(
 
   # type the elements the list
   #
-  T type
+  T : Any
 
 ) ref ! LM is
 

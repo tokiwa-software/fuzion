@@ -129,7 +129,7 @@ public memoize is
 
                   # the value : Any, i.e., result type of memoized function
                   #
-                  V type
+                  V : Any
                   )
                   : effect
   is

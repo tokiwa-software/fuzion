@@ -69,7 +69,7 @@ Entry(LM  : mutate, KEY : property.orderable, VAL : Any, key KEY, val VAL) ref i
 private:public Mutable_Tree_Map(
   LM  : mutate,
   KEY : property.orderable,
-  VAL type                      ) ref : container.Mutable_Map KEY VAL
+  VAL : Any                     ) ref : container.Mutable_Map KEY VAL
 is
 
   # the root entry of this map
