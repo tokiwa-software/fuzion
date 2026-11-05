@@ -844,8 +844,8 @@ argument    : visibility
               argNames
               argType
             ;
-argType     : typeType                   # NYI: REMOVE!
-            | typeType COLON type        # NYI: REMOVE!
+argType     : typeType                   // NYI: REMOVE!
+            | typeType COLON type        // NYI: REMOVE!
             | COLON type
             | "..."
             |
@@ -931,7 +931,7 @@ argType     : typeType                   # NYI: REMOVE!
   /**
    * Parse type parameter type suffix
    *
-typeType    : "type"                  # NYI: REMOVE!
+typeType    : "type"                  // NYI: REMOVE!
             | "type" "..."
             ;
    */
