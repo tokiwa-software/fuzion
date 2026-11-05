@@ -127,7 +127,7 @@ public memoize is
                   #
                   K : property.orderable,
 
-                  # tha value type, i.e., result type of memoized function
+                  # the value type, i.e., result type of memoized function
                   #
                   V : Any
                   )
@@ -166,7 +166,7 @@ public memoize is
               #
               K : property.orderable,
 
-              # tha value type, i.e., result type of memoized function
+              # the value type, i.e., result type of memoized function
               #
               V : Any,
 
@@ -207,7 +207,7 @@ public memoize is
   #
   #   memoized_constant_effect pi f64
   #
-  public const(# tha value type, i.e., result type of memoized function
+  public const(# the value type, i.e., result type of memoized function
               #
               V : Any,
 
@@ -234,7 +234,7 @@ memoized_effect(# type to identify this memoized instance
                 #
                 K : property.orderable,
 
-                # tha value type, i.e., result type of memoized function
+                # the value type, i.e., result type of memoized function
                 #
                 V : Any,
 
@@ -325,7 +325,7 @@ private:public memoized_constant_effect(# type to identify this memoized instanc
                                         #
                                         M : Any,
 
-                                        # tha value type, i.e., result type of memoized function
+                                        # the value type, i.e., result type of memoized function
                                         #
                                         V : Any,
 
