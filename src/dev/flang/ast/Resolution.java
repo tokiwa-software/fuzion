@@ -621,7 +621,7 @@ public class Resolution extends ANY
             var typeArg = new Feature(p,
                                       Visi.UNSPECIFIED,
                                       0,
-                                      af.selfType(),
+                                      af.thisType(),
                                       FuzionConstants.COTYPE_RELAY_TYPE,
                                       Contract.EMPTY_CONTRACT,
                                       Impl.EXPLICIT_TYPE_PARAMETER)
