@@ -85,6 +85,12 @@ public class Parser extends Lexer
   static final Parens ANGLES   = new Parens( "<"             , ">"              );
 
 
+  /**
+   * Flag to enable type parameters using `f(T type : Any)` instead of `f(T : Any)`.
+   */
+  static boolean ALLOW_TYPE_PARAMETERS_USING_TYPE = false;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -867,7 +873,7 @@ argType     : typeType                   // NYI: REMOVE!
                                     var n = argNames();
                                     AbstractType t;
                                     Impl i;
-                                    var isTypePar = current() == Token.t_type;
+                                    var isTypePar = ALLOW_TYPE_PARAMETERS_USING_TYPE && current() == Token.t_type;
                                     if (isTypePar)
                                       { // NYI: REMOVE!
                                         i = typeType();
@@ -937,6 +943,7 @@ typeType    : "type"                  // NYI: REMOVE!
    */
   Impl typeType()
   {
+    check(ALLOW_TYPE_PARAMETERS_USING_TYPE);
     match(Token.t_type, "argType");
     return splitSkip("...") ? Impl.TYPE_PARAMETER_OPEN
                             : Impl.EXPLICIT_TYPE_PARAMETER;
@@ -963,7 +970,7 @@ typeType    : "type"                  // NYI: REMOVE!
                 result = skipArgNames();
                 if (result)
                   {
-                    if (skip(Token.t_type))
+                    if (ALLOW_TYPE_PARAMETERS_USING_TYPE && skip(Token.t_type))
                       {  // NYI: REMOVE
                         splitSkip("...");
                         if (skipColon())
@@ -1031,7 +1038,7 @@ typeType    : "type"                  // NYI: REMOVE!
                     skipName();
                   }
                 while (skipComma());
-                if (skip(Token.t_type))
+                if (ALLOW_TYPE_PARAMETERS_USING_TYPE && skip(Token.t_type))
                   { // NYI: REMOVE!
                     splitSkip("...");
                     if (skipColon())
@@ -1056,7 +1063,7 @@ typeType    : "type"                  // NYI: REMOVE!
                 // tolerate missing type here
                 else if ((skipType() || true) && skipDot())
                   {
-                    if (!skip(Token.t_type))
+                    if (!(ALLOW_TYPE_PARAMETERS_USING_TYPE && skip(Token.t_type)))
                       {
                         result[0] = FormalOrActual.actual;
                         return false;
