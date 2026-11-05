@@ -89,7 +89,7 @@ Feature not found: 'array' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type_negative'
 In call: '(array String)'
 To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:195:8
-public array(T type, I type : integer, length I, init I -> T) array T =>
+public array(T : Any, I : integer, length I, init I -> T) array T =>
 -------^^^^^
 To call 'array', you must provide 4 arguments 'T', 'I', 'length', 'init'. The 2 type parameters 'T', 'I' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
@@ -115,7 +115,7 @@ Feature not found: 'array' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type_negative'
 In call: '(array String)'
 To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:195:8
-public array(T type, I type : integer, length I, init I -> T) array T =>
+public array(T : Any, I : integer, length I, init I -> T) array T =>
 -------^^^^^
 To call 'array', you must provide 4 arguments 'T', 'I', 'length', 'init'. The 2 type parameters 'T', 'I' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
