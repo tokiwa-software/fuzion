@@ -90,12 +90,6 @@ public class Feature extends AbstractFeature
   private final SourcePosition _pos;
 
 
-  /**
-   * The sourcecode position of this feature's return type, if given explicitly.
-   */
-  private final SourcePosition _posOfReturnType;
-
-
   Context _sourceCodeContext = Context.NONE;
 
 
@@ -793,7 +787,6 @@ public class Feature extends AbstractFeature
     this._visibility = v;
     this._modifiers  = m;
     this._returnType = r;
-    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnTypePos();
     String n = qname.getLast();
     if (n.equals("_"))
       {
