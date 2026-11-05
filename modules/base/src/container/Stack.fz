@@ -24,7 +24,7 @@
 
 # interface definition for stacks
 #
-public Stack(T type) ref is
+public Stack(T : Any) ref is
 
   # push an element onto the top of the stack.
   #

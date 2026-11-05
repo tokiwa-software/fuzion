@@ -30,7 +30,7 @@ module:public Dynamic_Array (
 
   # the mutate effect
   #
-  LM type : mutate,
+  LM : mutate,
 
   # element type
   #
@@ -63,14 +63,14 @@ is
 
   # get element at given index i
   #
-  public redef index [ ] (I type : integer, i I) T
+  public redef index [ ] (I : integer, i I) T
   =>
     data[i]
 
 
   # set element at given index i to given value o
   #
-  public redef set [ ] (I type : integer, i I, o T) unit
+  public redef set [ ] (I : integer, i I, o T) unit
   =>
     data[i] := o
 

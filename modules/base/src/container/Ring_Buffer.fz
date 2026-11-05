@@ -39,7 +39,7 @@ public Ring_Buffer(
   # `concur.blocking_mutate`.  An instance of this mutate effect must be
   # instated by when this Ring_Buffer is constructed and when it is accessed.
   #
-  M type : mutate,
+  M : mutate,
 
   # the maximum number of elements that can be stored in
   # this buffer

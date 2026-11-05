@@ -38,7 +38,7 @@
 #
 # NYI: UNDER DEVELOPMENT: split0, slice, reverse
 #
-private:public Finger_Tree(T type) ref : container.abstract_array T is
+private:public Finger_Tree(T : Any) ref : container.abstract_array T is
 
 
   # prepend seq to this Finger_Tree
@@ -105,7 +105,7 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
 
 # an empty finger tree
 #
-empty(T type) : container.Finger_Tree T is
+empty(T : Any) : container.Finger_Tree T is
   public redef length i64 => 0
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     match seq.as_finger_tree
@@ -113,7 +113,7 @@ empty(T type) : container.Finger_Tree T is
       ft Finger_Tree => ft
   public redef append (seq Sequence T) container.Finger_Tree T =>
     prepend seq
-  public redef index [ ] (I type : integer, i I) T => panic "illegal unless debug turned off"
+  public redef index [ ] (I : integer, i I) T => panic "illegal unless debug turned off"
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft
   redef merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
@@ -136,7 +136,7 @@ is
     deep (container.hand [seq]) (empty T) (container.hand [data])
   public redef append (seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [data]) (empty T) (container.hand [seq])
-  public redef index [ ] (I type : integer, i I) T => data[i]
+  public redef index [ ] (I : integer, i I) T => data[i]
   module redef as_finger_tree option (container.Finger_Tree T) => container.single data
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T =>
     ft.prepend data
@@ -202,7 +202,7 @@ deep(T : Any, lft container.hand T, ft container.Finger_Tree T, rght container.h
       r
 
 
-  public redef index [ ] (I type : integer, i I) T =>
+  public redef index [ ] (I : integer, i I) T =>
     n := i.as_i64
     if n < lft.count
       lft[n]

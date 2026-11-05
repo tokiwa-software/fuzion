@@ -55,14 +55,14 @@ is
 
   # get element at given index i
   #
-  public redef index [ ] (I type : integer, i0, i1, i2 I) T =>
+  public redef index [ ] (I : integer, i0, i1, i2 I) T =>
     check_and_replace
     data[((i0.as_i64 * length1) + i1.as_i64) * length2 + i2.as_i64]
 
 
   # set element at given index i to given value o
   #
-  public redef set [ ] (I type : integer, i0, i1, i2 I, o T) unit =>
+  public redef set [ ] (I : integer, i0, i1, i2 I, o T) unit =>
     check_and_replace
     data[((i0.as_i64 * length1) + i1.as_i64) * length2.as_i64 + i2.as_i64] := o
 

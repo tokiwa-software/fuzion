@@ -88,7 +88,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
-  public typed_foldf(E : Any, A type : container.typed_applicator E, e E, a A) E
+  public typed_foldf(E : Any, A : container.typed_applicator E, e E, a A) E
   =>
     abstract
 
@@ -98,7 +98,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
-  public typed_zip_and_fold(E : Any, Z type : Typed_Combiner E E, b Typed_Sequence.this, e E, z Z) E
+  public typed_zip_and_fold(E : Any, Z : Typed_Combiner E E, b Typed_Sequence.this, e E, z Z) E
   =>
     abstract
 
@@ -148,7 +148,7 @@ public typed_fold(E : Any, e E, s container.Typed_Sequence) : container.typed_ap
 # lambdas for `typed_applicator` are supported.  We should compare example and
 # the usability of different APis.
 #
-public variadic(E type) : container.typed_applicator E is
+public variadic(E : Any) : container.typed_applicator E is
 
   # the result of the fold
   #
@@ -162,7 +162,7 @@ public variadic(E type) : container.typed_applicator E is
 # This is used as an argument to `Typed_Sequence.typed_foldf` to process the typed
 # values.
 #
-public typed_applicator(E type) is
+public typed_applicator(E : Any) is
 
 
   # Apply an operation on a value v of type T using the cumulative value
@@ -297,7 +297,7 @@ public Types ref : Sequence Type is
   #
   # In case this `Types` instance is empty, the result is `e`.
   #
-  public type_foldf(E : Any, A type : container.type_applicator E, e E, a A) E
+  public type_foldf(E : Any, A : container.type_applicator E, e E, a A) E
   =>
     abstract
 
@@ -306,7 +306,7 @@ public Types ref : Sequence Type is
 #
 # This is used as an argument to `Types.type_foldf` to process the types.
 #
-public type_applicator(E type) is
+public type_applicator(E : Any) is
 
 
   # Apply an operation on a type `T` using the cumulative value

@@ -42,13 +42,13 @@ module internal_array(T : Any, module data Array T, module length i64) is
 
   module indices => 0..length-1
 
-  module index [ ] (I type : integer, i I) T
+  module index [ ] (I : integer, i I) T
     pre
       safety: 0 ≤ i.as_i64 < length
   =>
     fuzion.sys.getel T data i.as_i32
 
-  module set [ ] (I type : integer, i I, o T) unit
+  module set [ ] (I : integer, i I, o T) unit
     pre
       safety  : 0 ≤ i.as_i64 < length
   =>

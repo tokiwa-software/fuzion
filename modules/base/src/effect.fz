@@ -192,7 +192,7 @@ public effect is
 
   # convenience version of `instate` for effect values whose type is
   # exactly the effect type (i.e., the value type does not inherit
-  # from the effect type).
+  # from the effect : Any).
   #
   # Execute 'code' in a context where this effect instance has been
   # instated for effect type `effect.this`.
@@ -238,7 +238,7 @@ public effect is
   # this effect reinterpreted as a Functional
   # which allows composition of effects
   #
-  public as_functional(R type) Functional R =>
+  public as_functional(R : Any) Functional R =>
     code -> instate_self code
 
 

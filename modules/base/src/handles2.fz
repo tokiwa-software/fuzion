@@ -170,7 +170,7 @@ is
 
 # unit type containing features related to handles but nor requiring an instance
 #
-handles2_type(T type) is
+handles2_type(T : Any) is
 
 
 # create a new handle2 using the handles2 instance from the current environment

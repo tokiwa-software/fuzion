@@ -27,7 +27,7 @@
 #
 # option represents an optional value of type T
 #
-public option(T type) : switch T nil is
+public option(T : Any) : switch T nil is
 
 
   # monadic operator

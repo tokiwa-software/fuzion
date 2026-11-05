@@ -138,7 +138,7 @@ public state(S, R : Any, initial_value S, r ()->R) R =>
 
 # shorthand for getting state monad for given type in current environment
 #
-public state_get(S type) S => (state unit S).env.get
+public state_get(S : Any) S => (state unit S).env.get
 
 
 # shorthand for modifying state monad for given type in current environment

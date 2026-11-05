@@ -26,7 +26,7 @@
 # a Functional is a special type of unary that takes
 # a Function R and produces a value R.
 #
-public Functional(R type) ref : Unary R (Function R) is
+public Functional(R : Any) ref : Unary R (Function R) is
 
 
   # infix variant of call

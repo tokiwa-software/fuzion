@@ -63,7 +63,7 @@ public composition is
   # Bird: Idiot (Smullyan) or Ibis (Gabriel Lebec)
   # BQN: ⊣⊢
   # Haskell: id
-  public id(T type) T -> T => x->x
+  public id(T : Any) T -> T => x->x
 
   # M
   # self application
@@ -72,17 +72,17 @@ public composition is
   # Haskell: (cannot define)
   #
   # This is not representable in Fuzion, we would need arguments with generic arguments
-  # here.  Using pseudo-syntax ((T,U type) <type using T,U>) to denote a type that is
+  # here.  Using pseudo-syntax ((T,U : Any) <type using T,U>) to denote a type that is
   # itself type parameteric...:
   #
-  # public M(f ((T,U type) T -> U)) ((V,W type) V->W) => f f
+  # public M(f ((T,U : Any) T -> U)) ((V,W : Any) V->W) => f f
   #
   # we can emulate this if we require the argument to be given twice:
   public M(T, U, V : Any, f0 (T->U)->(T->V), f1 T->U) T->V => f0 f1
   # applying M to id:
-  public Mid(T type) T->T => M T T T x->x x->x   # NYI: should also work:  (composition.this.id T) (composition.this.id T)
+  public Mid(T : Any) T->T => M T T T x->x x->x   # NYI: should also work:  (composition.this.id T) (composition.this.id T)
   # applying M to M
-  # public MM(T type) => M T T T x->(MM x) x->(MM x)
+  # public MM(T : Any) => M T T T x->(MM x) x->(MM x)
 
   # M*
   # self application once removed
@@ -119,8 +119,8 @@ public composition is
   # Bird: Kestrel
   # BQN: ⊣
   # Haskell const
-  public left(T, U type) (T,U) -> T => (x,y) -> x
-  public constant(T, U type) (T,U) -> T => (x,y) -> x
+  public left(T, U : Any) (T,U) -> T => (x,y) -> x
+  public constant(T, U : Any) (T,U) -> T => (x,y) -> x
 
   # S
   # hook, monadic after
@@ -214,7 +214,7 @@ public composition is
   # Bird: Kite
   # BQN: ⊢
   # Haskell: const id
-  public right(T, U type) (T,U) -> U => (x,y) -> y
+  public right(T, U : Any) (T,U) -> U => (x,y) -> y
 
   # ?
   # Constant cancellator?

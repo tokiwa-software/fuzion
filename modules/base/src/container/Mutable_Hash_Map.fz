@@ -33,11 +33,11 @@
 module:public Mutable_Hash_Map(
         # the mutate effect
         #
-        LM type : mutate,
+        LM : mutate,
 
         # type of the keys
         #
-        HK type : property.hashable,
+        HK : property.hashable,
 
         # type of the values
         #

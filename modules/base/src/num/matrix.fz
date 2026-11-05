@@ -27,7 +27,7 @@
 #
 # matrix provides matrix operations based on an arbitrary numeric type
 #
-public matrix(M type : numeric,
+public matrix(M : numeric,
               e array2 M) : property.equatable
 is
 

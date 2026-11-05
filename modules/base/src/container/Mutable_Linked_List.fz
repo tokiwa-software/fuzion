@@ -28,7 +28,7 @@
 # `append` to add single cells, or `concat` to concatenate two lists.
 #
 private:public Mutable_Linked_List(# mutate effect to be used to create mutable variables
-                    LM type : mutate,
+                    LM : mutate,
 
                     # type of data stored in this list
                     T : Any,

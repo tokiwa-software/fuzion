@@ -32,7 +32,7 @@ module:public Fixed_Capacity_Array(
 
   # the mutate effect
   #
-  LM type : mutate,
+  LM : mutate,
 
   # element type
   #

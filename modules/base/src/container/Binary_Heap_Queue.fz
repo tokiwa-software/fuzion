@@ -34,7 +34,7 @@
 module:public Binary_Heap_Queue(
   # the mutate effect
   #
-  LM type : mutate,
+  LM : mutate,
 
   # type of the elements in the queue
   #
@@ -428,7 +428,7 @@ module:public Binary_Heap_Queue(
   # To reverse the sorting order and have the largest element
   # returned first, `property.reverse_order` can be used.
   #
-  public fixed redef type.empty_by(O type : property.orderable, by T->O) container.Binary_Heap_Queue LM T
+  public fixed redef type.empty_by(O : property.orderable, by T->O) container.Binary_Heap_Queue LM T
   =>
     container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) (container.Dynamic_Array LM T .empty)
 
@@ -440,7 +440,7 @@ module:public Binary_Heap_Queue(
   # returned first, `property.reverse_order` can be used.
   #
   public fixed type.empty_by(
-      O type : property.orderable,
+      O : property.orderable,
 
       by T->O,
 
@@ -478,7 +478,7 @@ module:public Binary_Heap_Queue(
   #       But the actual runtime depends on the order of the elements,
   #       for (almost) ordered elements iterative inserts will be faster.
   #
-  public fixed redef type.from_by(O type : property.orderable,
+  public fixed redef type.from_by(O : property.orderable,
                                   initial_elements Sequence T,
                                   by T->O
                                  ) container.Binary_Heap_Queue LM T

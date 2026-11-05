@@ -33,7 +33,7 @@
 # keys.length.
 #
 private:public ordered_map(
-           OK type : property.orderable,
+           OK : property.orderable,
            V  : Any,
            k0 Sequence OK,
            v0 Sequence V) : container.Map OK V

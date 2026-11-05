@@ -23,7 +23,7 @@
 
 # defines a basic webserver
 #
-public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.thread_pool, */ port u16, family net.family.val, log String->unit, middlewares Sequence Middleware, hdlr Http_Handler) ref is
+public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP : concur.thread_pool, */ port u16, family net.family.val, log String->unit, middlewares Sequence Middleware, hdlr Http_Handler) ref is
 
   is_running := concur.atomic bool .new true
 

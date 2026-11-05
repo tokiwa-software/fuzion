@@ -187,7 +187,7 @@ public handles(T : Any, rr ()->unit) unit =>
 
 # shorthand for creating an empty set of handles of given type.
 #
-public handles_(T type) handles T unit => handles unit (array T).empty oneway_monad_mode.plain
+public handles_(T : Any) handles T unit => handles unit (array T).empty oneway_monad_mode.plain
 
 
 # type of the reference to the cell that holds a value of type T which can be updated
@@ -219,7 +219,7 @@ is
 
 # unit type containing features related to handles but not requiring an instance
 #
-handles_type(T type) is
+handles_type(T : Any) is
 
 
 # initializes a new handle with the given initial value

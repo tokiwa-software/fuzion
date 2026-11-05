@@ -26,7 +26,7 @@
 module:public Mutable_Array2
   (T : Any,
 
-   E type : effect) ref
+   E : effect) ref
 
 is
 
@@ -68,7 +68,7 @@ is
 
   # get element at given index i
   #
-  public index [ ] (I type : integer, i1, i2 I) T ! E
+  public index [ ] (I : integer, i1, i2 I) T ! E
     pre
       safety: 0 ≤ i1.as_i64 < length0
       safety: 0 ≤ i2.as_i64 < length1
@@ -79,7 +79,7 @@ is
 
   # set element at given indices i1, i2 to given value o
   #
-  public set [ ] (I type : integer, i1, i2 I, o T) unit ! E
+  public set [ ] (I : integer, i1, i2 I, o T) unit ! E
     pre
       safety: 0 ≤ i1.as_i64 < length0
       safety: 0 ≤ i2.as_i64 < length1

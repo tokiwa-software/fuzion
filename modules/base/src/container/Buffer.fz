@@ -42,7 +42,7 @@ module:public Buffer
    T : Any,
 
    # effect used to modify this buffer
-   E type : mutate) ref
+   E : mutate) ref
 
 is
 
@@ -76,7 +76,7 @@ is
 
   # get element at index i
   #
-  public index [ ] (I type : integer, i I) T ! E
+  public index [ ] (I : integer, i I) T ! E
     pre
       safety: 0 ≤ i.as_i64 < length
       safety: is_accessible
@@ -86,7 +86,7 @@ is
 
   # set element at index i to value o
   #
-  public set [ ] (I type : integer, i I, o T) unit ! E
+  public set [ ] (I : integer, i I, o T) unit ! E
     pre
       safety: 0 ≤ i.as_i64 < length
       safety: is_accessible
@@ -108,7 +108,7 @@ is
 
   # create immutable array from this taking at most max_length elements
   #
-  public as_array(I type : integer, max_length I) universe.array T
+  public as_array(I : integer, max_length I) universe.array T
     pre debug: max_length.as_i64 <= length
   =>
     array max_length (index [])

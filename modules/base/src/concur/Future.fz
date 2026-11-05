@@ -23,7 +23,7 @@
 
 # A Future is an interface for an asynchronous computation.
 #
-public Future(T type) ref is
+public Future(T : Any) ref is
 
   # is the computation done?
   #

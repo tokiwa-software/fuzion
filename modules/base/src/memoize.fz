@@ -305,9 +305,9 @@ memoize_mutate : concur.blocking_mutate is
 
 calculating is
 
-global_value(V type) : choice nil         # no value available yet
-                              calculating # some thread is calculating the value
-                              V           # the value
+global_value(V : Any) : choice nil         # no value available yet
+                               calculating # some thread is calculating the value
+                               V           # the value
 is
   busy =>
     match global_value.this

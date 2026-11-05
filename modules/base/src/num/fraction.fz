@@ -36,7 +36,7 @@
 # or the denominator.
 #
 public fraction(
-         B type : integer,
+         B : integer,
          public numerator,
                 denominator B
         ) : numeric

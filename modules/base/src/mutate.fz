@@ -218,7 +218,7 @@ public mutate : effect is
   # not be possible to use `get_racy` or `put_racy` unless they are
   # performed on a type where these accesses are atomic.
   #
-  public atomic_access_supported(T type) bool
+  public atomic_access_supported(T : Any) bool
   =>
     intrinsic
 

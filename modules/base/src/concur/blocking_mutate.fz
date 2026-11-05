@@ -41,7 +41,7 @@ module blocking_mutate_using_clock0 : mutate is
 #
 # For timeouts, this uses the given clock effect.
 #
-public blocking_mutate_using_clock(C type : time.Clock) : blocking_mutate_using_clock0 is
+public blocking_mutate_using_clock(C : time.Clock) : blocking_mutate_using_clock0 is
 
   # mutex to be used for synchronization
   #

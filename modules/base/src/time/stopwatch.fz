@@ -37,7 +37,7 @@ public stopwatch(T : Any, f () -> T) (T, time.duration) ! time.Nano =>
 
 # stopwatch measures the execution duration of f using clock `C`
 #
-public stopwatch(C type : time.Clock, T : Any, f () -> T) (T, time.duration) ! C =>
+public stopwatch(C : time.Clock, T : Any, f () -> T) (T, time.duration) ! C =>
   start := C.env.read
   res := f()
   (res, C.env.read - start)

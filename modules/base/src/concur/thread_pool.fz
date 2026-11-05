@@ -39,7 +39,7 @@ Computable_Future(
   # result type of the computation
   T : Any,
   # the thread pool to use for subsequent computation
-  TP type : concur.thread_pool,
+  TP : concur.thread_pool,
   # the code of the future
   task ()->T) ref : concur.Future T is
 

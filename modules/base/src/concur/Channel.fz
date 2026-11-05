@@ -117,7 +117,7 @@ public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Re
 
 # create a Channel of the given type
 #
-public channel(T type) Channel T
+public channel(T : Any) Channel T
 =>
   Unbuffered_Channel (channel_mutate T) T
 
@@ -157,7 +157,7 @@ pre
 # enables effect analysis to show what this channel is used
 # for.
 #
-universe.channel_mutate(T type) : concur.blocking_mutate is
+universe.channel_mutate(T : Any) : concur.blocking_mutate is
 
   # default instance.
   #
@@ -182,7 +182,7 @@ public Unbuffered_Channel(# the mutate environment to be used for this channel.
                           # A multi-thread variant like `concur.blocking_mutate` is
                           # required.
                           #
-                          M type : mutate,
+                          M : mutate,
 
                           # The type of the elements sent through this channel.
                           #
@@ -255,7 +255,7 @@ is
   #
   #   closed
   #
-  universe.unbuffered_channel_state(T type) : choice ready receiving  (sending T) (sent T) received closed is
+  universe.unbuffered_channel_state(T : Any) : choice ready receiving  (sending T) (sent T) received closed is
 
     may_receive =>
       match unbuffered_channel_state.this

@@ -25,7 +25,7 @@
 
 # Entry -- an entry of a mutable tree map
 #
-Entry(LM  type : mutate, KEY type : property.orderable, VAL : Any, key KEY, val VAL) ref is
+Entry(LM  : mutate, KEY : property.orderable, VAL : Any, key KEY, val VAL) ref is
 
 
   # reference to the left subtree at this entry, or, if it is empty, nil
@@ -67,8 +67,8 @@ Entry(LM  type : mutate, KEY type : property.orderable, VAL : Any, key KEY, val 
 # Mutable_Tree_Map -- a mutable map using an AVL tree
 #
 private:public Mutable_Tree_Map(
-  LM  type : mutate,
-  KEY type : property.orderable,
+  LM  : mutate,
+  KEY : property.orderable,
   VAL type                      ) ref : container.Mutable_Map KEY VAL
 is
 

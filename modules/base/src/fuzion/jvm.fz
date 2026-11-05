@@ -188,7 +188,7 @@ private:public jvm : effect is
 
   # get a null value of type T
   #
-  public null(T type : fuzion.java.Java_Object) outcome T
+  public null(T : fuzion.java.Java_Object) outcome T
   =>
     # NYI: HACK:
     cast T (call_static (fuzion.java.Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).or_panic
@@ -196,13 +196,13 @@ private:public jvm : effect is
 
   # cast this to some other class
   #
-  public cast(T type : fuzion.java.Java_Object, thiz fuzion.java.Java_Object) outcome T
+  public cast(T : fuzion.java.Java_Object, thiz fuzion.java.Java_Object) outcome T
   =>
     cast0 T thiz.java_ref
 
   # intrinsic to rewrap thiz in T
   #
-  cast0(T type : fuzion.java.Java_Object, thiz Java_Ref) outcome T => intrinsic
+  cast0(T : fuzion.java.Java_Object, thiz Java_Ref) outcome T => intrinsic
 
 
   # intrinsic to get the length of a Java array of arbitrary type
@@ -253,7 +253,7 @@ private:public jvm : effect is
   module java_string_to_string(java_ref Java_Ref) String => intrinsic
 
 
-  primitive_to_java_object(T type : java_primitive, v T) Java_Ref
+  primitive_to_java_object(T : java_primitive, v T) Java_Ref
   => intrinsic
 
 

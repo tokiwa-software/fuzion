@@ -27,7 +27,7 @@
 # of `concur.atomic_mutate.var` using the racy access functions `get_racy` and
 # `put_racy`.
 #
-private:module racy_access(M type : mutate) : effect is
+private:module racy_access(M : mutate) : effect is
 
   # dummy operation to register a racy access.
   #
