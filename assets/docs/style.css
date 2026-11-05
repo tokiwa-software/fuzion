@@ -169,10 +169,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd details{
-  margin: 1em;
-
-  /* marker needs more space */
-  margin-left: 2em;
+  /* Extra left space accommodates the disclosure marker. */
+  margin: 1em 0 1em 2em;
   border: 2px outset rgb(0 0 0 / 10%);
 }
 
