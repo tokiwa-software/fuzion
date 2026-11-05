@@ -1274,7 +1274,7 @@ public class AstErrors extends ANY
         outerLevels.add(o);
         qualifiedCalls
           .append(qualifiedCalls.length() > 0 ? " or " : "")
-          .append(code(o.qualifiedNameHuman() + (o.isUniverse() ? "." : ".this.") + fn.baseNameHuman()));
+          .append(code(o.qualifiedNameHuman() + (o.isUniverse() || o.isCotype() ? "." : ".this.") + fn.baseNameHuman()));
       }
     error(pos,
           "Ambiguous targets found for " + operation + " to " + sbn(fn.baseNameHuman()),
