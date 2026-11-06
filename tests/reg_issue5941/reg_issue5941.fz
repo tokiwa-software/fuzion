@@ -30,7 +30,7 @@ reg_issue5941 =>
   #
   p(X : Any) is
 
-    f(V : Any..., v V...) =>
+    f(V... : Any, v V...) =>
 
   # using inheritance
   h : p unit is
@@ -54,7 +54,7 @@ reg_issue5941 =>
   #
   q(X : Any) is
 
-    f(V : Any..., v V...) => say v
+    f(V... : Any, v V...) => say v
 
   # using inheritance
   hq : q unit is

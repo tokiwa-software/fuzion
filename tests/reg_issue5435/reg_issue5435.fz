@@ -97,7 +97,7 @@ reg_issue5435 =>
     redef i(M type ...)  => say "hi"       # 9. should flag an error, cannot redefine      type parameter as open type parameter
 
 
-  x(P : Any...) is
+  x(P... : Any) is
     g(x P...) =>
 
   y : x i32 bool unit is

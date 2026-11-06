@@ -164,7 +164,7 @@ genericstest is
 
   opengenerics12 =>
 
-    F(A : Any...) ref is
+    F(A... : Any) ref is
       f(a A...) unit => abstract
 
     G ref : F i32 bool i32 is

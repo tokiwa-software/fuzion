@@ -26,7 +26,7 @@
 reg_issue5433 =>
 
   a(R : Any,
-    A : Any...) is
+    A... : Any) is
 
     b is
       c(arg A...) unit => abstract
