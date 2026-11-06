@@ -3,7 +3,7 @@ reg_issue4252.fz:24:1: error 1: Failed to infer actual type parameters
 say <| (-)
 ^^^^^^^^^^
 In call to 'infix_right <|', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'A, R'
-Type inference failed for 2 type parameters 'A', 'R'
+Expected type parameters: 'A, R, _'
+Type inference failed for 3 type parameters 'A', 'R', '_'
 
 one error.

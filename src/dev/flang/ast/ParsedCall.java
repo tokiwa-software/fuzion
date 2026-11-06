@@ -474,26 +474,27 @@ public class ParsedCall extends Call
     if (l == this  /* resolution did not replace this call by sth different */ &&
         _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
-        checkPartialAmbiguity(res, context, expectedType);
-        checkTypeFeaturePartialAmbiguity(res, context, expectedType);
+        var lambdaTargetType = expectedType.selfOrConstraint(context);
+        checkPartialAmbiguity(res, context, lambdaTargetType);
+        checkTypeFeaturePartialAmbiguity(res, context, lambdaTargetType);
         if (!isDefunct() &&/* checkTypeFeaturePartialAmbiguity may have set
 _calledFeature to error */
           (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
             _pendingError instanceof PendingNotFound pn     ||
 
             // convert pre/postfix to infix, e.g., `1-` -> `x->1-x` */
-            isPartialInfix(res, expectedType)               ||
+            isPartialInfix(res, lambdaTargetType)               ||
 
             // otherwise, try to solve inconsistent type
             paa != null                              &&
             (typeForInferencing() == null                             ||
              typeForInferencing() != Types.t_ERROR &&
-             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.selfOrConstraint().feature())
+             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(lambdaTargetType.feature())
              // !typeForInferencing().isFunctionType(res)                    -- original code
-             // expectedType.isAssignableFrom(typeForInferencing()).no()     -- new code, does not work, unclear why!
+             // lambdaTargetType.isAssignableFrom(typeForInferencing()).no()     -- new code, does not work, unclear why!
             )))
           {
-            l = applyPartially(res, context, expectedType);
+            l = applyPartially(res, context, lambdaTargetType);
           }
       }
     return l;
@@ -600,14 +601,15 @@ _calledFeature to error */
    *
    * @param context the source code context where this Expr is used
    *
-   * @param t the type this expression is assigned to.
+   * @param lambdaTargetType the type this expression is assigned to, must not be a type type
+   * parameter, but can be a type parameter's constraint.
    *
    * @return the resulting Lazy of Function feature
    */
-  Expr applyPartially(Resolution res, Context context, AbstractType t)
+  Expr applyPartially(Resolution res, Context context, AbstractType lambdaTargetType)
   {
     Expr result;
-    var n = t.arity(res);
+    var n = lambdaTargetType.arity(res);
     if (mustNotContainDeclarations("a partially applied function call", context.outerFeature()))
       {
         suspendPendingNotFound();
@@ -636,7 +638,7 @@ _calledFeature to error */
                 _actuals.add(c);
               }
           }
-        if (isPartialInfix(res, t))
+        if (isPartialInfix(res, lambdaTargetType))
           {
             _name =
               _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX)

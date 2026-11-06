@@ -32,13 +32,13 @@ is
 
   # print the given string followed be new line
   #
-  public println (s Any) unit =>
+  public println (s _ : Any) unit =>
     print (s.as_string + (codepoint 10))
 
 
   # print the given string
   #
-  public print (s Any) unit =>
+  public print (s _ : Any) unit =>
     # NYI: BUG: error handling, maybe we should raise
     # some kind of IO runtime fault here?
     if s.as_string.utf8.count > os.page_size

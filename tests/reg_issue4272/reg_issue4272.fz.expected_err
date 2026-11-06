@@ -1,17 +1,9 @@
 
-reg_issue4272.fz:24:9: error 1: Unused, non public field 'x'
-ex is {{x:=42}}; say ex.x
---------^
-To solve this, do either of the following
-  - use the field
-  - explicitly ignore the result by using '_' instead of 'x'
-
-
-reg_issue4272.fz:24:25: error 2: Could not find called feature
+reg_issue4272.fz:24:25: error 1: Could not find called feature
 ex is {{x:=42}}; say ex.x
 ------------------------^
 Feature not found: 'x' (no arguments)
 Target feature: 'ex'
 In call: 'ex.x'
 
-2 errors.
+one error.
