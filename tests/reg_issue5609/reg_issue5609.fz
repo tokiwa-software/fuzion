@@ -29,7 +29,7 @@ reg_issue5609 =>
     =>
       x
 
-  b(X type) : a X 4 is
+  b(X : Any) : a X 4 is
     redef c X
       pre else X : i32
     => x

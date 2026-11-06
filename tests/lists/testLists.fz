@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 testLists is
-  List(T type) is
+  List(T : Any) is
     xb is say "B.xb"
     Node (
       el T,

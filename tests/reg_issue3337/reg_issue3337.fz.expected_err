@@ -32,13 +32,13 @@ To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:34:22: error 3: Ambiguous type
-  test7(String type) String =>                   #  7. should flag an error: `String` ambiguous
+  test7(String : Any) String =>                   #  7. should flag an error: `String` ambiguous
 ---------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
 Possible features that match this type:
 'reg_issue3337.test7.String' defined at reg_issue3337.fz:34:9
-  test7(String type) String =>                   #  7. should flag an error: `String` ambiguous
+  test7(String : Any) String =>                   #  7. should flag an error: `String` ambiguous
 --------^^^^^^
 and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
@@ -48,13 +48,13 @@ To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:35:29: error 4: Ambiguous type
-  test8(String type) option String =>            #  8. should flag an error: `option String` ambiguous
+  test8(String : Any) option String =>            #  8. should flag an error: `option String` ambiguous
 ----------------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
 Possible features that match this type:
 'reg_issue3337.test8.String' defined at reg_issue3337.fz:35:9
-  test8(String type) option String =>            #  8. should flag an error: `option String` ambiguous
+  test8(String : Any) option String =>            #  8. should flag an error: `option String` ambiguous
 --------^^^^^^
 and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
@@ -128,13 +128,13 @@ To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:36:37: error 9: Ambiguous type
-  test9(String type) is _ := option String nil   #  9. should flag an error: `option String` ambiguous
+  test9(String : Any) is _ := option String nil   #  9. should flag an error: `option String` ambiguous
 ------------------------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
 Possible features that match this type:
 'reg_issue3337.test9.String' defined at reg_issue3337.fz:36:9
-  test9(String type) is _ := option String nil   #  9. should flag an error: `option String` ambiguous
+  test9(String : Any) is _ := option String nil   #  9. should flag an error: `option String` ambiguous
 --------^^^^^^
 and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
@@ -144,13 +144,13 @@ To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:37:38: error 10: Ambiguous type
-  test10(String type) => _ := option String nil  # 10. should flag an error: `option String` ambiguous
+  test10(String : Any) => _ := option String nil  # 10. should flag an error: `option String` ambiguous
 -------------------------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
 Possible features that match this type:
 'reg_issue3337.test10.String' defined at reg_issue3337.fz:37:10
-  test10(String type) => _ := option String nil  # 10. should flag an error: `option String` ambiguous
+  test10(String : Any) => _ := option String nil  # 10. should flag an error: `option String` ambiguous
 ---------^^^^^^
 and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is

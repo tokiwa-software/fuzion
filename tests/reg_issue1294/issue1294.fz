@@ -35,7 +35,7 @@
 scenario1 =>
   fs b
 
-  a(T type) is
+  a(T : Any) is
     type.zero option T => abstract
 
   b : a b is
@@ -54,10 +54,10 @@ scenario1
 
 scenario2 is
 
-  M(T type) ref is
+  M(T : Any) ref is
     e T => abstract
 
-  a(T type) is
+  a(T : Any) is
     type.z => zero
     type.zero T => abstract
 

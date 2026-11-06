@@ -28,7 +28,7 @@ reg_issue5941 =>
 
   # example code from #5941
   #
-  p(X type) is
+  p(X : Any) is
 
     f(V : Any..., v V...) =>
 
@@ -52,7 +52,7 @@ reg_issue5941 =>
 
   # example code from #5941
   #
-  q(X type) is
+  q(X : Any) is
 
     f(V : Any..., v V...) => say v
 

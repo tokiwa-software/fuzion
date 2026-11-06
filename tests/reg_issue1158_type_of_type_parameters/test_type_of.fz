@@ -79,7 +79,7 @@ test_type_of is
   chck_cmp $(type_as_value f64         ) "f64"
   chck_cmp $(type_as_value (option i32)) "option i32"
 
-  t(T type) => T
+  t(T : Any) => T
   chck_cmp $(t f64         ) "f64"
   chck_cmp $(t (option i32)) "option i32"
 

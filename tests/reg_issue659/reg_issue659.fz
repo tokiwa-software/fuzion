@@ -23,7 +23,7 @@
 
 reg_issue659 =>
 
-  parser(I type) ref is
+  parser(I : Any) ref is
     parse(i i32) choice I u32 => abstract
     o parser I := parser.this
     map(I2 : Any, m I -> I2) : parser I2 is

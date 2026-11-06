@@ -92,7 +92,7 @@ catch_postcondition is
 
   # convenience feature to install post_fault handler:
   #
-  handle_post(T type) is
+  handle_post(T : Any) is
 
     # try and catch to be redefined by user
     #

@@ -30,10 +30,10 @@ redef_test unit =>
   case1 =>
     # example from #1387
     x is
-      q(T type) => say "x: $T"
+      q(T : Any) => say "x: $T"
 
     y : x is
-      redef q(T type) => say "y: $T"
+      redef q(T : Any) => say "y: $T"
 
     x.q i64
     x.q String

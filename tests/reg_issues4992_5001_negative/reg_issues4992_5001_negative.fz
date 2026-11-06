@@ -156,8 +156,8 @@ reg_issues4992_5000 =>
   # minimalist example for #5001
   #
   case7 =>
-    box(B type) is
-    x(A type) is
+    box(B : Any) is
+    x(A : Any) is
       type.i(U type : box A) =>
     (x f32).i (box i64)  # 5. should flag an error: wrong type parameter `box i64` instead of `box f32`
 

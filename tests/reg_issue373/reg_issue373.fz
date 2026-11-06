@@ -23,7 +23,7 @@
 
 reg_issue373 =>
 
-  str(U type) ref is
+  str(U : Any) ref is
 
     a U => abstract
 

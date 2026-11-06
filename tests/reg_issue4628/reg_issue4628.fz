@@ -25,24 +25,24 @@ reg_issue4628 =>
 
   x(T type : numeric) is
 
-  a(U type) =>
+  a(U : Any) =>
     if U : numeric then
       _ := x U             # works!
 
-  b(V type)
+  b(V : Any)
     pre
       V : numeric
   =>
       _ := x V             # unjustified error!
 
-  c(W type)
+  c(W : Any)
     pre
       W : numeric
   =>
     q(a x W) => say "q"   # unjustified error!
     q (x W)               # unjustified error!
 
-  d(X type)
+  d(X : Any)
   =>
     if X : numeric
       q(a x X) => say "q" # unjustified error!

@@ -25,7 +25,7 @@
 
 inherit_outer is
 
-  eimer(T type) is
+  eimer(T : Any) is
 
     v T => abstract
 
@@ -42,13 +42,13 @@ inherit_outer is
 
 
 inherit_outer_small is
-  eimer(T type) is
+  eimer(T : Any) is
     v T => abstract
     map(B : Any, f T->B) B : eimer B =>
       f eimer.this.v
 
 reg_issue1207 =>
-  eimer(T type) is
+  eimer(T : Any) is
     v T => abstract
     map(B : Any, f T->B) B : eimer B =>
       f eimer.this.v

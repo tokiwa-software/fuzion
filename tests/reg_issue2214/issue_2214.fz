@@ -37,7 +37,7 @@ scenario1 =>
     public redef call(i i32) unit =>
   _ := (a i32).m u
 
-  a(T type) is
+  a(T : Any) is
     m(B : Any, f T->B) : a B is
       say "T is $T"
       say "B is $B"

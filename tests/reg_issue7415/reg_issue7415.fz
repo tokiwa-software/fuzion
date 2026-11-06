@@ -29,7 +29,7 @@ reg_issue7415 =>
 
   # the original example fro #7415
 
-  x(T type) is
+  x(T : Any) is
     y(f T->T) =>
     z(F type : T->T, f F) =>
 

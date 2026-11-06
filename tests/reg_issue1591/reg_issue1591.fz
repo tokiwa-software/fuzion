@@ -24,7 +24,7 @@
 reg_issue1591 =>
 
 
-  nil_option(T type) option T => nil
+  nil_option(T : Any) option T => nil
   val_option(T : Any, v T) option T => v
 
   a(T : Any, x option T) =>

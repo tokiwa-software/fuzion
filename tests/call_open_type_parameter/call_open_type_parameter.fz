@@ -57,7 +57,7 @@ call_open_type_parameter =>
   # second case from #5738
   #
   case3 =>
-    x(A type) =>
+    x(A : Any) =>
       say A
       say (type_of A)
 

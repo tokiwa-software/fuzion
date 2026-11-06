@@ -24,7 +24,7 @@
 scenario1 =>
   fs b
 
-  a(T type) is
+  a(T : Any) is
     type.zero T => abstract
 
   b : a bool is

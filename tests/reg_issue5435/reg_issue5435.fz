@@ -30,7 +30,7 @@ reg_issue5435 =>
   h is
     f(A type : integer, v A) unit =>
     g(A type ...) => unit
-    i(A type) => unit
+    i(A : Any) => unit
 
   # original example from #5435 with incompatible type constraint
   g : h is
@@ -91,7 +91,7 @@ reg_issue5435 =>
   r : h is
 
     # redefining open type parameter as type parameter
-    redef g(L type)      => say "hi"       # 8. should flag an error, cannot redefine open type parameter as      type parameter
+    redef g(L : Any)      => say "hi"       # 8. should flag an error, cannot redefine open type parameter as      type parameter
 
     # redefining type parameter as open type parameter
     redef i(M type ...)  => say "hi"       # 9. should flag an error, cannot redefine      type parameter as open type parameter

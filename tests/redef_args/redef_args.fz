@@ -34,7 +34,7 @@ redef_args is
            "FAILED: "
     say (s + msg)
 
-  RComplex(RT type) ref is
+  RComplex(RT : Any) ref is
     real RT => abstract
     imag RT => abstract
 

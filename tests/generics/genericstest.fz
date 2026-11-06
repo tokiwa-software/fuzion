@@ -34,7 +34,7 @@ genericstest is
            "FAILED: "
     say (s + msg)
 
-  List(T type) is
+  List(T : Any) is
     Node(
       el T,
       n, p OptNode) ref : Any is
@@ -185,10 +185,10 @@ genericstest is
     # check that type parameters are not inherited and can be replaced
     # by a type parameter with the same name in the heir:
     #
-    p(T type)                is show_tp => $T
-    x(T type) : p (array  T) is show_tx => $T
-    y(T type) : x (option T) is show_ty => $T
-    z(T type) : y (list   T) is show_tz => $T
+    p(T : Any)                is show_tp => $T
+    x(T : Any) : p (array  T) is show_tx => $T
+    y(T : Any) : x (option T) is show_ty => $T
+    z(T : Any) : y (list   T) is show_tz => $T
 
     a0 := z u64
     chck (a0.show_tp = "array (option (list u64))") "(z u64).show_tp should be array (option (list u64))"
@@ -204,10 +204,10 @@ genericstest is
 
     # base line test with different type parameter names
     #
-    p1(TP type)                  is show_tp => $TP
-    x1(TX type) : p1 (array  TX) is show_tx => $TX
-    y1(TY type) : x1 (option TY) is show_ty => $TY
-    z1(TZ type) : y1 (list   TZ) is show_tz => $TZ  # note that TP, TX, TY are not visible here
+    p1(TP : Any)                  is show_tp => $TP
+    x1(TX : Any) : p1 (array  TX) is show_tx => $TX
+    y1(TY : Any) : x1 (option TY) is show_ty => $TY
+    z1(TZ : Any) : y1 (list   TZ) is show_tz => $TZ  # note that TP, TX, TY are not visible here
 
     a1 := z1 i8
     chck (a1.show_tp = "array (option (list i8))") "(z i8).show_tp should be array (option (list i8))"

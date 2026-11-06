@@ -6,7 +6,7 @@ In 'reg_issue5503.b.f' that redefines 'reg_issue5503.a.f' type parameter count i
 Original type parameters: 'X'
 redefined type parameters: ''
 Original feature declared at reg_issue5503.fz:30:5
-    f(X type) =>
+    f(X : Any) =>
 ----^
 
 

@@ -31,5 +31,5 @@ reg_issue1781 =>
     f(T : Any, y T) => "p"
 
   p2 is
-    f(T type) => "p.f1"
+    f(T : Any) => "p.f1"
     f(T : Any, y T) => "p.f2"

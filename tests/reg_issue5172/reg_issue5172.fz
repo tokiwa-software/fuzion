@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 reg_issue5172 =>
-  a(T type) is
+  a(T : Any) is
     b : a a.this.b is
       public redef as_string String => a.this.type.as_string
 

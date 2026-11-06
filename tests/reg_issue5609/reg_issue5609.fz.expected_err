@@ -1,6 +1,6 @@
 
 reg_issue5609.fz:32:19: error 1: Illegal use of numeric literal.
-  b(X type) : a X 4 is
+  b(X : Any) : a X 4 is
 ------------------^
 'reg_issue5609.b.X' or its constraint does not implement 'from_u32'.
 

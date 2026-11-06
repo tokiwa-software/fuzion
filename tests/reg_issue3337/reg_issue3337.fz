@@ -31,7 +31,7 @@ reg_issue3337 is
   test4(String : Any, h type : list String) =>    #  4. should flag an error: `list String` ambiguous
   test5(h type : list String, String type) is    #  5. should flag an error: `list String` ambiguous
   test6(h type : list String, String type) =>    #  6. should flag an error: `list String` ambiguous
-  test7(String type) String =>                   #  7. should flag an error: `String` ambiguous
-  test8(String type) option String =>            #  8. should flag an error: `option String` ambiguous
-  test9(String type) is _ := option String nil   #  9. should flag an error: `option String` ambiguous
-  test10(String type) => _ := option String nil  # 10. should flag an error: `option String` ambiguous
+  test7(String : Any) String =>                   #  7. should flag an error: `String` ambiguous
+  test8(String : Any) option String =>            #  8. should flag an error: `option String` ambiguous
+  test9(String : Any) is _ := option String nil   #  9. should flag an error: `option String` ambiguous
+  test10(String : Any) => _ := option String nil  # 10. should flag an error: `option String` ambiguous

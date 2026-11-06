@@ -27,7 +27,7 @@
 reg_issue5503 =>
 
   a is
-    f(X type) =>
+    f(X : Any) =>
 
   # the original example from #5503
   #
@@ -37,7 +37,7 @@ reg_issue5503 =>
   # cross-check with a correct redefinition:
   #
   c : a is
-    redef f(Y type) =>  # ok
+    redef f(Y : Any) =>  # ok
 
   # a more complex example with 3 type parameters and 2 value arguments
   #

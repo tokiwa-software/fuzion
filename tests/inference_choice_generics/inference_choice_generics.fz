@@ -23,7 +23,7 @@
 
 inference_choice_generics =>
 
-  tree(T type) : choice nil T (Branch T) is
+  tree(T : Any) : choice nil T (Branch T) is
 
   Branch(T : Any, left, right tree T) ref is
 
@@ -61,7 +61,7 @@ inference_choice_generics =>
 
   # -----------------------------
 
-  Myref(T type) ref is
+  Myref(T : Any) ref is
 
   myval               : Myref f32           is
   myval(T, U, V type) : Myref (tuple T U V) is
