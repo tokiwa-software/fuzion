@@ -853,7 +853,7 @@ argument    : visibility
 argType     : typeType                   // NYI: REMOVE!
             | typeType COLON type        // NYI: REMOVE!
             | COLON type
-            | "..."
+            | "..." COLON type
             |
             ;
    */
@@ -890,8 +890,8 @@ argType     : typeType                   // NYI: REMOVE!
                                       {
                                         isTypePar = true;
                                         i = Impl.TYPE_PARAMETER_OPEN;
-                                        t = skipColon() ? type()
-                                                        : new BuiltInType(FuzionConstants.ANY_NAME);
+                                        matchOperator(":", "argType");
+                                        t = type();
                                       }
                                     else if (isTypePrefix())
                                       {
