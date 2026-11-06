@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.StringHelpers;
@@ -2416,7 +2417,7 @@ there is no common super type of the two types (Types.t_ERROR)
     var result = this;
     if (result != Types.t_ERROR && isNormalType())
       {
-        if (!checkActualTypePars(context, feature(), generics(), unresolvedGenerics(), null, null))
+        if (!checkActualTypePars(context, feature(), generics(), null, unresolvedGenerics(), null, null))
           {
             result = Types.t_ERROR;
           }
@@ -2435,56 +2436,118 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * @param actuals the actual type parameters
    *
-   * @param unresolvedActuals when available, the list of unresolved actuals
-   * such that source code positions can be shown.
+   * @param actualPos the position of the actual arguments that `actuals` came from, either directly
+   * or via type inference.  Used to diplay source code position for inferred type, e.g. for `option
+   * _ "bla"`, this will give the position of `"bla"`.  May be null or contain null.
    *
-   * @param pos source position of the call we are checking or null, for error messages
+   * @param unresolvedActuals when available, the list of unresolved actuals such that source code
+   * positions can be shown.  Used to diplay source code position for the type, e.g. for `option
+   * String (panic "bla")`, this will give the position of `String`. May be null and contain null or
+   * a resolved types (that does not provide a position).
    *
-   * @param adjustConstraint for adjusting a constraint to the call whose generics we are checking, null if not checking generics of call.
+   * @param pos source position of the call we are checking or null, for error messages. For `option
+   * T v`, this will give the position of `option`.
+   *
+   * @param adjustConstraint for adjusting a constraint to the call whose generics we are checking,
+   * null if not checking generics of a call.
    *
    * @return true iff check was ok, false iff an error was found and reported
    */
-  static boolean checkActualTypePars(Context context, AbstractFeature af, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition pos, Function<AbstractType, AbstractType> adjustConstraint)
+  static boolean checkActualTypePars(Context context,
+                                     AbstractFeature af,
+                                     List<AbstractType> actuals,
+                                     List<HasSourcePosition> actualPositions,
+                                     List<AbstractType> unresolvedActuals,
+                                     SourcePosition pos,
+                                     Function<AbstractType, AbstractType> adjustConstraint)
   {
     var result = true;
-    var fi = af.typeArguments().iterator();
-    var ai = actuals.iterator();
-    var ui = unresolvedActuals.iterator();
-    while (fi.hasNext())
+    var ai = 0;  // index in actuals
+    for (var f : af.typeArguments())
       {
-        var f = fi.next();
-        var a = ai.hasNext() ? ai.next() : null;
-        var u = ui.hasNext() ? ui.next() : null;
-        var c = adjustConstraint == null
-          ? f.constraint(context)
-          : adjustConstraint.apply(f.constraint(context));
-        if (CHECKS) check
-          (Errors.any() || f != null);
-
-        var p = u instanceof UnresolvedType ut ? ut.pos() :
-                pos != null                    ? pos
-                                               : af.pos();
-
-        if (a == null && f.isOpenTypeParameter())
-          { // ok, no actuals given for open generic
-          }
-        else if (a != null && !a.isArtificialType())
+        var ai0 = ai;
+        while ((ai0==ai || f.isOpenTypeParameter()) && ai < actuals.size())  // run repeatedly for openTypesParameter
           {
-            a.checkLegalThisType(p, context);
-            if (!c.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
-                                          // will be checked in SourceModule.checkTypes(Feature)
-                !f.isCoTypesRelayTypeParameter() &&
-                !c.constraintAssignableFrom(context, a, null) &&
-                // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
-                (!a.isParametricType() ||
-                 f != a.typeParameter())
-                )
-              {
-                var assignableTo = new TreeSet<AbstractType>();
-                var ignore = c.constraintAssignableFrom(context, a, assignableTo);
-                AstErrors.incompatibleActualGeneric(p, f, c, a, assignableTo);
-                result = false;
-              }
+            var a = actuals.get(ai);
+            var up = unresolvedActuals != null && unresolvedActuals.size() > ai ? unresolvedActuals.get(ai) : null;
+            var ap = actualPositions   != null && actualPositions  .size() > ai ? actualPositions  .get(ai) : null;
+            var c = adjustConstraint == null
+              ? f.constraint(context)
+              : adjustConstraint.apply(f.constraint(context));
+
+            result = checkActualTypePar(context, af, f, a, ap, up, pos, c, adjustConstraint) && result;
+            ai++;
+          }
+      }
+    return result;
+  }
+
+
+
+
+  /**
+   * Check that given actual matches formal type parameter constraints of given
+   * feature.
+   *
+   * @param context the source code context where this Type is used
+   *
+   * @param af the feature whose formal type parameters we are checking against
+   *
+   * @param f the formal type parameter to check against
+   *
+   * @param actual the actual type parameter
+   *
+   * @param actualPos the position of the actual argument that `actual` came from, either directly
+   * or via type inference.  Used to diplay source code position for inferred type, e.g. for `option
+   * _ "bla"`, this will give the position of `"bla"`.  May be null.
+   *
+   * @param unresolvedActual when available, the unresolved actual such that source code positions
+   * can be shown.  Used to diplay source code position for types, e.g. for `option String (panic
+   * "bla")`, this will give the position of `String`. May be null or a resolved type (that does not
+   * provide a position).
+   *
+   * @param pos source position of the call we are checking or null, for error messages. For `option
+   * T v`, this will give the position of `option`.
+   *
+   * @param constraint the constraint on the type parameter
+   *
+   * @param adjustConstraint for adjusting a constraint to the call whose generics we are checking,
+   * null if not checking generics of call.
+   *
+   * @return true iff check was ok, false iff an error was found and reported
+   */
+  private static boolean checkActualTypePar(Context context,
+                                            AbstractFeature af,
+                                            AbstractFeature f,
+                                            AbstractType actual,
+                                            HasSourcePosition actualPos,
+                                            AbstractType unresolvedActual,
+                                            SourcePosition pos,
+                                            AbstractType constraint,
+                                            Function<AbstractType, AbstractType> adjustConstraint)
+  {
+    var result = true;
+    if (actual != null && !actual.isArtificialType())
+      {
+        var p = (actualPos        != null                     ? actualPos :
+                 unresolvedActual instanceof UnresolvedType u ? u         :
+                 pos != null                                  ? pos
+                                                              : af         ).pos();
+
+        actual.checkLegalThisType(p, context);
+        if (!constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
+                                     // will be checked in SourceModule.checkTypes(Feature)
+            !f.isCoTypesRelayTypeParameter() &&
+            !constraint.constraintAssignableFrom(context, actual, null) &&
+            // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
+            (!actual.isParametricType() ||
+             f != actual.typeParameter())
+           )
+          {
+            var assignableTo = new TreeSet<AbstractType>();
+            var ignore = constraint.constraintAssignableFrom(context, actual, assignableTo);
+            AstErrors.incompatibleActualGeneric(p, f, constraint, actual, assignableTo);
+            result = false;
           }
       }
     return result;

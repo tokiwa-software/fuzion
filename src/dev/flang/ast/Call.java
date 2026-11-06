@@ -31,6 +31,7 @@ import java.util.ListIterator;
 import dev.flang.ast.AbstractMatch.Kind;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
@@ -197,9 +198,9 @@ public class Call extends AbstractCall
 
 
   /**
-   * May be used in error messages for their positions.
+   * May be used in error messages for to get positions of unresolved types.
    */
-  private final List<AbstractType> _originalGenerics;
+  List<HasSourcePosition> _originalGenerics;
 
 
   /**
@@ -520,7 +521,7 @@ public class Call extends AbstractCall
     this._name = name;
     this._select = select;
     this._generics = generics;
-    this._originalGenerics = generics;
+    this._originalGenerics = generics.map2(x -> x instanceof HasSourcePosition p ? p : null);
     this._actuals = actuals;
     this._target = target;
     if (target instanceof Call tc)
@@ -1898,6 +1899,15 @@ public class Call extends AbstractCall
         reportConflicts(conflict, foundAt);
         reportMissingInferred(missing);
       }
+
+    for (var i = 0; i<foundAt.size(); i++)
+      {
+        var l = foundAt.get(i);
+        if (l != null && !l.isEmpty())
+          {
+            _originalGenerics.force(i, l.getFirst().v0());
+          }
+      }
   }
 
 
@@ -2181,6 +2191,7 @@ public class Call extends AbstractCall
                                 AstErrors.failedToInferOpenTypeParameterType(pos(), argnum+1, actual);
                               }
                             _generics.add(actualType);
+                            addPair(foundAt, _generics.size()-1, actual.pos(), actualType);
                             argnum++;
                           }
                       }
@@ -2392,7 +2403,7 @@ public class Call extends AbstractCall
     if (l == null)
       {
         l = new List<>();
-        foundAt.set(i, l);
+        foundAt.force(i, l);
       }
     var p = new Pair<SourcePosition, AbstractType>(pos, t);
     if (!l.contains(p))
@@ -3367,6 +3378,7 @@ public class Call extends AbstractCall
               _calledFeature,
               _generics,
               _originalGenerics,
+              null,
               pos(),
               constraint -> adjustType(res, context, constraint, null));
           }

@@ -1,0 +1,144 @@
+
+reg_issue8238.fz:41:17: error 1: Incompatible type parameter 'String' for 'A : numeric'
+  f 3 3.1 3/-/4 "hi"            #  1. should flag an error: "hi" is not `numeric`
+----------------^^^^
+formal type parameter 'A : numeric'
+actual type parameter 'String'
+assignable to constraint: 'Any',
+                          'String',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable'
+
+
+reg_issue8238.fz:42:5: error 2: Incompatible type parameter 'unit' for 'A : numeric'
+  f unit                        #  2. should flag an error: unit is not `numeric`
+----^^^^
+formal type parameter 'A : numeric'
+actual type parameter 'unit'
+assignable to constraint: 'Any',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
+                          'unit'
+
+
+reg_issue8238.fz:43:5: error 3: Incompatible type parameter 'bool' for 'A : numeric'
+    true                        #  3. should flag an error: true is not `numeric`
+----^^^^
+formal type parameter 'A : numeric'
+actual type parameter 'bool'
+assignable to constraint: 'Any',
+                          'bool',
+                          'choice false_ true_',
+                          'java_primitive',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable'
+
+
+reg_issue8238.fz:53:5: error 4: Incompatible type parameter 'String' for 'F : Unary Y X'
+    String                      #  4. should flag an error: String is not `Unary f32 i64`
+----^^^^^^
+formal type parameter 'F : Unary Y X' with constraint 'Unary f32 i64'
+actual type parameter 'String'
+assignable to constraint: 'Any',
+                          'String',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable'
+
+
+reg_issue8238.fz:54:5: error 5: Incompatible type parameter 'Unary unit unit' for 'F : Unary Y X'
+    unit->unit                  #  5. should flag an error: unit->unit is not `Unary f32 i64`
+----^^^^^^^^^^
+formal type parameter 'F : Unary Y X' with constraint 'Unary f32 i64'
+actual type parameter 'Unary unit unit'
+assignable to constraint: 'Any',
+                          'Function unit unit',
+                          'Unary unit unit'
+
+
+reg_issue8238.fz:55:13: error 6: Incompatible type parameter 'bool' for 'F : Unary Y X'
+  g i64 f32 bool                #  6. should flag an error: bool is not `Unary f32 i64`
+------------^^^^
+formal type parameter 'F : Unary Y X' with constraint 'Unary f32 i64'
+actual type parameter 'bool'
+assignable to constraint: 'Any',
+                          'bool',
+                          'choice false_ true_',
+                          'java_primitive',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable'
+
+
+reg_issue8238.fz:57:5: error 7: Incompatible type parameter 'String' for 'F : Unary Y X'
+    String                      #  7. should flag an error: String is not `Unary f32 i64`
+----^^^^^^
+formal type parameter 'F : Unary Y X' with constraint 'Unary f32 i64'
+actual type parameter 'String'
+assignable to constraint: 'Any',
+                          'String',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable'
+
+
+reg_issue8238.fz:58:5: error 8: Incompatible type parameter 'Unary unit unit' for 'F : Unary Y X'
+    unit->unit                  #  8. should flag an error: unit->unit is not `Unary f32 i64`
+----^^^^^^^^^^
+formal type parameter 'F : Unary Y X' with constraint 'Unary f32 i64'
+actual type parameter 'Unary unit unit'
+assignable to constraint: 'Any',
+                          'Function unit unit',
+                          'Unary unit unit'
+
+
+reg_issue8238.fz:66:5: error 9: Incompatible type parameter 'unit' for 'T : numeric'
+  h [option unit]               #  9. should flag an error: `unit` is not `numeric`
+----^^^^^^^^^^^^^
+formal type parameter 'T : numeric'
+actual type parameter 'unit'
+assignable to constraint: 'Any',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
+                          'unit'
+
+
+reg_issue8238.fz:75:3: error 10: Incompatible type parameter 'unit' for 'T : numeric'
+  i _    (Sequence (option unit))  # 10. should flag an error: `unit` is not `numeric`
+--^
+formal type parameter 'T : numeric'
+actual type parameter 'unit'
+assignable to constraint: 'Any',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
+                          'unit'
+
+
+reg_issue8238.fz:77:5: error 11: Incompatible type parameter 'bool' for 'T : numeric'
+  i bool (Sequence (option bool))  # 11. should flag an error: `bool` is not `numeric`
+----^^^^
+formal type parameter 'T : numeric'
+actual type parameter 'bool'
+assignable to constraint: 'Any',
+                          'bool',
+                          'choice false_ true_',
+                          'java_primitive',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable'
+
+11 errors.
