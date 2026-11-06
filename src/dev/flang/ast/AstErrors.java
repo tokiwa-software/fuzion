@@ -1457,15 +1457,32 @@ public class AstErrors extends ANY
 
   public static void ambiguousType(SourcePosition pos,
                                    String t,
-                                   List<AbstractFeature> possibilities)
+                                   List<FeatureAndOuter> possibilities)
   {
+    if (PRECONDITIONS) require
+      (possibilities.size() > 1);
+
+    var qualifiedTypes = new StringBuilder();
+    var features = new TreeSet<AbstractFeature>();
+    for (var fo : possibilities)
+      {
+        var o = fo._outer;
+        features.add(fo._feature);
+        qualifiedTypes
+          .append(qualifiedTypes.length() > 0 ? " or " : "")
+          .append(code(o.qualifiedNameHuman() + (o.isUniverse() ? "." : ".this.") + t));
+      }
     error(pos,
           "Ambiguous type",
           "For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.\n" +
           "Type that is ambiguous: " + st(t) + "\n" +
-          "Possible features that match this type:\n" +
-          featureList(possibilities) + "\n" +
-          "To solve this, rename these features such that each one has a unique name.");
+          (features.size() == possibilities.size()
+           ? ("Possible features that match this type:\n" +
+              featureList(possibilities.map2(fo -> fo._feature)) + "\n" +
+              "To solve this, rename these features such that each one has a unique name.")
+           : ("The same feature was found at different levels of outer features, resulting in different types:\n" +
+              featuresAndOuterList(possibilities) + "\n" +
+              "To solve this, you may qualify the type using " + qualifiedTypes + ".")));
   }
 
   public static void typeNotFound(SourcePosition pos,

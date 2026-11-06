@@ -1,0 +1,33 @@
+
+reg_issue37.fz:29:11: error 1: Ambiguous type
+    b : a b is                     # 1. should flag an error: `b` found in `a.b` and in `a`
+----------^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'b'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.a.b' found 'reg_issue37.a.b' defined at reg_issue37.fz:29:5
+    b : a b is                     # 1. should flag an error: `b` found in `a.b` and in `a`
+----^
+and in 'reg_issue37.a' found 'reg_issue37.a.b' defined at reg_issue37.fz:29:5
+    b : a b is                     # 1. should flag an error: `b` found in `a.b` and in `a`
+----^
+
+To solve this, you may qualify the type using 'reg_issue37.a.b.this.b' or 'reg_issue37.a.this.b'.
+
+
+reg_issue37.fz:33:11: error 2: Ambiguous type
+      f(v z) => say "f"            # 2. should flag an error: `z` found in `x.y` and in `x`
+----------^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'z'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.x.y' found 'reg_issue37.x.z' defined at reg_issue37.fz:34:5
+    z is
+----^
+and in 'reg_issue37.x' found 'reg_issue37.x.z' defined at reg_issue37.fz:34:5
+    z is
+----^
+
+To solve this, you may qualify the type using 'reg_issue37.x.y.this.z' or 'reg_issue37.x.this.z'.
+
+2 errors.
