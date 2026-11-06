@@ -2130,7 +2130,8 @@ public class Call extends AbstractCall
               {
                 g = g.typeParameter().constraint();
               }
-            inferGeneric(res, context, c, true, g, pos(), conflict, foundAt, -1);
+            var p = _originalGenerics.size() >= i ? _originalGenerics.get(i) : null;
+            inferGeneric(res, context, c, true, g, p != null ? p.pos() : pos(), conflict, foundAt, -1);
           }
       }
   }
