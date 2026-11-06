@@ -41,7 +41,7 @@ scenario1 =>
   b : a b is
     redef type.zero option b => nil
 
-  fs(F type : a F) =>
+  fs(F : a F) =>
     _ := F.zero
 
 scenario1
@@ -69,7 +69,7 @@ scenario2 is
 
     fixed redef type.zero scenario2.b => scenario2.b
 
-  fs(F type : a F) =>
+  fs(F : a F) =>
     _ := F.z
     _ := F.sum.e
 
@@ -87,7 +87,7 @@ scenario3 =>
 
   fs f64
 
-  fs(F type : float) =>
+  fs(F : float) =>
     _ := F.sum.e
 
 scenario3
@@ -240,8 +240,8 @@ scenario7 is
   # respectively. `v1`, `v2`, `w1` and `w2` inherit from `u1` or `u2` giving `q2` or `q3` as
   # type parameters in both possible orders.
   #
-  u1(A type : p A, B type : p B) : p A is
-  u2(A type : p A, B type : p B) : p B is
+  u1(A : p A, B : p B) : p A is
+  u2(A : p A, B : p B) : p B is
 
   v1 : u1 q2 q3 is
   v2 : u1 q3 q2 is
@@ -343,7 +343,7 @@ run_scenario8 =>
   s8 => scenario8
 
   arr array scenario8.intM2 := [ s8.intM2 true, s8.intM2 false ]
-  x (T type : scenario8.num0, arr2 array T) is
+  x (T : scenario8.num0, arr2 array T) is
      say (arr2.fold T.sum)
   _ := x arr
 

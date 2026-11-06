@@ -31,7 +31,7 @@ reg_issue7415 =>
 
   x(T : Any) is
     y(f T->T) =>
-    z(F type : T->T, f F) =>
+    z(F : T->T, f F) =>
 
   x i64 .y +3   # works
   x i64 .z +3   # fails
@@ -41,11 +41,11 @@ reg_issue7415 =>
   # more and more complex tests using several outer features, several args and different
   # kinds of partial application or lambdas:
 
-  v(S type : property.hashable,
+  v(S : property.hashable,
     s S)
   is
 
-    x(T type : property.orderable,
+    x(T : property.orderable,
       t T)
     is
 
@@ -55,7 +55,7 @@ reg_issue7415 =>
         f t |> say
 
       # unary function argument that specializes feature
-      q(F type : T->T, f F)
+      q(F : T->T, f F)
       =>
         f t |> say
 
@@ -65,7 +65,7 @@ reg_issue7415 =>
         f s t |> say
 
       # binary function argument that specializes feature
-      s(F type : (S,T)->S, f F)
+      s(F : (S,T)->S, f F)
       =>
         f s t |> say
 

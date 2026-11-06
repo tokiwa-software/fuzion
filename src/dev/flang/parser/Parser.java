@@ -86,7 +86,7 @@ public class Parser extends Lexer
 
 
   /**
-   * Flag to enable type parameters using `f(T type : Any)` instead of `f(T : Any)`.
+   * Flag to enable type parameters using `f(T : Any)` instead of `f(T : Any)`.
    */
   static boolean ALLOW_TYPE_PARAMETERS_USING_TYPE = false;
 

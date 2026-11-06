@@ -23,10 +23,10 @@
 
 open_type_dots =>
 
-  My_Func(R type : String,
+  My_Func(R : String,
                   A... : Any) ref is
 
     my_call(a A) R => abstract
 
-  feat(X type : String, x X...) =>
+  feat(X : String, x X...) =>
     "bla"

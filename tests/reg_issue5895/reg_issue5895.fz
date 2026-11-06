@@ -156,7 +156,7 @@ reg_issue5895 =>
   # check type parameter whose constraint has open type parameters:
   #
 
-  typepar1(O type : open,
+  typepar1(O : open,
            o O)
   is
     g0 => o.f0 nil
@@ -174,7 +174,7 @@ reg_issue5895 =>
   chk "r1.f2 f64, i64, 3.14 314"          (typepar1 redef1).g2
   chk "r1.f3 i64, i64, [i64] 1 2 [i64 3]" (typepar1 redef1).g3
 
-  typepar2(O type : open i8,
+  typepar2(O : open i8,
            o O)
   is
     g0 => o.f0 nil -12
@@ -187,7 +187,7 @@ reg_issue5895 =>
   chk "r2.f2 f64, i64, -12 3.14 314"          (typepar2 redef2).g2
   chk "r2.f3 i64, i64, [i64] -12 1 2 [i64 3]" (typepar2 redef2).g3
 
-  typepar3(O type : open i8 nil,
+  typepar3(O : open i8 nil,
            o O)
   is
     g0 => o.f0 unit -12 nil
@@ -200,7 +200,7 @@ reg_issue5895 =>
   chk "r3.f2 f64, i64, -12 --nil-- 3.14 314"                              (typepar3 redef3).g2
   chk "r3.f3 i64, i64, [i64, u8, u8] -12 --nil-- 1 2 [i64 3, u8 3, u8 4]" (typepar3 redef3).g3
 
-  typepar4(O type : open codepoint codepoint,
+  typepar4(O : open codepoint codepoint,
            o O)
   is
     g0 => o.f0 nil "x" "y"
@@ -223,9 +223,9 @@ reg_issue5895 =>
   fo1 : fo i64 is
   fo2 : fo i64 i64 is
 
-  q0(F type : fo0, f F) => f.call
-  q1(F type : fo1, f F) => f.call 42
-  q2(F type : fo2, f F) => f.call 42 42
+  q0(F : fo0, f F) => f.call
+  q1(F : fo1, f F) => f.call 42
+  q2(F : fo2, f F) => f.call 42 42
 
   q0 fo0
   q1 fo1
@@ -237,7 +237,7 @@ reg_issue5895 =>
 
   fc1 : fc i64 is
 
-  qc(F type : fc1, f F) => f.call 42
+  qc(F : fc1, f F) => f.call 42
 
   qc fc1
 

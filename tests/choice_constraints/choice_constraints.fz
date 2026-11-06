@@ -80,11 +80,11 @@ choice_constraints =>
     n nil => say n
 
 
-  switch.test(X type : switch.this, x X) X => x
+  switch.test(X : switch.this, x X) X => x
   say <| (id (option String) nil).test (option String) nil
 
 
-  switch.test2(X type : switch.this, x X) =>
+  switch.test2(X : switch.this, x X) =>
     match x
       a A => say a
       b B => say b

@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 a(T : Any, v T) is
-  u(F type : T->T, f F) => ignore (f v)
+  u(F : T->T, f F) => ignore (f v)
   v(f T->T)             => ignore (f v)
 
 a "hi alice"   .u                o->o+"!"

@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-wrap(T type : integer, val T) : monad T is
+wrap(T : integer, val T) : monad T is
 
   # monadic operator within the same monad
   #
@@ -35,7 +35,7 @@ wrap(T type : integer, val T) : monad T is
   #
   # Apply f to elements of type A and wrap them in MB.
   #
-  public fixed redef infix >>=~ (B : Any, MB type : monad B, f T -> MB) MB =>
+  public fixed redef infix >>=~ (B : Any, MB : monad B, f T -> MB) MB =>
     f val
 
 

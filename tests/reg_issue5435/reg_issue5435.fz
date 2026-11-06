@@ -28,18 +28,18 @@
 reg_issue5435 =>
 
   h is
-    f(A type : integer, v A) unit =>
+    f(A : integer, v A) unit =>
     g(A type ...) => unit
     i(A : Any) => unit
 
   # original example from #5435 with incompatible type constraint
   g : h is
-    redef f(B type : String, v B) =>       # 1. should flag an error: wrong type constraint for `B`
+    redef f(B : String, v B) =>       # 1. should flag an error: wrong type constraint for `B`
       say "type $B value $v"
 
   # original example from #5435 with compatible type constraint
   i : h is
-    redef f(C type : Any, v C) =>          # ok, type constraint is relaxed
+    redef f(C : Any, v C) =>          # ok, type constraint is relaxed
       say "type $C value $v"
 
   # original example from #5435 with compatible type constraint
@@ -49,7 +49,7 @@ reg_issue5435 =>
 
   # original example from #5435 with same type constraint
   k : h is
-    redef f(F type : integer, v F) =>      # ok, type constraint is the same
+    redef f(F : integer, v F) =>      # ok, type constraint is the same
       say "type $F value $v"
 
   # changing type parameter into value argument results in a type parameter count mismatch

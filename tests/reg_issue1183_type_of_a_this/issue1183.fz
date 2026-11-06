@@ -43,7 +43,7 @@ issue1183 is
   say (my_type_of b.o)
 
   # next level: doing the same thing via a type parameter
-  q(T type : a, v T) =>
+  q(T : a, v T) =>
     say (type_of    v.o)
     say (my_type_of v.o)
 

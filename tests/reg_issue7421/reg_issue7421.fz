@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 e is
-  a(E type : e) unit =>
+  a(E : e) unit =>
     b E
 
-  b(E type : e.this) unit =>
+  b(E : e.this) unit =>

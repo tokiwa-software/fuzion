@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 a(U : Any,
-  S type : Sequence U,
+  S : Sequence U,
   s S) U => s[0]
 
 say (a bool (Sequence i32) [42])

@@ -23,7 +23,7 @@
 
 reg_issue5592 =>
   f is
-    g(U type : f.this) =>
+    g(U : f.this) =>
       say U
 
     h(U : Any)
@@ -38,7 +38,7 @@ reg_issue5592 =>
       else
         say "constraint not satisfied"
 
-    j(U type : option f.this) =>
+    j(U : option f.this) =>
       say U
 
     k(U : Any)

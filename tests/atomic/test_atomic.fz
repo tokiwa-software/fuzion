@@ -53,7 +53,7 @@ test_atomic is
       a1.racy_write d
       chck0 a1.racy_read d eq
 
-  test(T type : property.equatable, a, b, c, d T) =>
+  test(T : property.equatable, a, b, c, d T) =>
     test0 a b c d (v1,v2)->v1=v2
 
   p(x, y i64) : property.equatable is

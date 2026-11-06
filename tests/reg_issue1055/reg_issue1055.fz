@@ -30,7 +30,7 @@
 # ```
 # ex =>
 #
-#   c(T type : float T) is
+#   c(T : float T) is
 #     say T.type.fract
 #
 #   c f32
@@ -81,7 +81,7 @@
 
 reg_issue1055 =>
 
-  c(T type : float T) is
+  c(T : float T) is
     say T.type.fract
 
   c f32

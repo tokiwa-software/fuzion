@@ -30,7 +30,7 @@ scenario1 =>
   b : a bool is
     redef type.zero => true
 
-  fs(F type : a F) =>
+  fs(F : a F) =>
     u := F.zero
     say u
 

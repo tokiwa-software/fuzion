@@ -23,7 +23,7 @@
 
 reg_issue4628 =>
 
-  x(T type : numeric) is
+  x(T : numeric) is
 
   a(U : Any) =>
     if U : numeric then

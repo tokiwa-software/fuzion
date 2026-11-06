@@ -136,7 +136,7 @@ choice_reflection =>
     o := s.first
     test2a nil nil _ o
 
-  test2a(A, B : Any, C type : choice A B, v C) =>
+  test2a(A, B : Any, C : choice A B, v C) =>
     match v
       A => "matches A: $v type $C $(v.ordinal)"
       B => "matches B: $v type $C $(v.ordinal)"
@@ -185,7 +185,7 @@ choice_reflection =>
   # A feature callable on any choice type with two parameters
   #
   reflect_on_choice(X, Y : Any,
-                    C type : choice X Y,
+                    C : choice X Y,
                     c C)
   =>
     c.apply T,v->

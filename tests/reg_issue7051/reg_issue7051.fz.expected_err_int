@@ -26,10 +26,10 @@ reg_issue7051.outer2.post a i64 at reg_issue7051.fz:28:12
       post result < 0
 -----------^^^^^^^^^^
 reg_issue7051.outer2.post a i64 at reg_issue7051.fz:34:11
-    redef a(T type : integer, t T) T =>
+    redef a(T : integer, t T) T =>
 ----------^
 reg_issue7051.outer2.a#2 i64 at reg_issue7051.fz:34:11
-    redef a(T type : integer, t T) T =>
+    redef a(T : integer, t T) T =>
 ----------^
 reg_issue7051 at reg_issue7051.fz:37:3
   outer2.a 3

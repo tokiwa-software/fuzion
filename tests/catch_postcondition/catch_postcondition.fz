@@ -29,7 +29,7 @@ catch_postcondition is
   # test feature will cause postcondition failure if called with types
   # smaller than 64 bits:
   #
-  test(T type : integer) =>
+  test(T : integer) =>
 
     # duplicate x
     #

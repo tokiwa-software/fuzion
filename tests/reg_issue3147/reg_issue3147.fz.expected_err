@@ -8,7 +8,7 @@ inherits or declares abstract feature 't.type.doit' declared at reg_issue3147.fz
   type.doit unit => abstract
 -------^^^^
 which is called at reg_issue3147.fz:27:21
-test(X type : t) => X.doit
+test(X : t) => X.doit
 --------------------^^^^^^
 without providing an implementation
 
