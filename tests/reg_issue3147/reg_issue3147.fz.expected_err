@@ -7,9 +7,9 @@ Feature 't.type' instantiated at <source position not available>
 inherits or declares abstract feature 't.type.doit' declared at reg_issue3147.fz:25:8
   type.doit unit => abstract
 -------^^^^
-which is called at reg_issue3147.fz:27:21
+which is called at reg_issue3147.fz:27:16
 test(X : t) => X.doit
---------------------^^^^^^
+---------------^^^^^^
 without providing an implementation
 
 Callchain that lead to this point:

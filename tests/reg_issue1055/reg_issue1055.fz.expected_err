@@ -1,7 +1,7 @@
 
-reg_issue1055.fz:84:14: error 1: Wrong number of type parameters
+reg_issue1055.fz:84:9: error 1: Wrong number of type parameters
   c(T : float T) is
--------------^^^^^
+--------^^^^^
 Wrong number of actual type parameters in type:
 Type: float T
 expected no generic arguments

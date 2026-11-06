@@ -8,9 +8,9 @@ assignable to constraint: 'Any',
                           'issue309.this.a'
 
 
-issue309.fz:31:27: error 2: Incompatible type parameter
+issue309.fz:31:28: error 2: Incompatible type parameter
   b(T : Any) container.Set T => abstract  # 2. should flag an error: Incompatible type parameter
---------------------------^
+---------------------------^
 formal type parameter 'E : property.equatable'
 actual type parameter 'T'
 assignable to constraint: 'Any',

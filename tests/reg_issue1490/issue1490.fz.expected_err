@@ -1,7 +1,7 @@
 
-issue1490.fz:24:13: error 1: Wrong number of type parameters
+issue1490.fz:24:8: error 1: Wrong number of type parameters
 a (T : numeric T) is
-------------^^^^^^^
+-------^^^^^^^
 Wrong number of actual type parameters in type:
 Type: numeric T
 expected no generic arguments

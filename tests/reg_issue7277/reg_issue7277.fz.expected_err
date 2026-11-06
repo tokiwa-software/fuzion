@@ -1,7 +1,7 @@
 
-reg_issue7277.fz:24:41: error 1: Type not found
+reg_issue7277.fz:24:42: error 1: Type not found
 Foo(T : Any) ref : container.Linked_List X is
-----------------------------------------^
+-----------------------------------------^
 Type 'X' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'X'
 in feature: 'Foo'
