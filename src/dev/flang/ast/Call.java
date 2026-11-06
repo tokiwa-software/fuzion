@@ -2130,7 +2130,7 @@ public class Call extends AbstractCall
               {
                 g = g.typeParameter().constraint();
               }
-            var p = _originalGenerics.size() >= i ? _originalGenerics.get(i) : null;
+            var p = _originalGenerics.size() > i ? _originalGenerics.get(i) : null;
             inferGeneric(res, context, c, true, g, p != null ? p.pos() : pos(), conflict, foundAt, -1);
           }
       }
@@ -2400,7 +2400,7 @@ public class Call extends AbstractCall
    */
   private void addPair(List<List<Pair<SourcePosition, AbstractType>>> foundAt, int i, SourcePosition pos, AbstractType t)
   {
-    var l = foundAt.get(i);
+    var l = i < foundAt.size() ? foundAt.get(i) : null;
     if (l == null)
       {
         l = new List<>();
