@@ -691,7 +691,7 @@ public class AstErrors extends ANY
           """
           A call to a feature of the form
 
-              f(T,U type, A type..., x T, y U, a A...) =>
+              f(T,U : Any, A : Any..., x T, y U, a A...) =>
 
           must either provide only actual arguments and infer types
 
