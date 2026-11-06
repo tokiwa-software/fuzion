@@ -78,7 +78,7 @@ reg_issue5435 =>
     redef g(A... : Any ) => say "hi"       # ok
 
     # redefining type parameter is fine
-    redef i(A type     ) => say "hi"       # ok
+    redef i(A : Any    ) => say "hi"       # ok
 
   q : h is
 

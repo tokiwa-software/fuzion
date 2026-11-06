@@ -33,7 +33,7 @@ reg_issue7791_type_infer_from_actual_type_par =>
 
   # some more variants:
 
-  f1(S : Sequence T, T type ) => say "f1: $T"
+  f1(S : Sequence T, T : Any ) => say "f1: $T"
   f1 (array unit) _
 
   f2(T : Any, S : Sequence T, v S) => say "f2: $T"

@@ -24,7 +24,7 @@
 public my_mut : mutate is
 
   public abstract_a (
-        T type
+        T : Any
         ) ref
   is
 

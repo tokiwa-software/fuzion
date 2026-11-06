@@ -24,7 +24,7 @@
 
 aa
   (
-   T type
+   T : Any
   ) : Sequence T is
 
 
