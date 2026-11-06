@@ -195,9 +195,9 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
   # takes an arbitrary amount of bool arguments and returns true if and only if
   # all of them are true
   #
-  public type.all_of (B..., values B...) bool =>
+  public type.all_of (B... : bool, values B...) bool =>
     values.typed_foldf true T,e,v->
-      if T : bool
+      if T : bool    # NYI: ENHANCEMENT: #8239 This constraint should be redundant
         v & e
       else
         compile_time_panic
@@ -206,9 +206,9 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
   # takes an arbitrary amount of bool arguments and returns true if and only if
   # any of them is true
   #
-  public type.any_of (B..., values B...) bool =>
+  public type.any_of (B... : bool, values B...) bool =>
     values.typed_foldf false T,e,v->
-      if T : bool
+      if T : bool    # NYI: ENHANCEMENT: #8239 This constraint should be redundant
         v | e
       else
         compile_time_panic

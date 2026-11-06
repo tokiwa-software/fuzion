@@ -28,7 +28,7 @@
 # R is the result type of the function, A are the argument types of the function
 #
 public Function(R : Any,
-                A...) ref is
+                A... : Any) ref is
 
   # call this function on given arguments a...
   #

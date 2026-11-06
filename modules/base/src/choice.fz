@@ -103,7 +103,7 @@
 # A choice type with no actual generic arguments is isomorphic to 'void', i.e, it
 # is a type that has an empty set of possible values.
 #
-public choice(CHOICE_ELEMENT_TYPE...)
+public choice(CHOICE_ELEMENT_TYPE... : Any)
   : property.orderable,
     property.hashable
 is

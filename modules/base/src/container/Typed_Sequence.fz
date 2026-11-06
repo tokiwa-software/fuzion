@@ -109,7 +109,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
 #
 #     # print all value arguments into numbered lines, return next line number
 #     #
-#     printn(A type ..., a A...) : container.typed_fold 1 a
+#     printn(A... : Any, a A...) : container.typed_fold 1 a
 #     =>
 #       public redef apply(T : Any, n i32, v T) i32
 #       =>
@@ -134,7 +134,7 @@ public typed_fold(E : Any, e E, s container.Typed_Sequence) : container.typed_ap
 #
 #     # print all value arguments into numbered lines, return next line number
 #     #
-#     printn(A type ..., a A...) : container.variadic i32
+#     printn(A... : Any, a A...) : container.variadic i32
 #     =>
 #       public redef apply(T : Any, n i32, v T) i32
 #       =>
