@@ -1,25 +1,25 @@
 
-equals_test_negative.fz:40:26: error 1: Incompatible type parameter
+equals_test_negative.fz:40:33: error 1: Incompatible type parameter 'equals_test_a' for 'T : property.equatable'
   say "equals a1 a2 is $(equals a1 a2)"      # 1. should flag an error: equals_test_a does not implement equality
--------------------------^^^^^^
+--------------------------------^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'equals_test_a'
 assignable to constraint: 'Any',
                           'equals_test_a'
 
 
-equals_test_negative.fz:45:27: error 2: Incompatible type parameter
+equals_test_negative.fz:45:27: error 2: Incompatible type parameter 'equals_test_b' for 'T : property.equatable'
   say "b1.infix = b2 is $(b1 = b2)"          # 2. should flag an error: equals_test_b does not implement equality
---------------------------^^^^^^^
+--------------------------^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'equals_test_b'
 assignable to constraint: 'Any',
                           'equals_test_b'
 
 
-equals_test_negative.fz:50:21: error 3: Incompatible type parameter
+equals_test_negative.fz:50:21: error 3: Incompatible type parameter 'equals_test_c' for 'T : property.equatable'
   say "c1 = c2 is $(c1 = c2)"                # 3. should flag an error: equals_test_c does not implement equality
---------------------^^^^^^^
+--------------------^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'equals_test_c'
 assignable to constraint: 'Any',

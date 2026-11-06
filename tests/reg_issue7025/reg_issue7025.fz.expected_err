@@ -1,7 +1,7 @@
 
-reg_issue7025.fz:32:1: error 1: Incompatible type parameter
+reg_issue7025.fz:32:3: error 1: Incompatible type parameter 't2.e' for 'E : t.e'
 v t2.e
-^
+--^^^^
 formal type parameter 'E : t.e'
 actual type parameter 't2.e'
 assignable to constraint: 'Any',
