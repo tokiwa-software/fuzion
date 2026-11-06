@@ -886,7 +886,7 @@ argType     : typeType                   // NYI: REMOVE!
                                         i = Impl.EXPLICIT_TYPE_PARAMETER;
                                         t = type();
                                       }
-                                    else if (skip("..."))
+                                    else if (splitSkip("..."))
                                       {
                                         isTypePar = true;
                                         i = Impl.TYPE_PARAMETER_OPEN;
@@ -897,7 +897,7 @@ argType     : typeType                   // NYI: REMOVE!
                                       {
                                         i = Impl.FIELD;
                                         var ut = type();
-                                        if (skip("..."))
+                                        if (splitSkip("..."))
                                           {
                                             ut.setFollowedByDots();
                                           }
