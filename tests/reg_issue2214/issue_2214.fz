@@ -38,7 +38,7 @@ scenario1 =>
   _ := (a i32).m u
 
   a(T type) is
-    m(B type, f T->B) : a B is
+    m(B : Any, f T->B) : a B is
       say "T is $T"
       say "B is $B"
 
@@ -50,7 +50,7 @@ scenario1
 #
 scenario3 =>
 
-  Sequence.issue_2214_seq_map_broken(B type, f T -> B) : Sequence B is
+  Sequence.issue_2214_seq_map_broken(B : Any, f T -> B) : Sequence B is
     redef as_list list B =>
       r list B := match Sequence.this.as_list
         nil    => panic "nil" # nil #res list B := nil; res

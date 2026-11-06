@@ -26,7 +26,7 @@ demo1_unit_types is
     zero T => abstract
     add (a, b T) T => abstract
 
-  accum (T type, a array T, m demo1_unit_types.this.Monoid T) T =>
+  accum (T : Any, a array T, m demo1_unit_types.this.Monoid T) T =>
     for
       res := m.zero, m.add res x
       x in a

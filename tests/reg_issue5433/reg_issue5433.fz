@@ -25,7 +25,7 @@
 #
 reg_issue5433 =>
 
-  a(R type,
+  a(R : Any,
     A : Any...) is
 
     b is

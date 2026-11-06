@@ -23,7 +23,7 @@
 
 reg_issue3648 =>
 
-  b (T type, c choice (Node T) i32) is
+  b (T : Any, c choice (Node T) i32) is
   Node(T type) ref : b T is
 
   say (type_as_value (Node i32))

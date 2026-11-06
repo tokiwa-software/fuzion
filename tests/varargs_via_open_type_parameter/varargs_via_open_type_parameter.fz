@@ -59,7 +59,7 @@ varargs_via_open_type_parameter =>
 
     doit : container.typed_applicator (String, i64) is
 
-      public redef apply(T type, e (String, i64), v T) (String, i64)
+      public redef apply(T : Any, e (String, i64), v T) (String, i64)
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
@@ -77,7 +77,7 @@ varargs_via_open_type_parameter =>
 
     doit : container.typed_fold (s, 0) a is
 
-      public redef apply(T type, e (String, i64), v T) (String, i64)
+      public redef apply(T : Any, e (String, i64), v T) (String, i64)
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
@@ -93,7 +93,7 @@ varargs_via_open_type_parameter =>
   #
   printf3(A type ..., s String, a A...) : container.typed_fold (s, 0) a
   =>
-    public redef apply(T type, e (String, i64), v T) (String, i64)
+    public redef apply(T : Any, e (String, i64), v T) (String, i64)
     =>
       vs := if      T : numeric then "(number: $v)"
             else if T : String  then "\"$v\""
@@ -145,7 +145,7 @@ varargs_via_open_type_parameter =>
   #
   printn1(A type ..., a A...) : container.typed_fold 1 a
   =>
-    public redef apply(T type, n i64, v T) i64
+    public redef apply(T : Any, n i64, v T) i64
     =>
       say "$n: $v"
       n + 1
@@ -168,7 +168,7 @@ varargs_via_open_type_parameter =>
   #
   as_one_string1(A type ..., a A...) : container.typed_fold "" a
   =>
-    public redef apply(T type, s String, v T) String
+    public redef apply(T : Any, s String, v T) String
     =>
       s+v
     res

@@ -45,7 +45,7 @@ redef_test unit =>
   # second case, redefining feature x.q whose type parameter has a
   # constraint depending on outer feature's type parameter.
   #
-  case2(C type, v C) =>
+  case2(C : Any, v C) =>
     x is
       q(U type: Sequence C) => say "x: $U $C"
 
@@ -65,10 +65,10 @@ redef_test unit =>
   #
   case3 =>
     x is
-      q(T type, U type: Sequence T) => say "x: $T $U"
+      q(T : Any, U type: Sequence T) => say "x: $T $U"
 
     y : x is
-      redef q(T type, U type: Sequence T) => say "y: $T $U"
+      redef q(T : Any, U type: Sequence T) => say "y: $T $U"
 
     x.q i64 (Sequence i64)
     y.q f64 (Sequence f64)
@@ -81,10 +81,10 @@ redef_test unit =>
   #
   case4 =>
     x is
-      q(T type, v option T) => say "x: $T $v"
+      q(T : Any, v option T) => say "x: $T $v"
 
     y : x is
-      redef q(T type, v option T) => say "y: $T $v"
+      redef q(T : Any, v option T) => say "y: $T $v"
 
     x.q i64 (option 43)
     y.q f64 (option 3.14)

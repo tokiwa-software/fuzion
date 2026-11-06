@@ -47,7 +47,7 @@ aa
     public redef tail list T => a.slice.as_list
 
 
-as(T type, X type : aa T, data X) : aa T is
+as(T : Any, X type : aa T, data X) : aa T is
 
   #
   public redef as_list list T =>

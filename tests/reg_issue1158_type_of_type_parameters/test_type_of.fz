@@ -40,17 +40,17 @@ test_type_of is
 
   # type_of using explicit result type
   #
-  type_of1(T type, _ T) Type => T
+  type_of1(T : Any, _ T) Type => T
 
 
   # type_of using inferred result type
   #
-  type_of2(T type, _ T) => T
+  type_of2(T : Any, _ T) => T
 
 
   # type_of using field with inferred  type
   #
-  type_of3(T type, v T, s String) =>
+  type_of3(T : Any, v T, s String) =>
     x := T
     chck_cmp "$x $v" s
 
@@ -83,7 +83,7 @@ test_type_of is
   chck_cmp $(t f64         ) "f64"
   chck_cmp $(t (option i32)) "option i32"
 
-  u(T type, s String) => chck_cmp $T s
+  u(T : Any, s String) => chck_cmp $T s
   u f64          "f64"
   u (option i32) "option i32"
 

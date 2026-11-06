@@ -26,8 +26,8 @@ reg_issue8150 =>
   tt is
     type.take2(a,b unit) =>
 
-  pipe1(R type, f     unit->R) => f unit
-  pipe2(R type, f F : unit->R) => f unit
+  pipe1(R : Any, f     unit->R) => f unit
+  pipe2(R : Any, f F : unit->R) => f unit
 
   pipe1 tt.take2 # should report `take2 (no arguments)` not found
   pipe2 tt.take2 # should report `take2 (no arguments)` not found

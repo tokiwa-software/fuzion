@@ -184,7 +184,7 @@ catch_postcondition is
   #
   #   res := try_post code || (s->handle post condition failure `s`)
   #
-  try_post(T type, code_try ()->T) is
+  try_post(T : Any, code_try ()->T) is
 
     # define code to execute in case of fault and run code
     #

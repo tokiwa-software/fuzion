@@ -27,7 +27,7 @@ reg_issue6849 =>
   # first example from #6849 with type inference for `RESULT` and `FUN`, used to
   # cause errors
 
-  x1(RESULT type, FUN type : ()->RESULT, code FUN)
+  x1(RESULT : Any, FUN type : ()->RESULT, code FUN)
   =>
     code()
 
@@ -37,7 +37,7 @@ reg_issue6849 =>
   # second example from #6849 providing actual type parameter for `FUN`, used to
   # cause errors
 
-  x2(RESULT type, FUN type : ()->RESULT, code FUN)
+  x2(RESULT : Any, FUN type : ()->RESULT, code FUN)
   =>
     code()
 
@@ -47,7 +47,7 @@ reg_issue6849 =>
   # third example from #6849, providing actual type parameter for `RESULT`,
   # always worked
 
-  x3(RESULT type, FUN type : ()->RESULT, code FUN)
+  x3(RESULT : Any, FUN type : ()->RESULT, code FUN)
   =>
     code()
 
@@ -57,7 +57,7 @@ reg_issue6849 =>
   # fourth example from #6849, providing a type for the lambda using `id`,
   # always worked
 
-  x4(RESULT type, FUN type : ()->RESULT, code FUN)
+  x4(RESULT : Any, FUN type : ()->RESULT, code FUN)
   =>
     code()
 
@@ -67,16 +67,16 @@ reg_issue6849 =>
   # here now an attempt to cover all case of declared type parameters
   xaa(                                    code       ()->_     ) =>  code()
   xab(                                    code       ()->RESULT) =>  code()
-  xac(RESULT type,                        code       ()->RESULT) =>  code()
+  xac(RESULT : Any,                        code       ()->RESULT) =>  code()
   xba(                                    code _   : ()->_     ) =>  code()
   xbb(                                    code _   : ()->RESULT) =>  code()
-  xbc(RESULT type,                        code _   : ()->RESULT) =>  code()
+  xbc(RESULT : Any,                        code _   : ()->RESULT) =>  code()
   xca(                                    code FUN : ()->_     ) =>  code()
   xcb(                                    code FUN : ()->RESULT) =>  code()
-  xcc(RESULT type,                        code FUN : ()->RESULT) =>  code()
+  xcc(RESULT : Any,                        code FUN : ()->RESULT) =>  code()
 # xda(             FUN type : ()->RESULT, code FUN             ) =>  code()  # NYI: BUG: #6859 free types in type constraints not working
 # xdb(             FUN type : ()->RESULT, code FUN             ) =>  code()  # NYI: BUG: #6859 free types in type constraints not working
-  xdc(RESULT type, FUN type : ()->RESULT, code FUN             ) =>  code()
+  xdc(RESULT : Any, FUN type : ()->RESULT, code FUN             ) =>  code()
 
   # calling all cases using full type inference
   xaa ()->

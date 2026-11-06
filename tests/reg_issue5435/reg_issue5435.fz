@@ -44,7 +44,7 @@ reg_issue5435 =>
 
   # original example from #5435 with compatible type constraint
   j : h is
-    redef f(D type, v D) =>                # ok, type constraint is relaxed
+    redef f(D : Any, v D) =>                # ok, type constraint is relaxed
       say "type $D value $v"
 
   # original example from #5435 with same type constraint
@@ -69,7 +69,7 @@ reg_issue5435 =>
 
   # changing value argument into open type parameter into results in a type parameter count mismatch
   o : h is
-    redef f(J type, K type ...) =>         # 5. should flag an error: type parameter count changed
+    redef f(J : Any, K type ...) =>         # 5. should flag an error: type parameter count changed
       say "type $J K... value --"
 
   p : h is

@@ -23,7 +23,7 @@
 
 # uncomment for easier debugging
 /*
-show_op(A type, B type, itm (option (tuple A B))) String =>
+show_op(A : Any, B type, itm (option (tuple A B))) String =>
   match itm
     nil => "--nil--"
     t tuple =>

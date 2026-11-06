@@ -79,8 +79,8 @@ reg_issue197 =>
   # same example as `a1`, but using the type `T` and `U` as an argument
   # type.
   #
-  a2(T type, v T) is
-    bb(U type, w (T,U,option T,Sequence U)) => say "type is $(type_of w)"
+  a2(T : Any, v T) is
+    bb(U : Any, w (T,U,option T,Sequence U)) => say "type is $(type_of w)"
     if !(T : u8)
       (a2 u8 123).bb codepoint (u8 255,"a",option (u8 128),["b"].cycle.take 3)
 

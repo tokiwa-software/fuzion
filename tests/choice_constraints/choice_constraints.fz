@@ -61,7 +61,7 @@ choice_constraints =>
    */
 
 
-  c(X type, T type: option X, seq Sequence T) T =>
+  c(X : Any, T type: option X, seq Sequence T) T =>
     seq[0]
 
   # NYI: UNDER DEVELOPMENT: type inference

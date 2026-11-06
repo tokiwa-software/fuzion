@@ -23,7 +23,7 @@
 
 reg_issue2242 =>
 
-  print(T type, E type : mutate, arr container.Buffer T E) =>
+  print(T : Any, E type : mutate, arr container.Buffer T E) =>
     for x in arr do
       yap "$x, "
     say ""

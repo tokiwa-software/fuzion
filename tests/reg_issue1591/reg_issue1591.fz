@@ -25,14 +25,14 @@ reg_issue1591 =>
 
 
   nil_option(T type) option T => nil
-  val_option(T type, v T) option T => v
+  val_option(T : Any, v T) option T => v
 
-  a(T type, x option T) =>
+  a(T : Any, x option T) =>
     match x
       v T => "val: $v"
       nil => "nil!"
 
-  b(T type, x option T) =>
+  b(T : Any, x option T) =>
     match x
       nil => "nil!"
       v T => "val: $v"

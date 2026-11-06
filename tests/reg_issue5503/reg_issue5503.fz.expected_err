@@ -22,7 +22,7 @@ Original feature declared at reg_issue5503.fz:45:5
 
 
 reg_issue5503.fz:51:11: error 3: Wrong number of type parameters in redefined feature
-    redef f(X             type, y, z    Any, v, w i32) =>  # 3. should flag an error: 1 type parameter, expecting 3
+    redef f(X             : Any, y, z    Any, v, w i32) =>  # 3. should flag an error: 1 type parameter, expecting 3
 ----------^
 In 'reg_issue5503.f.f' that redefines 'reg_issue5503.d.f' type parameter count is 1 while it should be 3.
 Original type parameters: 'X, Y, Z'

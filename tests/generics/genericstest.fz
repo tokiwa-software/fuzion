@@ -76,7 +76,7 @@ genericstest is
 
   Complex1(real, imag i32) is
 
-  Complex(T type, real, imag T) is
+  Complex(T : Any, real, imag T) is
   Complex2(rr, ii i32) : Complex rr ii is
 
   lc0 := List Complex1

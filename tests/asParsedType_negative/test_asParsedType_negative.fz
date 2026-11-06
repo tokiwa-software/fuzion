@@ -39,7 +39,7 @@ test_asParsedType_negative is
   # feature with arguments being a type parameter and a value of that type to check type
   # inference from an actual value
   #
-  y(T type, v T) => say "GOT: y $T"
+  y(T : Any, v T) => say "GOT: y $T"
 
 
   # ------  tests using actual type parameters  ------

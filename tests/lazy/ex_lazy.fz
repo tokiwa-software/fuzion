@@ -41,7 +41,7 @@ ex_lazy is
 
   mtrue => {say "eval mtrue!"; true}
 
-  lst(T type, h T, t Lazy (list T)) list T =>
+  lst(T : Any, h T, t Lazy (list T)) list T =>
     _ : Cons T (list T) is
       public redef head T => h
       public redef tail list T => t
@@ -52,6 +52,6 @@ ex_lazy is
   say (stars.take 10)
   say "y"
 
-  type_of2(W type, x Lazy W) Type => W
+  type_of2(W : Any, x Lazy W) Type => W
   say (type_of2 42)
   say (type_of2 ()->42)

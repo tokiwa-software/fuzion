@@ -39,6 +39,6 @@ reg_issue5987 =>
   # include this example here just because this code is related and easy to break when
   # changing the code for the lambda type propagation:
   #
-  a(T type, S type : array T, s S) is
+  a(T : Any, S type : array T, s S) is
     say "$T $S $s"
   _ := a [32]

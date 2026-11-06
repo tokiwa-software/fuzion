@@ -29,7 +29,7 @@ reg_issue6397 =>
   #     assignable to       : '**error**'
   #
 
-  public concat (T type, B : Any..., values B...) Sequence T =>
+  public concat (T : Any, B : Any..., values B...) Sequence T =>
     values.typed_foldf [] U,e,v->
       res Sequence T =>
         if U : T

@@ -36,19 +36,19 @@ tupletest is
   p(s Any) => say s
 
   # start with some generic type inference tests, which are a pre-requisite for tuples to work
-  g1(A type, a A) is
+  g1(A : Any, a A) is
   _ := g1 "Hello" # should infer String
   _ := g1 123 # should infer i64
   chck g1("Hello").a.codepoint_count=5 "g1 A infer A==string"
   chck g1(123).a=123 "g1 A infer A==i64"
 
-  g1a(A type, a A) A => a
+  g1a(A : Any, a A) A => a
   itaa := g1a "String"  # should infer String
   itab := g1a 123  # should infer i64
   chck itaa.codepoint_count=6 "g1a A infer A==string"
   chck itab=123 "g1a A infer A==i64"
 
-  g1b(AAAA type, a,b,c AAAA) is
+  g1b(AAAA : Any, a,b,c AAAA) is
   g1bv1 := g1b true true false  # should infer bool
   g1bv2 := g1b "String" "A" "test"  # should infer String
   chck (g1bv1.a && g1bv1.b && !g1bv1.c) "g1b AAAA infer AAAA==bool"

@@ -52,7 +52,7 @@ Original feature declared at reg_issue5435.fz:31:5
 
 
 reg_issue5435.fz:72:11: error 5: Wrong number of type parameters in redefined feature
-    redef f(J type, K type ...) =>         # 5. should flag an error: type parameter count changed
+    redef f(J : Any, K type ...) =>         # 5. should flag an error: type parameter count changed
 ----------^
 In 'reg_issue5435.o.f' that redefines 'reg_issue5435.h.f' type parameter count is 2 while it should be 1.
 Original type parameters: 'A'

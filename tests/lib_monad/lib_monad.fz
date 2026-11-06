@@ -35,7 +35,7 @@ wrap(T type : integer, val T) : monad T is
   #
   # Apply f to elements of type A and wrap them in MB.
   #
-  public fixed redef infix >>=~ (B type, MB type : monad B, f T -> MB) MB =>
+  public fixed redef infix >>=~ (B : Any, MB type : monad B, f T -> MB) MB =>
     f val
 
 

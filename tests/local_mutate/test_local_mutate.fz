@@ -177,7 +177,7 @@ test_local_mutate is
   #
   test_ring1 =>
 
-    Cell(T type, LM type : mutate, data T) ref is
+    Cell(T : Any, LM type : mutate, data T) ref is
       n := LM.env.var (Cell T LM) Cell.this
       p := LM.env.var (Cell T LM) Cell.this
       link(ne, pr Cell T LM) =>
@@ -187,7 +187,7 @@ test_local_mutate is
       next => n.get
       prev => p.get
 
-    ring(T type, from0 Sequence T)
+    ring(T : Any, from0 Sequence T)
     pre
       !from0.is_empty
     =>
@@ -344,7 +344,7 @@ test_local_mutate is
 
     # create a ring from the elements of a sequence
     #
-    create_ring(T type, from0 Sequence T)
+    create_ring(T : Any, from0 Sequence T)
     pre
       !from0.is_empty
     =>

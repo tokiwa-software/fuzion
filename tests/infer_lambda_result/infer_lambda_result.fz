@@ -30,7 +30,7 @@ infer_lambda_result =>
   #
   case1 =>
 
-    x(T type, f ()->T) =>
+    x(T : Any, f ()->T) =>
       f.call
 
     y => x ()->3.14
@@ -41,7 +41,7 @@ infer_lambda_result =>
   #
   case2 =>
 
-    x(T type, f ()->option T) =>
+    x(T : Any, f ()->option T) =>
       f.call
 
     y => x ()->(u8 42)
@@ -53,7 +53,7 @@ infer_lambda_result =>
   #
   case3 =>
 
-    x(T type, f (ft3 (option T) i32 unit)) =>
+    x(T : Any, f (ft3 (option T) i32 unit)) =>
       f.c 42 unit
 
     y => x _,_->(i128 1 1)
@@ -64,7 +64,7 @@ infer_lambda_result =>
   #
   case4 =>
 
-    x(T type, f (ft4 i32 unit (option T))) =>
+    x(T : Any, f (ft4 i32 unit (option T))) =>
       f.c 42 unit
 
     y => x _,_->(u16 65535)

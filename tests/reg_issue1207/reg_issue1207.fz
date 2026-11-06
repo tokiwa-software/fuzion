@@ -29,10 +29,10 @@ inherit_outer is
 
     v T => abstract
 
-    map(B type, f T -> B) : eimer B is
+    map(B : Any, f T -> B) : eimer B is
       val B => f eimer.this.v
 
-  bucket(U type, redef v U) : eimer U is
+  bucket(U : Any, redef v U) : eimer U is
 
   hellos => bucket "hello"
   fives => hellos.map (.byte_count)
@@ -44,13 +44,13 @@ inherit_outer is
 inherit_outer_small is
   eimer(T type) is
     v T => abstract
-    map(B type, f T->B) B : eimer B =>
+    map(B : Any, f T->B) B : eimer B =>
       f eimer.this.v
 
 reg_issue1207 =>
   eimer(T type) is
     v T => abstract
-    map(B type, f T->B) B : eimer B =>
+    map(B : Any, f T->B) B : eimer B =>
       f eimer.this.v
 
   mein_eimer : eimer String is

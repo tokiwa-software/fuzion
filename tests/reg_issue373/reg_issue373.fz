@@ -27,7 +27,7 @@ reg_issue373 =>
 
     a U => abstract
 
-    b(V type, c V) str V =>
+    b(V : Any, c V) str V =>
       _ : str V is
         redef a V =>
           c
