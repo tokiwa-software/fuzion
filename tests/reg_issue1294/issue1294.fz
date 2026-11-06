@@ -215,7 +215,7 @@ _ := ~8
 
 scenario7 is
 
-  p (W type: p W) is
+  p (W : p W) is
     type.abs option W => abstract
     a => W.abs
 

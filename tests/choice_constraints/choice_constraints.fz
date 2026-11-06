@@ -28,7 +28,7 @@ choice_constraints =>
    * match on a constrainted arg
    */
 
-  a(T type: option String, t T) =>
+  a(T : option String, t T) =>
     match t
       n nil => say n
       str String => say str
@@ -40,7 +40,7 @@ choice_constraints =>
    * return a constrainted arg
    */
 
-  b(T type: option String, seq Sequence T) T =>
+  b(T : option String, seq Sequence T) T =>
     seq[0]
 
   say <| b (option String) [(id (option String) nil)]
@@ -61,7 +61,7 @@ choice_constraints =>
    */
 
 
-  c(X : Any, T type: option X, seq Sequence T) T =>
+  c(X : Any, T : option X, seq Sequence T) T =>
     seq[0]
 
   # NYI: UNDER DEVELOPMENT: type inference
