@@ -1,21 +1,21 @@
 
-generics_negative.fz:54:31: error 1: Illegal use of open formal type parameter type
+generics_negative.fz:54:32: error 1: Illegal use of open formal type parameter type
     f6(D... : Any, a A, b B, d D..., a1 A  ) unit => abstract  # 6a. should flag an error, open generic can only be used for last argument
-------------------------------^
+-------------------------------^
 Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'D'
 
 
-generics_negative.fz:55:31: error 2: Illegal use of open formal type parameter type
+generics_negative.fz:55:32: error 2: Illegal use of open formal type parameter type
     f7(D... : Any, a A, b B, d D..., c C...) unit => abstract  # 6b. should flag an error, open generic can only be used for last argument
-------------------------------^
+-------------------------------^
 Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'D'
 
 
-generics_negative.fz:61:61: error 3: Illegal use of open formal type parameter type
+generics_negative.fz:61:64: error 3: Illegal use of open formal type parameter type
   opengenerics9 (A : Any, B : Any, C... : Any) : opengenerics6 C A A A is # 7. should flag an error: open generic cannot be used as generic argument
-------------------------------------------------------------^
+---------------------------------------------------------------^
 Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'C'
 
@@ -140,7 +140,7 @@ For a type used in a declaration, overloading results in an ambiguity that canno
 Type that is ambiguous: 'X'
 Possible features that match this type:
 'generics_negative.ambiguousTypeParameterName.outer.inner.X' defined at generics_negative.fz:191:13
-      inner(X : Any, Y2 type, Z : Any)
+      inner(X : Any, Y2 : Any, Z : Any)
 ------------^
 and 'generics_negative.ambiguousTypeParameterName.outer.X' defined at generics_negative.fz:190:11
     outer(X, Y, Z : Any) is
@@ -155,9 +155,9 @@ generics_negative.fz:196:22: error 18: Ambiguous type
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'Z'
 Possible features that match this type:
-'generics_negative.ambiguousTypeParameterName.outer.inner.Z' defined at generics_negative.fz:191:30
-      inner(X : Any, Y2 type, Z : Any)
------------------------------^
+'generics_negative.ambiguousTypeParameterName.outer.inner.Z' defined at generics_negative.fz:191:32
+      inner(X : Any, Y2 : Any, Z : Any)
+-------------------------------^
 and 'generics_negative.ambiguousTypeParameterName.outer.Z' defined at generics_negative.fz:190:17
     outer(X, Y, Z : Any) is
 ----------------^

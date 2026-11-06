@@ -188,7 +188,7 @@ generics_negative is
 
   ambiguousTypeParameterName =>
     outer(X, Y, Z : Any) is
-      inner(X : Any, Y2 type, Z : Any)
+      inner(X : Any, Y2 : Any, Z : Any)
       is
         _  := option X  nil      # 52. should flag an error: ambiguous type parameter
         _  := option Y  nil
