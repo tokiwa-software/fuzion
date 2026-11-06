@@ -2250,6 +2250,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isUnitTypeWithoutSideEffect(boolean isInheritedFeature)
   {
     return
+      isTypeParameter() ||
       isConstructor() &&
       contract().isEmpty() &&
       valueArguments().stream().allMatch(va -> va.isUnitTypeWithoutSideEffect()) &&
