@@ -60,4 +60,4 @@ reg_issue5503 =>
     redef f(X, Y, Z, V    : Any,                 w i32) =>  # 5. should flag an error: 4 type parameters, expecting 3
 
   j : d is
-    redef f(X, Y, Z, V, W type                       ) =>  # 6. should flag an error: 5 type parameters, expecting 3
+    redef f(X, Y, Z, V, W : Any                       ) =>  # 6. should flag an error: 5 type parameters, expecting 3
