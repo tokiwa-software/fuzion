@@ -1632,6 +1632,27 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Does the target of inheritance call {@code p} refer to the outer feature of
+   * {@code f}? In this case the actual outer clazz of the instance must be used
+   * instead of constructing the outer feature found in the source code.
+   *
+   * @param p an inheritance call of {@code f}
+   *
+   * @param f the feature containing {@code p} in its inheritance clause
+   */
+  boolean isInheritanceTargetOuter(AbstractCall p, AbstractFeature f)
+  {
+    var po = p.type().outer();
+    return
+      po != null &&
+      f.outer() != null &&
+      po.feature() == f.outer() &&
+      p.target() instanceof AbstractCall tc &&
+      tc.calledFeature() == f.outer();
+  }
+
+
+  /**
    * Recursive helper function for to find the clazz for an outer ref from
    * an inherited feature.
    *
@@ -1667,7 +1688,14 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         for (var p : f.inherits())
           {
-            result = inheritedOuterRefClazz(null, p.target(), cf, p.calledFeature(), result);
+            if (outer != null && isInheritanceTargetOuter(p, f))
+              {
+                result = inheritedOuterRefClazz(outer, null, cf, p.calledFeature(), result);
+              }
+            else
+              {
+                result = inheritedOuterRefClazz(null, p.target(), cf, p.calledFeature(), result);
+              }
           }
       }
     return result;

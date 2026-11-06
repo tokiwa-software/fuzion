@@ -1794,6 +1794,24 @@ public class GeneratingFUIR extends FUIR
     return result;
   }
 
+  private Expr inheritanceTarget(AbstractCall p, Clazz c, FuirFeature ff, boolean needsOuterRef)
+  {
+    if (needsOuterRef && ff == c.feature() && c.isInheritanceTargetOuter(p, ff) && c.feature().outerRef() != null)
+      {
+        var cur = new Current(p.pos(), c.feature());
+        var or = c.feature().outerRef();
+        return new AbstractCall()
+          {
+            @Override public SourcePosition pos()           { return p.pos(); }
+            @Override public Expr target()                  { return cur; }
+            @Override public AbstractFeature calledFeature(){ return or; }
+            @Override public AbstractType type()            { return or.resultType(); }
+          };
+      }
+    return p.target();
+  }
+
+
   void addCode(int cl, Clazz c, List<Object> code, List<List<AbstractCall>> inhe, FuirFeature ff, List<AbstractCall> inh)
   {
     var ocur = _currentClazz;
@@ -1808,7 +1826,7 @@ public class GeneratingFUIR extends FUIR
             var of = pf.outerRef();
             Clazz or = (of == null) ? null : c.lookup(of);
             var needsOuterRef = outerRefNeeded(or);
-            toStack(code, p.target(), !needsOuterRef /* dump result if not needed */, false);
+            toStack(code, inheritanceTarget(p, c, ff, needsOuterRef), !needsOuterRef /* dump result if not needed */, false);
             if (needsOuterRef)
               {
                 code.add(ExprKind.Current);
