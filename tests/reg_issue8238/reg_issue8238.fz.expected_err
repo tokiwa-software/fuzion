@@ -114,9 +114,9 @@ assignable to constraint: 'Any',
                           'unit'
 
 
-reg_issue8238.fz:75:3: error 10: Incompatible type parameter 'unit' for 'T : numeric'
+reg_issue8238.fz:75:10: error 10: Incompatible type parameter 'unit' for 'T : numeric'
   i _    (Sequence (option unit))  # 10. should flag an error: `unit` is not `numeric`
---^
+---------^^^^^^^^^^^^^^^^^^^^^^^^
 formal type parameter 'T : numeric'
 actual type parameter 'unit'
 assignable to constraint: 'Any',
