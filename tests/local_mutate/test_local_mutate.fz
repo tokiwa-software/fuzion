@@ -248,9 +248,7 @@ test_local_mutate is
       public redef as_string String =>
         for
           s := "[ ", s + "$(e.data) <-> "
-          # NYI: UNDER DEVELOPMENT: type inference should
-          # infer Ring T for e not Ring.this
-          e Ring T := Ring.this, e.next
+          e := Ring.this, e.next
           i in 0..3
         else
           s + " ... ]"
