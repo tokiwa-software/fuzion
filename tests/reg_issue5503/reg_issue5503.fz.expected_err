@@ -17,7 +17,7 @@ In 'reg_issue5503.e.f' that redefines 'reg_issue5503.d.f' type parameter count i
 Original type parameters: 'X, Y, Z'
 redefined type parameters: ''
 Original feature declared at reg_issue5503.fz:45:5
-    f(X, Y, Z type, v, w i32) =>
+    f(X, Y, Z : Any, v, w i32) =>
 ----^
 
 
@@ -28,7 +28,7 @@ In 'reg_issue5503.f.f' that redefines 'reg_issue5503.d.f' type parameter count i
 Original type parameters: 'X, Y, Z'
 redefined type parameters: 'X'
 Original feature declared at reg_issue5503.fz:45:5
-    f(X, Y, Z type, v, w i32) =>
+    f(X, Y, Z : Any, v, w i32) =>
 ----^
 
 
@@ -39,7 +39,7 @@ In 'reg_issue5503.g.f' that redefines 'reg_issue5503.d.f' type parameter count i
 Original type parameters: 'X, Y, Z'
 redefined type parameters: 'X, Y'
 Original feature declared at reg_issue5503.fz:45:5
-    f(X, Y, Z type, v, w i32) =>
+    f(X, Y, Z : Any, v, w i32) =>
 ----^
 
 
@@ -50,7 +50,7 @@ In 'reg_issue5503.i.f' that redefines 'reg_issue5503.d.f' type parameter count i
 Original type parameters: 'X, Y, Z'
 redefined type parameters: 'X, Y, Z, V'
 Original feature declared at reg_issue5503.fz:45:5
-    f(X, Y, Z type, v, w i32) =>
+    f(X, Y, Z : Any, v, w i32) =>
 ----^
 
 
@@ -61,7 +61,7 @@ In 'reg_issue5503.j.f' that redefines 'reg_issue5503.d.f' type parameter count i
 Original type parameters: 'X, Y, Z'
 redefined type parameters: 'X, Y, Z, V, W'
 Original feature declared at reg_issue5503.fz:45:5
-    f(X, Y, Z type, v, w i32) =>
+    f(X, Y, Z : Any, v, w i32) =>
 ----^
 
 6 errors.

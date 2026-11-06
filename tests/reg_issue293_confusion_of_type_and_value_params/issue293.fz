@@ -30,7 +30,7 @@ issue293 is
   ages := map (Sequence i32) human i32 (.age)
   say (into i32 human [human 4, human 12, human 30] ages)
 
-  into(TACC, T type, seq Sequence T, xf (Transducer (Sequence TACC) TACC T)) Sequence TACC =>
+  into(TACC, T : Any, seq Sequence T, xf (Transducer (Sequence TACC) TACC T)) Sequence TACC =>
     rf := _ : reducing_fn((Sequence TACC),TACC) is
             public redef call(res Sequence TACC, val TACC) Sequence(TACC) =>
               res ++ [val]
@@ -42,7 +42,7 @@ issue293 is
       res
 
   # a Transducer mapping values from T to U
-  map(TACC, T, U type, mapper T -> U) Transducer TACC U T =>
+  map(TACC, T, U : Any, mapper T -> U) Transducer TACC U T =>
     _ : Transducer TACC U T is
       public redef call(red reducing_fn TACC U) reducing_fn TACC T =>
         _ : reducing_fn TACC T is

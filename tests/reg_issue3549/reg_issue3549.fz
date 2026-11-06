@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-test(T, U type, t T, u U) is
+test(T, U : Any, t T, u U) is
   constraint(Q : Any)
     pre
       T : String

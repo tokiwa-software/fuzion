@@ -54,7 +54,7 @@ reg_issue7791_type_infer_from_actual_type_par =>
       c Cons => f c.head : c.tail.m2la f
 
   # same, but type parameter order inversed
-  list.m2lb(F type : A -> B, B type, f F) list B =>
+  list.m2lb(F type : A -> B, B : Any, f F) list B =>
     match list.this
       nil    => nil
       c Cons => f c.head : c.tail.m2lb f
@@ -65,7 +65,7 @@ reg_issue7791_type_infer_from_actual_type_par =>
       nil    => nil
       c Cons => f c.head : c.tail.m2ld f
 
-  list.m2ld(F type : A -> B, B type, f F) list B =>
+  list.m2ld(F type : A -> B, B : Any, f F) list B =>
     match list.this
       nil    => nil
       c Cons => f c.head : c.tail.m2lc f
@@ -77,7 +77,7 @@ reg_issue7791_type_infer_from_actual_type_par =>
 
   # the test case that was added to #7791 on 2026-10-01:
 
-  test(X, Y type,
+  test(X, Y : Any,
        C type : choice X Y,
        c C)
   =>

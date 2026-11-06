@@ -14,7 +14,7 @@ Open formal argument: 'D'
 
 
 generics_negative.fz:61:61: error 3: Illegal use of open formal type parameter type
-  opengenerics9 (A : Any, B type, C... : Any) : opengenerics6 C A A A is # 7. should flag an error: open generic cannot be used as generic argument
+  opengenerics9 (A : Any, B : Any, C... : Any) : opengenerics6 C A A A is # 7. should flag an error: open generic cannot be used as generic argument
 ------------------------------------------------------------^
 Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'C'

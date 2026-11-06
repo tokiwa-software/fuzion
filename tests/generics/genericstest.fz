@@ -153,7 +153,7 @@ genericstest is
 
   outerGenerics =>
     A(T, U type) is
-      B(V, W type, y U) is
+      B(V, W : Any, y U) is
         p =>
           say "y is$(y)"
     _ A i32 bool := A i32 bool
@@ -224,7 +224,7 @@ genericstest is
 
     # check that type parameter if used in child's arg list is not used, but a free type:
     #
-    parent(PARENT_TYPE_PARAMETER type, v PARENT_TYPE_PARAMETER) is
+    parent(PARENT_TYPE_PARAMETER : Any, v PARENT_TYPE_PARAMETER) is
 
     child : parent u8 23 is
       f(x PARENT_TYPE_PARAMETER) => $x + $v + $x

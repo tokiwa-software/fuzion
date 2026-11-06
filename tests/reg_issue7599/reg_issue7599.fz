@@ -29,7 +29,7 @@ public my_mut : mutate is
   is
 
   public arr (
-        T type, # the comma here causes a NullPointerException
+        T : Any, # the comma here causes a NullPointerException
         ) ref : abstract_a T
   is
     public type.empty abstract_a T =>

@@ -30,22 +30,22 @@ generics_negative is
 
   opengenerics1 (A... : Any) is
   opengenerics2 (A : Any, B... : Any) is
-  opengenerics3 (A : Any, B type, C... : Any) is
+  opengenerics3 (A : Any, B : Any, C... : Any) is
 
-  opengenerics4 (A : Any, B type, C... : Any) is
+  opengenerics4 (A : Any, B : Any, C... : Any) is
     _ A := any;
     _ B := any;
     _ C := any; # 4. should flag an error, open generic cannot be field type.
 
-  opengenerics5a (A : Any, B type, C... : Any) is
+  opengenerics5a (A : Any, B : Any, C... : Any) is
     f1(a A) is
 
-  opengenerics5 (A : Any, B type, C... : Any) is
+  opengenerics5 (A : Any, B : Any, C... : Any) is
     f1(a A) is
     f2(a A, b B) is
     f3(a A, b B, c C...) is
 
-  opengenerics6 (A : Any, B type, C... : Any) is
+  opengenerics6 (A : Any, B : Any, C... : Any) is
     f1(a A) unit => abstract
     f2(a A, b B) unit => abstract
     f3(a A, b B, c C...) unit => abstract
@@ -54,13 +54,13 @@ generics_negative is
     f6(D... : Any, a A, b B, d D..., a1 A  ) unit => abstract  # 6a. should flag an error, open generic can only be used for last argument
     f7(D... : Any, a A, b B, d D..., c C...) unit => abstract  # 6b. should flag an error, open generic can only be used for last argument
 
-  opengenerics7 (A : Any, B type, C... : Any) : opengenerics6 A A A A is
+  opengenerics7 (A : Any, B : Any, C... : Any) : opengenerics6 A A A A is
 
-  opengenerics8 (A : Any, B type, C... : Any) : opengenerics6 B B B B is
+  opengenerics8 (A : Any, B : Any, C... : Any) : opengenerics6 B B B B is
 
-  opengenerics9 (A : Any, B type, C... : Any) : opengenerics6 C A A A is # 7. should flag an error: open generic cannot be used as generic argument
+  opengenerics9 (A : Any, B : Any, C... : Any) : opengenerics6 C A A A is # 7. should flag an error: open generic cannot be used as generic argument
 
-  opengenerics10 (A : Any, B type, C... : Any) is  # NYI: an error is flagged here in addition to 8. below. Apparently, 8. is checked again after Types were intern()ed.
+  opengenerics10 (A : Any, B : Any, C... : Any) is  # NYI: an error is flagged here in addition to 8. below. Apparently, 8. is checked again after Types were intern()ed.
     x1 : choice A is
     x2 : choice A B is
     x3 : choice A C B is  # 8. should flag an error: choice cannot use open generic
@@ -154,7 +154,7 @@ generics_negative is
 
   outerGenerics is
     A(T,U type) is
-      B(V,W type, y U) is
+      B(V,W : Any, y U) is
         p is
           say "y is $y"
     _ A i32 bool   := A i32 bool
@@ -199,7 +199,7 @@ generics_negative is
 
   inheriting_type_parameter =>
 
-    parent(PARENT_TYPE_PARAMETER type, v PARENT_TYPE_PARAMETER) is
+    parent(PARENT_TYPE_PARAMETER : Any, v PARENT_TYPE_PARAMETER) is
 
     child : parent u8 23 is
 

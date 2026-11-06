@@ -77,7 +77,7 @@ infer_lambda_result =>
   #
   case5 =>
 
-    x(AA, BB, CC, T type, aa AA, bb BB, cc CC, f (ft5 AA BB (outcome T))) =>
+    x(AA, BB, CC, T : Any, aa AA, bb BB, cc CC, f (ft5 AA BB (outcome T))) =>
       f.c aa bb
 
     y => x true unit [3,4] _,_->(u32 4000000000)
