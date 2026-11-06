@@ -1,0 +1,10 @@
+
+counterexample_31_nearly_universal_quantification.fz:32:20: error 1: Incompatible type parameter
+  poly(T type, x C T) String => "hello"  # 1. should flag an error: missing constraint on T
+-------------------^
+formal type parameter 'T : i32'
+actual type parameter 'T'
+assignable to constraint: 'Any',
+                          'T'
+
+one error.

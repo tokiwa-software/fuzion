@@ -1,0 +1,33 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test counterexample_31_nearly_universal_quantification
+#
+# -----------------------------------------------------------------------
+
+# `C` requires its type parameter to satisfy the constraint `i32`.  A generic
+# feature that accepts `C T` must repeat that constraint on `T`; Fuzion does
+# not infer it.  `poly` without the constraint is rejected, while `poly_ok` is
+# accepted.
+counterexample_31_nearly_universal_quantification is
+
+  C(T type : i32, v T) is
+
+  poly(T type, x C T) String => "hello"  # 1. should flag an error: missing constraint on T
+  poly_ok(T type : i32, x C T) String => "hello"
