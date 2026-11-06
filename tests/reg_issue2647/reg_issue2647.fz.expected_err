@@ -7,7 +7,7 @@ Actual value arguments: '3'
 Called feature: 'reg_issue2647.a'
 Formal value arguments: --none--
 Declared at reg_issue2647.fz:31:3
-  a(ELEMENT_TYPE type...) is
+  a(ELEMENT_TYPE : Any...) is
 --^
 
 one error.

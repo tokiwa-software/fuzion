@@ -72,7 +72,7 @@ call_open_type_parameter =>
   # let's work with the types:
   #
   case4 =>
-    x(O type...) =>
+    x(O : Any...) =>
       count_numeric : container.type_applicator (i64,i64) is
         public redef apply(T type, e (i64,i64)) (i64,i64) =>
           if      T : numeric then (e.0+1, e.1)
@@ -94,7 +94,7 @@ call_open_type_parameter =>
   # feature and from inner feature:
   #
   case5 =>
-    a(A type, B type...) =>
+    a(A type, B : Any...) =>
       say "A: $A"
       say (type_of A)
       say B
@@ -123,7 +123,7 @@ call_open_type_parameter =>
   #
   case6 =>
 
-    a(B type...) is
+    a(B : Any...) is
       r is
         s is
           t is

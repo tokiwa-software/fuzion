@@ -24,7 +24,7 @@
 open_type_dots =>
 
   My_Func(R type : String,
-                  A type...) ref is
+                  A : Any...) ref is
 
     my_call(a A) R => abstract
 

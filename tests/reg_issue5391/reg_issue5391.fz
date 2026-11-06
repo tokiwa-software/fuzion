@@ -29,7 +29,7 @@
 
 # now test partial application with not only open generic types
 
-sft(B type, A type..., b B, values A...) is
+sft(B type, A : Any..., b B, values A...) is
   public redef as_string String => "$b $values"
 
 a (x (i32,i32) -> sft i32 i32) =>

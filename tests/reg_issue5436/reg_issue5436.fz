@@ -31,7 +31,7 @@
 # the first test from #5436 which uses an empty list of actual generics
 
 test1.q
-test1(A type...) is
+test1(A : Any...) is
   q => g r
   g (B type) unit => say "in $(type_of g.this)"
   r is
@@ -40,7 +40,7 @@ test1(A type...) is
 # the first test from #5436, but using a non empty list of actual generics
 
 (test1a unit).q
-test1a(A type...) is
+test1a(A : Any...) is
   q => g r
   g (B type) unit => say "in $(type_of g.this)"
   r is
@@ -49,7 +49,7 @@ test1a(A type...) is
 # the first test from #5436, but using a long list of actual generics
 
 (test1b unit nil false_ Any String bool).q
-test1b(A type...) is
+test1b(A : Any...) is
   q => g r
   g (B type) unit => say "in $(type_of g.this)"
   r is
@@ -58,7 +58,7 @@ test1b(A type...) is
 # the second test from #5436 which uses an empty list of actual generics
 
 test2
-test2(A type...) =>
+test2(A : Any...) =>
   f q
   f(X type) unit => say "in $(type_of f.this)"
   q is
@@ -66,7 +66,7 @@ test2(A type...) =>
 # the second test from #5436, but using a non empty list of actual generics
 
 test2a unit
-test2a(A type...) =>
+test2a(A : Any...) =>
   f q
   f(X type) unit => say "in $(type_of f.this)"
   q is
@@ -74,7 +74,7 @@ test2a(A type...) =>
 # the second test from #5436, but using a long list of actual generics
 
 test2b (Sequence (option (array u8))) bool String (Lazy i32->(num.complex f32))
-test2b(A type...) =>
+test2b(A : Any...) =>
   f q
   f(X type) unit => say "in $(type_of f.this)"
   q is

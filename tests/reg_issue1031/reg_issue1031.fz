@@ -57,7 +57,7 @@
 # Cyclic value field nesting would result in infinitely large objects.
 # Cycle of nesting found during clazz layout:
 # $FUZION/lib/choice.fz:106:1:
-# choice(CHOICE_ELEMENT_TYPE type...) is
+# choice(CHOICE_ELEMENT_TYPE : Any...) is
 # ^
 #
 # To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
