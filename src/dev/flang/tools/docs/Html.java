@@ -665,7 +665,7 @@ public class Html extends ANY
   {
     return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div><div class='fd-contract'>$4</div>$5"
       .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for nav-title
-      .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : anchorTags(f))
+      .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: baseline;\">" + lm.name() + "</code>" : anchorTags(f))
       .replace("$2", f.isUniverse() ? "": summary(f))
       .replace("$3", commentOf(f))
       .replace("$4", contractOf(f))
