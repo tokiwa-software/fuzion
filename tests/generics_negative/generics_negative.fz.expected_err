@@ -50,7 +50,7 @@ In a type with type parameters >>A B<<, the base type >>A<< must not be a formal
 Type used: 'A i32'
 Formal type parameter used 'A'
 Formal type parameter declared in generics_negative.fz:107:18
-  opengenerics23(A, B, C type) is
+  opengenerics23(A, B, C : Any) is
 -----------------^
 
 
@@ -140,10 +140,10 @@ For a type used in a declaration, overloading results in an ambiguity that canno
 Type that is ambiguous: 'X'
 Possible features that match this type:
 'generics_negative.ambiguousTypeParameterName.outer.inner.X' defined at generics_negative.fz:191:13
-      inner(X : Any, Y2 type, Z type)
+      inner(X : Any, Y2 type, Z : Any)
 ------------^
 and 'generics_negative.ambiguousTypeParameterName.outer.X' defined at generics_negative.fz:190:11
-    outer(X, Y, Z type) is
+    outer(X, Y, Z : Any) is
 ----------^
 
 To solve this, rename these features such that each one has a unique name.
@@ -156,10 +156,10 @@ For a type used in a declaration, overloading results in an ambiguity that canno
 Type that is ambiguous: 'Z'
 Possible features that match this type:
 'generics_negative.ambiguousTypeParameterName.outer.inner.Z' defined at generics_negative.fz:191:30
-      inner(X : Any, Y2 type, Z type)
+      inner(X : Any, Y2 type, Z : Any)
 -----------------------------^
 and 'generics_negative.ambiguousTypeParameterName.outer.Z' defined at generics_negative.fz:190:17
-    outer(X, Y, Z type) is
+    outer(X, Y, Z : Any) is
 ----------------^
 
 To solve this, rename these features such that each one has a unique name.

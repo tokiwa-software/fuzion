@@ -104,7 +104,7 @@ generics_negative is
   r2 3 false
   r2 3 false 7           # 22. should flag an error, wrong number of arguments
 
-  opengenerics23(A, B, C type) is
+  opengenerics23(A, B, C : Any) is
     f(a A.i32) i32 => 3          # 23. should flag an error: generic used as outer type
     _ A i32 := any               # 24. should flag an error: generic must not have generic args
 
@@ -131,7 +131,7 @@ generics_negative is
     x3 3 true 3                  # 36. should flag an error: wrong argument count
     x3 3                         # 37. should flag an error: wrong argument count
 
-    g(A, B, C type) is
+    g(A, B, C : Any) is
     _ g := any                  # 38. should flag an error: not enough generics
     _ g i32 := any              # 39. should flag an error: not enough generics
     _ g i32 i32 := any          # 40. should flag an error: not enough generics
@@ -153,7 +153,7 @@ generics_negative is
   _ := features_from_separate_source_file
 
   outerGenerics is
-    A(T,U type) is
+    A(T,U : Any) is
       B(V,W : Any, y U) is
         p is
           say "y is $y"
@@ -187,8 +187,8 @@ generics_negative is
   _ := opengenerics12
 
   ambiguousTypeParameterName =>
-    outer(X, Y, Z type) is
-      inner(X : Any, Y2 type, Z type)
+    outer(X, Y, Z : Any) is
+      inner(X : Any, Y2 type, Z : Any)
       is
         _  := option X  nil      # 52. should flag an error: ambiguous type parameter
         _  := option Y  nil

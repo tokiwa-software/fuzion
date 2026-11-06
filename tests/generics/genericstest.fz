@@ -152,7 +152,7 @@ genericstest is
   yap "3: size: $(lc3.size)"
 
   outerGenerics =>
-    A(T, U type) is
+    A(T, U : Any) is
       B(V, W : Any, y U) is
         p =>
           say "y is$(y)"

@@ -41,7 +41,7 @@ To solve this, change argument kind to type parameter at reg_issue5435.fz:62:13
 
 
 reg_issue5435.fz:67:11: error 4: Wrong number of type parameters in redefined feature
-    redef f(H, I type) =>                  # 4. should flag an error: type parameter count changed
+    redef f(H, I : Any) =>                  # 4. should flag an error: type parameter count changed
 ----------^
 In 'reg_issue5435.n.f' that redefines 'reg_issue5435.h.f' type parameter count is 2 while it should be 1.
 Original type parameters: 'A'

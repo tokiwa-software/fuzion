@@ -51,9 +51,9 @@ issue293 is
 
 
   # a reducing function takes a previous result and a value and returns a new result
-  reducing_fn(TACC, T type) ref : Function TACC TACC T is
+  reducing_fn(TACC, T : Any) ref : Function TACC TACC T is
 
   # TACC result     type
   # B    input      type
   # C    transduced type
-  Transducer(TACC, B, C type) ref : Function(reducing_fn TACC C, reducing_fn TACC B) is
+  Transducer(TACC, B, C : Any) ref : Function(reducing_fn TACC C, reducing_fn TACC B) is

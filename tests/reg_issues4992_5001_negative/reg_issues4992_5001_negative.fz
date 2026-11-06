@@ -137,7 +137,7 @@ reg_issues4992_5000 =>
   # original code from #5001
   #
   case6 =>
-    x(A, B, C type) is
+    x(A, B, C : Any) is
       type.i(U type : tuple A B C, v U) =>
         a A := v.values.0
         b B := v.values.1

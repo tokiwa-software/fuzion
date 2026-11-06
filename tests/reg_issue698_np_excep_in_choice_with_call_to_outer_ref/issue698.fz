@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 ex_tree is
-  Node(A, B, C type) ref is
+  Node(A, B, C : Any) ref is
     datum A => abstract
     count i64 => abstract
     left B => abstract

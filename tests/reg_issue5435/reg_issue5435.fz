@@ -64,7 +64,7 @@ reg_issue5435 =>
 
   # changing value argument into type parameter into results in a type parameter count mismatch
   n : h is
-    redef f(H, I type) =>                  # 4. should flag an error: type parameter count changed
+    redef f(H, I : Any) =>                  # 4. should flag an error: type parameter count changed
       say "type $H $I value --"
 
   # changing value argument into open type parameter into results in a type parameter count mismatch

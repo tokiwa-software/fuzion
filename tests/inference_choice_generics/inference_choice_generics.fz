@@ -64,7 +64,7 @@ inference_choice_generics =>
   Myref(T : Any) ref is
 
   myval               : Myref f32           is
-  myval(T, U, V type) : Myref (tuple T U V) is
+  myval(T, U, V : Any) : Myref (tuple T U V) is
 
   f(U : Any,
     v choice nil (Myref U))
