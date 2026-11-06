@@ -28,7 +28,7 @@ reg_issue5895 =>
 
   # an outer feature with open type parameter
   #
-  open(A type ...) is
+  open(A... : Any) is
 
     # just an outer open type as last argument
     #
@@ -216,7 +216,7 @@ reg_issue5895 =>
   chk "f3 [codepoint, codepoint] i64, i64, [i64] [codepoint x, codepoint y] 1 2 [i64 3]" (typepar4 occ).g3
 
   # regression test from #5961
-  fo(O type ...) is
+  fo(O... : Any) is
     call(v O...) =>
 
   fo0 : fo is

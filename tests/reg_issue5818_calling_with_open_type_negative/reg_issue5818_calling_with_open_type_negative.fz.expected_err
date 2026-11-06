@@ -386,7 +386,7 @@ Feature not found: 'g' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type_negative'
 In call: 'g _'
 To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type parameter A (no arguments)) at reg_issue5818_calling_with_open_type_negative.fz:61:3
-  g(T,U : Any, A type ...) =>
+  g(T,U : Any, A... : Any) =>
 --^
 To call 'g', you must provide 3 arguments 'T', 'U', 'A'. The 3 type parameters 'T', 'U', 'A' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
@@ -399,7 +399,7 @@ Feature not found: 'g' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type_negative'
 In call: 'g _'
 To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type parameter A (no arguments)) at reg_issue5818_calling_with_open_type_negative.fz:61:3
-  g(T,U : Any, A type ...) =>
+  g(T,U : Any, A... : Any) =>
 --^
 To call 'g', you must provide 3 arguments 'T', 'U', 'A'. The 3 type parameters 'T', 'U', 'A' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
@@ -421,7 +421,7 @@ Actual value arguments: '_'
 Called feature: 'reg_issue5818_calling_with_open_type_negative.f'
 Formal value arguments: --none--
 Declared at reg_issue5818_calling_with_open_type_negative.fz:41:3
-  f(A type ...) =>
+  f(A... : Any) =>
 --^
 
 
@@ -433,7 +433,7 @@ Actual value arguments: '3.14', '["true","false"]', '"?!?"', '(num.complex 3.14 
 Called feature: 'reg_issue5818_calling_with_open_type_negative.f'
 Formal value arguments: --none--
 Declared at reg_issue5818_calling_with_open_type_negative.fz:41:3
-  f(A type ...) =>
+  f(A... : Any) =>
 --^
 
 
@@ -445,7 +445,7 @@ Actual value arguments: '3.14', '["true","false"]', '"?!?"', '(num.complex 3.14 
 Called feature: 'reg_issue5818_calling_with_open_type_negative.f'
 Formal value arguments: --none--
 Declared at reg_issue5818_calling_with_open_type_negative.fz:41:3
-  f(A type ...) =>
+  f(A... : Any) =>
 --^
 
 
@@ -457,7 +457,7 @@ Actual value arguments: '3.14', '["true","false"]', '"?!?"', '(num.complex 3.14 
 Called feature: 'reg_issue5818_calling_with_open_type_negative.g'
 Formal value arguments: --none--
 Declared at reg_issue5818_calling_with_open_type_negative.fz:61:3
-  g(T,U : Any, A type ...) =>
+  g(T,U : Any, A... : Any) =>
 --^
 
 35 errors.

@@ -28,7 +28,7 @@ call_open_type_parameter =>
   # first case from #5738
   #
   case1 =>
-    x(O type ...) =>
+    x(O... : Any) =>
       say O
       say (type_of O)
 
@@ -42,7 +42,7 @@ call_open_type_parameter =>
   # first case from #5738, but using intermediate variable
   #
   case2 =>
-    x(O type ...) =>
+    x(O... : Any) =>
       o := O
       say o
       say (type_of o)

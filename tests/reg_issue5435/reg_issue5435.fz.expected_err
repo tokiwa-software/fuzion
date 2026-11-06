@@ -26,7 +26,7 @@ Original feature declared at reg_issue5435.fz:31:5
 
 
 reg_issue5435.fz:62:13: error 3: Wrong argument kind in redefined feature
-    redef f(G type ..., v G...) =>         # 3. should flag an error: type par redefined as open type par
+    redef f(G... : Any, v G...) =>         # 3. should flag an error: type par redefined as open type par
 ------------^
 In 'reg_issue5435.m.f' that redefines 'reg_issue5435.h.f'
 argument kind is       : open type parameter
@@ -36,7 +36,7 @@ Original argument declared at reg_issue5435.fz:31:7
     f(A : integer, v A) unit =>
 ------^
 To solve this, change argument kind to type parameter at reg_issue5435.fz:62:13
-    redef f(G type ..., v G...) =>         # 3. should flag an error: type par redefined as open type par
+    redef f(G... : Any, v G...) =>         # 3. should flag an error: type par redefined as open type par
 ------------^
 
 
@@ -52,7 +52,7 @@ Original feature declared at reg_issue5435.fz:31:5
 
 
 reg_issue5435.fz:72:11: error 5: Wrong number of type parameters in redefined feature
-    redef f(J : Any, K type ...) =>         # 5. should flag an error: type parameter count changed
+    redef f(J : Any, K... : Any) =>         # 5. should flag an error: type parameter count changed
 ----------^
 In 'reg_issue5435.o.f' that redefines 'reg_issue5435.h.f' type parameter count is 2 while it should be 1.
 Original type parameters: 'A'
@@ -69,7 +69,7 @@ In 'reg_issue5435.q.g' that redefines 'reg_issue5435.h.g' type parameter count i
 Original type parameters: 'A...'
 redefined type parameters: ''
 Original feature declared at reg_issue5435.fz:32:5
-    g(A type ...) => unit
+    g(A... : Any) => unit
 ----^
 
 
@@ -92,7 +92,7 @@ argument kind is       : type parameter
 argument kind should be: open type parameter
 
 Original argument declared at reg_issue5435.fz:32:7
-    g(A type ...) => unit
+    g(A... : Any) => unit
 ------^
 To solve this, change argument kind to open type parameter at reg_issue5435.fz:94:13
     redef g(L : Any)      => say "hi"       # 8. should flag an error, cannot redefine open type parameter as      type parameter
@@ -100,7 +100,7 @@ To solve this, change argument kind to open type parameter at reg_issue5435.fz:9
 
 
 reg_issue5435.fz:97:13: error 9: Wrong argument kind in redefined feature
-    redef i(M type ...)  => say "hi"       # 9. should flag an error, cannot redefine      type parameter as open type parameter
+    redef i(M... : Any)  => say "hi"       # 9. should flag an error, cannot redefine      type parameter as open type parameter
 ------------^
 In 'reg_issue5435.r.i' that redefines 'reg_issue5435.h.i'
 argument kind is       : open type parameter
@@ -110,7 +110,7 @@ Original argument declared at reg_issue5435.fz:33:7
     i(A : Any) => unit
 ------^
 To solve this, change argument kind to type parameter at reg_issue5435.fz:97:13
-    redef i(M type ...)  => say "hi"       # 9. should flag an error, cannot redefine      type parameter as open type parameter
+    redef i(M... : Any)  => say "hi"       # 9. should flag an error, cannot redefine      type parameter as open type parameter
 ------------^
 
 

@@ -29,7 +29,7 @@ reg_issue5435 =>
 
   h is
     f(A : integer, v A) unit =>
-    g(A type ...) => unit
+    g(A... : Any) => unit
     i(A : Any) => unit
 
   # original example from #5435 with incompatible type constraint
@@ -59,7 +59,7 @@ reg_issue5435 =>
 
   # change type parameter into open type parameters
   m : h is
-    redef f(G type ..., v G...) =>         # 3. should flag an error: type par redefined as open type par
+    redef f(G... : Any, v G...) =>         # 3. should flag an error: type par redefined as open type par
       say "type G... value v..."
 
   # changing value argument into type parameter into results in a type parameter count mismatch
@@ -69,13 +69,13 @@ reg_issue5435 =>
 
   # changing value argument into open type parameter into results in a type parameter count mismatch
   o : h is
-    redef f(J : Any, K type ...) =>         # 5. should flag an error: type parameter count changed
+    redef f(J : Any, K... : Any) =>         # 5. should flag an error: type parameter count changed
       say "type $J K... value --"
 
   p : h is
 
     # redefining open type parameter is fine
-    redef g(A type ... ) => say "hi"       # ok
+    redef g(A... : Any ) => say "hi"       # ok
 
     # redefining type parameter is fine
     redef i(A type     ) => say "hi"       # ok
@@ -94,7 +94,7 @@ reg_issue5435 =>
     redef g(L : Any)      => say "hi"       # 8. should flag an error, cannot redefine open type parameter as      type parameter
 
     # redefining type parameter as open type parameter
-    redef i(M type ...)  => say "hi"       # 9. should flag an error, cannot redefine      type parameter as open type parameter
+    redef i(M... : Any)  => say "hi"       # 9. should flag an error, cannot redefine      type parameter as open type parameter
 
 
   x(P... : Any) is
