@@ -38,7 +38,7 @@ import dev.flang.util.SourcePosition;
 /**
  * FormalGenerics represents a list for formal generics argument.
  *
- * e.g. For {@code Function(public R : Any, public A : Any...) ref is}
+ * e.g. For {@code Function(public R : Any, public A... : Any) ref is}
  * the formal generics are {@code R} and {@code A}. (With {@code A} being an open type parameter.)
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
