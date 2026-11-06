@@ -38,7 +38,6 @@ import dev.flang.ast.AbstractMatch; // NYI: CLEANUP: remove dependency
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr; // NYI: CLEANUP: remove dependency
 import dev.flang.ast.InlineArray; // NYI: CLEANUP: remove dependency
-import dev.flang.ast.NumLiteral; // NYI: CLEANUP: remove dependency
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe; // NYI: CLEANUP: remove dependency
 
@@ -370,7 +369,7 @@ public abstract class IR extends ANY
         for (int i=cases.size()-1; i>=0; i--)
           {
             var caseCode = new List<Object>();
-            stack.push(() -> l.add(new NumLiteral(addCode(caseCode))));
+            stack.push(() -> l.add(Integer.valueOf(addCode(caseCode))));
             var j = i;
             stack.push(() -> toStack(stack, caseCode, cases.get(j).code(), false));
           }
