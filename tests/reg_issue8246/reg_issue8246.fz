@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 # This tests that assigning a type parameter in a call to itself may
-# actually be illegal and require fz to crate an error
+# actually be illegal and require fz to create an error
 #
 reg_issue8246 =>
 
