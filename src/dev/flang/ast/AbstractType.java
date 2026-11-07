@@ -2462,6 +2462,7 @@ there is no common super type of the two types (Types.t_ERROR)
       (context          != null,
        af               != null,
        actuals          != null,
+       actualPositions  != null,
        pos              != null,
        adjustConstraint != null);
 
@@ -2473,7 +2474,7 @@ there is no common super type of the two types (Types.t_ERROR)
         while ((ai0==ai || tp.isOpenTypeParameter()) && ai < actuals.size())  // run repeatedly for openTypesParameter
           {
             var a = actuals.get(ai);
-            var ap = actualPositions != null && actualPositions.size() > ai ? actualPositions  .get(ai) : null;
+            var ap = actualPositions.size() > ai ? actualPositions.get(ai) : null;
             var c = adjustConstraint.apply(tp.constraint(context));
             result = a.checkActualTypePar(context, tp, ap, pos, c) && result;
             ai++;
