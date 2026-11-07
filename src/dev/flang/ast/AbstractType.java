@@ -168,14 +168,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       case ThisType -> allowForThisType
         ? ResolvedNormalType.create(
             feature().genericsAsActuals(),
-            Call.NO_GENERICS,
+            HasSourcePosition.NONE,
             feature().outer().selfType().asThis(),
             feature(),
             TypeKind.RefType)
         : Types.t_ERROR;
       case RefType -> this;
       case ValueType ->
-        ResolvedNormalType.create(generics(), generics(), outer(), feature(), TypeKind.RefType);
+        ResolvedNormalType.create(generics(), originalGenericsPos(), outer(), feature(), TypeKind.RefType);
     };
   }
 
@@ -969,17 +969,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           case RefType, ValueType ->
             {
               var res = YesNo.no;
-              if (generics() != UnresolvedType.NONE)
+              for (var t: generics())
                 {
-                  for (var t: generics())
+                  if (CHECKS) check
+                    (Errors.any() || t != null);
+                  if (t != null &&
+                      t.dependsOnGenerics())
                     {
-                      if (CHECKS) check
-                        (Errors.any() || t != null);
-                      if (t != null &&
-                          t.dependsOnGenerics())
-                        {
-                          res = YesNo.yes;
-                        }
+                      res = YesNo.yes;
                     }
                 }
               if (outer() != null && outer().dependsOnGenerics())
@@ -2259,7 +2256,12 @@ there is no common super type of the two types (Types.t_ERROR)
    * not available, e.g., when the type was inferred or was loaded from a module
    * file.  The list might be shorter than generics().
    */
-  List<AbstractType> unresolvedGenerics() { return generics(); }
+  List<HasSourcePosition> originalGenericsPos()
+  {
+    return (generics().stream().anyMatch(x -> x instanceof HasSourcePosition))
+      ? generics().map2(x -> x instanceof HasSourcePosition sp ? sp : null)
+      : HasSourcePosition.NONE;
+  }
 
 
   /**
@@ -2417,7 +2419,7 @@ there is no common super type of the two types (Types.t_ERROR)
     var result = this;
     if (result != Types.t_ERROR && isNormalType())
       {
-        if (!checkActualTypePars(context, feature(), generics(), null, unresolvedGenerics(), null, null))
+        if (!checkActualTypePars(context, feature(), generics(), originalGenericsPos(), null, null))
           {
             result = Types.t_ERROR;
           }
@@ -2436,14 +2438,10 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * @param actuals the actual type parameters
    *
-   * @param actualPos the position of the actual arguments that `actuals` came from, either directly
-   * or via type inference.  Used to diplay source code position for inferred type, e.g. for `option
-   * _ "bla"`, this will give the position of `"bla"`.  May be null or contain null.
-   *
-   * @param unresolvedActuals when available, the list of unresolved actuals such that source code
-   * positions can be shown.  Used to diplay source code position for the type, e.g. for `option
-   * String (panic "bla")`, this will give the position of `String`. May be null and contain null or
-   * a resolved types (that does not provide a position).
+   * @param actualPos the position of the actual arguments or unresolved types that `actuals` came
+   * from, either directly or via type inference.  Used to diplay source code position for inferred
+   * type, e.g. for `option _ "bla"`, this will give the position of `"bla"`.  May be null or
+   * contain null for unknown positions.
    *
    * @param pos source position of the call we are checking or null, for error messages. For `option
    * T v`, this will give the position of `option`.
@@ -2457,7 +2455,6 @@ there is no common super type of the two types (Types.t_ERROR)
                                      AbstractFeature af,
                                      List<AbstractType> actuals,
                                      List<HasSourcePosition> actualPositions,
-                                     List<AbstractType> unresolvedActuals,
                                      SourcePosition pos,
                                      Function<AbstractType, AbstractType> adjustConstraint)
   {
@@ -2469,13 +2466,12 @@ there is no common super type of the two types (Types.t_ERROR)
         while ((ai0==ai || f.isOpenTypeParameter()) && ai < actuals.size())  // run repeatedly for openTypesParameter
           {
             var a = actuals.get(ai);
-            var up = unresolvedActuals != null && unresolvedActuals.size() > ai ? unresolvedActuals.get(ai) : null;
             var ap = actualPositions   != null && actualPositions  .size() > ai ? actualPositions  .get(ai) : null;
             var c = adjustConstraint == null
               ? f.constraint(context)
               : adjustConstraint.apply(f.constraint(context));
 
-            result = checkActualTypePar(context, af, f, a, ap, up, pos, c, adjustConstraint) && result;
+            result = a.checkActualTypePar(context, af, f, ap, pos, c, adjustConstraint) && result;
             ai++;
           }
       }
@@ -2486,8 +2482,7 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * Check that given actual matches formal type parameter constraints of given
-   * feature.
+   * Check that this matches the formal type parameter constraints of given feature.
    *
    * @param context the source code context where this Type is used
    *
@@ -2495,16 +2490,9 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * @param f the formal type parameter to check against
    *
-   * @param actual the actual type parameter
-   *
-   * @param actualPos the position of the actual argument that `actual` came from, either directly
-   * or via type inference.  Used to diplay source code position for inferred type, e.g. for `option
-   * _ "bla"`, this will give the position of `"bla"`.  May be null.
-   *
-   * @param unresolvedActual when available, the unresolved actual such that source code positions
-   * can be shown.  Used to diplay source code position for types, e.g. for `option String (panic
-   * "bla")`, this will give the position of `String`. May be null or a resolved type (that does not
-   * provide a position).
+   * @param actualPos the position of the actual argument or unresolved type that `actual` came
+   * from, either directly or via type inference.  Used to diplay source code position for inferred
+   * type, e.g. for `option _ "bla"`, this will give the position of `"bla"`.  May be null.
    *
    * @param pos source position of the call we are checking or null, for error messages. For `option
    * T v`, this will give the position of `option`.
@@ -2516,37 +2504,33 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * @return true iff check was ok, false iff an error was found and reported
    */
-  private static boolean checkActualTypePar(Context context,
-                                            AbstractFeature af,
-                                            AbstractFeature f,
-                                            AbstractType actual,
-                                            HasSourcePosition actualPos,
-                                            AbstractType unresolvedActual,
-                                            SourcePosition pos,
-                                            AbstractType constraint,
-                                            Function<AbstractType, AbstractType> adjustConstraint)
+  private boolean checkActualTypePar(Context context,
+                                     AbstractFeature af,
+                                     AbstractFeature f,
+                                     HasSourcePosition actualPos,
+                                     SourcePosition pos,
+                                     AbstractType constraint,
+                                     Function<AbstractType, AbstractType> adjustConstraint)
   {
     var result = true;
-    if (actual != null && !actual.isArtificialType())
+    if (!isArtificialType())
       {
-        var p = (actualPos        != null                     ? actualPos :
-                 unresolvedActual instanceof UnresolvedType u ? u         :
-                 pos != null                                  ? pos
-                                                              : af         ).pos();
+        var p = (actualPos != null ? actualPos :
+                 pos       != null ? pos
+                                   : af         ).pos();
 
-        actual.checkLegalThisType(p, context);
+        checkLegalThisType(p, context);
         if (!constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                      // will be checked in SourceModule.checkTypes(Feature)
             !f.isCoTypesRelayTypeParameter() &&
-            !constraint.constraintAssignableFrom(context, actual, null) &&
+            !constraint.constraintAssignableFrom(context, this, null) &&
             // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
-            (!actual.isParametricType() ||
-             f != actual.typeParameter())
+            (!isParametricType() || f != typeParameter())
            )
           {
             var assignableTo = new TreeSet<AbstractType>();
-            var ignore = constraint.constraintAssignableFrom(context, actual, assignableTo);
-            AstErrors.incompatibleActualGeneric(p, f, constraint, actual, assignableTo);
+            var ignore = constraint.constraintAssignableFrom(context, this, assignableTo);
+            AstErrors.incompatibleActualGeneric(p, f, constraint, this, assignableTo);
             result = false;
           }
       }

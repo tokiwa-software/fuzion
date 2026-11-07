@@ -3379,7 +3379,6 @@ public class Call extends AbstractCall
               _calledFeature,
               _generics,
               _originalGenerics,
-              null,
               pos(),
               constraint -> adjustType(res, context, constraint, null));
           }
