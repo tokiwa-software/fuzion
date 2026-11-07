@@ -110,7 +110,7 @@ class ResolvedParametricType extends ResolvedType
          * Must not be recursive definition as in:
          *
          * scenario1 =>
-         *   fs(F type : F) =>
+         *   fs(F : F) =>
          * scenario1
          */
         this != typeParameter().resultType())

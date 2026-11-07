@@ -1,6 +1,6 @@
 
 reg_issues4992_5001_negative.fz:64:14: error 1: Constraint for type parameter must not be a type parameter
-      type.i(U type : x.this) =>  # 1. should flag an error: .this-type not allowed directly
+      type.i(U : x.this) =>  # 1. should flag an error: .this-type not allowed directly
 -------------^
 Affected type parameter: 'reg_issues4992_5000.case3.x.type.i.U'
 constraint: 'reg_issues4992_5000.case3.x.this.type'

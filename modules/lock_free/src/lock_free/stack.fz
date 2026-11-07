@@ -24,7 +24,7 @@
 # lock-free stack using compare_and_set
 # invented by R. Kent Treiber
 #
-public stack(T type) : container.Stack T is
+public stack(T : Any) : container.Stack T is
 
   Item(data T, next option Item) ref is
 

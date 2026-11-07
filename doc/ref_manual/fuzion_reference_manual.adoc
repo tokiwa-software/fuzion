@@ -733,7 +733,7 @@ together with the xref:feature_name[feature name] of the call determines the xre
 ((Type)):: A _type_ is either a xref:fuzion_plain_type[plain type], a xref:fuzion_this_type[this type] or a  xref:fuzion_parametric_type[parametric type].
 
 [#fuzion_type_constraint]
-((Type Constraint)):: A _type constraint_ is a type provided in the declaration of a xref:fuzion_typeparameter[type parameter] following a colon, e.g., `A type : b` which places the constraint `b` on xref:fuzion_typeparameter[type parameter] `A`.
+((Type Constraint)):: A _type constraint_ is a type provided in the declaration of a xref:fuzion_typeparameter[type parameter] following a colon, e.g., `A : b` which places the constraint `b` on xref:fuzion_typeparameter[type parameter] `A`.
 
 [#fuzion_typefeature]
 ((Type Feature)):: A _type feature_ is a xref:fuzion_feature[feature] whose outer feature is a xref:fuzion_cotype[cotype]. A _type feature_ `name` can be declared within the xref:fuzion_cotype[cotype]'s xref:fuzion_orignalfeature[original feature] using `type.name` as the feature name. A _type feature_  cannot be called on an instance of the xref:fuzion_orignalfeature[original feature], but on an instance of the corresponding xref:fuzion_cotype[cotype].

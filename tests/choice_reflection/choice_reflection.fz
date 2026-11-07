@@ -136,7 +136,7 @@ choice_reflection =>
     o := s.first
     test2a nil nil _ o
 
-  test2a(A, B type, C type : choice A B, v C) =>
+  test2a(A, B : Any, C : choice A B, v C) =>
     match v
       A => "matches A: $v type $C $(v.ordinal)"
       B => "matches B: $v type $C $(v.ordinal)"
@@ -184,8 +184,8 @@ choice_reflection =>
 
   # A feature callable on any choice type with two parameters
   #
-  reflect_on_choice(X, Y type,
-                    C type : choice X Y,
+  reflect_on_choice(X, Y : Any,
+                    C : choice X Y,
                     c C)
   =>
     c.apply T,v->
@@ -208,10 +208,10 @@ choice_reflection =>
   reflect_on_choice _      _   (choice (num.complex f64) (num.fraction i64)) (3⁄4)
 
   # helper features to create choices
-  choice0(A, B, C, D type, a A) choice A B C D => a
-  choice1(A, B, C, D type, b B) choice A B C D => b
-  choice2(A, B, C, D type, c C) choice A B C D => c
-  choice3(A, B, C, D type, d D) choice A B C D => d
+  choice0(A, B, C, D : Any, a A) choice A B C D => a
+  choice1(A, B, C, D : Any, b B) choice A B C D => b
+  choice2(A, B, C, D : Any, c C) choice A B C D => c
+  choice3(A, B, C, D : Any, d D) choice A B C D => d
 
   say ""
   say "--- testing `choice.type.equality` ---"

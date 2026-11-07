@@ -27,9 +27,9 @@ typecheck_negative is
 
   assign is
 
-    A(T type) is
-      B(U type) is
-        C(V type) is
+    A(T : Any) is
+      B(U : Any) is
+        C(V : Any) is
 
     p := ((A i32).B u64).C bool
     q := ((A i64).B u64).C bool
@@ -45,9 +45,9 @@ typecheck_negative is
     set s := r # 7. should flag an error, illegal assignment
     set t := s
 
-    D(T type) ref is
-      E(U type) ref is
-        F(V type) ref is
+    D(T : Any) ref is
+      E(U : Any) ref is
+        F(V : Any) ref is
 
     u := ((D i32).E u64).F bool
     v := ((D i64).E u64).F bool

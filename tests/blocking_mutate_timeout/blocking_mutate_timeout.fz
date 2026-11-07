@@ -36,7 +36,7 @@ blocking_mutate_timeout =>
   wc : concur.blocking_mutate_using_clock time.Wallclock is
   mc : concur.blocking_mutate_using_clock time.Monotonic is
 
-  test_relative(BM type : concur.blocking_mutate_using_clock C, C type : time.Clock, name String)
+  test_relative(BM : concur.blocking_mutate_using_clock C, C : time.Clock, name String)
   =>
     running := BM.env.var "init"
     counter := BM.env.var u64 0
@@ -74,7 +74,7 @@ blocking_mutate_timeout =>
     t1.join.or_panic
 
 
-  test_absolute(BM type : concur.blocking_mutate_using_clock C, C type : time.Clock, name String)
+  test_absolute(BM : concur.blocking_mutate_using_clock C, C : time.Clock, name String)
   =>
     running := BM.env.var "init"
     counter := BM.env.var u64 0

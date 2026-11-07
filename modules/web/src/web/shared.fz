@@ -26,7 +26,7 @@ net_lm : mutate is
 
 # read the response
 #
-module read_reponse(LM type : mutate) ! LM =>
+module read_reponse(LM : mutate) ! LM =>
   http
     .read_response LM
     .bind resp->
@@ -49,7 +49,7 @@ module read_reponse(LM type : mutate) ! LM =>
 
 # write the request
 #
-module write_request(LM type : mutate, rm http.request_message) ! LM =>
+module write_request(LM : mutate, rm http.request_message) ! LM =>
   (io.buffered LM).Writer.env
     .write (rm.bytes i64.max)
     .bind _->

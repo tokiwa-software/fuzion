@@ -89,7 +89,7 @@ Feature not found: 'array' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type_negative'
 In call: '(array String)'
 To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:195:8
-public array(T type, I type : integer, length I, init I -> T) array T =>
+public array(T : Any, I : integer, length I, init I -> T) array T =>
 -------^^^^^
 To call 'array', you must provide 4 arguments 'T', 'I', 'length', 'init'. The 2 type parameters 'T', 'I' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
@@ -115,7 +115,7 @@ Feature not found: 'array' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type_negative'
 In call: '(array String)'
 To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:195:8
-public array(T type, I type : integer, length I, init I -> T) array T =>
+public array(T : Any, I : integer, length I, init I -> T) array T =>
 -------^^^^^
 To call 'array', you must provide 4 arguments 'T', 'I', 'length', 'init'. The 2 type parameters 'T', 'I' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
@@ -139,7 +139,7 @@ reg_issue5818_calling_with_open_type_negative.fz:136:3: error 15: In call with v
 --^
 A call to a feature of the form
 
-    f(T,U type, A type..., x T, y U, a A...) =>
+    f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
 must either provide only actual arguments and infer types
 
@@ -172,7 +172,7 @@ reg_issue5818_calling_with_open_type_negative.fz:138:3: error 17: In call with v
 --^
 A call to a feature of the form
 
-    f(T,U type, A type..., x T, y U, a A...) =>
+    f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
 must either provide only actual arguments and infer types
 
@@ -205,7 +205,7 @@ reg_issue5818_calling_with_open_type_negative.fz:140:3: error 19: In call with v
 --^
 A call to a feature of the form
 
-    f(T,U type, A type..., x T, y U, a A...) =>
+    f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
 must either provide only actual arguments and infer types
 
@@ -238,7 +238,7 @@ reg_issue5818_calling_with_open_type_negative.fz:159:3: error 21: In call with v
 --^
 A call to a feature of the form
 
-    f(T,U type, A type..., x T, y U, a A...) =>
+    f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
 must either provide only actual arguments and infer types
 
@@ -258,7 +258,7 @@ reg_issue5818_calling_with_open_type_negative.fz:160:3: error 22: In call with v
 --^
 A call to a feature of the form
 
-    f(T,U type, A type..., x T, y U, a A...) =>
+    f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
 must either provide only actual arguments and infer types
 
@@ -291,7 +291,7 @@ reg_issue5818_calling_with_open_type_negative.fz:162:3: error 24: In call with v
 --^
 A call to a feature of the form
 
-    f(T,U type, A type..., x T, y U, a A...) =>
+    f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
 must either provide only actual arguments and infer types
 
@@ -311,7 +311,7 @@ reg_issue5818_calling_with_open_type_negative.fz:163:3: error 25: In call with v
 --^
 A call to a feature of the form
 
-    f(T,U type, A type..., x T, y U, a A...) =>
+    f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
 must either provide only actual arguments and infer types
 
@@ -344,7 +344,7 @@ reg_issue5818_calling_with_open_type_negative.fz:165:3: error 27: In call with v
 --^
 A call to a feature of the form
 
-    f(T,U type, A type..., x T, y U, a A...) =>
+    f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
 must either provide only actual arguments and infer types
 
@@ -364,7 +364,7 @@ reg_issue5818_calling_with_open_type_negative.fz:166:3: error 28: In call with v
 --^
 A call to a feature of the form
 
-    f(T,U type, A type..., x T, y U, a A...) =>
+    f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
 must either provide only actual arguments and infer types
 
@@ -386,7 +386,7 @@ Feature not found: 'g' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type_negative'
 In call: 'g _'
 To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type parameter A (no arguments)) at reg_issue5818_calling_with_open_type_negative.fz:61:3
-  g(T,U type, A type ...) =>
+  g(T,U : Any, A... : Any) =>
 --^
 To call 'g', you must provide 3 arguments 'T', 'U', 'A'. The 3 type parameters 'T', 'U', 'A' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
@@ -399,7 +399,7 @@ Feature not found: 'g' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type_negative'
 In call: 'g _'
 To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type parameter A (no arguments)) at reg_issue5818_calling_with_open_type_negative.fz:61:3
-  g(T,U type, A type ...) =>
+  g(T,U : Any, A... : Any) =>
 --^
 To call 'g', you must provide 3 arguments 'T', 'U', 'A'. The 3 type parameters 'T', 'U', 'A' may be omitted or `_` may be used in place of a type parameter if it can be inferred from other arguments.
 
@@ -421,7 +421,7 @@ Actual value arguments: '_'
 Called feature: 'reg_issue5818_calling_with_open_type_negative.f'
 Formal value arguments: --none--
 Declared at reg_issue5818_calling_with_open_type_negative.fz:41:3
-  f(A type ...) =>
+  f(A... : Any) =>
 --^
 
 
@@ -433,7 +433,7 @@ Actual value arguments: '3.14', '["true","false"]', '"?!?"', '(num.complex 3.14 
 Called feature: 'reg_issue5818_calling_with_open_type_negative.f'
 Formal value arguments: --none--
 Declared at reg_issue5818_calling_with_open_type_negative.fz:41:3
-  f(A type ...) =>
+  f(A... : Any) =>
 --^
 
 
@@ -445,7 +445,7 @@ Actual value arguments: '3.14', '["true","false"]', '"?!?"', '(num.complex 3.14 
 Called feature: 'reg_issue5818_calling_with_open_type_negative.f'
 Formal value arguments: --none--
 Declared at reg_issue5818_calling_with_open_type_negative.fz:41:3
-  f(A type ...) =>
+  f(A... : Any) =>
 --^
 
 
@@ -457,7 +457,7 @@ Actual value arguments: '3.14', '["true","false"]', '"?!?"', '(num.complex 3.14 
 Called feature: 'reg_issue5818_calling_with_open_type_negative.g'
 Formal value arguments: --none--
 Declared at reg_issue5818_calling_with_open_type_negative.fz:61:3
-  g(T,U type, A type ...) =>
+  g(T,U : Any, A... : Any) =>
 --^
 
 35 errors.

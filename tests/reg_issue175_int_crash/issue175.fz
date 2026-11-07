@@ -45,7 +45,7 @@
 
 
 issue175 is
-  m(K,V type, k K, v V) ref is
+  m(K,V : Any, k K, v V) ref is
     _ tuple K V := (k,v)
-  om(K, V type, k1 K, v1 V) : m K V k1 v1 is
+  om(K, V : Any, k1 K, v1 V) : m K V k1 v1 is
   _ m String i64 := om "one" 1

@@ -25,7 +25,7 @@
 
 # Map -- an abstract map from keys K to values V
 #
-public Map(K type : property.equatable, V type) ref is
+public Map(K : property.equatable, V : Any) ref is
 
   # number of entries in this map
   #
@@ -81,7 +81,7 @@ public Map(K type : property.equatable, V type) ref is
 
   # create a mutable map from this
   #
-  public as_mutable_map(LM type : mutate) container.Mutable_Map K V
+  public as_mutable_map(LM : mutate) container.Mutable_Map K V
     pre (K : property.orderable) || (K : property.hashable)
   =>
     if K : property.orderable

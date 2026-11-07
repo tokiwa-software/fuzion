@@ -34,7 +34,7 @@ test_outer_as_type_parameter is
 
   z : x is
 
-  test(T type : x,
+  test(T : x,
        v T.y) =>
     say "T is $T v is $v"
 
