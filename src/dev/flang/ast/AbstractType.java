@@ -2476,7 +2476,9 @@ there is no common super type of the two types (Types.t_ERROR)
             var a = actuals.get(ai);
             var ap = actualPositions.size() > ai ? actualPositions.get(ai) : null;
             var c = adjustConstraint.apply(tp.constraint(context));
-            result = a.checkActualTypePar(context, tp, ap, pos, c) && result;
+            result = a.checkActualTypePar(context, tp,
+                                          ap != null ? ap.pos() : pos,
+                                          c) && result;
             ai++;
           }
       }
@@ -2493,12 +2495,8 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * @param tp the formal type parameter to check against
    *
-   * @param actualPos the position of the actual argument or unresolved type that `actual` came
-   * from, either directly or via type inference.  Used to diplay source code position for inferred
-   * type, e.g. for `option _ "bla"`, this will give the position of `"bla"`.  May be null.
-   *
-   * @param pos source position of the call we are checking or null, for error messages. For `option
-   * T v`, this will give the position of `option`.
+   * @param pos the position of the actual argument or unresolved type that `actual` came from or,
+   * if not available, source posittion of the cal we are checking. Never null.
    *
    * @param constraint the constraint on the type parameter
    *
@@ -2506,28 +2504,29 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   private boolean checkActualTypePar(Context context,
                                      AbstractFeature tp,
-                                     HasSourcePosition actualPos,
                                      SourcePosition pos,
                                      AbstractType constraint)
   {
+    if (PRECONDITIONS) require
+      (context != null,
+       tp != null,
+       pos != null,
+       constraint != null);
+
     var result = true;
-    if (!isArtificialType())
+    if (!isArtificialType() &&
+        !constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
+                                          // will be checked in SourceModule.checkTypes(Feature)
+        !tp.isCoTypesRelayTypeParameter() &&
+        !constraint.constraintAssignableFrom(context, this, null) &&
+        // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
+        (!isParametricType() || tp != typeParameter())
+       )
       {
-        var p = actualPos != null ? actualPos.pos() : pos;
-        checkLegalThisType(p, context);
-        if (!constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
-                                     // will be checked in SourceModule.checkTypes(Feature)
-            !tp.isCoTypesRelayTypeParameter() &&
-            !constraint.constraintAssignableFrom(context, this, null) &&
-            // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
-            (!isParametricType() || tp != typeParameter())
-           )
-          {
-            var assignableTo = new TreeSet<AbstractType>();
-            var ignore = constraint.constraintAssignableFrom(context, this, assignableTo);
-            AstErrors.incompatibleActualGeneric(p, tp, constraint, this, assignableTo);
-            result = false;
-          }
+        var assignableTo = new TreeSet<AbstractType>();
+        var ignore = constraint.constraintAssignableFrom(context, this, assignableTo);
+        AstErrors.incompatibleActualGeneric(pos, tp, constraint, this, assignableTo);
+        result = false;
       }
     return result;
   }
