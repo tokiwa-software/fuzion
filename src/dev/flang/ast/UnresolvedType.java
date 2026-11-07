@@ -552,8 +552,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                           {
                             ot = fo._outer.thisType(fo.isNextInnerFixed());
                           }
-                        var originalPositions = generics().map2(x -> (HasSourcePosition) x);
-                        _resolved = finishResolve(res, context, this, this, f, generics, originalPositions, ot, _typeKind.orElse(f.defaultTypeKind()), _ignoreActualTypePars, tolerant);
+                        _resolved = finishResolve(res, context, this, this, f, generics, originalGenericsPos(), ot, _typeKind.orElse(f.defaultTypeKind()), _ignoreActualTypePars, tolerant);
                       }
                   }
               }

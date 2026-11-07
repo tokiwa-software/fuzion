@@ -2259,7 +2259,7 @@ there is no common super type of the two types (Types.t_ERROR)
   List<HasSourcePosition> originalGenericsPos()
   {
     return (generics().stream().anyMatch(x -> x instanceof HasSourcePosition))
-      ? generics().map2(x -> x instanceof HasSourcePosition sp ? sp : null)
+      ? generics().map2(x -> x instanceof HasSourcePosition p ? p : null)
       : HasSourcePosition.NONE;
   }
 
