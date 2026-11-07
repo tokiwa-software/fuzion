@@ -1967,7 +1967,7 @@ public class AstErrors extends ANY
     if (!any() || !errorOrUndefinedFound)
       {
         error(pos,
-              "Incompatible type parameter",
+              "Incompatible type parameter "+s(g)+" for "+sc(f),
               "formal type parameter " + sc(f)
                 + (f.constraint().compareTo(constraint)==0 ? "" : " with constraint " + s(constraint))
                 + "\n" +

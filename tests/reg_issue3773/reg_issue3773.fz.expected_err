@@ -1,7 +1,7 @@
 
-reg_issue3773.fz:28:6: error 1: Incompatible type parameter
+reg_issue3773.fz:28:13: error 1: Incompatible type parameter 'Sequence i32' for 'S : Sequence U'
 say (a bool (Sequence i32) [42])
------^
+------------^^^^^^^^^^^^^^
 formal type parameter 'S : Sequence U' with constraint 'Sequence bool'
 actual type parameter 'Sequence i32'
 assignable to constraint: 'Any',

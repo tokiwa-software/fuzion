@@ -1,7 +1,7 @@
 
-main.fz:54:22: error 1: Type not found
+main.fz:54:20: error 1: Type not found
   priv3 : Sequence a.mod is # should flag an error a.mod is not visible in this file
----------------------^^^
+-------------------^^^^^
 Type 'mod' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'mod'
 in feature: 'a'

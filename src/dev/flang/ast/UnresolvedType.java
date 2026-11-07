@@ -552,7 +552,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                           {
                             ot = fo._outer.thisType(fo.isNextInnerFixed());
                           }
-                        _resolved = finishResolve(res, context, this, this, f, generics, generics(), ot, _typeKind.orElse(f.defaultTypeKind()), _ignoreActualTypePars, tolerant);
+                        var originalPositions = generics().map2(x -> (HasSourcePosition) x);
+                        _resolved = finishResolve(res, context, this, this, f, generics, originalPositions, ot, _typeKind.orElse(f.defaultTypeKind()), _ignoreActualTypePars, tolerant);
                       }
                   }
               }
@@ -641,7 +642,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param generics the actual type parameters
    *
-   * @param unresolvedGenerics the original, unresolved actual type
+   * @param originalGenericsPos the original, unresolved actual type
    * parameters. Used for error reporting to obtain the original source code
    * position.
    *
@@ -662,13 +663,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                                     HasSourcePosition pos,
                                     AbstractFeature f,
                                     List<AbstractType> generics,
-                                    List<AbstractType> unresolvedGenerics,
+                                    List<HasSourcePosition> originalGenericsPos,
                                     AbstractType o,
                                     TypeKind typeKind,
                                     boolean ignoreActualTypePars,
                                     boolean tolerant)
   {
-    if (tolerant) { unresolvedGenerics = new List<>(); }
+    if (tolerant) { originalGenericsPos = HasSourcePosition.NONE; }
 
     if (!ignoreActualTypePars)
       {
@@ -707,7 +708,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       : !f.generics().sizeMatches(generics)
       ? (tolerant ? null : Types.t_ERROR)
       : ResolvedNormalType.create(generics,
-                                  unresolvedGenerics,
+                                  originalGenericsPos,
                                   o,
                                   f,
                                   typeKind);

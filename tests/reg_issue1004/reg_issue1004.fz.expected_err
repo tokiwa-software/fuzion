@@ -1,7 +1,7 @@
 
 reg_issue1004.fz:27:9: error 1: Illegal '.this' type: 'reg_issue1004.b.this'
     say b.this.type
---------^^^^^^^^^^^
+--------^
 To solve this, either
   - move the code inside of the feature the type refers to
 or
@@ -10,7 +10,7 @@ or
 
 reg_issue1004.fz:30:9: error 2: Illegal '.this' type: 'reg_issue1004.a.this'
     say a.this.type
---------^^^^^^^^^^^
+--------^
 To solve this, either
   - move the code inside of the feature the type refers to
 or
