@@ -2514,6 +2514,7 @@ there is no common super type of the two types (Types.t_ERROR)
        constraint != null);
 
     var result = true;
+    checkLegalThisType(pos, context);
     if (!isArtificialType() &&
         !constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
