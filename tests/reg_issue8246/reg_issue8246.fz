@@ -1,0 +1,38 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8246
+#
+# -----------------------------------------------------------------------
+
+# This tests that assigning a type parameter in a call to itself may
+# actually be illegal and require fz to crate an error
+#
+reg_issue8246 =>
+
+  # code from #8246 with `f` split up in `f_ok` that works and `f_bad` that crashes
+
+  test(A type, B type : Sequence A, v B) is
+    say "$A $B $v"
+    f_ok  => say (test A   B v).g
+    f_bad => say (test i32 B v).g  # should flag an error: `B` not compatible with `Sequence A`
+    g A => v.first!
+
+  test String (array String) ["hi"] .f_ok
+  test String (array String) ["hi"] .f_bad
