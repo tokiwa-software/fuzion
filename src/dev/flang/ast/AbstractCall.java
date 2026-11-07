@@ -247,7 +247,8 @@ public abstract class AbstractCall extends Expr
     // (e.g. in reg_issue5003):
     if (result instanceof Call resultc &&
         this   instanceof Call thisc   &&
-        thisc._originalGenerics instanceof List<HasSourcePosition> ol)
+        thisc._originalGenerics instanceof List<HasSourcePosition> ol &&
+        !ol.isEmpty())
       {
         resultc._originalGenerics = new List<HasSourcePosition>(pos()); // relay type
         resultc._originalGenerics.addAll(ol);
