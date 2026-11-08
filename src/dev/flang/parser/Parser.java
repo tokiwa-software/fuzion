@@ -1473,6 +1473,7 @@ dotCall     : dot call   callTail
       }
     else if (skip(Token.t_type))
       {
+        target.setSourceRange(sourceRange(target.pos()));
         AbstractType t = target.asParsedType();
         if (t == null)
           {
@@ -3866,7 +3867,7 @@ typeTail    : dot simpletype
               }
             else
               {
-                result = typeTail(new QualThisType(qn));
+                result = typeTail(new QualThisType(sourceRange(lhs.pos()), qn));
               }
           }
         else
