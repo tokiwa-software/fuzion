@@ -2486,8 +2486,6 @@ there is no common super type of the two types (Types.t_ERROR)
   }
 
 
-
-
   /**
    * Check that this matches the formal type parameter constraints of given feature.
    *
