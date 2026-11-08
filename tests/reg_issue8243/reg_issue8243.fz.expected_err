@@ -23,28 +23,13 @@ Indentation reference point is reg_issue8243.fz:36:13
 While parsing: formArgs, parse stack: formArgs, formArgsOpt, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
-reg_issue8243.fz:37:15: error 4: Inconsistent indentation
+reg_issue8243.fz:37:21: error 4: Syntax error: expected identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name, found right parenthesis ')'
   public d (T : Any,) : c T is
---------------^
-Indentation reference point is reg_issue8243.fz:37:13
-  public d (T : Any,) : c T is
-------------^
-While parsing: formArgs, parse stack: formArgs, formArgsOpt, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+--------------------^
+While parsing: name, parse stack: name (twice), argNames, formArgs, formArgsOpt, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
-reg_issue8243.fz:36:13: error 5: Type inference from actual arguments failed since no actual call was found
-  public c (U match) is
-------------^
-For the formal argument 'reg_issue8243.c.U' the type can only be derived if there is a call to 'reg_issue8243.c'.
-
-
-reg_issue8243.fz:37:13: error 6: Type inference from actual arguments failed since no actual call was found
-  public d (T : Any,) : c T is
-------------^
-For the formal argument 'reg_issue8243.d.T' the type can only be derived if there is a call to 'reg_issue8243.d'.
-
-
-reg_issue8243.fz:31:10: error 7: Visibility of outer features type is more restrictive than feature's type.
+reg_issue8243.fz:31:10: error 5: Visibility of outer features type is more restrictive than feature's type.
   public a (U match) is
 ---------^
 Parent feature is here: reg_issue8243.fz:27:1
@@ -53,14 +38,14 @@ reg_issue8243 =>
 To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.
 
 
-reg_issue8243.fz:31:13: error 8: Explicit type required
+reg_issue8243.fz:31:13: error 6: Explicit type required
   public a (U match) is
 ------------^
 Feature 'reg_issue8243.a.U' is argument of a 'public' feature, but has no type specified.
 To solve this, please specify a type explicitly. Inferred type is 'Any.type'
 
 
-reg_issue8243.fz:32:10: error 9: Visibility of outer features type is more restrictive than feature's type.
+reg_issue8243.fz:32:10: error 7: Visibility of outer features type is more restrictive than feature's type.
   public b (T type,) : a T is
 ---------^
 Parent feature is here: reg_issue8243.fz:27:1
@@ -69,7 +54,7 @@ reg_issue8243 =>
 To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.
 
 
-reg_issue8243.fz:36:10: error 10: Visibility of outer features type is more restrictive than feature's type.
+reg_issue8243.fz:36:10: error 8: Visibility of outer features type is more restrictive than feature's type.
   public c (U match) is
 ---------^
 Parent feature is here: reg_issue8243.fz:27:1
@@ -78,14 +63,14 @@ reg_issue8243 =>
 To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.
 
 
-reg_issue8243.fz:36:13: error 11: Explicit type required
+reg_issue8243.fz:36:13: error 9: Explicit type required
   public c (U match) is
 ------------^
 Feature 'reg_issue8243.c.U' is argument of a 'public' feature, but has no type specified.
-To solve this, please specify a type explicitly.
+To solve this, please specify a type explicitly. Inferred type is 'Any.type'
 
 
-reg_issue8243.fz:37:10: error 12: Visibility of outer features type is more restrictive than feature's type.
+reg_issue8243.fz:37:10: error 10: Visibility of outer features type is more restrictive than feature's type.
   public d (T : Any,) : c T is
 ---------^
 Parent feature is here: reg_issue8243.fz:27:1
@@ -93,11 +78,4 @@ reg_issue8243 =>
 ^^^^^^^^^^^^^
 To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.
 
-
-reg_issue8243.fz:37:13: error 13: Explicit type required
-  public d (T : Any,) : c T is
-------------^
-Feature 'reg_issue8243.d.T' is argument of a 'public' feature, but has no type specified.
-To solve this, please specify a type explicitly.
-
-13 errors.
+10 errors.
