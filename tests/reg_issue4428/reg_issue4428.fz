@@ -21,6 +21,12 @@
 #
 # -----------------------------------------------------------------------
 
+# This used to crash with an `illegal this type` since `a.x` was changed to
+# `void.this.x` or similar.
+#
+# I see no reason why this should not compile, it should even be possible
+# to call the lambda: `x.call`, but this still does not work, see #8262.
+#
 f(x ()->T) =>
 f ()->
   a is
