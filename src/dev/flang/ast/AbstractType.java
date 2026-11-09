@@ -1279,6 +1279,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
+   * This performs checking for t_ERROR and `o.isVoid()`, it will call `replaceGenericsAndOuter0()'
+   * that must be redefined by normal type implementations.
+   *
    * @param g the new actual generics to be used
    *
    * @param o the new outer type to be used (which may also differ in its
@@ -1287,7 +1290,35 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return a new type with same feature(), but using g/o as generics
    * and outer type.
    */
-  public AbstractType replaceGenericsAndOuter(List<AbstractType> g, AbstractType o)
+  public final AbstractType replaceGenericsAndOuter(List<AbstractType> g, AbstractType o)
+  {
+    if (PRECONDITIONS) require
+      (isNormalType(),
+       this instanceof ResolvedType,
+       feature().generics().sizeMatches(g));
+
+    return o == Types.t_ERROR || g.contains(Types.t_ERROR) ? Types.t_ERROR :
+           o.isVoid()                                      ? o
+                                                           : replaceGenericsAndOuter0(g, o);
+  }
+
+
+  /**
+   * For a type that is not a type parameter, create a new variant using given
+   * actual generics and outer type.
+   *
+   * This is meant to be called only from {@code replaceGenericsAndOuter}, not directly. This is to
+   * be redefined for actual normal types.
+   *
+   * @param g the new actual generics to be used
+   *
+   * @param o the new outer type to be used (which may also differ in its
+   * actual generics).
+   *
+   * @return a new type with same feature(), but using g/o as generics
+   * and outer type.
+   */
+  protected AbstractType replaceGenericsAndOuter0(List<AbstractType> g, AbstractType o)
   {
     if (PRECONDITIONS) require
       (isNormalType(),
@@ -2211,9 +2242,7 @@ there is no common super type of the two types (Types.t_ERROR)
         var no = o != null ? f.apply(o) : null;
         if (ng != g || no != o)
           {
-            result = ng.contains(Types.t_ERROR)
-              ? Types.t_ERROR
-              : replaceGenericsAndOuter(ng, no);
+            result = replaceGenericsAndOuter(ng, no);
           }
       }
     return result;
