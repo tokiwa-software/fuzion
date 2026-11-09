@@ -131,13 +131,13 @@ public class Html extends ANY
       {
         var constraintType = af.constraint();
         var constraint = constraintType.feature();
-        return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
+        return "<span class='fd-keyword mx-5'>:</span><a class='fd-feature fd-inherited' href='$1'>$2</a>"
           .replace("$1", featureRelativeURL(constraint, relativeTo))
           .replace("$2", htmlEncodeNbsp(constraintType.toString(true, af)));
       }
     else
       {
-        return "<div class='fd-keyword mx-5'>:</div>" + af.inherits()
+        return "<span class='fd-keyword mx-5'>:</span>" + af.inherits()
           .stream()
           // don't show inheritance from features that are not public
           .filter(c->c.calledFeature().visibility().typeVisibility() == Visi.PUB ||
@@ -228,12 +228,12 @@ public class Html extends ANY
     AbstractFeature relativeTo = outer != null ? outer : af;
 
     return
-      "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
-        + "<div class='overflow-wrap-break-word fz-code fd-signature'>"
+      "<span class='fd-summary'>"
+        + "<span class='overflow-wrap-break-word fz-code fd-signature'>"
           + signature(af, outer, relativeTo)
-        + "</div>"
+        + "</span>"
         + source(af)
-      + "</div>";
+      + "</span>";
   }
 
 
@@ -254,10 +254,10 @@ public class Html extends ANY
   {
     var args = arguments(af, relativeTo);
     var tail =
-      (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
+      (af.isRef() ? "<span class='fd-keyword'>&nbsp;ref</span>" : "")
       + inherited(af, relativeTo)
-      + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchorType(af, af, relativeTo)
-         : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
+      + (signatureWithArrow(af) ? "<span class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</span>" + anchorType(af, af, relativeTo)
+         : af.isConstructor()   ? "<span class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</span>"
          : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.baseName() + "_out:" + (outer != null ? outer.baseName() : "_out=null")
                                 : "")
       + annotateUnitType(af)
@@ -274,14 +274,14 @@ public class Html extends ANY
         return anchor(af, relativeTo) + tail;
       }
 
-    return "<div class='fd-signature-col1'>" + anchor(af, relativeTo) + "(" + "</div>"
-      + "<div class='fd-signature-col2'>"
+    return "<span class='fd-signature-col1'>" + anchor(af, relativeTo) + "(" + "</span>"
+      + "<span class='fd-signature-col2'>"
       + java.util.stream.IntStream.range(0, args.size())
-        .mapToObj(i -> "<div class='fd-signature-arg'>" + args.get(i)
-                       + (i < args.size() - 1 ? "," : "") + "</div>")
+        .mapToObj(i -> "<span class='fd-signature-arg'>" + args.get(i)
+                       + (i < args.size() - 1 ? "," : "") + "</span>")
         .collect(Collectors.joining())
-      + "</div>"
-      + "<div class='fd-signature-col3'>)" + tail + "</div>";
+      + "</span>"
+      + "<span class='fd-signature-col3'>)" + tail + "</span>";
   }
 
   /**
@@ -296,9 +296,9 @@ public class Html extends ANY
   private String annotateUnitType(AbstractFeature af)
   {
     return af.isUnitTypeWithoutSideEffect()
-      ? "<div class='fd-parent ml-10' title='This feature is guaranteed to be a unit type, "
+      ? "<span class='fd-parent ml-10' title='This feature is guaranteed to be a unit type, "
         + "it does not have any internal state and might serve as a namespace.\n\n"
-        + "Note that features without this annotation might still be unit types.'>[Unit Type]</div>" // NYI: replace title attribute with proper tooltip
+        + "Note that features without this annotation might still be unit types.'>[Unit Type]</span>" // NYI: replace title attribute with proper tooltip
       : "";
   }
 
@@ -322,7 +322,7 @@ public class Html extends ANY
         AbstractFeature relativeTo = outer != null ? outer : af;
         String anchorParent = "<a class='' href='" + featureRelativeURL(af.outer(), relativeTo) + "'>"
                               + htmlEncodedBasename(af.outer()) + "</a>";
-        return "<div class='fd-parent ml-10'>[Inherited from&nbsp; <span class=fz-code>$0</span>]</div>"
+        return "<span class='fd-parent ml-10'>[Inherited from&nbsp; <span class=fz-code>$0</span>]</span>"
           .replace("$0", anchorParent);
       }
   }
@@ -362,7 +362,7 @@ public class Html extends ANY
     AbstractFeature relativeTo = outer != null ? outer : af;
     return redefs.isEmpty()
             ? ""
-            : "<div class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</div>"
+            : "<span class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</span>"
               .replace("$0", (redefs.stream()
                                     .map(f->relativeAnchor(f, relativeTo))
                                     .collect(Collectors.joining(",&nbsp;")) ));
@@ -393,8 +393,8 @@ public class Html extends ANY
   private String annotateAbstract(AbstractFeature af)
   {
     return af.isAbstract()
-             ? "<div class='fd-parent ml-10' title='An abstract feature is a feature declared using ⇒ abstract. " +
-               "To be able to call it, it needs to be implemented (redefined) in an heir.'>[Abstract feature]</div>"
+             ? "<span class='fd-parent ml-10' title='An abstract feature is a feature declared using ⇒ abstract. " +
+               "To be able to call it, it needs to be implemented (redefined) in an heir.'>[Abstract feature]</span>"
              : "";
   }
 
@@ -407,8 +407,8 @@ public class Html extends ANY
   private String annotatePrivateConstructor(AbstractFeature af)
   {
     return af.visibility().eraseTypeVisibility() != Visi.PUB && af.isConstructor()
-             ? "<div class='fd-parent ml-10' title='This feature can not be called to construct a new instance of itself, " +
-               "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
+             ? "<span class='fd-parent ml-10' title='This feature can not be called to construct a new instance of itself, " +
+               "only the type it defines is visible.'>[Private constructor]</span>" // NYI: replace title attribute with proper tooltip
              : "";
   }
 
@@ -427,8 +427,8 @@ public class Html extends ANY
         .filter(f->isVisible(f))
         .filter(f->f instanceof LibraryFeature lf && lm.sameOrDependent(lf._libModule))
         .anyMatch(f->f.isAbstract())
-             ? "<div class='fd-parent ml-10' title='This feature contains inner or inherited features " +
-               "which are abstract.'>[Contains abstract features]</div>" // NYI: replace title attribute with proper tooltip
+             ? "<span class='fd-parent ml-10' title='This feature contains inner or inherited features " +
+               "which are abstract.'>[Contains abstract features]</span>" // NYI: replace title attribute with proper tooltip
              : "";
   }
 
@@ -443,7 +443,7 @@ public class Html extends ANY
     var afModule = libModule(af);
 
     // don't add annotation for features of own module
-    return afModule == lm ? "" : "<div class='fd-parent ml-10'>[Module " + afModule.name() + "]</div>";
+    return afModule == lm ? "" : "<span class='fd-parent ml-10'>[Module " + afModule.name() + "]</span>";
   }
 
   private boolean isVisible(AbstractFeature af)
@@ -453,11 +453,10 @@ public class Html extends ANY
 
 
   private String anchor(AbstractFeature af, AbstractFeature relativeTo) {
-    return "<div class='font-weight-600 ml-2'>"
-            + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureRelativeURL(af, lm, relativeTo) + "'>")
+    return (noFeatureLink(af) ? "<span class='font-weight-600 ml-2'>"
+                              : "<a class='fd-feature font-weight-600 ml-2' href='" + featureRelativeURL(af, lm, relativeTo) + "'>")
             + typePrfx(af) + htmlEncodedBasename(af)
-            + (noFeatureLink(af) ? "" : "</a>")
-            + "</div>";
+            + (noFeatureLink(af) ? "</span>" : "</a>");
   }
 
   /**
@@ -641,7 +640,6 @@ public class Html extends ANY
       }
 
     var content = features.map(af ->
-      // NYI: UNDER DEVELOPMENT: summary tag must not contain div
       "<details id='" + htmlID(af)
       + "' $0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
         // NYI: UNDER DEVELOPMENT: rename fd-private?
@@ -866,7 +864,7 @@ public class Html extends ANY
    */
   private String source(AbstractFeature feature)
   {
-    return "<div class='pl-5'><a href='$1'>[src]</a></div>"
+    return "<a class='fd-src-link pl-5' href='$1'>[src]</a>"
       .replace("$1", featureURL(feature));
   }
 
@@ -1232,7 +1230,7 @@ public class Html extends ANY
   {
     if (f.constraint().dependsOnGenerics())
       {
-        return "<div class='fd-keyword'>type</div>"
+        return "<span class='fd-keyword'>type</span>"
                + (f.isOpenTypeParameter() ? "..." : "")
                + "<span class='mx-5'>:</span>  <a class='fd-feature fd-inherited' href='$1'>$2</a>"
                .replace("$1", featureRelativeURL(f.constraint().feature(), relativeTo))
@@ -1242,10 +1240,10 @@ public class Html extends ANY
       {
         var constraint = f.constraint().feature();
 
-        return "<div class='fd-keyword'>type</div>"
+        return "<span class='fd-keyword'>type</span>"
                 + (f.isOpenTypeParameter() ? "..." : "")
                 + (f.constraint().compareTo(Types.resolved.t_Any) == 0 ? "" :
-                    "<div class='mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
+                    "<span class='mx-5'>:</span><a class='fd-feature fd-inherited' href='$1'>$2</a>"
                     .replace("$1", featureRelativeURL(constraint, relativeTo))
                     .replace("$2", htmlEncodedQualifiedName(constraint)));
       }
@@ -1489,7 +1487,7 @@ public class Html extends ANY
             </summary>
           </details>
           """.replace("$1", mod.name() + "/index.html")
-              .replace("$2", mod.name()));
+             .replace("$2", mod.name()));
       }
 
     modPage.append("""
