@@ -74,28 +74,33 @@ class ThisType extends ResolvedType {
    *
    * @param f the feature the this type refers to.
    *
-   * @return the `ThisType` instance of `Types.t_ERROR` is `f` is not an outer feature or cotype
-   * origin in `context`.
+   * @param tolerant behavior in case of error, do not report but return null.
+   *
+   * @return the `ThisType` instance if `f` is an outer feature or cotype origin in `context`,
+   * otherwise `null` (if `tolerant`) or `Types.t_ERROR` (otherwise).
    */
   public static AbstractType create(Context context,
                                     HasSourcePosition at,
-                                    AbstractFeature f)
+                                    AbstractFeature f,
+                                    boolean tolerant)
   {
-    AbstractType result = new ThisType(f);
     var n = context.outerFeature();
     AbstractFeature o;
+    var ok = false;
     do
       {
         o = n.isCotype() ? n.cotypeOrigin() : n;
         n = o.outer();
+        ok = o == f;
       }
-    while (o != f && n != null);
-    if (o != f)
+    while (!ok && n != null);
+    if (!ok && !tolerant)
       {
-        AstErrors.illegalThisType(at.pos(), result);
-        result = Types.t_ERROR;
+        AstErrors.illegalThisType(at.pos(), new ThisType(f));
       }
-    return result;
+    return ok       ? new ThisType(f) :
+           tolerant ? null
+                    : Types.t_ERROR;
   }
 
 

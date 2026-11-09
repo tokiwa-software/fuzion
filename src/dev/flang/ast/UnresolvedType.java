@@ -701,7 +701,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       }
 
     return typeKind == TypeKind.ThisType
-      ? ThisType.create(context, pos, f)
+      ? ThisType.create(context, pos, f, tolerant)
       : !f.generics().sizeMatches(generics) && ignoreActualTypePars
       ? new IncompleteType(f, typeKind)
       : !f.generics().sizeMatches(generics)
