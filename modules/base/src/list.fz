@@ -707,16 +707,19 @@ is
   #
   #     [4,1,2,2,3,2,2,2,4].unique_list = [4, 1, 2, 3]
   #
-  public unique_list list A
-    pre
-      A : property.orderable
-  =>
-    unique_list2(l list A, existing container.Set A) list A =>
-      match l
-        nil    => nil
-        c Cons => if existing.contains c.head then          unique_list2 c.tail  existing
-                  else                             c.head : unique_list2 c.tail (existing.add c.head)
-    unique_list2 list.this (container.ps_set A).empty
+  public unique_list list A =>
+    if A : property.orderable
+      unique_list2(l list A, existing container.Set A) list A =>
+        match l
+          nil    => nil
+          c Cons => if existing.contains c.head then          unique_list2 c.tail  existing
+                    else                             c.head : unique_list2 c.tail (existing.add c.head)
+      unique_list2 list.this (container.ps_set A).empty
+    else if A : property.hashable
+      # NYI: UNDER DEVELOPMENT: missing persistent hashset in base
+      compile_time_panic
+    else
+      compile_time_panic
 
 
 
