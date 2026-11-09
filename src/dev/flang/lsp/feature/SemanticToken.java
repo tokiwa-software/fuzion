@@ -67,21 +67,21 @@ public class SemanticToken extends ANY
           new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))))
       // - map all special strings to normal strings plus operator(s)
       .flatMap(t -> {
-        switch (t.token())
+        return switch (t.token())
           {
-          case t_stringPQ :    //      ')+-*"'  in  "abc$(x)+-*"
-            return Stream.of(
+          case t_stringPQ ->    //      ')+-*"'  in  "abc$(x)+-*"
+            Stream.of(
               new TokenInfo(t.start(),
                 LexerTool.goRight(t.start()),
                 t.text().substring(0, 1), Token.t_op),
               new TokenInfo(LexerTool.goRight(t.start()),
                 t.end(),
                 t.text().substring(1), Token.t_stringQQ));
-          case t_stringQD :    //    '"x is $'  in  "x is $x.".
-          case t_stringDD :    //       '+-*$'  in  "abc$x+-*$x.".
-          case t_stringQP :    // '"a+b is $('  in  "a+b is $(a+b)."
-          case t_stringDP :    //      '+-*$('  in  "abc$x+-*$(a+b)."
-            return Stream.of(
+          case t_stringQD,     //    '"x is $'  in  "x is $x.".
+               t_stringDD,     //       '+-*$'  in  "abc$x+-*$x.".
+               t_stringQP,     // '"a+b is $('  in  "a+b is $(a+b)."
+               t_stringDP ->   //      '+-*$('  in  "abc$x+-*$(a+b)."
+            Stream.of(
               new TokenInfo(t.start(),
                 SourcePositionTool.byLineColumn(t.end()._sourceFile, t.end().line(),
                   t.end().column() - 1),
@@ -91,9 +91,9 @@ public class SemanticToken extends ANY
                   t.end().column() - 1),
                 t.end(),
                 t.text().substring(Util.charCount(t.text()) - 1, Util.charCount(t.text())), Token.t_op));
-          case t_stringPD :    //      ')+-*$'  in  "abc$(x)+-*$x.".
-          case t_stringPP :    //     ')+-*$('  in  "abc$(x)+-*$(a+b)."
-            return Stream.of(
+          case t_stringPD,     //      ')+-*$'  in  "abc$(x)+-*$x.".
+               t_stringPP ->   //     ')+-*$('  in  "abc$(x)+-*$(a+b)."
+            Stream.of(
               new TokenInfo(t.start(), LexerTool.goRight(t.start()), ")",
                 Token.t_op),
               new TokenInfo(LexerTool.goRight(t.start()),
@@ -106,26 +106,12 @@ public class SemanticToken extends ANY
                 t.end(),
                 t.text().substring(Util.charCount(t.text()) - 1, Util.charCount(t.text())), Token.t_op));
           // discard these tokens
-          case t_error :
-          case t_ws :
-          case t_comma :
-          case t_lparen :
-          case t_rparen :
-          case t_lbrace :
-          case t_rbrace :
-          case t_lbracket :
-          case t_rbracket :
-          case t_semicolon :
-          case t_eof :
-          case t_barLimit :
-          case t_colonLimit :
-          case t_indentationLimit :
-          case t_lineLimit :
-          case t_undefined :
-            return Stream.empty();
-          default:
-            return Stream.of(t);
-          }
+          case t_error, t_ws, t_comma, t_lparen, t_rparen, t_lbrace,
+               t_rbrace, t_lbracket, t_rbracket, t_semicolon,
+               t_eof, t_barLimit, t_colonLimit, t_indentationLimit,
+               t_lineLimit, t_undefined, t_ident -> Stream.empty();
+          default -> Stream.of(t);
+          };
       })
       .flatMap(t -> {
         return t.start().line() == t.end().line()
