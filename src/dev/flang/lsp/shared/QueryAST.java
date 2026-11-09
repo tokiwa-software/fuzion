@@ -81,7 +81,7 @@ public class QueryAST extends ANY
         || leftToken.text().equals(((Call) ac).name()))
       .map(ac -> {
         // try use inferred type
-        if (!TypeTool.containsError(ac.type()))
+        if (!ac.type().containsError())
           {
             return ac.type();
           }
@@ -385,7 +385,7 @@ public class QueryAST extends ANY
           Stream.of(feature),
           FeatureTool.outerFeatures(feature),
           feature.inherits().stream().map(c -> c.calledFeature()))
-          .filter(f -> !TypeTool.containsError(f.selfType()))
+          .filter(f -> !f.selfType().containsError())
           .flatMap(f -> {
             return ParserTool.declaredFeatures(f);
           })

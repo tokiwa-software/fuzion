@@ -1,7 +1,7 @@
 
-open_type_dots.fz:31:27: error 1: type is followed by '...' but is not an open type
-  feat(X type : String, x X...) =>
---------------------------^
+open_type_dots.fz:31:22: error 1: type is followed by '...' but is not an open type
+  feat(X : String, x X...) =>
+---------------------^
 '...' is only permitted after open type.
 To solve this, remove '...' after the highlighted error.
 

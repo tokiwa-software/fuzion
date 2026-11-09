@@ -60,7 +60,7 @@ public interface SrcModule extends AbstractModule
   void forEachDeclaredOrInheritedFeature(AbstractFeature af, Consumer<AbstractFeature> f);
   AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
   void findDeclaredOrInheritedFeatures(Feature outer);
-  List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Expr use, boolean traverseOuter, boolean hidden);
+  List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden);
   AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use);
   AbstractFeature findLambdaTarget(AbstractFeature outer);
   void checkTypes(Feature f);

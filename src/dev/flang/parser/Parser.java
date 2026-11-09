@@ -85,6 +85,12 @@ public class Parser extends Lexer
   static final Parens ANGLES   = new Parens( "<"             , ">"              );
 
 
+  /**
+   * Flag to enable type parameters using `f(T : Any)` instead of `f(T : Any)`.
+   */
+  static boolean ALLOW_TYPE_PARAMETERS_USING_TYPE = false;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -844,8 +850,10 @@ argument    : visibility
               argNames
               argType
             ;
-argType     : typeType
-            | typeType COLON type
+argType     : typeType                   // NYI: REMOVE!
+            | typeType COLON type        // NYI: REMOVE!
+            | COLON type
+            | "..." COLON type
             |
             ;
    */
@@ -865,18 +873,31 @@ argType     : typeType
                                     var n = argNames();
                                     AbstractType t;
                                     Impl i;
-                                    var isTypePar = current() == Token.t_type;
+                                    var isTypePar = ALLOW_TYPE_PARAMETERS_USING_TYPE && current() == Token.t_type;
                                     if (isTypePar)
-                                      {
+                                      { // NYI: REMOVE!
                                         i = typeType();
                                         t = skipColon() ? type()
                                                         : new BuiltInType(FuzionConstants.ANY_NAME);
+                                      }
+                                    else if (skipColon())
+                                      {
+                                        isTypePar = true;
+                                        i = Impl.EXPLICIT_TYPE_PARAMETER;
+                                        t = type();
+                                      }
+                                    else if (splitSkip("..."))
+                                      {
+                                        isTypePar = true;
+                                        i = Impl.TYPE_PARAMETER_OPEN;
+                                        matchOperator(":", "argType");
+                                        t = type();
                                       }
                                     else if (isTypePrefix())
                                       {
                                         i = Impl.FIELD;
                                         var ut = type();
-                                        if (skip("..."))
+                                        if (splitSkip("..."))
                                           {
                                             ut.setFollowedByDots();
                                           }
@@ -916,12 +937,13 @@ argType     : typeType
   /**
    * Parse type parameter type suffix
    *
-typeType    : "type"
+typeType    : "type"                  // NYI: REMOVE!
             | "type" "..."
             ;
    */
   Impl typeType()
   {
+    check(ALLOW_TYPE_PARAMETERS_USING_TYPE);
     match(Token.t_type, "argType");
     return splitSkip("...") ? Impl.TYPE_PARAMETER_OPEN
                             : Impl.EXPLICIT_TYPE_PARAMETER;
@@ -948,9 +970,20 @@ typeType    : "type"
                 result = skipArgNames();
                 if (result)
                   {
-                    if (skip(Token.t_type))
-                      {
+                    if (ALLOW_TYPE_PARAMETERS_USING_TYPE && skip(Token.t_type))
+                      {  // NYI: REMOVE
                         splitSkip("...");
+                        if (skipColon())
+                          {
+                            result = skipType();
+                          }
+                      }
+                    else if (skipColon())
+                      {
+                        result = skipType();
+                      }
+                    else if (splitSkip("..."))
+                      {
                         if (skipColon())
                           {
                             result = skipType();
@@ -1005,9 +1038,22 @@ typeType    : "type"
                     skipName();
                   }
                 while (skipComma());
-                if (skip(Token.t_type))
-                  {
+                if (ALLOW_TYPE_PARAMETERS_USING_TYPE && skip(Token.t_type))
+                  { // NYI: REMOVE!
                     splitSkip("...");
+                    if (skipColon())
+                      {
+                        skipType();
+                      }
+                    result[0] = FormalOrActual.formal;
+                  }
+                else if (skipColon())
+                  {
+                    skipType();
+                    result[0] = FormalOrActual.both;
+                  }
+                else if (splitSkip("..."))
+                  {
                     if (skipColon())
                       {
                         skipType();
@@ -1017,7 +1063,7 @@ typeType    : "type"
                 // tolerate missing type here
                 else if ((skipType() || true) && skipDot())
                   {
-                    if (!skip(Token.t_type))
+                    if (!(ALLOW_TYPE_PARAMETERS_USING_TYPE && skip(Token.t_type)))
                       {
                         result[0] = FormalOrActual.actual;
                         return false;
@@ -2037,6 +2083,7 @@ lambda      : "->" block
   Expr lambda(List<Expr> n)
   {
     var pos = tokenPos();
+    splitOperator("->");
     matchOperator("->", "lambda");
     var startPos = n.isEmpty() ? pos : n.getFirst().pos().bytePos();
     var b = block();
@@ -2052,7 +2099,7 @@ lambda      : "->" block
    */
   boolean isLambdaPrefix()
   {
-    return isOperator("->");
+    return splitOperator("->");
   }
 
 
@@ -3689,7 +3736,7 @@ typeOpt     : type
     if (current() == Token.t_lparen)
       {
         var a = bracketTermWithNLs(PARENS, "pTypeList", () -> current() != Token.t_rparen ? typeList() : UnresolvedType.NONE);
-        if (skip("->"))
+        if (splitSkip("->"))
           {
             result = UnresolvedType.funType(pos, type(), a);
           }
@@ -3705,7 +3752,7 @@ typeOpt     : type
     else
       {
         result = simpletype(null);
-        if (skip("->"))
+        if (splitSkip("->"))
           {
             result = UnresolvedType.funType(pos, type(), new List<>(result));
           }
@@ -3737,7 +3784,7 @@ typeOpt     : type
         result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList());
         var p = tokenPos();
         var l = line();
-        if (skip("->"))
+        if (splitSkip("->"))
           {
             result = (!isFunctionReturnType || l == line()) && skipType();
           }
@@ -3751,7 +3798,7 @@ typeOpt     : type
       {
         result = skipSimpletype();
         var l = line();
-        if (result && skip("->"))
+        if (result && splitSkip("->"))
           {
             result =
               (!isFunctionReturnType || l == line()) &&
@@ -3899,9 +3946,8 @@ typeInParens: "(" typeInParens ")"
                                    () -> typeList(),
                                    () -> new List<AbstractType>());
         var eas = endAtSpaceOrSemi(tokenPos());
-        if (!ignoredTokenBefore() && isOperator("->"))
+        if (!ignoredTokenBefore() && splitSkip("->"))
           {
-            matchOperator("->", "onetype");
             result = UnresolvedType.funType(sourcePos(pos), type(), l);
           }
         else if (l.size() == 1)

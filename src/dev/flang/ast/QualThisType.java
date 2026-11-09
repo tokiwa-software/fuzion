@@ -99,9 +99,8 @@ public class QualThisType extends UnresolvedType
                 fo._feature
                   .qualifiedName()
                   .endsWith(_qual.stream().filter(x -> !x._name.equals(FuzionConstants.UNIVERSE_NAME))
-                  .map(x -> x._name)
-                  .collect(Collectors.joining(".")))&&
-                  found.stream().noneMatch(x -> x._feature == fo._feature))
+                                          .map(x -> x._name)
+                                          .collect(Collectors.joining("."))))
               {
                 found.add(fo);
               }

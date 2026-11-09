@@ -30,7 +30,7 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
   # run code synchronized across all threads
   # that also use this condition
   #
-  public synchronized(T type, code ()->T) T ! atomic_access =>
+  public synchronized(T : Any, code ()->T) T ! atomic_access =>
     mtx.synchronized code
 
 
@@ -62,7 +62,7 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
 
   # initialize a new condition using the given clock
   #
-  public type.new(C type : time.Clock) outcome concur.sync.condition
+  public type.new(C : time.Clock) outcome concur.sync.condition
   pre
     safety: C.posix_id??
   =>
@@ -74,7 +74,7 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
 
   # initialize a new condition using the given clock
   #
-  module type.new(C type : time.Clock, mtx Mutex) outcome concur.sync.condition
+  module type.new(C : time.Clock, mtx Mutex) outcome concur.sync.condition
   pre
     safety: C.posix_id??
   =>

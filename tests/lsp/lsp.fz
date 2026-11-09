@@ -57,20 +57,36 @@ lsp =>
       "SYSTEMROOT"
     ]).items ++ [("FUZION_DISABLE_ANSI_ESCAPES", "true")])
 
+  # is this message an unstable log message or an internal
+  # lsp4j error that must not be used for synchronization?
+  #
+  is_unstable_lsp_message(str String) =>
+    str.contains "logMessage"
+      || str.contains "Local endpoint returned null from its request method, whereas an instance of CompletableFuture is expected"
+
+  # needle matching a JSON-RPC response with the given id
+  #
+  response_needle(id i64) =>
+    "\"id\":$(id)"
+
   # helper to get out, err, exit_code from started process
   #
   # This can not be replaced by tokiwa.record_process: the LSP
   # requires a request/response dialogue, i.e. each request is written to stdin
   # and its responses are read from stdout before the next request is sent,
   # while tokiwa.record_process writes all of feed_stdin before reading stdout
-  # to the end. The LSP server does not shut down when stdin is closed.
+  # to the end.
+  #
+  # Each feed entry is (message, expected needle). After writing the message,
+  # messages are read until a non-log message containing the needle is seen.
+  # An empty needle only sends the message (used for the exit notification).
   #
   record_lsp_process(
         p os.process,
         # the command, for error messages
         cmd String,
-        # feed .stdin file to executed process?
-        feed_stdin Sequence (String, i64)
+        # messages to send and needles of the messages to wait for
+        feed_stdin Sequence (String, String)
   ) tokiwa.process_result =>
 
     lm : mutate is
@@ -78,32 +94,37 @@ lsp =>
     fout := mut (container.expanding_array String .empty)
 
     lm ! ()->
-      for stdin in feed_stdin do
-        x := p.with_in unit lm ()->
-          check (io.buffered lm).Writer.env.write stdin.0 ??
-        check x??
+      # keep one buffered reader installed for the whole dialogue, otherwise
+      # messages that were read ahead into the buffer are discarded
+      read_all := p.with_out unit lm ()->
+        for stdin in feed_stdin do
+          x := p.with_in unit lm ()->
+            check (io.buffered lm).Writer.env.write stdin.0 ??
+          check x??
 
-        for i in 1..stdin.1 do
-          y := p.with_out _ lm ()->
-            match (io.buffered lm).read_line
-              io.end_of_file => panic "eof"
-              out String =>
-                match out.substring "Content-Length:".byte_count .trim .parse_i64
-                  len i64 =>
-                    o := (String.from <| (io.buffered lm).read_bytes len+2 /* +2 because \r\n */ .or_panic).replace fuzion_home "\$FUZION_HOME"
-                    fout <- fout.add o
-                  e error =>
-                    say "-- unexpected response --"
-                    say out
-                    say e
-          check y??
+          if !(stdin.1.is_empty)
+            waiting := mut true
+            while waiting.get
+              match (io.buffered lm).read_line
+                io.end_of_file => panic "eof while waiting for message containing: $(stdin.1)"
+                out String =>
+                  match out.substring "Content-Length:".byte_count .trim .parse_i64
+                    len i64 =>
+                      msg := String.from <| (io.buffered lm).read_bytes len+2 /* +2 because \r\n */ .or_panic
+                      fout <- fout.add (msg.replace fuzion_home "\$FUZION_HOME")
+                      if !(is_unstable_lsp_message msg) && msg.contains (stdin.1)
+                        waiting <- false
+                    e error =>
+                      say "-- unexpected response --"
+                      say out
+                      say e
+      check read_all??
 
 
 
     check p.close_in??
 
-    # NYI: BUG: unclear why lsp does not shut down
-    match p.wait (time.duration.s 1)
+    match p.wait (time.duration.s 10)
       error =>
         check p.kill??
         tokiwa.process_result (String.join_lines fout.get) "" 1
@@ -227,6 +248,14 @@ lsp =>
       }
     """
 
+  exit_notif =>
+    """
+      {
+        "jsonrpc": "2.0",
+        "method": "exit"
+      }
+    """
+
   as_json_rpc(str String) =>
     b := str.replace "\n" "\r\n"
     "Content-Length: $(b.byte_count)\r\n\r\n$(b)"
@@ -235,7 +264,14 @@ lsp =>
 
   check io.file.exists (io.path.of "$(fuzion_home)/fuzion.jar")
 
-  test_def := [(init_req, 2), (open_file_req, 4), (hover_req, 3), (open_file_req2, 4), (completion_req, 3), (shutdown_req, 1)]
+  test_def := [
+      (init_req, response_needle 1),
+      (open_file_req, test_file),
+      (hover_req, response_needle 3),
+      (open_file_req2, test_file2),
+      (completion_req, response_needle 5),
+      (shutdown_req, response_needle 6),
+      (exit_notif, "")]
     .map_to_array t->
       (as_json_rpc t.0, t.1)
 
@@ -245,5 +281,4 @@ lsp =>
   res := record_lsp_process pr "" test_def .out
 
   # logMessages contain unstable data like dates and "finished in Xms"
-  # NYI: UNDER DEVELOPMENT: unclear where error "CompletableFuture is expected..." originates
-  say <| String.join_lines (res.lines.filter (str -> !(str.contains "logMessage" || str.contains "Local endpoint returned null from its request method, whereas an instance of CompletableFuture is expected" || str.is_blank)))
+  say <| String.join_lines (res.lines.filter (str -> !(is_unstable_lsp_message str || str.is_blank)))

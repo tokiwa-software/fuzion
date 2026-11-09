@@ -554,18 +554,6 @@ public class CFG extends ANY
   }
 
 
-  /**
-   * Add connection from cl to ecl in _effects
-   *
-   * @param cl a clazz
-   *
-   * @param ecl an effect that is required by cl
-   */
-  public void addEffect(int cl, int ecl)
-  {
-  }
-
-
 }
 
 /* end of file */

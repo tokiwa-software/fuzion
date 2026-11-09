@@ -216,7 +216,7 @@ public String ref : property.hashable, property.orderable is
   #
   public parse_integer(
     # the integer type
-    T type : integer,
+    T : integer,
 
     # base gives the base of the integer, must be between 2 and 36, inclusive.
     base T
@@ -238,7 +238,7 @@ public String ref : property.hashable, property.orderable is
   #
   parse_integer(
     # the integer type
-    T type : integer,
+    T : integer,
 
     # base gives the base, between 2 and 36
     base T,
@@ -548,9 +548,6 @@ public String ref : property.hashable, property.orderable is
   public split_at_byte(i i64) (String, String)
     pre
       debug: 0 ≤ i ≤ byte_count
-      # NYI: ENHANCEMENT: #6342, #6381: re-enable when Sequence.conat
-      # consistently can return an expanding_array for finite Strings
-      # debug: utf8.is_array_backed
   =>
     (substring 0 i, substring i byte_count)
 
@@ -917,9 +914,9 @@ public String ref : property.hashable, property.orderable is
 
 
   # write the bytes of this String to
-  # writer of type: (io.buffered LM).Writer
+  # writer of : (io.buffered LM).Writer
   #
-  public write_to(LM type : mutate) outcome unit ! (io.buffered LM).Writer
+  public write_to(LM : mutate) outcome unit ! (io.buffered LM).Writer
   =>
     (io.buffered LM).Writer.env.write String.this
 
@@ -927,7 +924,7 @@ public String ref : property.hashable, property.orderable is
   # returns a zero terminated array of
   # the bytes of this String
   #
-  public as_c_string(LM type : mutate) LM.array u8 =>
+  public as_c_string(LM : mutate) LM.array u8 =>
     LM.array u8 .from_Sequence (String.this + codepoint 0).utf8
 
 

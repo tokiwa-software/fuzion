@@ -136,13 +136,6 @@ public class Impl extends ANY
   public final Kind _kind;
 
 
-  /**
-   * Flag to detect infinite recursion when resolving types of initial
-   * values. Used by @see initialValueFromCall.
-   */
-  private boolean _infiniteRecursionInResolveTypes = false;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -466,6 +459,7 @@ public class Impl extends ANY
       }
   }
 
+  static class RecursiveActualArgumentTypeResolution extends Error { }
 
   /**
    * Get the initial value from actual argument in a call.
@@ -489,13 +483,32 @@ public class Impl extends ANY
             var actl = aargs.next();
             if (frml instanceof Feature f && f.impl() == this)
               {
-                if (res != null && !_infiniteRecursionInResolveTypes)
+                if (res != null)
                   {
-                    _infiniteRecursionInResolveTypes = true;
-                    actl = res.resolveType(actl, ic.resolvedFor());
-                    aargs.set(actl);
-                    _infiniteRecursionInResolveTypes = false;
+                    try
+                      {
+                        actl.visit(new FeatureVisitor()
+                          {
+                            @Override
+                            public void action(AbstractCall c)
+                            {
+                              if (c instanceof Call cc && cc.resolvingTypesRightNow())
+                                {
+                                  throw new RecursiveActualArgumentTypeResolution();
+                                }
+                            }
+                          }, null);
+
+                        actl = res.resolveType(actl, ic.resolvedFor());
+                        aargs.set(actl);
+
+                      }
+                    catch (RecursiveActualArgumentTypeResolution _)
+                      {
+                        // ignore this actual argument, see #7836 for an example
+                      }
                   }
+
                 if (CHECKS) check
                   (result == Call.ERROR);
                 result = actl;
@@ -671,6 +684,7 @@ public class Impl extends ANY
            result != Types.t_FORWARD_CYCLIC &&
            result != Types.t_ERROR          &&
            result.isCotypeType()            &&
+           _expr != null                    &&
            /**
             * this allows code like:
             * p := codepoint.type

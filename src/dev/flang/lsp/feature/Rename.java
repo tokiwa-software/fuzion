@@ -48,7 +48,6 @@ import dev.flang.lsp.shared.LexerTool;
 import dev.flang.lsp.shared.ParserTool;
 import dev.flang.lsp.shared.QueryAST;
 import dev.flang.lsp.shared.SourcePositionTool;
-import dev.flang.lsp.shared.TypeTool;
 import dev.flang.lsp.shared.Util;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.lsp.util.LSP4jUtils;
@@ -175,7 +174,7 @@ public class Rename extends ANY
       .filter(f -> f.resultType().isChoice())
       .filter(f -> {
         return f.resultType().choiceGenerics().stream().anyMatch(t -> {
-          return TypeTool.baseName(t).equals(featureToRename.baseName());
+          return t.selfOrConstraint().feature().featureName().baseName().equals(featureToRename.baseName());
         });
       })
       .map(f -> positionOfChoiceGeneric(featureToRename.baseName(), f));

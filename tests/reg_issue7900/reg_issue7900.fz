@@ -44,7 +44,7 @@ reg_issue7900 =>
   show_f D
 
   # 2. redefinition with actual type parameter
-  G(T type) ref is
+  G(T : Any) ref is
     h(x T) String => "G.h $x"
   H : G i32 is
     redef h(x i32) String => "H.h $x"

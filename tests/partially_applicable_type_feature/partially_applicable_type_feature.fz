@@ -17,11 +17,109 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test partially_applicable_type_feature
+#  Source code of Fuzion test partially_applicable_type_feature_positive
 #
 # -----------------------------------------------------------------------
 
 partially_applicable_type_feature =>
 
-  say ("/" |> io.path.of)
-  say (io.path.of <| String.from "/".utf8)
+# partial application of type features, see #7790
+
+p1(s String) is
+  public redef as_string String => "p1($s)"
+  public type.of(s String) p1 => p1 s
+
+# `of` exists with one and two arguments, `|>` needs the one with one argument
+p2(s String) is
+  public redef as_string String => "p2($s)"
+  public type.of(s String) p2 => p2 s
+  public type.of(s, t String) p2 => p2 "$s$t"
+
+# `"x" |> p3.of` is ambiguous (see partially_applicable_type_feature_negative),
+# but the direct call to `of` and partially applied `of(s)` can be selected
+# explicitly
+p3(s String) is
+  public redef as_string String => "p3($s)"
+  public type.of Unary p3 String => x -> p3 "via type.of Unary: $x"
+  public type.of(s String) p3 => p3 "via type.of(s): $s"
+
+# same with more arguments: direct call to `f(a, b)` and partially applied
+# `f(a, b, c)` can be selected explicitly
+p4(s String) is
+  public redef as_string String => "p4($s)"
+  public type.f(a, b String) Unary p4 String =>
+    x -> p4 "via type.f(a,b): $a $b $x"
+  public type.f(a, b, c String) p4 => p4 "via type.f(a,b,c): $a $b $c"
+
+
+# the direct call to `g(a)` already matches `String -> String -> p5`, so
+# `g(a, b)` is not partially applied, same as for normal features
+p5(s String) is
+  public redef as_string String => "p5($s)"
+  public type.g(a String) Unary (Unary p5 String) String =>
+    x -> y -> p5 "via type.g(a): $a $x $y"
+  public type.g(a, b String) Unary p5 String =>
+    y -> p5 "via type.g(a,b): $a $b $y"
+  public type.g(a, b, c String) p5 => p5 "via type.g(a,b,c): $a $b $c"
+
+
+# `p7.a` is ambiguous (see partially_applicable_type_feature_negative), but the
+# type feature can be selected via `.type` and the inner feature via a value
+p7 is
+  public a(v i64) bool => v > 1
+  public type.a(v i64) bool => v > 2
+
+
+# `p8` requires an argument, so `p8.of` can only be the type feature, the
+# inner feature requires a value, e.g., `(p8 "y").of`
+p8(s String) is
+  public redef as_string String => "p8($s)"
+  public of(t String) p8 => p8 "$s/$t"
+  public type.of(s String) p8 => p8 s
+
+
+# same with an inner `of` without arguments that returns a function, `p9.of`
+# is still the type feature since `p9` requires an argument
+p9(s String) is
+  public redef as_string String => "p9($s)"
+  public of Unary p9 String => x -> p9 "via of: $s $x"
+  public type.of(s String) p9 => p9 "via type.of(s): $s"
+
+
+
+say ("/" |> io.path.of)
+say (io.path.of <| String.from "/".utf8)
+
+
+say ("x" |> p1.of)
+say (p1.of <| "y")
+say (["u","v"].map p1.of)
+say ("x" |> p1.type.of)
+
+
+say ("x" |> p2.of)
+
+
+say (p3.of.call "x")                # direct call, apply result
+say ("y" |> (x -> p3.of x))         # explicit lambda
+
+
+say ((p4.f "x" "y").call "z")       # direct call, apply result
+say ("z" |> (c -> p4.f "x" "y" c))  # explicit lambda
+
+
+h String -> String -> p5 := p5.g "x"
+say (h.call "1" .call "2")
+
+
+say ([1, 2, 3].filter p7.type.a)      # type feature: [3]
+p7v := p7
+say ([1, 2, 3].filter p7v.a)          # inner feature: [2, 3]
+
+
+say ("x" |> p8.of)          # type feature: p8(x)
+say ("x" |> (p8 "y").of)    # inner feature: p8(y/x)
+
+
+say ("x" |> p9.of)          # type feature: p9(via type.of(s): x)
+say ("x" |> (p9 "y").of)    # inner feature: p9(via of: y x)

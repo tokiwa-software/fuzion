@@ -143,13 +143,13 @@ is
 
   # instate a random that is seed seeded and run rr in its context
   #
-  public type.simple(T type, seed u64, rr ()->T) T =>
+  public type.simple(T : Any, seed u64, rr ()->T) T =>
     Random.instate (simple_random seed seed) rr
 
 
   # instate a random that is time seeded and run rr in its context
   #
-  public type.time_seeded(T type, rr ()->T) T ! time.Nano =>
+  public type.time_seeded(T : Any, rr ()->T) T ! time.Nano =>
     Random.instate simple_random.time_seeded rr
 
 

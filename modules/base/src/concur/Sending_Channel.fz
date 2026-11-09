@@ -23,7 +23,7 @@
 
 # an interface for a send-only Channel
 #
-public Sending_Channel(T type) ref is
+public Sending_Channel(T : Any) ref is
 
   # send a value to this Channel.
   #

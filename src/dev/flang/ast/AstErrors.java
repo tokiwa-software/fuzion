@@ -691,7 +691,7 @@ public class AstErrors extends ANY
           """
           A call to a feature of the form
 
-              f(T,U type, A type..., x T, y U, a A...) =>
+              f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
           must either provide only actual arguments and infer types
 
@@ -1984,7 +1984,7 @@ public class AstErrors extends ANY
     if (!any() || !errorOrUndefinedFound)
       {
         error(pos,
-              "Incompatible type parameter",
+              "Incompatible type parameter "+s(g)+" for "+sc(f),
               "formal type parameter " + sc(f)
                 + (f.constraint().compareTo(constraint)==0 ? "" : " with constraint " + s(constraint))
                 + "\n" +
@@ -2282,6 +2282,7 @@ public class AstErrors extends ANY
           }
 
         error(lazy.pos(),
+              // NYI: BUG: #8192: No declarations in lazy expression
               "IMPLEMENTATION RESTRICTION: An expression used as " + what + " must not contain feature declarations",
               "Declared features:\n" +
               declarationsMsg +
@@ -2386,7 +2387,8 @@ public class AstErrors extends ANY
               " declared at " + directCall.pos().show() +  "\n" +
               "or by partially applying arguments to a call to " + s(partialCall) +
               " declared at " + partialCall.pos().show() +  ".\n" +
-              "To solve this, rename one of the ambiguous features.");
+              "To solve this, use an explicit lambda, e.g., " + ss("x -> foo x") +
+              ", or rename one of the ambiguous features.");
       }
   }
 
@@ -2487,9 +2489,7 @@ public class AstErrors extends ANY
   {
     error(f.pos(),
       "Must not define type inside of type feature.",
-      "To solve this, move the type outside of the type feature." + System.lineSeparator() +
-      "E.g., instead of: " + System.lineSeparator() + code("type.union : Monoid bitset is") + System.lineSeparator() +
-      "do this: " + code("public type.union =>" + System.lineSeparator() + "  _ : Monoid bitset"));
+      "To solve this, move the type outside of the type feature.");
   }
 
   public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)
@@ -2691,11 +2691,11 @@ public class AstErrors extends ANY
       "The feature that "+ s(c) + " inherits that has a contract:\n" + s_feat_with_pos(f));
   }
 
-  public static void illegalNumLiteral(ParsedCall c)
+  public static void illegalNumLiteral(NumLiteral n, AbstractFeature typePar)
   {
-    error(c.pos(),
+    error(n.pos(),
       "Illegal use of numeric literal.",
-      s(((Call)c.target()).calledFeature()) + " or its constraint does not implement " + sbn("from_u32") + "."
+      s(typePar) + " or its constraint does not implement " + sbn("from_u32") + "."
     );
   }
 

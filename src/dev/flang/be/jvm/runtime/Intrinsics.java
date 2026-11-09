@@ -129,7 +129,7 @@ public class Intrinsics extends ANY
   public static int     u16_as_i32                  (char   a          ) { return                 (      a); }
   public static byte    u16_low8bits                (char   a          ) { return (byte)          (      a); }
   public static short   u16_cast_to_i16             (char   a          ) { return (short)         (      a); }
-  public static char    u16_prefix_minusDEGREE      (char   a, char   b) { return (char)          (  -   a); }
+  public static char    u16_prefix_minusDEGREE      (char   a          ) { return (char)          (  -   a); }
   public static char    u16_infix_plusDEGREE        (char   a, char   b) { return (char)          (a +   b); }
   public static char    u16_infix_minusDEGREE       (char   a, char   b) { return (char)          (a -   b); }
   public static char    u16_infix_timesDEGREE       (char   a, char   b) { return (char)          (a *   b); }

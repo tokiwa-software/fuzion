@@ -1,0 +1,63 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test type_in_cotype
+#
+# -----------------------------------------------------------------------
+
+type_in_cotype is
+
+  type.some_feat =>
+    say "hello from type_in_cotype"
+
+  type.some_type(arg i32) : property.equatable is
+
+    # access the outer type of the cotype of some_type
+    type_in_cotype.this.type.some_feat
+
+
+    public redef type.equality(a, b some_type.this) bool =>
+
+      # access the outer type of the cotype of some_type
+      type_in_cotype.this.type.some_feat
+
+      a.arg = b.arg
+
+
+
+
+  # you try to use the cotype of this new type, e.g., by passing this type as a type parameter
+
+  say (type_in_cotype.some_type 1 = type_in_cotype.some_type 1)
+  say (type_in_cotype.some_type 1 = type_in_cotype.some_type 2)
+
+  # NYI: BUG: require-condition3 failed: Resolution.java:594 "(Errors.any() || !af.isUniverse(), Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS), !af.isCotype());"
+  # type.some_type2 : some_type 1 is
+  # say (type_in_cotype.some_type2  = type_in_cotype.some_type2)
+
+
+type_in_cotype2 : type_in_cotype is
+
+
+  redef type.some_feat =>
+    say "hello from type_in_cotype2"
+
+_ := type_in_cotype
+
+_ := type_in_cotype2

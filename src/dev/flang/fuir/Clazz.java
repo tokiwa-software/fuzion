@@ -1935,7 +1935,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         t = t.replace_inherited_this_type(c.calledFeature(), feature(), foundRef);
       }
     var t1 = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
-    var t2 = t1.applyTypePars(tt, select);
+    var t2 = t1.applyTypePars(_type.feature(), _type.generics(), select);
     // NYI: CLEANUP: unclear why this is needed?
     var t3 = t2.replace_this_type_by_actual_outer_locally(tt, foundRef);
     return _outer != null

@@ -158,6 +158,18 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of const_string feature.
+   */
+  public static final String CONST_STRING_NAME = "const_string";
+
+
+  /**
+   * Name of const_string.utf8_data feature.
+   */
+  public static final String UTF8_DATA_NAME = "utf8_data";
+
+
+  /**
    * Name of i8 feature.
    */
   public static final String I8_NAME     = "i8";

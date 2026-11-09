@@ -8,7 +8,7 @@ s(a) =>
 or by partially applying arguments to a call to 's' declared at reg_issue4549.fz:24:1
 s(a, b) => s := [1].map (s 1)
 ^.
-To solve this, rename one of the ambiguous features.
+To solve this, use an explicit lambda, e.g., 'x -> foo x', or rename one of the ambiguous features.
 
 
 reg_issue4549.fz:24:3: error 2: Type inference from actual arguments failed since no actual call was found

@@ -1,7 +1,7 @@
 generator_effect is
   # define a generator effect with a yield operation
   #
-  gen(T type,
+  gen(T : Any,
       yield T->unit    # yield is called by code to yield values
       ) : effect is
 

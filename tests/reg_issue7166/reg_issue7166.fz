@@ -43,7 +43,7 @@ reg_issue7166 =>
 
   # the common test code
   #
-  test(LM type : mutate, thread_safe bool) =>
+  test(LM : mutate, thread_safe bool) =>
 
     # first, create mutable field and array:
 

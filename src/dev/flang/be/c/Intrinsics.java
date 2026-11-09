@@ -1083,9 +1083,7 @@ public class Intrinsics extends ANY
       };
 
     // signed result
-    var rs = ru.castTo(st);
-
-    return rs;
+    return ru.castTo(st);
   }
 
   /**

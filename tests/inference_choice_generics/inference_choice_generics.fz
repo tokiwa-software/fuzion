@@ -23,9 +23,9 @@
 
 inference_choice_generics =>
 
-  tree(T type) : choice nil T (Branch T) is
+  tree(T : Any) : choice nil T (Branch T) is
 
-  Branch(T type, left, right tree T) ref is
+  Branch(T : Any, left, right tree T) ref is
 
   tree := (Branch
             (Branch
@@ -46,7 +46,7 @@ inference_choice_generics =>
 
   # -----------------------------
 
-  special_branch(T type, l, r tree T) : Branch T l r is
+  special_branch(T : Any, l, r tree T) : Branch T l r is
 
   tree2 := (special_branch
              (special_branch
@@ -56,19 +56,17 @@ inference_choice_generics =>
                (special_branch 08 15)
                (special_branch 32 168)))
 
-  # NYI: UNDER DEVELOPMENT: #8048 Do not call `print` while this issue is open
-  if false
-    print tree2
-    say ""
+  print tree2
+  say ""
 
   # -----------------------------
 
-  Myref(T type) ref is
+  Myref(T : Any) ref is
 
   myval               : Myref f32           is
-  myval(T, U, V type) : Myref (tuple T U V) is
+  myval(T, U, V : Any) : Myref (tuple T U V) is
 
-  f(U type,
+  f(U : Any,
     v choice nil (Myref U))
   =>
     say U

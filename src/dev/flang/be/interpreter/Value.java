@@ -271,20 +271,6 @@ public abstract class Value extends FUIRContext
 
 
   /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  void checkStaticClazz(int expected)
-  {
-    throw new Error("value " + this + " not allowed for clazz "+ expected);
-  }
-
-
-  /**
    * Return the instance this value contains.  If this is an Instance, return
    * this, if this is an LValue containing an instance, get that instance.
    */

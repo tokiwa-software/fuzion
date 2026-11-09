@@ -62,7 +62,7 @@ is
   #
   # Actual type for argument #1 'a' does not match expected type.
   # In call to          : 'property.orderable.type.post equality'
-  # expected formal type: 'String.this.type (in type feature)'
+  # expected formal : 'String.this.type (in type feature)'
   # actual type found   : 'String'
   # assignable to       : 'String'
   # for value assigned  : 'equality'
@@ -80,7 +80,7 @@ is
 # This allows to reverse the sorting order, e.g.,
 #     [1,5,3,4,2].sort_by property.reverse_order
 #
-public reverse_order(O type : property.orderable,
+public reverse_order(O : property.orderable,
                      public val O
                      ) : property.orderable
 is

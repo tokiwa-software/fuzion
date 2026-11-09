@@ -335,6 +335,14 @@ public class Call extends ANY implements Comparable<Call>, Context
         markFunctionArgsAsCalled();
         markArrayArgsAsRead();
         markValueFieldsAsRead(_dfa._fuir.clazzResultClazz(calledClazz()));
+        for (int i = 0; i < _dfa._fuir.clazzArgCount(calledClazz()); i++)
+          {
+            var at = _dfa._fuir.clazzArgClazz(calledClazz(), i);
+            if (!_dfa._fuir.clazzIsRef(at))
+              {
+                markValueFieldsAsRead(at);
+              }
+          }
 
         result = genericResult();
         if (result == null)
@@ -350,9 +358,13 @@ public class Call extends ANY implements Comparable<Call>, Context
     return result;
   }
 
+
   /**
    * Mark all arg fields of {@code cl} as read/used so
    * that they aren't optimized out later.
+   *
+   * NYI: UNDER DEVELOPMENT: need to do this recursively if field is
+   * of value type.
    */
   private void markValueFieldsAsRead(int cl)
   {

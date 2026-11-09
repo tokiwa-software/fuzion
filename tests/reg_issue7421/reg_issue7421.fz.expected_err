@@ -1,7 +1,7 @@
 
-reg_issue7421.fz:26:5: error 1: Incompatible type parameter
+reg_issue7421.fz:26:7: error 1: Incompatible type parameter 'E' for 'E : e.this'
     b E
-----^
+------^
 formal type parameter 'E : e.this'
 actual type parameter 'E'
 assignable to constraint: 'E'

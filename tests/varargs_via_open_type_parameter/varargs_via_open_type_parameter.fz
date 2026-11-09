@@ -28,7 +28,7 @@ varargs_via_open_type_parameter =>
 
   # A simple example that prints an arbitrary long list of arguments
   #
-  test(A type ..., a A...) =>
+  test(A... : Any, a A...) =>
 
     # to print, this uses just `$a`, i.e., `a.as_string` that will use the inherited
     # `(Sequence container.Typed_Value).as_string`.
@@ -55,11 +55,11 @@ varargs_via_open_type_parameter =>
   #
   # this implementation uses a local instance of `typed_applicator`
   #
-  printf1(A type ..., s String, a A...) =>
+  printf1(A... : Any, s String, a A...) =>
 
     doit : container.typed_applicator (String, i64) is
 
-      public redef apply(T type, e (String, i64), v T) (String, i64)
+      public redef apply(T : Any, e (String, i64), v T) (String, i64)
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
@@ -73,11 +73,11 @@ varargs_via_open_type_parameter =>
   #
   # this implementation uses a local instance of `typed_fold`
   #
-  printf2(A type ..., s String, a A...) =>
+  printf2(A... : Any, s String, a A...) =>
 
     doit : container.typed_fold (s, 0) a is
 
-      public redef apply(T type, e (String, i64), v T) (String, i64)
+      public redef apply(T : Any, e (String, i64), v T) (String, i64)
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
@@ -91,9 +91,9 @@ varargs_via_open_type_parameter =>
   #
   # this implementation inherits `typed_fold`
   #
-  printf3(A type ..., s String, a A...) : container.typed_fold (s, 0) a
+  printf3(A... : Any, s String, a A...) : container.typed_fold (s, 0) a
   =>
-    public redef apply(T type, e (String, i64), v T) (String, i64)
+    public redef apply(T : Any, e (String, i64), v T) (String, i64)
     =>
       vs := if      T : numeric then "(number: $v)"
             else if T : String  then "\"$v\""
@@ -108,7 +108,7 @@ varargs_via_open_type_parameter =>
   # this implementation uses a lambda expression with type inference for
   # lambda type parameter
   #
-  printf4(A type ..., s String, a A...) =>
+  printf4(A... : Any, s String, a A...) =>
     say <| a.typed_foldf (String, i64) _ (s, 0) T,e,v->
               vs := if      T : numeric then "(number: $v)"
                     else if T : String  then "\"$v\""
@@ -122,7 +122,7 @@ varargs_via_open_type_parameter =>
   # this implementation uses a lambda expression with type inference for all
   # type parameters
   #
-  printf5(A type ..., s String, a A...) =>
+  printf5(A... : Any, s String, a A...) =>
     say <| a.typed_foldf (s, 0) T,e,v->
               vs := if      T : numeric then "(number: $v)"
                     else if T : String  then "\"$v\""
@@ -143,9 +143,9 @@ varargs_via_open_type_parameter =>
 
   # print all value arguments into numbered lines
   #
-  printn1(A type ..., a A...) : container.typed_fold 1 a
+  printn1(A... : Any, a A...) : container.typed_fold 1 a
   =>
-    public redef apply(T type, n i64, v T) i64
+    public redef apply(T : Any, n i64, v T) i64
     =>
       say "$n: $v"
       n + 1
@@ -154,7 +154,7 @@ varargs_via_open_type_parameter =>
   #
   # this implementation uses a lambda
   #
-  printn2(A type ..., a A...)
+  printn2(A... : Any, a A...)
   =>
     ignore <| a.typed_foldf i64 _ 1 T,n,v->
       say "$n: $v"
@@ -166,16 +166,16 @@ varargs_via_open_type_parameter =>
 
   # concat all values into one string
   #
-  as_one_string1(A type ..., a A...) : container.typed_fold "" a
+  as_one_string1(A... : Any, a A...) : container.typed_fold "" a
   =>
-    public redef apply(T type, s String, v T) String
+    public redef apply(T : Any, s String, v T) String
     =>
       s+v
     res
 
   # concat all values into one string
   #
-  as_one_string2(A type ..., a A...)
+  as_one_string2(A... : Any, a A...)
   =>
     a.typed_foldf "" _,s,v->
       s+v

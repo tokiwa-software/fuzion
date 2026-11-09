@@ -44,7 +44,6 @@ import dev.flang.lsp.shared.FeatureTool;
 import dev.flang.lsp.shared.LexerTool;
 import dev.flang.lsp.shared.ParserTool;
 import dev.flang.lsp.shared.QueryAST;
-import dev.flang.lsp.shared.TypeTool;
 import dev.flang.lsp.shared.Util;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.parser.Lexer.Token;
@@ -178,7 +177,7 @@ public class Completion
                   .filter(af -> af.isConstructor() || af.isChoice())
                   .filter(af -> !af.baseName().contains(" "))
                   // NYI: UNDER DEVELOPMENT: consider generics
-                  .map(af -> TypeTool.baseName(af.selfType()))
+                  .map(af -> af.featureName().baseName())
                   .distinct()
                   .map(name -> buildCompletionItem(name, name, CompletionItemKind.TypeParameter));
 
@@ -336,7 +335,7 @@ public class Completion
       {
         return getFunArgument(offset * 100, arg.generics());
       }
-    return "${" + (offset + x) + ":" + TypeTool.baseName(arg) + "}";
+    return "${" + (offset + x) + ":" + arg.selfOrConstraint().feature().featureName().baseName() + "}";
   }
 
 }

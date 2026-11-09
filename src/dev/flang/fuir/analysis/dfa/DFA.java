@@ -451,8 +451,7 @@ public class DFA extends ANY
     @Override
     public Val box(int s, Val val, int vc, int rc)
     {
-      var boxed = val.value().box(DFA.this, vc, rc, _call);
-      return boxed;
+      return val.value().box(DFA.this, vc, rc, _call);
     }
 
 
@@ -678,8 +677,7 @@ public class DFA extends ANY
     @Override
     public Val tag(int s, Val value, int newcl, int tagNum)
     {
-      Val res = value.value().tag(_call._dfa, newcl, tagNum);
-      return res;
+      return value.value().tag(_call._dfa, newcl, tagNum);
     }
 
 
@@ -1792,46 +1790,6 @@ public class DFA extends ANY
           }
       }
   }
-
-
-  /**
-   * Helper routine for intrinsics that set the elements of an array given as an argument
-   *
-   * @param cl the intrinsic call
-   *
-   * @param argnum the argument that is an internal array
-   *
-   * @param intrinsicName name of the intrinsic, just of error handling
-   *
-   * @param elementClazz the element type of the array.
-   */
-  static void setArrayElementsToAnything(Call cl, int argnum, String intrinsicName, SpecialClazzes elementClazz)
-  {
-    var array = cl._args.get(argnum);
-    if (array instanceof SysArray sa)
-      {
-        sa.setel(NumericValue.create(cl._dfa, fuir(cl).clazz(SpecialClazzes.c_i32)),
-                 NumericValue.create(cl._dfa, fuir(cl).clazz(elementClazz)));
-      }
-    else
-      {
-        Errors.fatal("DFA internal error: intrinsic '" + intrinsicName+ ": Expected class SysArray, found " + array.getClass() + " " + array);
-      }
-  }
-
-
-  /**
-   * Helper routine to call setArrayElementsToAnything with specific clazz.
-   *
-   * @param cl the intrinsic call
-   *
-   * @param argnum the argument that is an internal array
-   *
-   * @param intrinsicName name of the intrinsic, just of error handling
-   */
-  static void setArrayU8ElementsToAnything (Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_u8 ); }
-  static void setArrayI32ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_i32); }
-  static void setArrayI64ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_i64); }
 
 
   /**
@@ -3341,8 +3299,6 @@ public class DFA extends ANY
     return k;
   }
 
-
-  static final int _cntArrayCons = 0;
 
   /**
    * Create call to given clazz with given target and args.

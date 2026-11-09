@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 
 
@@ -194,7 +195,7 @@ public class ParsedCall extends Call
             var a = new List<AbstractType>(tt);
             // NYI: if tt is of the form `()` or `(a,b,c)`, we need to create an
             // empty list or a list of types `a`, `b` and `c`.
-            result =  UnresolvedType.funType(pos(), l.getFirst(), a);
+            result =  UnresolvedType.funType(sourceRange(), l.getFirst(), a);
           }
         else
           {
@@ -205,7 +206,7 @@ public class ParsedCall extends Call
                 name = FuzionConstants.CHOICE_NAME;
                 tt = null;
               }
-            result = new ParsedType(pos(), name, l, tt);
+            result = new ParsedType(sourceRange(), name, l, tt);
           }
       }
     return result;
@@ -315,7 +316,7 @@ public class ParsedCall extends Call
           }
         _actuals = new List<Expr>(ab);
         _calledFeature = Types.resolved.f_bool_AND;
-        _pendingError = null;
+        suspendPendingNotFound();
         _name = _calledFeature.baseName();
         var result = res.resolveType(ab, context);
         _actuals = new List<Expr>(result);
@@ -475,11 +476,14 @@ public class ParsedCall extends Call
         _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
         checkPartialAmbiguity(res, context, expectedType);
-        if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
-            _pendingError != null                       ||
+        checkTypeFeaturePartialAmbiguity(res, context, expectedType);
+        if (!isDefunct() &&/* checkTypeFeaturePartialAmbiguity may have set
+_calledFeature to error */
+          (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
+            _pendingError instanceof PendingNotFound pn     ||
 
             // convert pre/postfix to infix, e.g., `1-` -> `x->1-x` */
-            isPartialInfix(res, expectedType)           ||
+            isPartialInfix(res, expectedType)               ||
 
             // otherwise, try to solve inconsistent type
             paa != null                              &&
@@ -488,12 +492,67 @@ public class ParsedCall extends Call
              !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.selfOrConstraint().feature())
              // !typeForInferencing().isFunctionType(res)                    -- original code
              // expectedType.isAssignableFrom(typeForInferencing()).no()     -- new code, does not work, unclear why!
-            ))
+            )))
           {
             l = applyPartially(res, context, expectedType);
           }
       }
     return l;
+  }
+
+
+ /**
+   * Check for ambiguity between partial application and a direct call if the
+   * target is a type {@code t}.
+   *
+   * Candidates for a direct call are the type features of {@code t} and, if
+   * {@code t} can be called without arguments, its inner features.
+   *
+   * Example: {@code "x" |> t.of} with
+   *
+   *   t is
+   *     type.of Unary t String => ...   # direct call
+   *     type.of(s String) t => ...      # partial application
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param expectedType the expected type, a function type for partial application
+   */
+  private void checkTypeFeaturePartialAmbiguity(Resolution res, Context context, AbstractType expectedType)
+  {
+    var paa = partiallyApplicableAlternative(res, context, expectedType);
+    var pt = _target == null ? null : _target.asParsedType();
+    var tt = pt == null ? null : pt.resolve(res, context, true);
+    var tf = tt != null && tt != Types.t_ERROR && tt.isNormalType() ? tt.feature() : null;
+    if (paa != null && (paa._feature.isTypeFeature() || paa._feature.outer() == tf))
+      {
+
+        var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
+        var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
+        // inner features of the target type are candidates only if the target
+        // can be called without arguments, otherwise `t.f` cannot call inner `f`
+        if (tf != null && tf != paa._feature.outer() && tf.valueArguments().isEmpty())
+          {
+            fos.addAll(res._module.lookup(tf, _name, this, false, false));
+          }
+        // type features in the cotype of the target are candidates as well
+        if (tf != null && tf.hasCotype() && tf.cotype() != paa._feature.outer())
+          {
+            fos.addAll(res._module.lookup(tf.cotype(), _name, this, false, false));
+          }
+        var direct = FeatureAndOuter.filter(fos,
+                                            pos(),
+                                            FuzionConstants.OPERATION_CALL,
+                                            FeatureName.get(_name, n),
+                                            ff -> ff.valueArguments().size() == n);
+        if (direct != null && direct._feature != paa._feature)
+          {
+            AstErrors.partialApplicationAmbiguity(pos(), direct._feature, paa._feature);
+            clearPendingError();
+            setToErrorState();
+          }
+      }
   }
 
 
@@ -552,7 +611,7 @@ public class ParsedCall extends Call
     var n = t.arity(res);
     if (mustNotContainDeclarations("a partially applied function call", context.outerFeature()))
       {
-        _pendingError = null;
+        suspendPendingNotFound();
         List<Expr> pns = new List<>();
         for (var i = 0; i < n; i++)
           {
@@ -586,7 +645,6 @@ public class ParsedCall extends Call
               : /* v- ==> x->v-x */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
         _calledFeature = null;
-        _pendingError = null;
         var fn = new Function(pos(),
                               pns,
                               this)
@@ -743,6 +801,7 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             i++;
           }
         _generics = g;
+        _originalGenerics = g.map2(x -> x instanceof HasSourcePosition p ? p : null);
         _splitOffGenerics = g.freeze();
         _actuals = a;
       }

@@ -92,8 +92,8 @@ public class Html extends ANY
             <label for="##ID##.code" class="visually-hidden">Code input</label>
             <textarea class="code-input" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
             <div class="position-absolute run-buttons">
-              <input type="button" onclick="runit('##ID##')" class="run-button" name="run" value="Run!" />
-              <input type="button" onclick="runiteff('##ID##')" class="run-button" name="run" value="Effects!" />
+              <input type="button" onclick="runit('##ID##')" class="run-button" value="Run!" />
+              <input type="button" onclick="runiteff('##ID##')" class="run-button" value="Effects!" />
               <a href="/tutorial/effects.html"><i>What are effects?</i></a>
             </div>
           </form>
@@ -129,10 +129,11 @@ public class Html extends ANY
       }
     else if (af.isTypeParameter())
       {
-        var constraint = af.constraint().feature();
+        var constraintType = af.constraint();
+        var constraint = constraintType.feature();
         return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
           .replace("$1", featureRelativeURL(constraint, relativeTo))
-          .replace("$2", htmlEncodedQualifiedName(constraint));
+          .replace("$2", htmlEncodeNbsp(constraintType.toString(true, af)));
       }
     else
       {
@@ -147,7 +148,7 @@ public class Html extends ANY
               + htmlEncodedBasename(f)
               + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
               + c.actualTypeParameters().stream()
-                 .map(at -> htmlEncodeNbsp(at.toString(false, af)))
+                 .map(at -> htmlEncodeNbsp(at.toString(true, af)))
                  .collect(Collectors.joining(", ")) + "</a>";
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
@@ -166,10 +167,10 @@ public class Html extends ANY
     var at = af.resultType();
     if (at.isParametricType())
       {
-        return htmlEncodeNbsp(at.toString(false, context))
+        return htmlEncodeNbsp(at.toString(true, context))
                + (at.isOpenGeneric() ? "..." : "");
       }
-    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(false, context)))
+    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(true, context)))
       .replace("$2", featureRelativeURL(at.feature(), relativeTo));
   }
 
@@ -228,30 +229,59 @@ public class Html extends ANY
 
     return
       "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
-        + "<div class='d-flex flex-wrap word-break-break-word'>"
-          + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
-            + anchor(af, relativeTo)
-            + arguments(af, (outer != null ? outer : af))
-            + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
-            + inherited(af, relativeTo)
-            + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchorType(af, af, relativeTo)
-               : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
-               : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.baseName() + "_out:" + (outer != null ? outer.baseName() : "_out=null")
-                                      : "")
-            + annotateUnitType(af)
-            + annotateInherited(af, outer)
-            + annotateRedef(af, outer)
-            + annotateAbstract(af)
-            + annotateContainsAbstract(af)
-            + annotatePrivateConstructor(af)
-            + annotateModule(af)
-            + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>¶</a>"
-            // fills remaining space
-            + "<div class='flex-grow-1'></div>"
-          + "</div>"
+        + "<div class='overflow-wrap-break-word fz-code fd-signature'>"
+          + signature(af, outer, relativeTo)
         + "</div>"
         + source(af)
       + "</div>";
+  }
+
+
+  /**
+   * The signature of a feature, i.e. its name, arguments and result type.
+   *
+   * Features with arguments use a three column layout: the feature name
+   * including the opening parenthesis, the arguments, and the closing
+   * parenthesis followed by the result type. Features without arguments are
+   * kept in a single line.
+   *
+   * @param af the feature whose signature is rendered
+   * @param outer the feature in whose context af is used
+   * @param relativeTo the feature to which links should be relative to
+   * @return HTML for the feature signature
+   */
+  private String signature(AbstractFeature af, AbstractFeature outer, AbstractFeature relativeTo)
+  {
+    var args = arguments(af, relativeTo);
+    var tail =
+      (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
+      + inherited(af, relativeTo)
+      + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchorType(af, af, relativeTo)
+         : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
+         : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.baseName() + "_out:" + (outer != null ? outer.baseName() : "_out=null")
+                                : "")
+      + annotateUnitType(af)
+      + annotateInherited(af, outer)
+      + annotateRedef(af, outer)
+      + annotateAbstract(af)
+      + annotateContainsAbstract(af)
+      + annotatePrivateConstructor(af)
+      + annotateModule(af)
+      + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>¶</a>";
+
+    if (args.isEmpty())
+      {
+        return anchor(af, relativeTo) + tail;
+      }
+
+    return "<div class='fd-signature-col1'>" + anchor(af, relativeTo) + "(" + "</div>"
+      + "<div class='fd-signature-col2'>"
+      + java.util.stream.IntStream.range(0, args.size())
+        .mapToObj(i -> "<div class='fd-signature-arg'>" + args.get(i)
+                       + (i < args.size() - 1 ? "," : "") + "</div>")
+        .collect(Collectors.joining())
+      + "</div>"
+      + "<div class='fd-signature-col3'>)" + tail + "</div>";
   }
 
   /**
@@ -494,16 +524,34 @@ public class Html extends ANY
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.OpenTypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(outer.typeArguments());
 
+    var explicitTypeParameters = typeParameters.stream()
+                                               .filter(AbstractFeature::isExplicitTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+    var openTypeParameters     = typeParameters.stream()
+                                               .filter(AbstractFeature::isOpenTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+    var freeTypeParameters     = typeParameters.stream()
+                                               .filter(AbstractFeature::isFreeTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+
     // Fields
     var fields =  new List<AbstractFeature>();
     // it's not possible to get an instance of a function feature, so no fields can not be accessed from outside
     if (!signatureWithArrow(outer))
       {
         fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
-        var normalArguments = outer.arguments().clone();
-        normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
-        fields.addAll(normalArguments);
+        var valueArguments = outer.valueArguments().clone();
+        valueArguments.removeIf(a->a.visibility().eraseTypeVisibility() != Visi.PUB);
+        fields.addAll(valueArguments);
       }
+
+    // Value arguments of function features
+    // List them independent of visibility, they can not be called,
+    // but they might contain a comment which otherwise is not shown..
+    var functionArguments = signatureWithArrow(outer)
+                              ? outer.valueArguments().clone()
+                              : new List<AbstractFeature>();
+
 
     // Constructors
     var allConstructors =  new TreeSet<AbstractFeature>();
@@ -551,14 +599,17 @@ public class Html extends ANY
                                                               && typeParam.constraint().constraintAssignableFrom(outer.resultType())));
       }
 
-    return mainSection0("Type Parameters",              null,         typeParameters,     outer, false)
-         + mainSection0("Fields",                       null,         fields,             outer, false)
-         + mainSection0("Constructors",                 null,         normalConstructors, outer, true)
-         + mainSection0("Type Constructors",            null,         typeConstructors,   outer, true)
-         + mainSection0("Functions",                    null,         normalFunctions,    outer, true)
-         + mainSection0("Type Features",                null,         typeFeatures,       outer, true)
-         + mainSection0("Choice Types",                 null,         choices,            outer, true)
-         + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,  outer, true);
+    return mainSection0("Type Parameters",              null,         explicitTypeParameters, outer, false)
+         + mainSection0("Open Type Parameter",          null,         openTypeParameters,     outer, false)
+         + mainSection0("Free Type Parameters",         null,         freeTypeParameters,     outer, false)
+         + mainSection0("Arguments",                    null,         functionArguments,      outer, false)
+         + mainSection0("Fields",                       null,         fields,                 outer, false)
+         + mainSection0("Constructors",                 null,         normalConstructors,     outer, true)
+         + mainSection0("Type Constructors",            null,         typeConstructors,       outer, true)
+         + mainSection0("Functions",                    null,         normalFunctions,        outer, true)
+         + mainSection0("Type Features",                null,         typeFeatures,           outer, true)
+         + mainSection0("Choice Types",                 null,         choices,                outer, true)
+         + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,      outer, true);
   }
 
 
@@ -614,7 +665,7 @@ public class Html extends ANY
   {
     return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div><div class='fd-contract'>$4</div>$5"
       .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for nav-title
-      .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : anchorTags(f))
+      .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: baseline;\">" + lm.name() + "</code>" : anchorTags(f))
       .replace("$2", f.isUniverse() ? "": summary(f))
       .replace("$3", commentOf(f))
       .replace("$4", contractOf(f))
@@ -744,7 +795,8 @@ public class Html extends ANY
             )
             .collect(Collectors.joining());
           }
-        say_err("Warning: No comment found for " + af.qualifiedNameHuman());
+        // NYI: UNDER DEVELOPMENT: need to find a way that does not spam the terminal with 2500 lines when just building the docs
+        // say_err("Warning: No comment found for " + af.qualifiedNameHuman());
       }
 
     Collections.reverse(commentLines);
@@ -903,7 +955,7 @@ public class Html extends ANY
 
     Pattern p = Pattern.compile("(&|\"|'|<|>|\r|\n|\t|\\s)");
     Matcher m = p.matcher(s);
-    StringBuffer sb = new StringBuffer();
+    var sb = new StringBuilder();
     while (m.find())
       {
         switch (s.charAt(m.toMatchResult().start()))
@@ -1149,20 +1201,30 @@ public class Html extends ANY
   }
 
   /**
-   * arguments of this feature
+   * arguments of this feature, rendered as a list of HTML strings
    * @param f
    * @return
    */
-  private String arguments(AbstractFeature f, AbstractFeature relativeTo)
+  private java.util.List<String> arguments(AbstractFeature f, AbstractFeature relativeTo)
   {
-    var res = f.arguments()
+    // free type parameters are inferred from the type of the value argument
+    // they are used in, so they are not shown as separate arguments but
+    // directly after that argument.
+    var freeTypes = f.typeArguments()
+      .filter(AbstractFeature::isFreeTypeParameter);
+
+    return f.arguments()
       .stream()
+      .filter(a -> !freeTypes.contains(a))
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
-      .map(a ->
-        htmlEncodedBasename(a) + "&nbsp;"
-        + (a.isTypeParameter() ? typeArgAsString(a, relativeTo) : anchorType(a, f, relativeTo)))
-      .collect(Collectors.joining(htmlEncodeNbsp(", ")));
-    return res.isEmpty() ? "" : "(" + res + ")";
+      .map(a -> htmlEncodedBasename(a) + "&nbsp;" +
+        (a.isTypeParameter()             ? typeArgAsString(a, relativeTo) :
+        (a.resultType().isParametricType() &&
+         a.resultType().typeParameter() instanceof AbstractFeature freeType &&
+         freeType.isFreeTypeParameter()) ? htmlEncodedBasename(freeType) + "&nbsp;" +
+                                           typeArgAsString(freeType, relativeTo)
+                                         : anchorType(a, f, relativeTo)))
+      .collect(Collectors.toList());
   }
 
 
@@ -1352,7 +1414,15 @@ public class Html extends ANY
             </div>
             <div class="container">
               <section>$0</section>
-              <section>$1</section>
+              <section>
+                <button type="button" class="toggle-feature-details cursor-pointer" onclick="
+                  const entries = this.parentElement.querySelectorAll(':scope > details');
+                  const expand = this.textContent.trim() === 'Expand all';
+                  entries.forEach(entry => entry.open = expand);
+                  this.textContent = expand ? 'Collapse all' : 'Expand all';
+                ">Expand all</button>
+                $1
+              </section>
               $3
             </div>
           </div>
@@ -1410,35 +1480,23 @@ public class Html extends ANY
     for (LibraryModule mod : libModules)
       {
         modPage.append("""
-          <div class="cursor_pointer">
-            <details id="$2" $0>
-              <summary>
-                <div class="d-grid" style="grid-template-columns: 1fr min-content;">
-                  <div class="d-flex flex-wrap word-break-break-word">
-                    <div class="d-flex flex-wrap word-break-break-word fz-code">
-                      <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
-                      <div class="flex-grow-1"></div>
-                      <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
-                    </div>
-                  </div>
-                </div>
-              </summary>
-            </details>
-          </div>
-          """.replace("$0", config.ignoreVisibility() ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-             .replace("$1", mod.name() + "/index.html")
-             .replace("$2", mod.name()));
+          <details id="$2" class="cursor-pointer">
+            <summary>
+              <span class="overflow-wrap-break-word fz-code fd-signature">
+                <a class="fd-feature font-weight-600 ml-2" href="$1">$2</a>
+                <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
+              </span>
+            </summary>
+          </details>
+          """.replace("$1", mod.name() + "/index.html")
+              .replace("$2", mod.name()));
       }
-    // modulePage += "</ul>";
 
     modPage.append("""
         </section>
-        $3
       </div>
       </div>
-      """.replace("$3", config.ignoreVisibility() ? """
-            <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
-          """ : ""));
+      """);
 
     return config.bare() ? modPage.toString(): fullHtml("Modules", modPage.toString());
   }

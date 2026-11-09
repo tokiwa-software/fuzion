@@ -32,7 +32,7 @@ reg_issue5003 =>
   B : A is
   C is
 
-  x(T type : A) is
+  x(T : A) is
 
   y : x B is
   z : x C is  # incompatible type parameter `C` should create error here

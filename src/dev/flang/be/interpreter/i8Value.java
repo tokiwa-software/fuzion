@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.SpecialClazzes;
 
 /**
  * i8Value is a value of type i8
@@ -55,7 +54,7 @@ public class i8Value extends Value
   public i8Value(int val)
   {
     if (PRECONDITIONS) require
-      (-0x8000 <= val && val <= 0x7fff);
+      (-0x80 <= val && val <= 0x7f);
 
     _val = val;
   }
@@ -101,24 +100,6 @@ public class i8Value extends Value
       (size == 1);
 
     slot.container.nonrefs[slot.offset] = _val;
-  }
-
-
-  /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  @Override
-  void checkStaticClazz(int expected)
-  {
-    if (expected != fuir().clazz(SpecialClazzes.c_i8))
-      {
-        throw new Error("i8 value not allowed for clazz " + expected);
-      }
   }
 
 

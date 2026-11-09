@@ -623,14 +623,9 @@ public abstract class Expr extends ByteCode
    */
   public static Expr comment(String msg)
   {
-    if (ENABLE_COMMENTS)
-      {
-        return commentAlways(msg);
-      }
-    else
-      {
-        return UNIT;
-      }
+    return ENABLE_COMMENTS
+      ? commentAlways(msg)
+      : UNIT;
   }
 
 
@@ -1631,7 +1626,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
         {
-          idx[0] += (n>4 ? 2 : 1);
+          idx[0] += (n>3 ? 2 : 1);
         }
     };
   }

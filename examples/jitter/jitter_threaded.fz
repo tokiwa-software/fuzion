@@ -73,10 +73,10 @@ jitter_threaded =>
   # them into per-period tuples and builds histograms.
   # message format: (period, actual_release, expected_release, end_of_period_flag)
   test_jitter(# the clock used to schedule the releases
-              C type : time.Clock,
+              C : time.Clock,
 
               # the clock used to measure the times
-              TIMER type : time.Clock,
+              TIMER : time.Clock,
 
               sample_ch concur.Channel (tuple time.duration time.instant time.instant bool))
   =>

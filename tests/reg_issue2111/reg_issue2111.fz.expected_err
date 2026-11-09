@@ -1,0 +1,7 @@
+
+reg_issue2111.fz:32:3: error 1: Call would result in a recursive type.
+  test my_switch on
+--^^^^^^^^^^^^^^^^^
+The resulting type would be: 'test (test i64).my_switch'
+
+one error.

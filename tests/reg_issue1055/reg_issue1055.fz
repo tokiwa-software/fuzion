@@ -30,7 +30,7 @@
 # ```
 # ex =>
 #
-#   c(T type : float T) is
+#   c(T : float T) is
 #     say T.type.fract
 #
 #   c f32
@@ -67,7 +67,7 @@
 # but via `c.type.a_type_feature` I can call `some_feat_requiring_instance` which is supposed to return an instance
 # of `self_referential_feature`
 # ```
-#   self_referential_feature(T type:self_referential_feature T) is
+#   self_referential_feature(T : self_referential_feature T) is
 #     some_feat_requiring_instance self_referential_feature.this.type is
 #       self_referential_feature.this
 #     type.a_type_feature =>
@@ -81,7 +81,7 @@
 
 reg_issue1055 =>
 
-  c(T type : float T) is
+  c(T : float T) is
     say T.type.fract
 
   c f32

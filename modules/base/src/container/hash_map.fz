@@ -26,13 +26,13 @@
 # hash_map -- an immutable hash map from keys HK to values V
 #
 private:public hash_map(
-        HK type : property.hashable,
-        V  type,
+        HK : property.hashable,
+        V  : Any,
         ks Sequence HK,
         vs Sequence V) : container.Map HK V
   pre
     debug   : ks.count        = vs.count
-    debug 2 : ks.unique.count = ks.count
+    debug 2 : ks.map HK.hash_code .unique.count = ks.count
     debug   : ks.count.as_u64 <= (hash_map HK V).max_size  # we impose a max. size due to our collision avoidance algorithm
 is
 

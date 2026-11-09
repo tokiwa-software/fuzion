@@ -7,7 +7,7 @@ Actual value arguments: 'partial application argument #partialFunctionArg2', 'pa
 Called feature: 'id'
 Formal value arguments: 'x' 'unit'
 Declared at {base.fum}/id.fz:31:8
-public id(T type, x T) T => x
+public id(T : Any, x T) T => x
 -------^^
 
 one error.

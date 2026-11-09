@@ -4,7 +4,7 @@ While searching for internally used feature 'num' found 'num' defined at {base.f
 public num is
 -------^^^
 and 'num' defined at reg_issue4961.fz:24:1
-num(T type : numeric, x T) T => x
+num(T : numeric, x T) T => x
 ^^^
 
 one error.

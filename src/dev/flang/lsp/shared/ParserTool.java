@@ -170,7 +170,7 @@ public class ParserTool extends ANY
 
   public static Stream<AbstractFeature> declaredFeatures(AbstractFeature f, boolean includeInternalFeatures)
   {
-    if (TypeTool.containsError(f.selfType()))
+    if (f.selfType().containsError())
       {
         return Stream.empty();
       }
