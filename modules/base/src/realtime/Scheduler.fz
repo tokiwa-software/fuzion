@@ -28,7 +28,7 @@ is
 
   # submit a task to the scheduler
   #
-  public submit(P type : time.period, t realtime.task P) unit => abstract
+  public submit(P : time.period, t realtime.task P) unit => abstract
 
 
   # stop accepting new tasks for scheduling

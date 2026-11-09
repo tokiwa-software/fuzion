@@ -30,7 +30,7 @@ o is
     public redef as_string String => "$get_o.i"
 
 p : o is
-  f(A type : i, iv A) =>
+  f(A : i, iv A) =>
     outer := iv.get_o
     _ := outer
 

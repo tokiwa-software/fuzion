@@ -37,11 +37,11 @@ reg_issue5569 =>
       r => i
       type.c => e.this.env
     i is
-  u(E type : t.e) => _ := E.this.env.r
+  u(E : t.e) => _ := E.this.env.r
   t.e ! (u t.e)
 
   # the original example change to output the type
-  v(E type : t.e) =>
+  v(E : t.e) =>
     E.this.env.r |> type_of |> say
 
   yap "expecting t.i : "; t.e ! (v t.e)
@@ -63,7 +63,7 @@ reg_issue5569 =>
   t.e.j is
   t.e.q => j
 
-  w(E type : t.e) =>
+  w(E : t.e) =>
     x := E.this.env.r
     y := E.this.env.q
     say "$(type_of x) $(type_of y)"
@@ -80,7 +80,7 @@ reg_issue5569 =>
   t.e.r2() option (array i) => option [i]
   t.e.q2() option (array j) => option [j]
 
-  w2(E type : t.e) =>
+  w2(E : t.e) =>
     x := E.this.env.r2
     y := E.this.env.q2
     say "$(type_of x) $(type_of y)"
@@ -99,7 +99,7 @@ reg_issue5569 =>
 
 /* NYI: BUG: The following does not work yet, the type of `y` is `t.e.this` and not `t.this`:
 
-  w3(E type : t.e) =>
+  w3(E : t.e) =>
     x := E.this.env.ee
     y := E.this.env.tt
     _ := x.j
@@ -117,7 +117,7 @@ reg_issue5569 =>
 
   e3 : t.e is
 
-  w4(E type : t.e) =>
+  w4(E : t.e) =>
     y := E.this.env.tt
     say (type_of y)
     say y

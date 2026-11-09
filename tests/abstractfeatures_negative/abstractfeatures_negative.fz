@@ -29,7 +29,7 @@ abstractfeatures_negative is
   maybe => envir.Args.env.count > 3
 
   opengenerics12 =>
-    F(A type...) ref is
+    F(A... : Any) ref is
       f(a A...) unit => abstract                           #  1. should flag an error: abstract feature not implemented
       g(a A...) unit => abstract                           # ok, not called.
 
@@ -42,7 +42,7 @@ abstractfeatures_negative is
   opengenerics12
 
   opengenerics12a =>
-    F(A type...) ref is
+    F(A... : Any) ref is
       f1(a A...) unit => abstract                          #  3. should flag an error: abstract feature not implemented
       f2(a A...) unit => abstract                          #  4. should flag an error: abstract feature not implemented
       f3(a A...) unit => abstract                          #  5. should flag an error: abstract feature not implemented
@@ -60,7 +60,7 @@ abstractfeatures_negative is
   opengenerics12a
 
   opengenerics12b =>
-    F(A type...) ref is
+    F(A... : Any) ref is
       f(a A...) unit => abstract                           #  7. should flag an error: abstract feature not implemented
       g(a A...) unit => abstract                           # ok, not called.
 
@@ -72,7 +72,7 @@ abstractfeatures_negative is
   opengenerics12b
 
   opengenerics12c =>
-    F(A type...) ref is
+    F(A... : Any) ref is
       f1(a A...) unit => abstract                          #  9. should flag an error: abstract feature not implemented
       f2(a A...) unit => abstract                          # 10. should flag an error: abstract feature not implemented
       f3(a A...) unit => abstract                          # 11. should flag an error: abstract feature not implemented

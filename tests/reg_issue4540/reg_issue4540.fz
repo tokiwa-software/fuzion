@@ -23,4 +23,4 @@
 
 m 3
 m(a A) => if A : i32 then
-m(B type, b B) =>
+m(B : Any, b B) =>

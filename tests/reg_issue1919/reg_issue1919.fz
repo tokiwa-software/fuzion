@@ -23,7 +23,7 @@
 
 reg_issue1919 =>
 
-  a(T type: (i32) -> f64, b T) f64 =>
+  a(T : (i32) -> f64, b T) f64 =>
     b.call 3
 
   say (a i32->f64 (x -> 0.23))

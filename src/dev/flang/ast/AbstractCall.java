@@ -372,7 +372,7 @@ public abstract class AbstractCall extends Expr
    *
    *     type.equality(a, b equatable.this.type) bool is abstract
    *
-   *   equals(T type : equatable, x, y T) => T.equality x y
+   *   equals(T : equatable, x, y T) => T.equality x y
    *
    * For the call {@code T.equality x y}, we must replace the formal argument type
    * for {@code a} (and {@code b}) by {@code T}.

@@ -42,7 +42,7 @@
 private:public expanding_array
   (
    # element type
-   T type,
+   T : Any,
 
    # the array containing the actual data
    data fuzion.sys.internal_array (container.slot T),
@@ -63,7 +63,7 @@ is
 
   # get the contents of this array at the given index
   #
-  public redef index [](I type : integer, i I) T
+  public redef index [](I : integer, i I) T
   =>
     data[i.as_i64].val
 
@@ -241,7 +241,7 @@ is
   #
   # Complexity: O(1)
   #
-  public fixed type.empty(I type : integer, initial_capacity I) container.expanding_array T
+  public fixed type.empty(I : integer, initial_capacity I) container.expanding_array T
     pre
       debug: initial_capacity >= 0
   =>
@@ -270,7 +270,7 @@ reserved is
 # internal arrays used by `expanding_array` will use values of type `slot` such that
 # we can distinguish slots that are used from those that are unused or reserved.
 #
-slot(T type) : choice reserved unused T is
+slot(T : Any) : choice reserved unused T is
 
   # is this slot unused?
   #
@@ -309,7 +309,7 @@ slot(T type) : choice reserved unused T is
 
 # effect that will be installed by `expanding_array.expand` when running `filler`
 #
-private:public expanding(T type,
+private:public expanding(T : Any,
                          data fuzion.sys.internal_array (container.slot T),
                          public length i64,
                          public n i64
@@ -322,7 +322,7 @@ is
   #
   # `put` must be called for all indices of newly added entries.
   #
-  public put(I type : integer, i I, v T) unit
+  public put(I : integer, i I, v T) unit
     pre
       safety: length <= i.as_i64 < length+n
   =>
@@ -334,7 +334,7 @@ is
   # call to `put i v` for some value `v` or for indices in the range `0..length-1`
   # for all indices that existed before `expand` was called.
   #
-  public has(I type : integer, i I) bool
+  public has(I : integer, i I) bool
     pre
       safety: 0 <= i.as_i64 < length+n
   =>
@@ -351,7 +351,7 @@ is
   # before the call to `expand` as well as for indices that where initialized
   # via a call to `put` afterwards.
   #
-  public get(I type : integer, i I) T
+  public get(I : integer, i I) T
     pre
       safety: 0 <= i.as_i64 < length+n
       debug: has i
@@ -362,7 +362,7 @@ is
 
   # shorthand index operator alias for `get`
   #
-  public index [](I type : integer, i I) T
+  public index [](I : integer, i I) T
     pre
       safety: 0 <= i.as_i64 < length+n
       debug: has i.as_i32
@@ -372,7 +372,7 @@ is
 
   # shorthand set-index operator alias for `put`
   #
-  public set [](I type : integer, i I, v T) unit
+  public set [](I : integer, i I, v T) unit
     pre
       safety: length <= i.as_i64 < length+n
   =>

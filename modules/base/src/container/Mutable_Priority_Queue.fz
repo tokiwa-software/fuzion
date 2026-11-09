@@ -23,7 +23,7 @@
 
 # An abstract mutable priority queue, returning the element with the highest priority first
 #
-public Mutable_Priority_Queue(T type) ref is
+public Mutable_Priority_Queue(T : Any) ref is
 
   # add an element to the queue
   #
@@ -103,12 +103,12 @@ public Mutable_Priority_Queue(T type) ref is
   # Create an empty priority queue that determines return order
   # by mapping elements to an orderable type using `by`
   #
-  public type.empty_by(O type : property.orderable, by (T)->O) container.Mutable_Priority_Queue T
+  public type.empty_by(O : property.orderable, by (T)->O) container.Mutable_Priority_Queue T
   => abstract
 
 
   # Create a priority queue from the given unordered elements that determines
   # return order by mapping elements to an orderable type using `by`
   #
-  public type.from_by(O type : property.orderable, initial_elements Sequence T, by (T)->O) container.Mutable_Priority_Queue T
+  public type.from_by(O : property.orderable, initial_elements Sequence T, by (T)->O) container.Mutable_Priority_Queue T
   => abstract

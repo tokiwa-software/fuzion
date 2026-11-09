@@ -33,7 +33,7 @@
 #
 testRedefine is
 
-  getter (A type) ref is
+  getter (A : Any) ref is
     get A => abstract
 
   good : getter (String | i32 | nil) is

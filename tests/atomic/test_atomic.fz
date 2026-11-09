@@ -28,16 +28,16 @@
 #
 test_atomic is
 
-  chck0(T type, x, y T, eq (T,T)->bool) =>
+  chck0(T : Any, x, y T, eq (T,T)->bool) =>
     if eq x y
       say "PASSED $x = $y"
     else
       say "FAILED $x /= $y"
 
-  chck(T type: property.equatable, x, y T) =>
+  chck(T : property.equatable, x, y T) =>
     chck0 x y (a,b)->a=b
 
-  test0(T type, a, b, c, d T, eq (T,T)->bool) =>
+  test0(T : Any, a, b, c, d T, eq (T,T)->bool) =>
     a1 := concur.atomic T .new a
     chck0 a1.read a eq
     a1.write b
@@ -53,7 +53,7 @@ test_atomic is
       a1.racy_write d
       chck0 a1.racy_read d eq
 
-  test(T type : property.equatable, a, b, c, d T) =>
+  test(T : property.equatable, a, b, c, d T) =>
     test0 a b c d (v1,v2)->v1=v2
 
   p(x, y i64) : property.equatable is

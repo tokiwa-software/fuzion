@@ -2112,7 +2112,7 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    *     type.equality(a, b equatable.this.type) bool is abstract
    *
-   *   equals(T type : equatable, x, y T) => T.equality x y
+   *   equals(T : equatable, x, y T) => T.equality x y
    *
    * For the call {@code T.equality x y} this will be called on the formal argument
    * type for {@code a} (and {@code b}).

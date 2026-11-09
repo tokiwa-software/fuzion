@@ -2108,7 +2108,7 @@ public class Call extends AbstractCall
    * If an actual type parameter is known, the type parameters used
    * in its constraints can be inferred:
    *
-   *     a(T type, S type : Sequence T, v option S) => say T
+   *     a(T type, S : Sequence T, v option S) => say T
    *     a _ (array i32) nil   # S is given, `T` is inferred as `i32`
    *     a [true, false]       # S is inferred from v, then used to infer `T` as `bool`
    */
@@ -2221,7 +2221,7 @@ public class Call extends AbstractCall
                             if (actualType != null)
                               { /* infer via constraint of type parameter:
                                  *
-                                 *     a(T type, S type : array T, s S) is
+                                 *     a(T type, S : array T, s S) is
                                  *     _ := a [32]
                                  */
                                 inferGeneric(res, context, c, true, actualType, actual.pos(), conflict, foundAt, argnum);
@@ -2229,7 +2229,7 @@ public class Call extends AbstractCall
                             else if (c.isLambdaTargetButNotLazy(res))
                               { /* propagate constraint for partial or lambda:
                                  *
-                                 *     a(F type : Function bool i32, f F) =>
+                                 *     a(F : Function bool i32, f F) =>
                                  *     _ := a x->x>3
                                  *     _ := a %%2
                                  */
@@ -2237,7 +2237,7 @@ public class Call extends AbstractCall
                                 var ac = c.applyTypePars(calledFeature(), actualTypeParameters());
                                 /* ac may contain undefined for code from #6849 as follows
 
-                                     x(F type : ()->unit, G type : F, f G) => {}
+                                     x(F : ()->unit, G : F, f G) => {}
                                      x ()->
 
                                    where for the call to `x ()->` the type `G`'s
@@ -2276,7 +2276,7 @@ public class Call extends AbstractCall
                             if (t != tc)
                               { /* we might need to infer two type parameters in code like
                                  *
-                                 *   f(R type, F type : ()->R, f F) => ...
+                                 *   f(R type, F : ()->R, f F) => ...
                                  *   f ()->"bla"
                                  *
                                  * here, we first must infer `R` to be `String`, then `F` to be `Nullary String`
@@ -3354,21 +3354,10 @@ public class Call extends AbstractCall
                   }
               }
           }
-        if (_calledFeature.isChoice())
+
+        if (_calledFeature.isChoice() && !isInheritanceCall())
           {
-            boolean ok = false;
-            var outer = context.outerFeature();
-            if (outer.isChoice())
-              {
-                for (var p : outer.inherits())
-                  {
-                    ok = ok || p == this;
-                  }
-              }
-            if (!ok)
-              {
-                AstErrors.cannotCallChoice(pos(), _calledFeature);
-              }
+            AstErrors.cannotCallChoice(pos(), _calledFeature);
           }
 
         if (!errorInActuals())

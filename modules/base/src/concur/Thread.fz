@@ -148,7 +148,7 @@ is
   # private condition variable for this thread, used to put this
   # thread in park mode using the given clock for timeouts
   #
-  cond(C type : time.Clock) => (A1_park_condition C).env.cond
+  cond(C : time.Clock) => (A1_park_condition C).env.cond
 
 
   # is this thread parked? This is an option of a tuple containing the condition
@@ -167,7 +167,7 @@ is
   # The idea is that `code` may release a mutex in a way that ensures that this thread
   # is parked before it is released.
   #
-  module park(F type : ()->unit, condition ()->bool, code F)
+  module park(F : ()->unit, condition ()->bool, code F)
   =>
     # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
     # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
@@ -195,8 +195,8 @@ is
   # result is `true`  if this returns due to a call to `unpark`, it is `false` if there
   # was a timeout.
   #
-  module park_until(C type : time.Clock,
-                    F type : ()->unit,
+  module park_until(C : time.Clock,
+                    F : ()->unit,
                     timeout   time.instant,
                     condition ()->bool,
                     code      F) bool =>
@@ -299,7 +299,7 @@ module A0_park_mutex : thread_local_effect is
 # NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
 # is not be dependency, but alphabetically, so we add prefix 'A_' as a workaround.
 #
-module A1_park_condition(C type : time.Clock) ref : thread_local_effect is
+module A1_park_condition(C : time.Clock) ref : thread_local_effect is
 
   cond_var := concur.sync.condition.new C A0_park_mutex.mtx .or_panic
   cond =>

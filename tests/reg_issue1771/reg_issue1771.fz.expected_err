@@ -1,7 +1,6 @@
 
 reg_issue1771.fz:24:30: error 1: Incompatible type parameter 'i32' for '_ : String'
-f(_ type : String) => { }; f i32
------------------------------^^^
+f(_ : String) => { }; f i32
 formal type parameter '_ : String'
 actual type parameter 'i32'
 assignable to constraint: 'Any',

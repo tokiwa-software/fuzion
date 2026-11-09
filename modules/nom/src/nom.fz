@@ -38,12 +38,12 @@ public nom is
   # and returns either an error
   # or a result of type O and a rest of type R
   #
-  public Parser(I, R, O type) ref : Unary (parse_result R O) I is
+  public Parser(I, R, O : Any) ref : Unary (parse_result R O) I is
 
     # returns a parser that uses this parser
     # but maps the result to another type.
     #
-    public map(OM type, mapper O -> outcome OM) Parser I R OM =>
+    public map(OM : Any, mapper O -> outcome OM) Parser I R OM =>
       parser I R OM i->
         Parser.this.call i .bind s->
           id (parse_result R OM) (match mapper s.out
@@ -57,7 +57,7 @@ public nom is
     # using `map_fn` to map input of type `I2`
     # to the parsers input type `I1`.
     #
-    public map_input(I2 type, map_fn I2 -> I) Parser I2 R O =>
+    public map_input(I2 : Any, map_fn I2 -> I) Parser I2 R O =>
       _ : Parser I2 R O is
         public redef call(input I2) parse_result R O => Parser.this.call (map_fn input)
 
@@ -66,7 +66,7 @@ public nom is
   # short hand for creating a Parser via
   # given function `f`.
   #
-  public parser(I, R, O type, f I -> parse_result R O) Parser I R O =>
+  public parser(I, R, O : Any, f I -> parse_result R O) Parser I R O =>
     _ : Parser I R O is
       public redef call(i I) parse_result R O => f i
 
@@ -77,14 +77,14 @@ public nom is
   # rest = the rest of the input that was not consumed by the parser
   # out  = the result of parsing, e.g. a concrete syntax tree
   #
-  public success(R, O type, public rest R, public out O) is
+  public success(R, O : Any, public rest R, public out O) is
     public redef as_string String => $out
 
 
 
   # the result of Parser.call()
   #
-  public parse_result(I, O type) : outcome (success I O) is
+  public parse_result(I, O : Any) : outcome (success I O) is
     public fixed bind(f (success I O) -> parse_result I2 O2) parse_result I2 O2 =>
       parse_result.this ? v success => f v
                         | e error => e

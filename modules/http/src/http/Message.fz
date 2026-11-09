@@ -139,11 +139,11 @@ public Message ref is
 # a recipient MAY recognize a single LF as a line terminator and ignore any preceding CR.
 # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-3
 #
-module next_line(LM type : mutate) => (io.buffered LM).read_delimiter encodings.ascii.lf true
+module next_line(LM : mutate) => (io.buffered LM).read_delimiter encodings.ascii.lf true
 
 
 
-module parse_header_fields(LM type : mutate) outcome (container.Mutable_Tree_Map LM String String) =>
+module parse_header_fields(LM : mutate) outcome (container.Mutable_Tree_Map LM String String) =>
 
   flow.exception unit _ ()->
 
@@ -170,7 +170,7 @@ module parse_header_fields(LM type : mutate) outcome (container.Mutable_Tree_Map
     fields
 
 
-module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome (i64 -> choice (Sequence u8) io.end_of_file error) =>
+module body_helper(LM : mutate, is_req bool, header_fields container.Map String String) outcome (i64 -> choice (Sequence u8) io.end_of_file error) =>
   flow.exception unit (i64 -> choice (Sequence u8) io.end_of_file error) ()->
 
     cause(s String) void =>
