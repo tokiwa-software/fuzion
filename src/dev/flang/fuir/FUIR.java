@@ -1316,6 +1316,10 @@ public abstract class FUIR extends IR
       {
         s = codeIndex2(codeBlockStart(s), s, delta);
       }
+
+    if (POSTCONDITIONS) ensure
+      (withinCode(s));
+
     return s;
   }
 
@@ -1338,8 +1342,10 @@ public abstract class FUIR extends IR
    */
   private int codeIndex2(int si, int s, int delta)
   {
-    check
-      (si >= SITE_BASE && s >= SITE_BASE); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
+    if (PRECONDITIONS) require
+      (withinCode(si),
+       withinCode(s),
+       delta < 0);
 
     if (si == s)
       {
@@ -1380,7 +1386,10 @@ public abstract class FUIR extends IR
    */
   public int skipBack(int s)
   {
-    return switch (codeAt(s))
+    if (PRECONDITIONS) require
+      (withinCode(s));
+
+    var result = switch (codeAt(s))
       {
       case Assign  ->
         {
@@ -1401,11 +1410,7 @@ public abstract class FUIR extends IR
           s = codeIndex(s, -1);
           for (var i = 0; i < ac; i++)
             {
-              var acl = clazzArgClazz(cc, ac-1-i);
-              if (clazzResultClazz(acl) != clazzUniverse())
-                {
-                  s = skipBack(s);
-                }
+              s = skipBack(s);
             }
           if (tc != clazzUniverse())
             {
@@ -1425,6 +1430,11 @@ public abstract class FUIR extends IR
       case Tag     -> skipBack(codeIndex(s, -1));
       case Pop     -> skipBack(codeIndex(s, -1));
       };
+
+    if (POSTCONDITIONS) ensure
+      (result == NO_SITE || withinCode(result));
+
+    return result;
   }
 
 

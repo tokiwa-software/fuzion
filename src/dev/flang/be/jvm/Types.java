@@ -407,14 +407,9 @@ public class Types extends ANY implements ClassFileConstants
    */
   JavaType resultType(int cl)
   {
-    if (hasRealHeirs(cl))
-      {
-        return interfaceFile(cl).classType();
-      }
-    else
-      {
-        return javaType(cl);
-      }
+    return hasRealHeirs(cl)
+      ? interfaceFile(cl).classType()
+      : javaType(cl);
   }
 
 

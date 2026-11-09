@@ -115,7 +115,7 @@ public class StackMapFullFrame extends ANY implements Comparable<StackMapFullFra
           }
       }
     if (CHECKS)
-      check(skipNext == false);
+      check(!skipNext);
 
     return result;
   }

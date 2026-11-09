@@ -997,8 +997,7 @@ Feature
   }
   int featureKind(int at)
   {
-    var ko = data().getShort(featureKindPos(at));
-    return ko;
+    return data().getShort(featureKindPos(at));
   }
   AbstractFeature.Kind featureKindEnum(int at)
   {
@@ -1043,14 +1042,11 @@ Feature
   }
   int featureNamePos(int at)
   {
-    var i = featureKindPos(at) + 2;
-    return i;
+    return featureKindPos(at) + 2;
   }
   int featureNameLength(int at)
   {
-    var i = featureNamePos(at);
-    var l = data().getInt(i);
-    return l;
+    return data().getInt(featureNamePos(at));
   }
   byte[] featureName(int at)
   {

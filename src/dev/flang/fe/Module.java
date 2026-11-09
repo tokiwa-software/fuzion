@@ -596,7 +596,7 @@ public abstract class Module extends ANY implements FeatureLookup
    *
    * @param main the main features name, may be null
    *
-   * @return the effecive main feature, null in case universe is null or lookup failed.
+   * @return the effective main feature, null in case universe is null or lookup failed.
    */
   AbstractFeature effectiveMain(AbstractFeature universe, String main)
   {

@@ -177,38 +177,21 @@ public abstract class AbstractMatch extends ExprWithPos
 
     if (st != Types.t_ERROR)
       {
-        switch (kind()) {
-          case Plain:
-            if (!st.isChoice())
+        if (switch (kind())
               {
-                AstErrors.matchSubjectMustBeChoice(subject().pos(), st);
-              }
-            break;
-          case Contract:
-            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
+              case Plain                      -> !st.isChoice();
+              case Contract, If, While, Until -> Types.resolved.t_bool.isAssignableFromWithoutBoxing(st, context).no();
+              })
+          {
+            switch (kind())
               {
-                AstErrors.contractExpressionMustResultInBool(subject());
+              case Plain    -> AstErrors.matchSubjectMustBeChoice(subject().pos(), st);
+              case Contract -> AstErrors.contractExpressionMustResultInBool(subject());
+              case If       -> AstErrors.ifConditionMustBeBool(subject());
+              case While    -> AstErrors.whileConditionMustBeBool(subject());
+              case Until    -> AstErrors.untilConditionMustBeBool(subject());
               }
-            break;
-          case If:
-            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
-              {
-                AstErrors.ifConditionMustBeBool(subject());
-              }
-            break;
-          case While:
-            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
-              {
-                AstErrors.whileConditionMustBeBool(subject());
-              }
-            break;
-          case Until:
-            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
-              {
-                AstErrors.untilConditionMustBeBool(subject());
-              }
-            break;
-        }
+          }
       }
   }
 
