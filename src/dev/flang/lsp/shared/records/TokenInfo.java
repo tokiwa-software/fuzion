@@ -176,12 +176,20 @@ public class TokenInfo extends ANY
   }
 
 
+  /**
+   * Encode this token for LSP semantic tokens, relative to previousToken.
+   *
+   * Callers must only pass tokens with isSemanticToken() == true, otherwise
+   * the relative positions of all following tokens would be wrong.
+   */
   public Stream<Integer> semanticTokenData(TokenInfo previousToken)
   {
-    var tokenType = tokenType();
+    if (PRECONDITIONS) require
+      (isSemanticToken());
+
     int relativeLine = line() - previousToken.line();
     int relativeChar = startChar() - (isSameLine(previousToken) ? previousToken.startChar(): 0);
-    Integer tokenTypeNum = tokenType.get().num;
+    Integer tokenTypeNum = tokenType().orElseThrow().num;
 
     if (ANY.CHECKS)
       ANY.check(relativeLine != 0 || relativeChar >= previousToken.charCount(),
@@ -195,9 +203,21 @@ public class TokenInfo extends ANY
       0);
   }
 
+
   private boolean isSameLine(TokenInfo previousToken)
   {
     return line().equals(previousToken.line());
+  }
+
+  /**
+   * Does this token have a semantic token type, i.e., is it sent to the client?
+   *
+   * Tokens without a type (whitespace, braces, identifiers for now) are left
+   * to the client's syntax grammar (TextMate).
+   */
+  public boolean isSemanticToken()
+  {
+    return tokenType().isPresent();
   }
 
   private Optional<TokenType> tokenType()

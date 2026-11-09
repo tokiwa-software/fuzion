@@ -132,6 +132,10 @@ public class SemanticToken extends ANY
           ? Stream.of(t)
           : splitToken(t);
       })
+      // - drop tokens without semantic token type (e.g. t_ident, t_commaLimit).
+      //   Must happen before semanticTokenData since positions are encoded
+      //   relative to the previously sent token.
+      .filter(TokenInfo::isSemanticToken)
       .collect(Collectors.toList());
   }
 
