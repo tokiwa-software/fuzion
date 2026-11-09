@@ -24,7 +24,7 @@
 
 # hash_set -- a Set implementation based on lock_free.Map
 #
-public hash_set(K type : property.hashable, map lock_free.Map K unit) : container.Set K is
+public hash_set(K : property.hashable, map lock_free.Map K unit) : container.Set K is
 
 
   # does this set contain the given value?

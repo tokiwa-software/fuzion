@@ -1,0 +1,77 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8238
+#
+# -----------------------------------------------------------------------
+
+# Test for proper reporting of wrong type parameters passed in a call.
+#
+# An important difficulty here is for actual type parameters that do not match
+# the type parameter constraint to show properly where they come from, i.e.,
+# to show the actual value argument they were inferred from, the actual type
+# parameter they were inferred from or where they were given in the source code.
+#
+reg_issue8238 =>
+
+  # the original test from #8238 (only whitespace / comments changed):
+
+  f(A type... : numeric, n A...) =>
+    say A
+    say n
+
+  f                             # ok
+  f 3 3.1 3/-/4                 # ok
+  f 3 3.1 3/-/4 "hi"            #  1. should flag an error: "hi" is not `numeric`
+  f unit                        #  2. should flag an error: unit is not `numeric`
+    true                        #  3. should flag an error: true is not `numeric`
+
+  # another test using only type parameters, no value arguments
+
+  g(X,Y type, F type... : Unary Y X) =>
+    say "$X $Y $F"
+
+  g i64 f32 i64->f32            # ok
+  g i64 f32                     # ok
+    i64->f32                    # ok
+    String                      #  4. should flag an error: String is not `Unary f32 i64`
+    unit->unit                  #  5. should flag an error: unit->unit is not `Unary f32 i64`
+  g i64 f32 bool                #  6. should flag an error: bool is not `Unary f32 i64`
+    i64->f32                    # ok
+    String                      #  7. should flag an error: String is not `Unary f32 i64`
+    unit->unit                  #  8. should flag an error: unit->unit is not `Unary f32 i64`
+
+  # a test using actual value arguments and actual type parameters:
+
+  h(T type : numeric, v Sequence (option T)) =>
+    say T
+
+  h [option 4711]               # ok
+  h [option unit]               #  9. should flag an error: `unit` is not `numeric`
+
+
+  # a test using actual value arguments and actual type parameters:
+
+  i(T type : numeric, U type : Sequence (option T)) =>
+    say T
+
+  i _    (Sequence (option i64))   # ok
+  i _    (Sequence (option unit))  # 10. should flag an error: `unit` is not `numeric`
+  i u8   (Sequence (option u8))    # ok
+  i bool (Sequence (option bool))  # 11. should flag an error: `bool` is not `numeric`

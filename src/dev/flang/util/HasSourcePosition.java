@@ -36,6 +36,13 @@ package dev.flang.util;
 public interface HasSourcePosition
 {
 
+
+  /**
+   * Empty list for general use
+   */
+  public static final List<HasSourcePosition> NONE = new List<HasSourcePosition>().freeze();
+
+
   /**
    * Create and return the actual source code position held by this instance.
    */

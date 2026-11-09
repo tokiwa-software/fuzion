@@ -23,7 +23,7 @@
 
 reg_issue5630 is
 
-  s(X type) is
+  s(X : Any) is
 
     say X.type
 

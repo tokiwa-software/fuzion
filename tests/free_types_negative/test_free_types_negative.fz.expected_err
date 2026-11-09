@@ -72,9 +72,9 @@ Expected type parameters: 'A, B'
 Type inference failed for 2 type parameters 'A', 'B'
 
 
-test_free_types_negative.fz:35:3: error 8: Incompatible type parameter
+test_free_types_negative.fz:35:6: error 8: Incompatible type parameter 'String' for 'T : numeric'
   a2 "fourty two"    # 1. should flag an error: type constraint not respected
---^^
+-----^^^^^^^^^^^^
 formal type parameter 'T : numeric'
 actual type parameter 'String'
 assignable to constraint: 'Any',
@@ -97,9 +97,9 @@ for value assigned  : '3.14'
 To solve this, you could change the type of the target 'v' to 'f64' or convert the type of the assigned value to 'String'.
 
 
-test_free_types_negative.fz:91:3: error 10: Incompatible type parameter
+test_free_types_negative.fz:91:5: error 10: Incompatible type parameter 'String' for 'B : numeric'
   g ga3              # 6. should flag an error since type parameters are in the wrong order such that constraint is not matched
---^
+----^^^
 formal type parameter 'B : numeric'
 actual type parameter 'String'
 assignable to constraint: 'Any',

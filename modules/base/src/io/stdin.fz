@@ -52,7 +52,7 @@ public stdin is
 
   # create a reader for stdin using the given local mutate instance
   #
-  public reader (LM type : mutate) : (buffered LM).Reader is
+  public reader (LM : mutate) : (buffered LM).Reader is
     # implementation of read for reading from stdin
     #
     public redef read(max_count i64) choice (Sequence u8) io.end_of_file error =>

@@ -26,17 +26,17 @@
 # lteq -- feature that compares two values using the lteq relation
 # defined in their type
 #
-public lteq(T type : property.partially_orderable, a, b T) bool => T.lteq a b
+public lteq(T : property.partially_orderable, a, b T) bool => T.lteq a b
 
 
 # infix ≤ -- infix operation as shorthand for 'lteq'
 #
-public infix ≤(T type : property.partially_orderable, a, b T) bool => lteq a b
+public infix ≤(T : property.partially_orderable, a, b T) bool => lteq a b
 
 
 # does this come after other?
 #
-public infix ≥(T type : property.orderable, a, b T) bool =>
+public infix ≥(T : property.orderable, a, b T) bool =>
   lteq b a
 
 
@@ -46,30 +46,30 @@ public infix ≥(T type : property.orderable, a, b T) bool =>
 # result is > 0 if this > other
 # result is = 0 if this = other
 #
-public infix ⋄(T type : property.orderable, a, b T) order =>
+public infix ⋄(T : property.orderable, a, b T) order =>
   a <> b
 
 
 # infix <= -- infix operation as shorthand for 'lteq'
 #
-public infix <=(T type : property.partially_orderable, a, b T) bool => lteq a b
+public infix <=(T : property.partially_orderable, a, b T) bool => lteq a b
 
 
 # does this come after other?
 #
-public infix >=(T type : property.orderable, a, b T) bool =>
+public infix >=(T : property.orderable, a, b T) bool =>
   lteq b a
 
 
 # does this come strictly after other?
 #
-public infix >(T type : property.orderable, a, b T) bool =>
+public infix >(T : property.orderable, a, b T) bool =>
   !lteq a b
 
 
 # does this come strictly before other?
 #
-public infix <(T type : property.orderable, a, b T) bool =>
+public infix <(T : property.orderable, a, b T) bool =>
   !lteq b a
 
 
@@ -79,7 +79,7 @@ public infix <(T type : property.orderable, a, b T) bool =>
 # result is > 0 if this > other
 # result is = 0 if this = other
 #
-public infix <>(T type : property.orderable, a, b T) order =>
+public infix <>(T : property.orderable, a, b T) order =>
   if      a < b then less
   else if a > b then greater
   else               equal
@@ -87,11 +87,11 @@ public infix <>(T type : property.orderable, a, b T) order =>
 
 # maximum of two values
 #
-public max(T type : property.orderable, a, b T) T =>
+public max(T : property.orderable, a, b T) T =>
   if a > b then a else b
 
 
 # minimum of two values
 #
-public min(T type : property.orderable, a, b T) T =>
+public min(T : property.orderable, a, b T) T =>
   if a < b then a else b

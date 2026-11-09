@@ -23,7 +23,7 @@
 
 # this tests the +° and lteq intrinsic of the DFA
 
-num_testp(N type : num.wrap_around) =>
+num_testp(N : num.wrap_around) =>
   if N.max +° 1 <= 0 then unit else compile_time_panic
 
 

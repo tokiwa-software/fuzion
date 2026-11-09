@@ -1,7 +1,7 @@
 
-main.fz:54:22: error 1: Type not found
+main.fz:54:20: error 1: Type not found
   priv3 : Sequence a.mod is # should flag an error a.mod is not visible in this file
----------------------^^^
+-------------------^^^^^
 Type 'mod' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'mod'
 in feature: 'a'
@@ -68,7 +68,7 @@ To solve this, increase the visibility of 'priv_ce' (no arguments) or specify a 
 
 
 main.fz:50:15: error 11: Type parameter constraint or any of its generics have more restrictive visibility than feature.
-  module mod4(T type : priv_ce) is # should flag an error priv_ce visibility more restrictive than mod4
+  module mod4(T : priv_ce) is # should flag an error priv_ce visibility more restrictive than mod4
 --------------^
 To solve this, increase the visibility of 'priv_ce' (no arguments) or specify a different type parameter constraint.
 

@@ -1965,7 +1965,7 @@ A ((Choice)) declaration must not contain a result type.
   void typeInference(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED_TYPES));
+      (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
     if (_state == State.RESOLVED_SUGAR1)
       {
@@ -2036,7 +2036,7 @@ A ((Choice)) declaration must not contain a result type.
       }
 
     if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.TYPES_INFERENCED));
+      (Errors.any() || _state.atLeast(State.TYPES_INFERENCED));
   }
 
 

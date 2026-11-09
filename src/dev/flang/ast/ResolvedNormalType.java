@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Set;
 
 import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 
 
@@ -66,8 +67,8 @@ public class ResolvedNormalType extends ResolvedType
    * not available, e.g., when the type was inferred or was loaded from a module
    * file.  The list might be shorter than generics().
    */
-  private final List<AbstractType> _unresolvedGenerics;
-  public final List<AbstractType> unresolvedGenerics() { return _unresolvedGenerics; }
+  private final List<HasSourcePosition> _originalGenericsPos;
+  public final List<HasSourcePosition> originalGenericsPos() { return _originalGenericsPos; }
 
 
   /**
@@ -96,7 +97,7 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param o the actual outer type, or null, that replaces t.outer
    */
-  public static ResolvedType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o)
+  public static ResolvedType create(AbstractType t, List<AbstractType> g, List<HasSourcePosition> ug, AbstractType o)
   {
     if (PRECONDITIONS) require
       ( t.feature().generics().sizeMatches(g),
@@ -118,7 +119,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public static ResolvedType create(List<AbstractType> g, AbstractType o, AbstractFeature f)
   {
-    return create(g, Call.NO_GENERICS, o, f, f.defaultTypeKind());
+    return create(g, HasSourcePosition.NONE, o, f, f.defaultTypeKind());
   }
 
 
@@ -138,7 +139,7 @@ public class ResolvedNormalType extends ResolvedType
    * value type.
    */
   protected ResolvedNormalType(List<AbstractType> g,
-                               List<AbstractType> ug,
+                               List<HasSourcePosition> ug,
                                AbstractType o,
                                AbstractFeature f,
                                TypeKind typeKind)
@@ -148,7 +149,7 @@ public class ResolvedNormalType extends ResolvedType
        typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType);
 
     this._generics = g == null || g.isEmpty() ? UnresolvedType.NONE : g.freeze();
-    this._unresolvedGenerics = ((ug == null) || ug.isEmpty()) ? UnresolvedType.NONE : ug;
+    this._originalGenericsPos = ((ug == null) || ug.isEmpty()) ? HasSourcePosition.NONE : ug;
 
     if (o == null && f != null)
       {
@@ -176,7 +177,7 @@ public class ResolvedNormalType extends ResolvedType
    * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedType create(List<AbstractType> g,
-                                    List<AbstractType> ug,
+                                    List<HasSourcePosition> ug,
                                     AbstractType o,
                                     AbstractFeature f,
                                     TypeKind typeKind)
@@ -196,7 +197,7 @@ public class ResolvedNormalType extends ResolvedType
       (Types.resolved == null
          || !original.isVoid(),
        typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType);
-    return new ResolvedNormalType(original._generics, original._unresolvedGenerics, original._outer, original._feature, original._typeKind);
+    return new ResolvedNormalType(original._generics, original._originalGenericsPos, original._outer, original._feature, original._typeKind);
   }
 
 
@@ -243,7 +244,7 @@ public class ResolvedNormalType extends ResolvedType
     else
       {
         result = ResolvedNormalType.create(t.generics(),
-                                           t.unresolvedGenerics(),
+                                           t.originalGenericsPos(),
                                            o,
                                            t.feature(),
                                            t.kind());
@@ -310,7 +311,7 @@ public class ResolvedNormalType extends ResolvedType
     return switch (kind())
       {
       case ValueType -> this;
-      case RefType   -> create(generics(), Call.NO_GENERICS, outer(), feature(), TypeKind.ValueType);
+      case RefType   -> create(generics(), HasSourcePosition.NONE, outer(), feature(), TypeKind.ValueType);
       default        -> throw new Error("unexpected kind "+kind()+" for ResolvedNormalType");
     };
   }
@@ -331,7 +332,7 @@ public class ResolvedNormalType extends ResolvedType
   @Override
   public AbstractType replaceGenericsAndOuter0(List<AbstractType> g2, AbstractType o2)
   {
-    return ResolvedNormalType.create(this, g2, unresolvedGenerics(), o2);
+    return ResolvedNormalType.create(this, g2, originalGenericsPos(), o2);
   }
 
 
@@ -368,7 +369,7 @@ public class ResolvedNormalType extends ResolvedType
           ? ot.clone(originalOuterFeature)
           : _outer;
 
-        result = new ResolvedNormalType(g, _unresolvedGenerics, o, _feature, _typeKind)
+        result = new ResolvedNormalType(g, _originalGenericsPos, o, _feature, _typeKind)
           {
             AbstractType _resolved = null;
 
@@ -381,7 +382,7 @@ public class ResolvedNormalType extends ResolvedType
             {
               if (_resolved == null)
                 {
-                  _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), kind(), false, false);
+                  _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, originalGenericsPos(), outer(), kind(), false, false);
                 }
               return _resolved;
             }

@@ -26,7 +26,7 @@
 public task_pool (
   # effect used to mutate the list of threads started by this runner
   #
-  M type : mutate
+  M : mutate
 ) ! M : realtime.Scheduler
 is
 
@@ -35,7 +35,7 @@ is
 
   # submit a task to the thread pool
   #
-  public redef submit(P type : time.period, t realtime.task P) unit ! M =>
+  public redef submit(P : time.period, t realtime.task P) unit ! M =>
 
     nt := concur.Threads.env.spawn ()->
       actual_last := t.last_start.or_default (time.instant u64.max)

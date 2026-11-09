@@ -27,14 +27,14 @@
 #
 # option represents an optional value of type T
 #
-public option(T type) : switch T nil is
+public option(T : Any) : switch T nil is
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  public bind(B type, f T -> option B) option B =>
+  public bind(B : Any, f T -> option B) option B =>
     option.this ? v T => f v
                 | nil => nil
 
@@ -193,4 +193,4 @@ public option(T type) : switch T nil is
 #
 #     o option TypeOfX := x
 #
-public option(T type, o option T) option T => o
+public option(T : Any, o option T) option T => o

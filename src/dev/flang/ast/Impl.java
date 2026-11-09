@@ -684,6 +684,7 @@ public class Impl extends ANY
            result != Types.t_FORWARD_CYCLIC &&
            result != Types.t_ERROR          &&
            result.isCotypeType()            &&
+           _expr != null                    &&
            /**
             * this allows code like:
             * p := codepoint.type

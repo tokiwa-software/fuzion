@@ -39,7 +39,7 @@ atomic_mutate_test =>
 
   sample_time => time.duration.ms sample_time_ms
 
-  count(M type : mutate, max u64)
+  count(M : mutate, max u64)
   =>
    c := M.env.var u64 0
    do
@@ -47,7 +47,7 @@ atomic_mutate_test =>
    until n>=max
      if n = n-1 && c = (c-1) then say "here $c"   # NOP that uses `c`
 
-  sample0(M type : mutate)
+  sample0(M : mutate)
   =>
     for
       start := time.Nano.env.read, end
@@ -58,7 +58,7 @@ atomic_mutate_test =>
     until (end - start) > sample_time
       say "single threaded test for $M$(benchmark ? ", needed $((end-start).scale 1.0/i.as_f64) per update, $i samples in $(end-start)" : "")"
 
-  sample(M type : mutate)
+  sample(M : mutate)
   =>
     if M.env.is_atomic && !(M.env.atomic_access_supported u64)
       say "*** skipping test for $M since atomic u64 support is missing"
@@ -73,7 +73,7 @@ atomic_mutate_test =>
   bm ! (()-> sample bm)
   am ! (()-> sample am)
 
-  sample_threaded0(M type : mutate)
+  sample_threaded0(M : mutate)
   =>
     tm : concur.blocking_mutate is   #  mutate to manage thread starting / stopping
 
@@ -115,7 +115,7 @@ atomic_mutate_test =>
       else
         say "multi threaded test for $M, ERROR: $(tm.env.exclusive ()->error.get)"
 
-  sample_threaded(M type : mutate)
+  sample_threaded(M : mutate)
   =>
     if M.env.is_atomic && !(M.env.atomic_access_supported u64)
       say "*** skipping test for $M since atomic u64 support is missing"
@@ -131,7 +131,7 @@ atomic_mutate_test =>
   bmr : concur.blocking_mutate is
   amr : concur.atomic_mutate is
 
-  sample_racy0(M type : mutate)
+  sample_racy0(M : mutate)
   =>
     tm : concur.blocking_mutate is   #  mutate to manage thread starting / stopping
 
@@ -173,7 +173,7 @@ atomic_mutate_test =>
       else
         say "multi threaded racy test for $M, ERROR: $(tm.env.exclusive ()->error.get)"
 
-  sample_racy(M type : mutate)
+  sample_racy(M : mutate)
   =>
     if M.env.is_atomic && !(M.env.atomic_access_supported u64)
       say "*** skipping test for $M since atomic u64 support is missing"

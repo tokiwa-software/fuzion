@@ -36,6 +36,6 @@
 public buffered (# the type of the (local) mutate instance
                  # to be used for this buffered i/o
                  #
-                 LM type : mutate
+                 LM : mutate
                 )
 is

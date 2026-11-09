@@ -27,7 +27,7 @@
 #
 # A simple test that inherits from a generic outer feature.
 #
-a(T type) is
+a(T : Any) is
   b : a b is
     say "ok, in a.b"
     a.this.c

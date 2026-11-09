@@ -47,7 +47,7 @@ public m unit =>
 
   private priv_ce is
   module mod3 : choice priv_ce unit is # should flag an error priv_ce visibility more restrictive than mod3
-  module mod4(T type : priv_ce) is # should flag an error priv_ce visibility more restrictive than mod4
+  module mod4(T : priv_ce) is # should flag an error priv_ce visibility more restrictive than mod4
   module mod5(arg array priv_ce) is # should flag an error priv_ce visibility more restrictive than mod5
   module mod9 := (list priv_ce).empty # should flag an error priv_ce visibility more restrictive than mod9
 

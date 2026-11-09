@@ -25,8 +25,8 @@
 #
 reg_issue5433 =>
 
-  a(R type,
-    A type...) is
+  a(R : Any,
+    A... : Any) is
 
     b is
       c(arg A...) unit => abstract

@@ -45,5 +45,5 @@ nested_choice_negative =>
   my_choice3 : choice i32 my_i32 is
   mc3 my_choice3 := my_i32
 
-  my_generic_choice(A,B type) : choice A B is
+  my_generic_choice(A,B : Any) : choice A B is
   a my_generic_choice String my_string := "string"

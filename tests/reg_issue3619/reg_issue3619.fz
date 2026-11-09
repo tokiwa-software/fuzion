@@ -29,7 +29,7 @@ reg_issue3619 =>
 
   # here is the code from #3619
 
-  r(T type, v T) is
+  r(T : Any, v T) is
 
   A ref is
     f(p r A.this) b => b

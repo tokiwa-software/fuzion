@@ -27,4 +27,4 @@ fixed _ := 3
 
 fixed b : choice i32 is
 
-fixed c(T type) =>
+fixed c(T : Any) =>

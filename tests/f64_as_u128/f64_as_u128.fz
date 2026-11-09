@@ -33,7 +33,7 @@ f64_as_u128 =>
   #
   # `label` is a human-readable form of the input value, e.g. `2^53+2`.
   #
-  chk(F type : float, label String, x F) unit =>
+  chk(F : float, label String, x F) unit =>
     if x.fits_in_u128
       say "ok $label $(x.as_u128)"
     else
