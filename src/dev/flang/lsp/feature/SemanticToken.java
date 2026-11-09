@@ -66,8 +66,8 @@ public class SemanticToken extends ANY
         Bridge.toSourcePosition(
           new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))))
       // - map all special strings to normal strings plus operator(s)
-      .flatMap(t -> {
-        return switch (t.token())
+      .flatMap(t ->
+        switch (t.token())
           {
           case t_stringPQ ->    //      ')+-*"'  in  "abc$(x)+-*"
             Stream.of(
@@ -111,13 +111,13 @@ public class SemanticToken extends ANY
                t_eof, t_barLimit, t_colonLimit, t_indentationLimit,
                t_lineLimit, t_undefined, t_ident -> Stream.empty();
           default -> Stream.of(t);
-          };
-      })
-      .flatMap(t -> {
-        return t.start().line() == t.end().line()
+          }
+      )
+      .flatMap(t ->
+        t.start().line() == t.end().line()
           ? Stream.of(t)
-          : splitToken(t);
-      })
+          : splitToken(t)
+      )
       .collect(Collectors.toList());
   }
 
