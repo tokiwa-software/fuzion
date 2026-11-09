@@ -3342,21 +3342,10 @@ public class Call extends AbstractCall
                   }
               }
           }
-        if (_calledFeature.isChoice())
+
+        if (_calledFeature.isChoice() && !isInheritanceCall())
           {
-            boolean ok = false;
-            var outer = context.outerFeature();
-            if (outer.isChoice())
-              {
-                for (var p : outer.inherits())
-                  {
-                    ok = ok || p == this;
-                  }
-              }
-            if (!ok)
-              {
-                AstErrors.cannotCallChoice(pos(), _calledFeature);
-              }
+            AstErrors.cannotCallChoice(pos(), _calledFeature);
           }
 
         if (!errorInActuals())
