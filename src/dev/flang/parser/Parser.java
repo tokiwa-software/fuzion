@@ -1473,7 +1473,7 @@ dotCall     : dot call   callTail
       }
     else if (skip(Token.t_type))
       {
-        target.setSourceRange(sourceRange(target.pos()));
+        target.setSourceRange(sourceRange(target.sourceRange()));
         AbstractType t = target.asParsedType();
         if (t == null)
           {
