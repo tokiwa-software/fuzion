@@ -665,7 +665,7 @@ public class Html extends ANY
   {
     return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div><div class='fd-contract'>$4</div>$5"
       .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for nav-title
-      .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : anchorTags(f))
+      .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: baseline;\">" + lm.name() + "</code>" : anchorTags(f))
       .replace("$2", f.isUniverse() ? "": summary(f))
       .replace("$3", commentOf(f))
       .replace("$4", contractOf(f))
@@ -954,7 +954,7 @@ public class Html extends ANY
 
     Pattern p = Pattern.compile("(&|\"|'|<|>|\r|\n|\t|\\s)");
     Matcher m = p.matcher(s);
-    StringBuffer sb = new StringBuffer();
+    var sb = new StringBuilder();
     while (m.find())
       {
         switch (s.charAt(m.toMatchResult().start()))
@@ -1413,7 +1413,15 @@ public class Html extends ANY
             </div>
             <div class="container">
               <section>$0</section>
-              <section>$1</section>
+              <section>
+                <button type="button" class="toggle-feature-details cursor-pointer" onclick="
+                  const entries = this.parentElement.querySelectorAll(':scope > details');
+                  const expand = this.textContent.trim() === 'Expand all';
+                  entries.forEach(entry => entry.open = expand);
+                  this.textContent = expand ? 'Collapse all' : 'Expand all';
+                ">Expand all</button>
+                $1
+              </section>
               $3
             </div>
           </div>
@@ -1471,30 +1479,23 @@ public class Html extends ANY
     for (LibraryModule mod : libModules)
       {
         modPage.append("""
-          <div class="cursor_pointer">
-            <details id="$2" $0>
-              <summary>
-                <div class="overflow-wrap-break-word fz-code fd-signature">
-                  <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
-                  <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
-                </div>
-              </summary>
-            </details>
-          </div>
-          """.replace("$0", config.ignoreVisibility() ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-             .replace("$1", mod.name() + "/index.html")
-             .replace("$2", mod.name()));
+          <details id="$2" class="cursor-pointer">
+            <summary>
+              <span class="overflow-wrap-break-word fz-code fd-signature">
+                <a class="fd-feature font-weight-600 ml-2" href="$1">$2</a>
+                <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
+              </span>
+            </summary>
+          </details>
+          """.replace("$1", mod.name() + "/index.html")
+              .replace("$2", mod.name()));
       }
-    // modulePage += "</ul>";
 
     modPage.append("""
         </section>
-        $3
       </div>
       </div>
-      """.replace("$3", config.ignoreVisibility() ? """
-            <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
-          """ : ""));
+      """);
 
     return config.bare() ? modPage.toString(): fullHtml("Modules", modPage.toString());
   }

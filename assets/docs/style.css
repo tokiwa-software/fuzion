@@ -145,7 +145,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   color: #af00db;
 }
 
-.fd-feature{
+.fd-feature, .fd .toggle-feature-details{
   color: #795e26;
 }
 
@@ -169,10 +169,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd details{
-  margin: 1em;
-
-  /* marker needs more space */
-  margin-left: 2em;
+  /* Extra left space accommodates the disclosure marker. */
+  margin: 1em 0 1em 2em;
   border: 2px outset rgb(0 0 0 / 10%);
 }
 
@@ -209,6 +207,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   border: 0;
 }
 
+/* Only feature-list entries need a permalink. */
+.heading-summary .fd-anchor-sign {
+  display: none;
+}
+
 .fd summary:hover .fd-anchor-sign,
 .fd summary:focus-within .fd-anchor-sign {
   position: static;
@@ -231,9 +234,22 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   padding-right: 15px;
 }
 
+.fd .toggle-feature-details {
+  display: block;
+  margin-left: auto;
+  padding: .25em 0 .25em .6em;
+  font: inherit;
+  background: transparent;
+  border: 0;
+}
+
 .toggle-nav {
-  all: unset; /* removes default button styles */
+  appearance: none;
+  background: none;
+  border: 0;
+  color: inherit;
   cursor: pointer;
+  font: inherit;
   font-size: 1.2em;
   padding: 0.5em;
 }
@@ -260,7 +276,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   color: unset;
 }
 
-.fd a:hover{
+.fd a:hover, .fd .toggle-feature-details:hover{
   text-decoration: underline;
 }
 

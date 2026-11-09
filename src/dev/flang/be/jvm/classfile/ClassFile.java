@@ -374,8 +374,7 @@ public class ClassFile extends ANY implements ClassFileConstants
          to  ._posFinal != -1);
 
       setLabel(from);
-      var offset = to._posFinal - from._posFinal;
-      return offset;
+      return to._posFinal - from._posFinal;
     }
 
   }

@@ -3176,9 +3176,6 @@ public class Call extends AbstractCall
   @Override
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
-    // NYI: CLEANUP: ugly that we need this here _again_, for #7188
-    resolveGenerics(res, context);
-
     // we might not know the called feature yet, e.g., during propagateExpectedType
     var result = calledFeatureKnown() ? super.resolvedFormalArgumentTypes(res, context)
                                       : UnresolvedType.NO_TYPES;
@@ -3345,21 +3342,10 @@ public class Call extends AbstractCall
                   }
               }
           }
-        if (_calledFeature.isChoice())
+
+        if (_calledFeature.isChoice() && !isInheritanceCall())
           {
-            boolean ok = false;
-            var outer = context.outerFeature();
-            if (outer.isChoice())
-              {
-                for (var p : outer.inherits())
-                  {
-                    ok = ok || p == this;
-                  }
-              }
-            if (!ok)
-              {
-                AstErrors.cannotCallChoice(pos(), _calledFeature);
-              }
+            AstErrors.cannotCallChoice(pos(), _calledFeature);
           }
 
         if (!errorInActuals())
