@@ -795,7 +795,8 @@ public class Html extends ANY
             )
             .collect(Collectors.joining());
           }
-        say_err("Warning: No comment found for " + af.qualifiedNameHuman());
+        // NYI: UNDER DEVELOPMENT: need to find a way that does not spam the terminal with 2500 lines when just building the docs
+        // say_err("Warning: No comment found for " + af.qualifiedNameHuman());
       }
 
     Collections.reverse(commentLines);
