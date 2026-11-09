@@ -198,7 +198,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * May be used in error messages for to get positions of unresolved types.
+   * May be used in error messages to get positions of unresolved types.
    */
   List<HasSourcePosition> _originalGenerics;
 
