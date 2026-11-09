@@ -1,0 +1,58 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature persistent_hash_set
+#
+# -----------------------------------------------------------------------
+
+
+
+private:public persistent_hash_set(K : property.hashable, store container.persistent_hash_map K unit) : container.Persistent_Set K is
+
+  # does this set contain the given value?
+  #
+  public redef contains (e K) bool =>
+    store.has e
+
+
+  # list representation of values in this set
+  #
+  public redef as_list list K =>
+    store.keys.as_list
+
+
+  # an empty persistent_hash_set
+  #
+  public fixed type.empty container.persistent_hash_set K =>
+    container.persistent_hash_set (container.persistent_hash_map K unit .empty)
+
+
+  # create a new Set from a sequence of elements
+  #
+  public redef fixed type.new (s Sequence K) container.Set K /*NYI: Set.this? */ =>
+    s.reduce (container.persistent_hash_set K .empty) (r,k -> r.put k)
+
+
+  # returns a new Persistent_Set
+  # which contains all entries of the
+  # current Set and k.
+  #
+  public redef fixed put(k K) persistent_hash_set K =>
+    persistent_hash_set (store.put k unit)
+
