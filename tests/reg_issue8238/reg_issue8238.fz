@@ -32,7 +32,7 @@ reg_issue8238 =>
 
   # the original test from #8238 (only whitespace / comments changed):
 
-  f(A type... : numeric, n A...) =>
+  f(A... : numeric, n A...) =>
     say A
     say n
 
@@ -44,7 +44,7 @@ reg_issue8238 =>
 
   # another test using only type parameters, no value arguments
 
-  g(X,Y type, F type... : Unary Y X) =>
+  g(X,Y : Any, F... : Unary Y X) =>
     say "$X $Y $F"
 
   g i64 f32 i64->f32            # ok
@@ -59,7 +59,7 @@ reg_issue8238 =>
 
   # a test using actual value arguments and actual type parameters:
 
-  h(T type : numeric, v Sequence (option T)) =>
+  h(T : numeric, v Sequence (option T)) =>
     say T
 
   h [option 4711]               # ok
@@ -68,7 +68,7 @@ reg_issue8238 =>
 
   # a test using actual value arguments and actual type parameters:
 
-  i(T type : numeric, U type : Sequence (option T)) =>
+  i(T : numeric, U : Sequence (option T)) =>
     say T
 
   i _    (Sequence (option i64))   # ok
