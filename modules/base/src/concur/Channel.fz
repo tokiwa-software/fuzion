@@ -36,7 +36,7 @@
 # channel will return `nil`.
 #
 # NYI: UNDER DEVELOPMENT: max buf size
-public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Receiving_Channel T is
+public Channel(T : Any/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Receiving_Channel T is
 
   bq := Blocking_Queue T
 
@@ -117,7 +117,7 @@ public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Re
 
 # create a Channel of the given type
 #
-public channel(T type) Channel T
+public channel(T : Any) Channel T
 =>
   Unbuffered_Channel (channel_mutate T) T
 
@@ -126,7 +126,7 @@ public channel(T type) Channel T
 #
 public channel(# type of elements that can be sent through this channel
                #
-               T type,
+               T : Any,
 
                # capacity of this channel.
                #
@@ -157,7 +157,7 @@ pre
 # enables effect analysis to show what this channel is used
 # for.
 #
-universe.channel_mutate(T type) : concur.blocking_mutate is
+universe.channel_mutate(T : Any) : concur.blocking_mutate is
 
   # default instance.
   #
@@ -182,11 +182,11 @@ public Unbuffered_Channel(# the mutate environment to be used for this channel.
                           # A multi-thread variant like `concur.blocking_mutate` is
                           # required.
                           #
-                          M type : mutate,
+                          M : mutate,
 
                           # The type of the elements sent through this channel.
                           #
-                          T type
+                          T : Any
                           ) : Channel T
 is
 
@@ -202,11 +202,11 @@ is
 
   # sent -- channel state indicating that data was sent to a blocked receiving thread
   #
-  universe.sent(T type, data T) is
+  universe.sent(T : Any, data T) is
 
   # sending -- channel state indicating that data was sent with no receiver waiting, so the sender will wait for a receiver
   #
-  universe.sending(T type, data T) is
+  universe.sending(T : Any, data T) is
 
   # received -- channel state indicating that sending data was received, so sender can continue
   #
@@ -255,7 +255,7 @@ is
   #
   #   closed
   #
-  universe.unbuffered_channel_state(T type) : choice ready receiving  (sending T) (sent T) received closed is
+  universe.unbuffered_channel_state(T : Any) : choice ready receiving  (sending T) (sent T) received closed is
 
     may_receive =>
       match unbuffered_channel_state.this

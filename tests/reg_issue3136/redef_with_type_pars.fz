@@ -31,13 +31,13 @@
 redef_with_type_pars is
 
   a is
-    f      (X, Y, Z type, p X, q Y, r Z) X => abstract
+    f      (X, Y, Z : Any, p X, q Y, r Z) X => abstract
 
   b : a is
-    redef f(Z, Y, X type, r Z, q Y, p X) Z => r
+    redef f(Z, Y, X : Any, r Z, q Y, p X) Z => r
 
   c : b is
-    redef f(A, B, C type, x A, y B, z C) A => x
+    redef f(A, B, C : Any, x A, y B, z C) A => x
 
   show(x T) => say "$x ($T)"
 

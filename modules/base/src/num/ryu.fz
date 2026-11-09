@@ -31,7 +31,7 @@
 #
 # NYI: UNDER DEVELOPMENT: lacks documentation
 #
-public ryū(T type : float) is
+public ryū(T : float) is
 
   five := T.from_u32 5
 

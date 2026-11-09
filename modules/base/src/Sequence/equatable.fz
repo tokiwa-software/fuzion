@@ -114,7 +114,7 @@ public find(pattern Sequence T) option i64
 
 # helper features for knuth morris pratt algorithm
 #
-universe.Node(T type, top Sequence T, next once (option (Node T)), rest option (Node T)) ref is
+universe.Node(T : Any, top Sequence T, next once (option (Node T)), rest option (Node T)) ref is
 
 
 # replace all occurrences of old by new

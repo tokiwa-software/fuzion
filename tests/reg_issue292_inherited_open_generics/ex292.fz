@@ -31,7 +31,7 @@
 # output.
 #
 ex292 is
-  fn(TAcc,T type) ref : Function TAcc TAcc T is
+  fn(TAcc,T : Any) ref : Function TAcc TAcc T is
 
   a fn(i32, i32) =>
     _ : fn i32 i32 is

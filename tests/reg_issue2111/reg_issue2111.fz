@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-test(T type : property.equatable, a T) =>
+test(T : property.equatable, a T) =>
   a1 := concur.atomic T .new a
   _ := a1.read = a
 

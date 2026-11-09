@@ -23,13 +23,13 @@
 
 reg_issue5609 =>
 
-  a(T type, x T) is
+  a(T : Any, x T) is
     c T
       pre 0 = 1 # required to avoid pre-else-error
     =>
       x
 
-  b(X type) : a X 4 is
+  b(X : Any) : a X 4 is
     redef c X
       pre else X : i32
     => x

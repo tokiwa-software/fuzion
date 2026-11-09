@@ -38,7 +38,7 @@ reg_issue5818_calling_with_open_type_negative =>
 
   # Start with a simple case of just one open type parameter
   #
-  f(A type ...) =>
+  f(A... : Any) =>
     say "f $A"
 
   f                                                                # ok
@@ -58,7 +58,7 @@ reg_issue5818_calling_with_open_type_negative =>
 
   # Add two normal type parameters
   #
-  g(T,U type, A type ...) =>
+  g(T,U : Any, A... : Any) =>
     say "g $T $U $A"
 
   g u8 unit                                                        # ok
@@ -82,7 +82,7 @@ reg_issue5818_calling_with_open_type_negative =>
   #
   # if open type parameters are used as type of value arguments, the types must be inferred:
   #
-  h(A type ..., a A...) =>
+  h(A... : Any, a A...) =>
     say "h $A $a"
 
   # giving no type parameters is ok:
@@ -106,7 +106,7 @@ reg_issue5818_calling_with_open_type_negative =>
   # ------------------------------
 
 
-  i(T,U type, A type ..., a A...) =>
+  i(T,U : Any, A... : Any, a A...) =>
     say "i $T $U $A $a"
 
   i nil unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 18. should flag an error: failed to infer T, U
@@ -123,7 +123,7 @@ reg_issue5818_calling_with_open_type_negative =>
   # ------------------------------
 
 
-  j(T,U type, A type ..., t T, a A...) =>
+  j(T,U : Any, A... : Any, t T, a A...) =>
     say "j $T $U $A $t $a"
 
   j f64 unit _         3.14                                               # ok.
@@ -143,7 +143,7 @@ reg_issue5818_calling_with_open_type_negative =>
   # ------------------------------
 
 
-  k(T,U type, A type ..., t T, u U, a A...) =>
+  k(T,U : Any, A... : Any, t T, u U, a A...) =>
     say "k $T $U $A $t $u $a"
 
   k f64 Any _ 3.14 ["true","false"]                                         # ok.

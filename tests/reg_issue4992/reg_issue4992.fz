@@ -29,10 +29,10 @@ reg_issue4992 =>
   #
   case1 =>
     x is
-      type.i(U type : tuple unit x.this) =>
+      type.i(U : tuple unit x.this) =>
         say "case1 $U"
 
-    y(X type : x) =>
+    y(X : x) =>
       X.i (tuple unit X)
 
     z : x is
@@ -45,10 +45,10 @@ reg_issue4992 =>
   case2 =>
 
     x is
-      type.i(U type : tuple x.this) =>
+      type.i(U : tuple x.this) =>
         say "case2 $U"
 
-    y(X type : x) =>
+    y(X : x) =>
       X.i (tuple X)
 
     z : x is
@@ -60,10 +60,10 @@ reg_issue4992 =>
   #
   case1b =>
     x is
-      i(U type : tuple unit x.this) =>
+      i(U : tuple unit x.this) =>
         say "case1b $U"
 
-    y(X type : x, v X) =>
+    y(X : x, v X) =>
       v.i (tuple unit X)
 
     z : x is
@@ -76,10 +76,10 @@ reg_issue4992 =>
   case2b =>
 
     x is
-      i(U type : tuple x.this) =>
+      i(U : tuple x.this) =>
         say "case2b $U"
 
-    y(X type : x, v X) =>
+    y(X : x, v X) =>
       v.i (tuple X)
 
     z : x is

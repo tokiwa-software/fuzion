@@ -27,7 +27,7 @@ reg_issue6817 =>
   # but it is not possible and should not be possible to assign false
   # which is of type bool
 
-  h (T type, v option T) =>
+  h (T : Any, v option T) =>
     if T : bool
       say <| v.or_else false
     else

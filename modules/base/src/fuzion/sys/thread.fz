@@ -37,7 +37,7 @@ module thread is
 
     spawn0 Do_Call
 
-  spawn0(T type : ()->unit, code T) Internal_Thread => intrinsic
+  spawn0(T : ()->unit, code T) Internal_Thread => intrinsic
 
   # intrinsic to obtain the current Internal_Thread
   module current Internal_Thread => intrinsic

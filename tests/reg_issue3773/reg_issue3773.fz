@@ -21,8 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
-a(U type,
-  S type : Sequence U,
+a(U : Any,
+  S : Sequence U,
   s S) U => s[0]
 
 say (a bool (Sequence i32) [42])

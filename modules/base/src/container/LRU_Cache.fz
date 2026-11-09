@@ -38,14 +38,14 @@ private:public LRU_Cache(
 
   # mutate effect to be used to create mutable variables
   #
-  LM type : mutate,
+  LM : mutate,
 
   # type of the keys to the values in the cache
   #
-  K type : property.hashable,
+  K : property.hashable,
 
   # type of values stored in the cache
-  V type,
+  V : Any,
 
   # maps keys to the array index where the value is stored
   #
@@ -305,7 +305,7 @@ private:public LRU_Cache(
 
   # create an empty LRU cache with the given capacity
   #
-  public type.new(I type : integer, capacity I) container.LRU_Cache LM K V
+  public type.new(I : integer, capacity I) container.LRU_Cache LM K V
     pre safety : 0 < capacity
   =>
     LM.env.exclusive ()->

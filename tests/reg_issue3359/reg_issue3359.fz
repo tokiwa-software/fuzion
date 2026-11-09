@@ -50,7 +50,7 @@ reg_issue3359 is
 
   # t will call T.n and T.o, but not T.p since this call is unreachable
   #
-  t(T type : f) =>
+  t(T : f) =>
     if      envir.Args.env.count = 0 then T.n
     else if envir.Args.env.count = 1 then T.o
     else if true                 then

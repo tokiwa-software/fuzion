@@ -26,4 +26,4 @@ reg_issue8005 is
   _ := x [i32]  # 2. should flag an error: Expected a type argument, got a value argument
   _ := x        # 3. should flag an error: Failed to infer actual type parameters
 
-  x(T type) =>
+  x(T : Any) =>

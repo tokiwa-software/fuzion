@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-sum (T type : numeric, l Sequence T) => l.sum
+sum (T : numeric, l Sequence T) => l.sum
 
 count(n) =>
   if true then count 1

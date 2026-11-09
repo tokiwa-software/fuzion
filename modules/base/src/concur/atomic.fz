@@ -31,7 +31,7 @@
 # NYI: CLEANUP: REMOVE: replace all uses of concur.atomic by concur.atomic_mutate
 #
 private:public atomic (
-  T type,
+  T : Any,
   initial_value T
   ) : auto_unwrap T atomic_access
 is
@@ -145,7 +145,7 @@ is
   #
   # returns the (old_value, new_value)
   #
-  public update(F type : T->T, compute_new F) (T,T) =>
+  public update(F : T->T, compute_new F) (T,T) =>
     value.update compute_new
 
 
@@ -162,7 +162,7 @@ is
 # NYI: UNDER DEVELOPMENT: Effects are currently instated alphabetically at the big
 # bang, this is why this needs a name starting 'AAA'...
 #
-private universe.AAA_builtin_atomic_mutate(T type) : concur.atomic_mutate is
+private universe.AAA_builtin_atomic_mutate(T : Any) : concur.atomic_mutate is
 
 
   # This is instated autmatically at the effect big bang singularity:

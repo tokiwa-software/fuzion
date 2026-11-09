@@ -26,7 +26,7 @@ reg_issue2682 is
   # some other unit feature
   unit is
 
-  some(T type) is
+  some(T : Any) is
 
   x := some universe.unit
 

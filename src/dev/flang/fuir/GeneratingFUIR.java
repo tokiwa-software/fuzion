@@ -306,7 +306,7 @@ public class GeneratingFUIR extends FUIR
            (currentClazz.feature() == Types.resolved.f_Open_Types_type_foldf);  // make sure noone tries to call this in a different context
 
          var openTypesFeature          = currentClazz._outer.feature();         // the actual outer instance of (xyz T U O...).#Open_Types<n>
-         var featWithOpenTypeParameter = openTypesFeature.outer();              // the feature with open type parameter: `xyz(T, U type, O type...)`
+         var featWithOpenTypeParameter = openTypesFeature.outer();              // the feature with open type parameter: `xyz(T, U : Any, O... : Any)`
          var openTypePar = featWithOpenTypeParameter.typeArguments().getLast(); // the open type parameter `xyz.O`
          var openType    = openTypePar.asParametricType();                         // the open type parameter as a type `O`
 
