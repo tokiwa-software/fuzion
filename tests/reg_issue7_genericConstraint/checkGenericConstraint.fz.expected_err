@@ -1,7 +1,7 @@
 
-checkGenericConstraint.fz:41:8: error 1: Incompatible type parameter
+checkGenericConstraint.fz:41:11: error 1: Incompatible type parameter 'checkGenericConstraint.this.m32' for 'T : checkGenericConstraint.this.H'
   _ := hm m32 m32     # should produce error, m32 is not compatible to H
--------^^
+----------^^^
 formal type parameter 'T : checkGenericConstraint.this.H'
 actual type parameter 'checkGenericConstraint.this.m32'
 assignable to constraint: 'Any',
