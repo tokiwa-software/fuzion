@@ -1,0 +1,16 @@
+
+reg_issue8246.fz:34:19: error 1: Incompatible type parameter
+    f_bad => say (test i32 B v).g  # should flag an error: `B` not compatible with `Sequence A`
+------------------^^^^
+formal type parameter 'B : Sequence A' with constraint 'Sequence i32'
+actual type parameter 'B'
+assignable to constraint: 'Any',
+                          'B',
+                          'Sequence A',
+                          'property.countable',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable'
+
+one error.

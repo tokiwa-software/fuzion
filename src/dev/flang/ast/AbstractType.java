@@ -2474,10 +2474,7 @@ there is no common super type of the two types (Types.t_ERROR)
             if (!c.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
                 !f.isCoTypesRelayTypeParameter() &&
-                !c.constraintAssignableFrom(context, a, null) &&
-                // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
-                (!a.isParametricType() ||
-                 f != a.typeParameter())
+                !c.constraintAssignableFrom(context, a, null)
                 )
               {
                 var assignableTo = new TreeSet<AbstractType>();
