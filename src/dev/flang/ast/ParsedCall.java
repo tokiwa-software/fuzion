@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 
 
@@ -194,7 +195,7 @@ public class ParsedCall extends Call
             var a = new List<AbstractType>(tt);
             // NYI: if tt is of the form `()` or `(a,b,c)`, we need to create an
             // empty list or a list of types `a`, `b` and `c`.
-            result =  UnresolvedType.funType(pos(), l.getFirst(), a);
+            result =  UnresolvedType.funType(sourceRange(), l.getFirst(), a);
           }
         else
           {
@@ -205,7 +206,7 @@ public class ParsedCall extends Call
                 name = FuzionConstants.CHOICE_NAME;
                 tt = null;
               }
-            result = new ParsedType(pos(), name, l, tt);
+            result = new ParsedType(sourceRange(), name, l, tt);
           }
       }
     return result;
@@ -800,6 +801,7 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             i++;
           }
         _generics = g;
+        _originalGenerics = g.map2(x -> x instanceof HasSourcePosition p ? p : null);
         _splitOffGenerics = g.freeze();
         _actuals = a;
       }

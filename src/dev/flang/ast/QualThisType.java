@@ -53,10 +53,10 @@ public class QualThisType extends UnresolvedType
    *
    * @param qual the qualifier
    */
-  public QualThisType(List<ParsedName> qual)
+  public QualThisType(SourcePosition pos, List<ParsedName> qual)
   {
     _qual = qual;
-    super(SourcePosition.range(qual),
+    super(pos,
           qual.getLast()._name,
           Call.NO_GENERICS, null, Optional.of(TypeKind.ThisType));
   }
@@ -99,8 +99,8 @@ public class QualThisType extends UnresolvedType
                 fo._feature
                   .qualifiedName()
                   .endsWith(_qual.stream().filter(x -> !x._name.equals(FuzionConstants.UNIVERSE_NAME))
-                  .map(x -> x._name)
-                  .collect(Collectors.joining("."))))
+                                          .map(x -> x._name)
+                                          .collect(Collectors.joining("."))))
               {
                 found.add(fo);
               }

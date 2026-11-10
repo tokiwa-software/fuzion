@@ -85,12 +85,6 @@ public class Parser extends Lexer
   static final Parens ANGLES   = new Parens( "<"             , ">"              );
 
 
-  /**
-   * Flag to enable type parameters using `f(T : Any)` instead of `f(T : Any)`.
-   */
-  static boolean ALLOW_TYPE_PARAMETERS_USING_TYPE = false;
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -850,10 +844,10 @@ argument    : visibility
               argNames
               argType
             ;
-argType     : typeType                   // NYI: REMOVE!
-            | typeType COLON type        // NYI: REMOVE!
-            | COLON type
+argType     : COLON type
             | "..." COLON type
+            | type
+            | type "..."
             |
             ;
    */
@@ -873,14 +867,8 @@ argType     : typeType                   // NYI: REMOVE!
                                     var n = argNames();
                                     AbstractType t;
                                     Impl i;
-                                    var isTypePar = ALLOW_TYPE_PARAMETERS_USING_TYPE && current() == Token.t_type;
-                                    if (isTypePar)
-                                      { // NYI: REMOVE!
-                                        i = typeType();
-                                        t = skipColon() ? type()
-                                                        : new BuiltInType(FuzionConstants.ANY_NAME);
-                                      }
-                                    else if (skipColon())
+                                    var isTypePar = false;
+                                    if (skipColon())
                                       {
                                         isTypePar = true;
                                         i = Impl.EXPLICIT_TYPE_PARAMETER;
@@ -935,22 +923,6 @@ argType     : typeType                   // NYI: REMOVE!
 
 
   /**
-   * Parse type parameter type suffix
-   *
-typeType    : "type"                  // NYI: REMOVE!
-            | "type" "..."
-            ;
-   */
-  Impl typeType()
-  {
-    check(ALLOW_TYPE_PARAMETERS_USING_TYPE);
-    match(Token.t_type, "argType");
-    return splitSkip("...") ? Impl.TYPE_PARAMETER_OPEN
-                            : Impl.EXPLICIT_TYPE_PARAMETER;
-  }
-
-
-  /**
    * Check if the current position is a formArgs and skip it if this is the
    * case.
    *
@@ -967,33 +939,12 @@ typeType    : "type"                  // NYI: REMOVE!
               {
                 visibility();
                 modifiers();
-                result = skipArgNames();
-                if (result)
-                  {
-                    if (ALLOW_TYPE_PARAMETERS_USING_TYPE && skip(Token.t_type))
-                      {  // NYI: REMOVE
-                        splitSkip("...");
-                        if (skipColon())
-                          {
-                            result = skipType();
-                          }
-                      }
-                    else if (skipColon())
-                      {
-                        result = skipType();
-                      }
-                    else if (splitSkip("..."))
-                      {
-                        if (skipColon())
-                          {
-                            result = skipType();
-                          }
-                      }
-                    else
-                      {
-                        result = skipType();
-                      }
-                  }
+                result =
+                  skipArgNames() &&
+                    skipColon()      ? skipType()                // type par
+                  : splitSkip("...") ? skipColon() && skipType() // open type par
+                  : skipType()       ? splitSkip("...") || true  // value argument, maybe with open type
+                  :                    true;                     // value argument with inferred type
               }
             while (result && skipComma());
           }
@@ -1038,16 +989,7 @@ typeType    : "type"                  // NYI: REMOVE!
                     skipName();
                   }
                 while (skipComma());
-                if (ALLOW_TYPE_PARAMETERS_USING_TYPE && skip(Token.t_type))
-                  { // NYI: REMOVE!
-                    splitSkip("...");
-                    if (skipColon())
-                      {
-                        skipType();
-                      }
-                    result[0] = FormalOrActual.formal;
-                  }
-                else if (skipColon())
+                if (skipColon())
                   {
                     skipType();
                     result[0] = FormalOrActual.both;
@@ -1063,15 +1005,7 @@ typeType    : "type"                  // NYI: REMOVE!
                 // tolerate missing type here
                 else if ((skipType() || true) && skipDot())
                   {
-                    if (!(ALLOW_TYPE_PARAMETERS_USING_TYPE && skip(Token.t_type)))
-                      {
-                        result[0] = FormalOrActual.actual;
-                        return false;
-                      }
-                    else
-                      {
-                        splitSkip("...");
-                      }
+                    splitSkip("...");
                   }
               }
             while (skipComma());
@@ -1480,6 +1414,7 @@ dotCall     : dot call   callTail
       }
     else if (skip(Token.t_type))
       {
+        target.setSourceRange(sourceRange(target.sourceRange()));
         AbstractType t = target.asParsedType();
         if (t == null)
           {
@@ -3873,7 +3808,7 @@ typeTail    : dot simpletype
               }
             else
               {
-                result = typeTail(new QualThisType(qn));
+                result = typeTail(new QualThisType(sourceRange(lhs.pos()), qn));
               }
           }
         else

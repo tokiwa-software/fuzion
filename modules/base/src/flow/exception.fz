@@ -59,16 +59,6 @@ is
 
 
 # convenience routine to create a new instance of 'exception T' and run 'f' in
-# it.  The result will be an `outcome R` that, in case of success, contains
-# the result of `f`, or, in case of `(exception T).env.raise`, contains the error.
-#
-public exception(T : Any,
-           R : Any,
-           f ()->R) outcome R =>
-  (exception T).on f
-
-
-# convenience routine to create a new instance of 'exception T' and run 'f' in
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # '(exception T).env.raise'.
 #

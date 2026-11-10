@@ -105,7 +105,7 @@ resource_cleanunp =>
     (flow.exception exc).env.cause (error "throw!")
 
   say "--------------------------- open / throw / close / error"
-  say <| flow.exception exc unit ()->
+  say <| flow.exception exc .on unit ()->
     r := e.instate String e test3 def
     say "*** unreachable *** $r"
 
@@ -138,6 +138,6 @@ resource_cleanunp =>
 
   say "--------------------------- open L M / open P Q / throw / close Q P / close M L / error"
 
-  say <| flow.exception exc unit ()->
+  say <| flow.exception exc .on unit ()->
     r := e.instate String e test5 def
     say "*** unreachable *** $r"

@@ -382,49 +382,57 @@ public class Function extends AbstractLambda
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = (Call)targetCalls(res, context, t);
-            _inheritsCall._generics = t.generics();
-            _inheritsCall._generics.freeze();
-            List<Expr> expressions = new List<Expr>(feature);
-            String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
-            _wrapper = new Feature(pos(),
-                                   Visi.PRIV,
-                                   0,
-                                   ValueType.INSTANCE,
-                                   new List<String>(wrapperName),
-                                   AbstractFeature._NO_FEATURES_,
-                                   new List<>(_inheritsCall),
-                                   Contract.EMPTY_CONTRACT,
-                                   new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
-            res._module.findDeclarations(_wrapper, context.outerFeature());
-            res.resolveDeclarations(_wrapper);
-            res.resolveTypes(_feature);
-            if (inferResultType)
+            if (_inheritsCall == Call.ERROR)
               {
-                if (!(rt0.containsUndefined() || rt0.containsError()))
+                _expr = Expr.NO_VALUE;
+                result = Types.t_ERROR;
+              }
+            else
+              {
+                _inheritsCall._generics = t.generics();
+                _inheritsCall._generics.freeze();
+                List<Expr> expressions = new List<Expr>(feature);
+                String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
+                _wrapper = new Feature(pos(),
+                                       Visi.PRIV,
+                                       0,
+                                       ValueType.INSTANCE,
+                                       new List<String>(wrapperName),
+                                       AbstractFeature._NO_FEATURES_,
+                                       new List<>(_inheritsCall),
+                                       Contract.EMPTY_CONTRACT,
+                                       new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
+                res._module.findDeclarations(_wrapper, context.outerFeature());
+                res.resolveDeclarations(_wrapper);
+                res.resolveTypes(_feature);
+                if (inferResultType)
                   {
-                    _expr.propagateExpectedType(res, context, rt0, from);
-                  }
-                if (_feature.resultTypeIfPresentUrgent(res, true) == Types.t_FORWARD_CYCLIC)
-                  {
-                    AstErrors.forwardTypeInference(pos(), _feature);
-                  }
-                else
-                  {
-                    result = refineResultType(res, context, rt0, _feature.resultType());
-                    var g = t.lambdaTargetResultTypeParameter(res);
-                    if (g != null && !_inheritsCall.isDefunct())
+                    if (!(rt0.containsUndefined() || rt0.containsError()))
                       {
-                        int idx = g.typeParameterIndex();
-                        _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);
-                        _inheritsCall.notifyInferred();
+                        _expr.propagateExpectedType(res, context, rt0, from);
+                      }
+                    if (_feature.resultTypeIfPresentUrgent(res, true) == Types.t_FORWARD_CYCLIC)
+                      {
+                        AstErrors.forwardTypeInference(pos(), _feature);
+                      }
+                    else
+                      {
+                        result = refineResultType(res, context, rt0, _feature.resultType());
+                        var g = t.lambdaTargetResultTypeParameter(res);
+                        if (g != null && !_inheritsCall.isDefunct())
+                          {
+                            int idx = g.typeParameterIndex();
+                            _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);
+                            _inheritsCall.notifyInferred();
+                          }
                       }
                   }
-              }
 
-            _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper);
-            if (_inheritsCall._generics.stream().allMatch(at -> at != Types.t_UNDEFINED))
-              {
-                _call = _call.resolveTypes(res, context);
+                _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper);
+                if (_inheritsCall._generics.stream().allMatch(at -> at != Types.t_UNDEFINED))
+                  {
+                    _call = _call.resolveTypes(res, context);
+                  }
               }
           }
         else
@@ -474,7 +482,9 @@ public class Function extends AbstractLambda
               var tc = tto == null || tto.backingFeature().isUniverse()
                 ? null
                 : targetCalls(res, context, tto);
-              yield new Call(pos(), tc, tt.feature().baseName());
+              yield tc == Call.ERROR
+                ? Call.ERROR
+                : new Call(pos(), tc, tt.feature().baseName());
             }
         }
       };

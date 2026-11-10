@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.StringHelpers;
@@ -167,14 +168,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       case ThisType -> allowForThisType
         ? ResolvedNormalType.create(
             feature().genericsAsActuals(),
-            Call.NO_GENERICS,
+            HasSourcePosition.NONE,
             feature().outer().selfType().asThis(),
             feature(),
             TypeKind.RefType)
         : Types.t_ERROR;
       case RefType -> this;
       case ValueType ->
-        ResolvedNormalType.create(generics(), generics(), outer(), feature(), TypeKind.RefType);
+        ResolvedNormalType.create(generics(), originalGenericsPos(), outer(), feature(), TypeKind.RefType);
     };
   }
 
@@ -598,48 +599,88 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (this  .isParametricType() || this  .feature() != null || Errors.any(),
        actual.isParametricType() || actual.feature() != null || Errors.any());
 
-        /*
-    // tag::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
-    NYI: UNDER DEVELOPMENT:
-    // end::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
-        */
+    return isArtificialType() || actual.isArtificialType()
+      ? YesNo.dontKnow
+      : YesNo.fromBool(assignable(actual, context, allowBoxing, allowTagging, assignableTo));
+  }
 
+
+  /**
+   * This method contains the logic of the assignabilty rules for the Fuzion language.
+   *
+   * @param actual the actual type.
+   *
+   * @param context the source code context where this Type is used
+   *
+   * @param allowBoxing is boxing allowed when determining assignability?
+   *
+   * @param allowTagging is tagging allowed when determining assignability?
+   *
+   * @param assignableTo in case we want to show all types actual is assignable
+   * to in an error message, this collects those types.
+   *
+   * @return true if actual is assignable to this, false otherwise.
+   */
+  /*
+// tag::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
+NYI: UNDER DEVELOPMENT:
+// end::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
+   */
+  private boolean assignable(AbstractType actual, Context context, boolean allowBoxing, boolean allowTagging, Set<AbstractType> assignableTo)
+  {
     if (assignableTo != null)
       {
         assignableTo.add(actual);
       }
-    var result = isArtificialType() || actual.isArtificialType()
-        ? YesNo.dontKnow
-        : YesNo.fromBool(compareTo(actual) == 0 || actual.isVoid());
-    if (result.no() && !isParametricType() && isRef() && actual.isRef())
+
+    // case 1: exactly same types
+    // case 2: assigning void is always allowed
+    var result = compareTo(actual) == 0 || actual.isVoid();
+    // case 3: we are dealing with references
+    if (!result && isRef() && actual.isRef())
       {
-        if (actual.isParametricType())
+        for (var p: actual.feature().inherits())
           {
-            result = isAssignableFrom(actual.typeParameter().constraint(context).asRef(true), context, allowBoxing, allowTagging, assignableTo);
-          }
-        else
-          {
-            for (var p: actual.feature().inherits())
-              {
-                var pt = actual.actualType(p.type(), context).asRef(true);
-                result = pt == actual ? YesNo.no : isAssignableFrom(pt, context, allowBoxing, allowTagging, assignableTo);
-                // until result != no
-                if (!result.no()) { break; }
-              }
+            var pt = actual.actualType(p.type(), context).asRef();
+            result = pt == actual ? false : assignable(pt, context, false, false, assignableTo);
+            // until result
+            if (result) { break; }
           }
       }
-    if (result.no() && allowTagging && isChoice() && !isRelayType())
+    // case 4: tagging is allowed and actual is one of the - potentially nested - choices
+    if (!result)
       {
-        result = YesNo.fromBool(isChoiceMatch(actual, context));
+        result = allowTagging && isChoice() && isChoiceMatch(actual, context);
+      }
+    if (!result)
+      {
+        result = allowBoxing &&
+          (switch (actual.kind())
+            {
+    // case 5: boxing is allowed, actual is a type parameter and the boxed constraint is directly assignable
+              case ParametricType -> assignable(actual.typeParameter().constraint(context).asRef(), context, false, false, assignableTo);
+              case RefType -> false; // break recursion
+    // case 6: boxing is allowed, actual is a this type
+    //
+    //      example where we consider the this type to be a ref and then tag
+    //      this   : choice (Sequence u8) String
+    //      actual : String.this
+    //
+              case ThisType -> assignable(actual.asRef(true), context, false, allowTagging, assignableTo);
+    // case 7: boxing is allowed, actual is a value type and the boxed value is assignable (potentially via tagging)
+    //
+    //     example where we need to box (to Finger_Tree) then tag (to option):
+    //     this   : option (container.Finger_Tree T)
+    //     actual : container.single T
+    //
+              case ValueType -> assignable(actual.asRef(), context, false, allowTagging, assignableTo);
+            });
       }
     // NYI: UNDER DEVELOPMENT: probably unsound! see also isAssignableFrom
-    if (result.no() && isChoice() && actual.isChoice() && (isThisType() || actual.isThisType()))
+     // case 8:
+    if (!result)
       {
-        result = YesNo.fromBool(asThis().compareTo(actual.asThis()) == 0);
-      }
-    if (result.no() && allowBoxing && !actual.isRef())
-      {
-        result = isAssignableFrom(actual.selfOrConstraint(context).asRef(true), context, allowBoxing, allowTagging, assignableTo);
+        result = isChoice() && actual.isChoice() && (isThisType() || actual.isThisType()) && asThis().compareTo(actual.asThis()) == 0;
       }
     return result;
   }
@@ -968,17 +1009,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           case RefType, ValueType ->
             {
               var res = YesNo.no;
-              if (generics() != UnresolvedType.NONE)
+              for (var t: generics())
                 {
-                  for (var t: generics())
+                  if (CHECKS) check
+                    (Errors.any() || t != null);
+                  if (t != null &&
+                      t.dependsOnGenerics())
                     {
-                      if (CHECKS) check
-                        (Errors.any() || t != null);
-                      if (t != null &&
-                          t.dependsOnGenerics())
-                        {
-                          res = YesNo.yes;
-                        }
+                      res = YesNo.yes;
                     }
                 }
               if (outer() != null && outer().dependsOnGenerics())
@@ -1279,6 +1317,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
+   * This performs checking for t_ERROR and `o.isVoid()`, it will call `replaceGenericsAndOuter0()'
+   * that must be redefined by normal type implementations.
+   *
    * @param g the new actual generics to be used
    *
    * @param o the new outer type to be used (which may also differ in its
@@ -1287,7 +1328,35 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return a new type with same feature(), but using g/o as generics
    * and outer type.
    */
-  public AbstractType replaceGenericsAndOuter(List<AbstractType> g, AbstractType o)
+  public final AbstractType replaceGenericsAndOuter(List<AbstractType> g, AbstractType o)
+  {
+    if (PRECONDITIONS) require
+      (isNormalType(),
+       this instanceof ResolvedType,
+       feature().generics().sizeMatches(g));
+
+    return o == Types.t_ERROR || g.contains(Types.t_ERROR) ? Types.t_ERROR :
+           o.isVoid()                                      ? o
+                                                           : replaceGenericsAndOuter0(g, o);
+  }
+
+
+  /**
+   * For a type that is not a type parameter, create a new variant using given
+   * actual generics and outer type.
+   *
+   * This is meant to be called only from {@code replaceGenericsAndOuter}, not directly. This is to
+   * be redefined for actual normal types.
+   *
+   * @param g the new actual generics to be used
+   *
+   * @param o the new outer type to be used (which may also differ in its
+   * actual generics).
+   *
+   * @return a new type with same feature(), but using g/o as generics
+   * and outer type.
+   */
+  protected AbstractType replaceGenericsAndOuter0(List<AbstractType> g, AbstractType o)
   {
     if (PRECONDITIONS) require
       (isNormalType(),
@@ -2211,9 +2280,7 @@ there is no common super type of the two types (Types.t_ERROR)
         var no = o != null ? f.apply(o) : null;
         if (ng != g || no != o)
           {
-            result = ng.contains(Types.t_ERROR)
-              ? Types.t_ERROR
-              : replaceGenericsAndOuter(ng, no);
+            result = replaceGenericsAndOuter(ng, no);
           }
       }
     return result;
@@ -2258,7 +2325,12 @@ there is no common super type of the two types (Types.t_ERROR)
    * not available, e.g., when the type was inferred or was loaded from a module
    * file.  The list might be shorter than generics().
    */
-  List<AbstractType> unresolvedGenerics() { return generics(); }
+  List<HasSourcePosition> originalGenericsPos()
+  {
+    return (generics().stream().anyMatch(x -> x instanceof HasSourcePosition))
+      ? generics().map2(x -> x instanceof HasSourcePosition p ? p : null)
+      : HasSourcePosition.NONE;
+  }
 
 
   /**
@@ -2416,7 +2488,7 @@ there is no common super type of the two types (Types.t_ERROR)
     var result = this;
     if (result != Types.t_ERROR && isNormalType())
       {
-        if (!checkActualTypePars(context, feature(), generics(), unresolvedGenerics(), null, null))
+        if (!checkActualTypePars(context, feature(), generics(), originalGenericsPos(), feature().pos(), x->x))
           {
             result = Types.t_ERROR;
           }
@@ -2435,57 +2507,94 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * @param actuals the actual type parameters
    *
-   * @param unresolvedActuals when available, the list of unresolved actuals
-   * such that source code positions can be shown.
+   * @param actualPos the position of the actual arguments or unresolved types that `actuals` came
+   * from, either directly or via type inference.  Used to diplay source code position for inferred
+   * type, e.g. for `option _ "bla"`, this will give the position of `"bla"`.  May be null or
+   * contain null for unknown positions.
    *
-   * @param pos source position of the call we are checking or null, for error messages
+   * @param pos source position of the call or feature we are checking, for error messages. For
+   * `option T v`, this will give the position of `option`.
    *
-   * @param adjustConstraint for adjusting a constraint to the call whose generics we are checking, null if not checking generics of call.
+   * @param adjustConstraint for adjusting a constraint to the call whose generics we are checking,
+   * null if not checking generics of a call.
    *
    * @return true iff check was ok, false iff an error was found and reported
    */
-  static boolean checkActualTypePars(Context context, AbstractFeature af, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition pos, Function<AbstractType, AbstractType> adjustConstraint)
+  static boolean checkActualTypePars(Context context,
+                                     AbstractFeature af,
+                                     List<AbstractType> actuals,
+                                     List<HasSourcePosition> actualPositions,
+                                     SourcePosition pos,
+                                     Function<AbstractType, AbstractType> adjustConstraint)
   {
+    if (PRECONDITIONS) require
+      (context          != null,
+       af               != null,
+       actuals          != null,
+       actualPositions  != null,
+       pos              != null,
+       adjustConstraint != null);
+
     var result = true;
-    var fi = af.typeArguments().iterator();
-    var ai = actuals.iterator();
-    var ui = unresolvedActuals.iterator();
-    while (fi.hasNext())
+    var ai = 0;  // index in actuals
+    for (var tp : af.typeArguments())
       {
-        var f = fi.next();
-        var a = ai.hasNext() ? ai.next() : null;
-        var u = ui.hasNext() ? ui.next() : null;
-        var c = adjustConstraint == null
-          ? f.constraint(context)
-          : adjustConstraint.apply(f.constraint(context));
-        if (CHECKS) check
-          (Errors.any() || f != null);
-
-        var p = u instanceof UnresolvedType ut ? ut.pos() :
-                pos != null                    ? pos
-                                               : af.pos();
-
-        if (a == null && f.isOpenTypeParameter())
-          { // ok, no actuals given for open generic
-          }
-        else if (a != null && !a.isArtificialType())
+        var ai0 = ai;
+        while ((ai0==ai || tp.isOpenTypeParameter()) && ai < actuals.size())  // run repeatedly for openTypesParameter
           {
-            a.checkLegalThisType(p, context);
-            if (!c.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
-                                          // will be checked in SourceModule.checkTypes(Feature)
-                !f.isCoTypesRelayTypeParameter() &&
-                !c.constraintAssignableFrom(context, a, null) &&
-                // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
-                (!a.isParametricType() ||
-                 f != a.typeParameter())
-                )
-              {
-                var assignableTo = new TreeSet<AbstractType>();
-                var ignore = c.constraintAssignableFrom(context, a, assignableTo);
-                AstErrors.incompatibleActualGeneric(p, f, c, a, assignableTo);
-                result = false;
-              }
+            var a = actuals.get(ai);
+            var ap = actualPositions.size() > ai ? actualPositions.get(ai) : null;
+            var c = adjustConstraint.apply(tp.constraint(context));
+            result = a.checkActualTypePar(context, tp,
+                                          ap != null ? ap.pos() : pos,
+                                          c) && result;
+            ai++;
           }
+      }
+    return result;
+  }
+
+
+  /**
+   * Check that this matches the formal type parameter constraints of given feature.
+   *
+   * @param context the source code context where this Type is used
+   *
+   * @param tp the formal type parameter to check against
+   *
+   * @param pos the position of the actual argument or unresolved type that `actual` came from or,
+   * if not available, source posittion of the cal we are checking. Never null.
+   *
+   * @param constraint the constraint on the type parameter
+   *
+   * @return true iff check was ok, false iff an error was found and reported
+   */
+  private boolean checkActualTypePar(Context context,
+                                     AbstractFeature tp,
+                                     SourcePosition pos,
+                                     AbstractType constraint)
+  {
+    if (PRECONDITIONS) require
+      (context != null,
+       tp != null,
+       pos != null,
+       constraint != null);
+
+    var result = true;
+    checkLegalThisType(pos, context);
+    if (!isArtificialType() &&
+        !constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
+                                          // will be checked in SourceModule.checkTypes(Feature)
+        !tp.isCoTypesRelayTypeParameter() &&
+        !constraint.constraintAssignableFrom(context, this, null) &&
+        // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
+        (!isParametricType() || tp != typeParameter())
+       )
+      {
+        var assignableTo = new TreeSet<AbstractType>();
+        var ignore = constraint.constraintAssignableFrom(context, this, assignableTo);
+        AstErrors.incompatibleActualGeneric(pos, tp, constraint, this, assignableTo);
+        result = false;
       }
     return result;
   }
@@ -2684,7 +2793,7 @@ there is no common super type of the two types (Types.t_ERROR)
       (ff.isFixed());
 
     selfOuterAndGenerics(t -> {
-      if (t.isThisType()&& t.feature().compareTo(ff.outer()) == 0)
+      if (t.isThisType()&& t.feature() == ff.outer())
         {
           AstErrors.useConcreteTypeInFixed(a, t);
           setContractFeaturesImplEmpty(ff);
