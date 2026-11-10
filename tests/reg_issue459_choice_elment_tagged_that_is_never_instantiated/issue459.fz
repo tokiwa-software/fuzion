@@ -24,6 +24,6 @@
 issue459 =>
   t1 is
   t2 is
-  say (flow.exception t1 unit (()->))
-  say (flow.exception t1 unit ()->
-    say (flow.exception t2 unit (()->)))
+  say (flow.exception t1 .on unit (()->))
+  say (flow.exception t1 .on unit ()->
+    say (flow.exception t2 .on unit (()->)))

@@ -22,5 +22,4 @@
 # -----------------------------------------------------------------------
 
 say <| (flow.exception unit .try String "hello" || (s->s.msg))
-# NYI: BUG: #8198 unjustified: Ambiguous targets found for call to 'exception'
-# say <| (flow.exception unit .try String (() -> flow.exception unit .cause (error "world")) || (s->s.msg))
+say <| (flow.exception unit .try String (() -> flow.exception unit .env .cause (error "world")) || (s->s.msg))

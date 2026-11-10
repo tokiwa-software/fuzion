@@ -29,7 +29,7 @@ public read_request(
   LM : mutate) outcome request_message
 =>
 
-  flow.exception unit _ ()->
+  flow.exception unit .on _ ()->
 
     cause(s String) void =>
       (flow.exception unit).env.cause (error s)
