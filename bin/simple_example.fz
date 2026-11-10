@@ -332,8 +332,10 @@ check_example =>
     err :=
       if be != "effect"
         io.copy exp_err exp_err_cleaned .or_panic
-        clean_err tmp_err
-        clean_err exp_err_cleaned
+        # NYI: BUG: trying to workaround windows failures: process could not be closed successfully: sed ...
+        Ignored_Failure.instate Ignored_Failure.suppress ()->
+          clean_err tmp_err
+          clean_err exp_err_cleaned
         "diff --strip-trailing-cr $(exp_err_cleaned) $tmp_err".run
       else
         tokiwa.process_result.empty_success
