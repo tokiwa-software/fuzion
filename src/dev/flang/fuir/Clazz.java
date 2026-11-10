@@ -334,14 +334,19 @@ class Clazz extends ANY implements Comparable<Clazz>
       : type;
     _feature = (FuirFeature) _type.feature();
 
+    /*
     if (_feature.isFixed() &&
         !_feature.isTypeParameter() &&
         _type.outer().outer().feature() != _feature.outer().outer())
       {
+        System.out.println("type is "+type);
+        System.out.println("_type is "+_type);
         var x = "IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature:\n" +
         _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _feature.outer().outer().toString();
+        Thread.dumpStack();
         Errors.fatal(x);
       }
+    */
 
     // needed in DFA-Phase to meet FUIR invariant that
     // stack must be empty at the end of a basic block
@@ -1106,7 +1111,8 @@ class Clazz extends ANY implements Comparable<Clazz>
               (Errors.any() || af != null);
             if (af != null)
               {
-                t = af.selfType().applyTypePars(af, fa._tp);
+                t = af.thisType(true /* fixed since we specialize for `Clazz.this`, but not for outer() */)
+                      .applyTypePars(af, fa._tp);
               }
           }
         if (t == null)
