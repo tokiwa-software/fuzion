@@ -676,12 +676,6 @@ NYI: UNDER DEVELOPMENT:
               case ValueType -> assignable(actual.asRef(), context, false, allowTagging, assignableTo);
             });
       }
-    // NYI: UNDER DEVELOPMENT: probably unsound! see also isAssignableFrom
-     // case 8:
-    if (!result)
-      {
-        result = isChoice() && actual.isChoice() && (isThisType() || actual.isThisType()) && asThis().compareTo(actual.asThis()) == 0;
-      }
     return result;
   }
 
