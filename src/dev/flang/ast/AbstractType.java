@@ -2724,7 +2724,7 @@ there is no common super type of the two types (Types.t_ERROR)
       (ff.isFixed());
 
     selfOuterAndGenerics(t -> {
-      if (t.isThisType()&& t.feature().compareTo(ff.outer()) == 0)
+      if (t.isThisType()&& t.feature() == ff.outer())
         {
           AstErrors.useConcreteTypeInFixed(a, t);
           setContractFeaturesImplEmpty(ff);
