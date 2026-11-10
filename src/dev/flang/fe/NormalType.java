@@ -131,7 +131,7 @@ class NormalType extends LibraryType
    * and outer type.
    */
   @Override
-  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
+  public AbstractType replaceGenericsAndOuter0(List<AbstractType> g2, AbstractType o2)
   {
     return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }

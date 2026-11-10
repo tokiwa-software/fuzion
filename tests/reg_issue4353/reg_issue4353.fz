@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-Sequence.unzip2(A type)
+Sequence.unzip2(A : Any)
 pre
   T : tuple A
 =>

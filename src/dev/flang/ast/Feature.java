@@ -90,12 +90,6 @@ public class Feature extends AbstractFeature
   private final SourcePosition _pos;
 
 
-  /**
-   * The sourcecode position of this feature's return type, if given explicitly.
-   */
-  private final SourcePosition _posOfReturnType;
-
-
   Context _sourceCodeContext = Context.NONE;
 
 
@@ -793,7 +787,6 @@ public class Feature extends AbstractFeature
     this._visibility = v;
     this._modifiers  = m;
     this._returnType = r;
-    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnTypePos();
     String n = qname.getLast();
     if (n.equals("_"))
       {
@@ -1972,7 +1965,7 @@ A ((Choice)) declaration must not contain a result type.
   void typeInference(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED_TYPES));
+      (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
     if (_state == State.RESOLVED_SUGAR1)
       {
@@ -2043,7 +2036,7 @@ A ((Choice)) declaration must not contain a result type.
       }
 
     if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.TYPES_INFERENCED));
+      (Errors.any() || _state.atLeast(State.TYPES_INFERENCED));
   }
 
 

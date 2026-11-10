@@ -32,7 +32,7 @@ catch_precondition_negative is
   # test feature will cause precondition failure if called with values resulting in
   # overflow
   #
-  test(T type : integer) =>
+  test(T : integer) =>
 
     # duplicate x
     #

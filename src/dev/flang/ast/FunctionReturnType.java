@@ -100,20 +100,6 @@ public class FunctionReturnType extends ReturnType
 
 
   /**
-   * For a function, the source code position of the return type.
-   *
-   * @return the function return type source position.
-   */
-  public SourcePosition functionReturnTypePos()
-  {
-    if (PRECONDITIONS) require
-      (!isConstructorType());
-
-    return _pos;
-  }
-
-
-  /**
    * If this has a source code position, return it
    *
    * @return the source position or null if there is none (e.g. for NoType).

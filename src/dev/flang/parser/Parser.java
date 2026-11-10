@@ -844,8 +844,10 @@ argument    : visibility
               argNames
               argType
             ;
-argType     : typeType
-            | typeType COLON type
+argType     : COLON type
+            | "..." COLON type
+            | type
+            | type "..."
             |
             ;
    */
@@ -865,18 +867,25 @@ argType     : typeType
                                     var n = argNames();
                                     AbstractType t;
                                     Impl i;
-                                    var isTypePar = current() == Token.t_type;
-                                    if (isTypePar)
+                                    var isTypePar = false;
+                                    if (skipColon())
                                       {
-                                        i = typeType();
-                                        t = skipColon() ? type()
-                                                        : new BuiltInType(FuzionConstants.ANY_NAME);
+                                        isTypePar = true;
+                                        i = Impl.EXPLICIT_TYPE_PARAMETER;
+                                        t = type();
+                                      }
+                                    else if (splitSkip("..."))
+                                      {
+                                        isTypePar = true;
+                                        i = Impl.TYPE_PARAMETER_OPEN;
+                                        matchOperator(":", "argType");
+                                        t = type();
                                       }
                                     else if (isTypePrefix())
                                       {
                                         i = Impl.FIELD;
                                         var ut = type();
-                                        if (skip("..."))
+                                        if (splitSkip("..."))
                                           {
                                             ut.setFollowedByDots();
                                           }
@@ -914,21 +923,6 @@ argType     : typeType
 
 
   /**
-   * Parse type parameter type suffix
-   *
-typeType    : "type"
-            | "type" "..."
-            ;
-   */
-  Impl typeType()
-  {
-    match(Token.t_type, "argType");
-    return splitSkip("...") ? Impl.TYPE_PARAMETER_OPEN
-                            : Impl.EXPLICIT_TYPE_PARAMETER;
-  }
-
-
-  /**
    * Check if the current position is a formArgs and skip it if this is the
    * case.
    *
@@ -945,22 +939,12 @@ typeType    : "type"
               {
                 visibility();
                 modifiers();
-                result = skipArgNames();
-                if (result)
-                  {
-                    if (skip(Token.t_type))
-                      {
-                        splitSkip("...");
-                        if (skipColon())
-                          {
-                            result = skipType();
-                          }
-                      }
-                    else
-                      {
-                        result = skipType();
-                      }
-                  }
+                result =
+                  skipArgNames() &&
+                    skipColon()      ? skipType()                // type par
+                  : splitSkip("...") ? skipColon() && skipType() // open type par
+                  : skipType()       ? splitSkip("...") || true  // value argument, maybe with open type
+                  :                    true;                     // value argument with inferred type
               }
             while (result && skipComma());
           }
@@ -1005,9 +989,13 @@ typeType    : "type"
                     skipName();
                   }
                 while (skipComma());
-                if (skip(Token.t_type))
+                if (skipColon())
                   {
-                    splitSkip("...");
+                    skipType();
+                    result[0] = FormalOrActual.both;
+                  }
+                else if (splitSkip("..."))
+                  {
                     if (skipColon())
                       {
                         skipType();
@@ -1017,15 +1005,7 @@ typeType    : "type"
                 // tolerate missing type here
                 else if ((skipType() || true) && skipDot())
                   {
-                    if (!skip(Token.t_type))
-                      {
-                        result[0] = FormalOrActual.actual;
-                        return false;
-                      }
-                    else
-                      {
-                        splitSkip("...");
-                      }
+                    splitSkip("...");
                   }
               }
             while (skipComma());

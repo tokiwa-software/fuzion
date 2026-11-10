@@ -23,30 +23,30 @@
 
 reg_issue5592 =>
   f is
-    g(U type : f.this) =>
+    g(U : f.this) =>
       say U
 
-    h(U type)
+    h(U : Any)
       pre U : f.this
     =>
       say U
 
-    i(U type)
+    i(U : Any)
     =>
       if U : f.this
         say U
       else
         say "constraint not satisfied"
 
-    j(U type : option f.this) =>
+    j(U : option f.this) =>
       say U
 
-    k(U type)
+    k(U : Any)
       pre U : (Sequence f.this)->f.this
     =>
       say U
 
-    l(U type)
+    l(U : Any)
     =>
       if U : (f.this, array f.this)
         say U

@@ -35,7 +35,7 @@ public oneway_monad(
 
   # the type wrapped by this monad, `unit` in case this is used as an
   # effect.
-  A type,
+  A : Any,
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   #

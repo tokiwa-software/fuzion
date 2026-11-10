@@ -34,7 +34,7 @@ reg_issue8086 =>
   # original code from #8086
 
   q(v i64) =>
-  r(U, V type, f F : V->U, v V) U => f v
+  r(U, V : Any, f F : V->U, v V) U => f v
   r q (-)
   r q (.as_string)
   r q x->x

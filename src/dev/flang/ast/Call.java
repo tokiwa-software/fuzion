@@ -31,6 +31,7 @@ import java.util.ListIterator;
 import dev.flang.ast.AbstractMatch.Kind;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
@@ -197,9 +198,9 @@ public class Call extends AbstractCall
 
 
   /**
-   * May be used in error messages for their positions.
+   * May be used in error messages to get positions of unresolved types.
    */
-  private final List<AbstractType> _originalGenerics;
+  List<HasSourcePosition> _originalGenerics;
 
 
   /**
@@ -520,7 +521,7 @@ public class Call extends AbstractCall
     this._name = name;
     this._select = select;
     this._generics = generics;
-    this._originalGenerics = generics;
+    this._originalGenerics = generics.map2(x -> x instanceof HasSourcePosition p ? p : null);
     this._actuals = actuals;
     this._target = target;
     if (target instanceof Call tc)
@@ -1898,6 +1899,15 @@ public class Call extends AbstractCall
         reportConflicts(conflict, foundAt);
         reportMissingInferred(missing);
       }
+
+    for (var i = 0; i<foundAt.size(); i++)
+      {
+        var l = foundAt.get(i);
+        if (l != null && !l.isEmpty())
+          {
+            _originalGenerics.force(i, l.getFirst().v0());
+          }
+      }
   }
 
 
@@ -2098,7 +2108,7 @@ public class Call extends AbstractCall
    * If an actual type parameter is known, the type parameters used
    * in its constraints can be inferred:
    *
-   *     a(T type, S type : Sequence T, v option S) => say T
+   *     a(T type, S : Sequence T, v option S) => say T
    *     a _ (array i32) nil   # S is given, `T` is inferred as `i32`
    *     a [true, false]       # S is inferred from v, then used to infer `T` as `bool`
    */
@@ -2120,7 +2130,8 @@ public class Call extends AbstractCall
               {
                 g = g.typeParameter().constraint();
               }
-            inferGeneric(res, context, c, true, g, pos(), conflict, foundAt, -1);
+            var p = _originalGenerics.size() > i ? _originalGenerics.get(i) : null;
+            inferGeneric(res, context, c, true, g, p != null ? p.pos() : pos(), conflict, foundAt, -1);
           }
       }
   }
@@ -2181,6 +2192,7 @@ public class Call extends AbstractCall
                                 AstErrors.failedToInferOpenTypeParameterType(pos(), argnum+1, actual);
                               }
                             _generics.add(actualType);
+                            addPair(foundAt, _generics.size()-1, actual.pos(), actualType);
                             argnum++;
                           }
                       }
@@ -2209,7 +2221,7 @@ public class Call extends AbstractCall
                             if (actualType != null)
                               { /* infer via constraint of type parameter:
                                  *
-                                 *     a(T type, S type : array T, s S) is
+                                 *     a(T type, S : array T, s S) is
                                  *     _ := a [32]
                                  */
                                 inferGeneric(res, context, c, true, actualType, actual.pos(), conflict, foundAt, argnum);
@@ -2217,7 +2229,7 @@ public class Call extends AbstractCall
                             else if (c.isLambdaTargetButNotLazy(res))
                               { /* propagate constraint for partial or lambda:
                                  *
-                                 *     a(F type : Function bool i32, f F) =>
+                                 *     a(F : Function bool i32, f F) =>
                                  *     _ := a x->x>3
                                  *     _ := a %%2
                                  */
@@ -2225,7 +2237,7 @@ public class Call extends AbstractCall
                                 var ac = c.applyTypePars(calledFeature(), actualTypeParameters());
                                 /* ac may contain undefined for code from #6849 as follows
 
-                                     x(F type : ()->unit, G type : F, f G) => {}
+                                     x(F : ()->unit, G : F, f G) => {}
                                      x ()->
 
                                    where for the call to `x ()->` the type `G`'s
@@ -2264,7 +2276,7 @@ public class Call extends AbstractCall
                             if (t != tc)
                               { /* we might need to infer two type parameters in code like
                                  *
-                                 *   f(R type, F type : ()->R, f F) => ...
+                                 *   f(R type, F : ()->R, f F) => ...
                                  *   f ()->"bla"
                                  *
                                  * here, we first must infer `R` to be `String`, then `F` to be `Nullary String`
@@ -2388,11 +2400,11 @@ public class Call extends AbstractCall
    */
   private void addPair(List<List<Pair<SourcePosition, AbstractType>>> foundAt, int i, SourcePosition pos, AbstractType t)
   {
-    var l = foundAt.get(i);
+    var l = i < foundAt.size() ? foundAt.get(i) : null;
     if (l == null)
       {
         l = new List<>();
-        foundAt.set(i, l);
+        foundAt.force(i, l);
       }
     var p = new Pair<SourcePosition, AbstractType>(pos, t);
     if (!l.contains(p))
@@ -3176,9 +3188,6 @@ public class Call extends AbstractCall
   @Override
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
-    // NYI: CLEANUP: ugly that we need this here _again_, for #7188
-    resolveGenerics(res, context);
-
     // we might not know the called feature yet, e.g., during propagateExpectedType
     var result = calledFeatureKnown() ? super.resolvedFormalArgumentTypes(res, context)
                                       : UnresolvedType.NO_TYPES;
@@ -3345,21 +3354,10 @@ public class Call extends AbstractCall
                   }
               }
           }
-        if (_calledFeature.isChoice())
+
+        if (_calledFeature.isChoice() && !isInheritanceCall())
           {
-            boolean ok = false;
-            var outer = context.outerFeature();
-            if (outer.isChoice())
-              {
-                for (var p : outer.inherits())
-                  {
-                    ok = ok || p == this;
-                  }
-              }
-            if (!ok)
-              {
-                AstErrors.cannotCallChoice(pos(), _calledFeature);
-              }
+            AstErrors.cannotCallChoice(pos(), _calledFeature);
           }
 
         if (!errorInActuals())

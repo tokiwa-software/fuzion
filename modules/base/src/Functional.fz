@@ -26,7 +26,7 @@
 # a Functional is a special type of unary that takes
 # a Function R and produces a value R.
 #
-public Functional(R type) ref : Unary R (Function R) is
+public Functional(R : Any) ref : Unary R (Function R) is
 
 
   # infix variant of call
@@ -48,5 +48,5 @@ public Functional(R type) ref : Unary R (Function R) is
 
   # fluent interface for using multiple effects together
   #
-  public and(E type: effect, e Lazy E) Functional R =>
+  public and(E : effect, e Lazy E) Functional R =>
     compose (e.as_functional R)

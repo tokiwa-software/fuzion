@@ -5,7 +5,7 @@ reg_issue4251.fz:26:2: error 1: Illegal forward or cyclic type inference
 The definition of a field using ':=', or of a feature or function
 using '=>' must not create cyclic type dependencies.
 Referenced feature: 'infix_right <|' at {base.fum}/pipes.fz:162:8
-public infix_right <| (A, R type, f A->R, a A) R =>
+public infix_right <| (A, R : Any, f A->R, a A) R =>
 -------^^^^^^^^^^^^^^
 
 one error.

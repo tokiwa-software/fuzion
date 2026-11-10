@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-Foo(T type) ref : container.Linked_List X is
+Foo(T : Any) ref : container.Linked_List X is
 
   type.new Foo T =>
 

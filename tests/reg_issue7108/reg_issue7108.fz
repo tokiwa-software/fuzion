@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-rev(T type : property.orderable, val T) : property.orderable is
+rev(T : property.orderable, val T) : property.orderable is
 
   public redef type.lteq(a, b rev.this) bool
   =>

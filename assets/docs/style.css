@@ -65,6 +65,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   margin-left: .2em;
 }
 
+/* Keep the grid inside summary so its native disclosure marker is preserved. */
+.fd-summary{
+  display: grid;
+  grid-template-columns: 1fr min-content;
+}
+
+.fd-src-link{
+  align-self: start;
+}
+
 .fd-signature{
   display: flex;
   flex-wrap: wrap;
@@ -174,6 +184,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   border: 2px outset rgb(0 0 0 / 10%);
 }
 
+/* Exclude feature descriptions in collapsed feature-list entries from browser search. */
+.fd details:not([open])::details-content{
+  visibility: hidden;
+}
+
 .fd-comment details, .fd-contract details{
   margin: 0;
   margin-bottom: 1em;
@@ -200,6 +215,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+/* Only feature-list entries need a permalink. */
+.heading-summary .fd-anchor-sign {
+  display: none;
 }
 
 .fd summary:hover .fd-anchor-sign,
@@ -233,13 +253,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   border: 0;
 }
 
-.fd .toggle-feature-details:focus-visible {
-  outline: auto;
-}
-
 .toggle-nav {
-  all: unset; /* removes default button styles */
+  appearance: none;
+  background: none;
+  border: 0;
+  color: inherit;
   cursor: pointer;
+  font: inherit;
   font-size: 1.2em;
   padding: 0.5em;
 }

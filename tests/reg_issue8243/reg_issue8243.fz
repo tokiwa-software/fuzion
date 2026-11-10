@@ -1,0 +1,37 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8243
+#
+# -----------------------------------------------------------------------
+
+# This small example has syntax errors in a way to create an Impl with
+# _expr==null that was dereferenced.
+#
+reg_issue8243 =>
+
+  # original code causing a NullPointerExcep in Impl.java since _expr is null:
+
+  public a (U match) is
+  public b (T type,) : a T is
+
+  # code adapted for new type parameter syntax
+
+  public c (U match) is
+  public d (T : Any,) : c T is
