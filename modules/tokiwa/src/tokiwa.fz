@@ -102,7 +102,7 @@ public tokiwa is
 
     public ok bool => exit_code = 0
 
-    public panic_on_error unit =>
+    public panic_or_error unit =>
       if !ok then panic "$(exit_code): $(err)"
 
     public out_or_panic String =>

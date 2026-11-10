@@ -114,7 +114,7 @@ String.run tokiwa.process_result => String.this.run nil
 # Run this String as a command using `envir_vars, cpu_time_limit` and panic in case it
 # returns with an error.
 #
-String.run_and_check unit => run.panic_on_error
+String.run_and_check unit => run.panic_or_error
 
 
 # If the test file starts with a comment of the form `# fuzion.debugLevel=N`,

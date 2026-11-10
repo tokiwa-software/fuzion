@@ -127,9 +127,9 @@ main =>
 
     # test grammar with antlr4
     tmp := "mktemp --directory".execute.or_panic.out_or_panic.trim_end (id (Unary bool codepoint) (="\n"))
-    "mkdir $tmp/fuzion_grammar".execute.or_panic.panic_on_error
+    "mkdir $tmp/fuzion_grammar".execute.or_panic.panic_or_error
     _ := io.write (io.path.of "$tmp/fuzion_grammar/Fuzion.g4") ebnf
     antlr := if (os.process.start "antlr4").bind u32 p->p.wait = 0 then "antlr4" else "antlr"
     # NYI: UNDER DEVELOPMENT: add option -Werror
-    "$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4".execute.or_panic.panic_on_error
-    "rm -Rf $tmp".execute.or_panic.panic_on_error
+    "$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4".execute.or_panic.panic_or_error
+    "rm -Rf $tmp".execute.or_panic.panic_or_error
