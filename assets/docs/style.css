@@ -65,6 +65,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   margin-left: .2em;
 }
 
+/* Keep the grid inside summary so its native disclosure marker is preserved. */
+.fd-summary{
+  display: grid;
+  grid-template-columns: 1fr min-content;
+}
+
+.fd-src-link{
+  align-self: start;
+}
+
 .fd-signature{
   display: flex;
   flex-wrap: wrap;
