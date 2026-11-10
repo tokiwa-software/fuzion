@@ -330,7 +330,7 @@ public class ResolvedNormalType extends ResolvedType
    * and outer type.
    */
   @Override
-  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
+  public AbstractType replaceGenericsAndOuter0(List<AbstractType> g2, AbstractType o2)
   {
     return ResolvedNormalType.create(this, g2, originalGenericsPos(), o2);
   }
