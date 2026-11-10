@@ -629,9 +629,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
           }
       }
-    if (result.no() && allowTagging && isChoice() && !isRelayType())
+
+    /* Check if tagging would make this assignment possible as in
+     *
+     *     x option i64 := nil
+     *
+     * or, using a type feature with relay type as result
+     *
+     *     trit : choice true_ false_ nil is
+     *
+     *       type.yes trit.this => true_
+     *
+     */
+    if (result.no() && allowTagging && relayTypeAsThisType().isChoice())
       {
-        result = YesNo.fromBool(isChoiceMatch(actual, context));
+        result = YesNo.fromBool(relayTypeAsThisType().isChoiceMatch(actual, context));
       }
     // NYI: UNDER DEVELOPMENT: probably unsound! see also isAssignableFrom
     if (result.no() && isChoice() && actual.isChoice() && (isThisType() || actual.isThisType()))
@@ -2259,6 +2271,25 @@ there is no common super type of the two types (Types.t_ERROR)
       && typeParameter().state().atLeast(State.FINDING_DECLARATIONS)
       && typeParameter().outer().isCotype()
       && typeParameter().typeParameterIndex() == 0;
+  }
+
+
+
+  /**
+   * if {@code isRelayType()}, return the corresponding {@code thisType}. E.g., for
+   *
+   *     a : choice bool i64 is
+   *       type.answer a.this => 42
+   *
+   * the result type of {@code a.type.answer} is a relay type, the corrsponding {@code thisType} is
+   * `a.this`.
+   *
+   * @return the corresponding {@code thisType} iff {@code isRelayType()}, otherwise {@code this}.
+   */
+  public AbstractType relayTypeAsThisType()
+  {
+    return isRelayType() ? typeParameter().outer().cotypeOrigin().thisType()
+                         : this;
   }
 
 

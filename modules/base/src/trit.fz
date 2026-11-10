@@ -29,9 +29,9 @@
 #
 public trit : choice true_ false_ nil, property.equatable is
 
-  public type.yes trit     => true_
-  public type.no  trit     => false_
-  public type.unknown trit => nil
+  public type.yes trit.this     => true_
+  public type.no  trit.this     => false_
+  public type.unknown trit.this => nil
 
 
   public is_yes            bool => trit.this =  trit.yes
