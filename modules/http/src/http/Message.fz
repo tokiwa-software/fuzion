@@ -145,7 +145,7 @@ module next_line(LM : mutate) => (io.buffered LM).read_delimiter encodings.ascii
 
 module parse_header_fields(LM : mutate) outcome (container.Mutable_Tree_Map LM String String) =>
 
-  flow.exception unit _ ()->
+  flow.exception unit .on _ ()->
 
     cause(s String) void =>
       (flow.exception unit).env.cause (error s)
@@ -171,7 +171,7 @@ module parse_header_fields(LM : mutate) outcome (container.Mutable_Tree_Map LM S
 
 
 module body_helper(LM : mutate, is_req bool, header_fields container.Map String String) outcome (i64 -> choice (Sequence u8) io.end_of_file error) =>
-  flow.exception unit (i64 -> choice (Sequence u8) io.end_of_file error) ()->
+  flow.exception unit .on (i64 -> choice (Sequence u8) io.end_of_file error) ()->
 
     cause(s String) void =>
       (flow.exception unit).env.cause (error s)
