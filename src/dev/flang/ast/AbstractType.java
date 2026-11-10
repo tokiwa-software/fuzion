@@ -2382,6 +2382,7 @@ there is no common super type of the two types (Types.t_ERROR)
    * phase.
    *
    * @param context the feature to which the name should be relative to
+   * NYI: CLEANUP: context seems unused?
    */
   public String toString(boolean humanReadable, AbstractFeature context)
   {
@@ -2389,14 +2390,10 @@ there is no common super type of the two types (Types.t_ERROR)
       {
         case ParametricType:
           {
-            var ga = typeParameter();
-            yield
-              (ga.isCoTypesRelayTypeParameter()
-                ? ga.qualifiedName(context, humanReadable)
-                : ga.isTypeFeature()
-                ? ga.qualifiedName(humanReadable)
-                : (humanReadable ? ga.baseNameHuman() : ga.baseName())) +
-              (isRef() ? " (boxed)" : "");
+            var tp = typeParameter();
+            yield tp.isCoTypesRelayTypeParameter()
+              ? (tp.state().atLeast(State.RESOLVED_DECLARATIONS) && (Types.resolved == null || tp.constraint().compareTo(Types.resolved.t_Any) != 0) ? tp.constraint().toString(humanReadable) + ".this" : "")
+              : (humanReadable ? tp.baseNameHuman() : tp.baseName());
           }
         case ThisType:
           {
