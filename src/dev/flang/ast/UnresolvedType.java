@@ -668,7 +668,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                                     boolean ignoreActualTypePars,
                                     boolean tolerant)
   {
-    if (tolerant) { originalGenericsPos = HasSourcePosition.NONE; }
+    if (tolerant) { originalGenericsPos = HasSourcePosition.NONE; }  // NYI: CLEANUP: check why this is needed
 
     if (!ignoreActualTypePars && typeKind != TypeKind.ThisType)
       {
@@ -688,17 +688,15 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           }
       }
 
-    return typeKind == TypeKind.ThisType
-      ? new ThisType(f)
-      : !f.generics().sizeMatches(generics) && ignoreActualTypePars
-      ? new IncompleteType(f, typeKind)
-      : !f.generics().sizeMatches(generics)
-      ? (tolerant ? null : Types.t_ERROR)
-      : ResolvedNormalType.create(generics,
-                                  originalGenericsPos,
-                                  o,
-                                  f,
-                                  typeKind);
+    return
+      f == Types.f_ERROR                  ? (tolerant ? null : Types.t_ERROR) :
+      typeKind == TypeKind.ThisType       ? new ThisType(f)                   :
+      !f.generics().sizeMatches(generics) ? new IncompleteType(f, typeKind)     // this can only happen if ignoreActualTypePars, see `if` above
+                                          : ResolvedNormalType.create(generics,
+                                                                      originalGenericsPos,
+                                                                      o,
+                                                                      f,
+                                                                      typeKind);
   }
 
 
