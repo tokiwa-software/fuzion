@@ -1722,7 +1722,7 @@ An xref:fuzion_opentypeparameter[open type parameter] argument to a feature that
 A xref:fuzion_type_constraint[type constraint] of a xref:fuzion_typeparameter[type parameter] must be redefined using a xref:fuzion_type_constraint[type constraint] that is xref:fuzion_constraint_assignable[constraint assignable] from the original  xref:fuzion_typeparameter[type parameter]'s  xref:fuzion_type_constraint[type constraint].
     // end::fuzion_rule_REDEF_TYPE_CONSTRAINTS[]
             */
-                        ( argo.isTypeParameter() && !tr.constraintAssignableFrom(to)             ) ||
+                        ( argo.isTypeParameter() && !tr.constraintSatisfiedBy(to)             ) ||
             /*
     // tag::fuzion_rule_REDEF_VALUE_ARGUMENT[]
 A xref:fuzion_value_argument[value argument] must be redefined using a type that is a xref:fuzion_legal_covariant_this_type[legal covariant this_type] of the type of the corresponding xref:fuzion_value_argument[value argument] argument of the redefined feature.

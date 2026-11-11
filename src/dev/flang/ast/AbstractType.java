@@ -725,9 +725,9 @@ NYI: UNDER DEVELOPMENT:
    * @param assignableTo if non-null, this will collect all constraint types
    * that `actual` is assignable to. Use for error messages.
    */
-  private boolean constraintAssignableFrom(Context context,
-                                           AbstractType actual,
-                                           Set<AbstractType> assignableTo)
+  private boolean constraintSatisfiedBy(Context context,
+                                        AbstractType actual,
+                                        Set<AbstractType> assignableTo)
   {
     if (PRECONDITIONS) require
       (this  .isParametricType() || this  .feature() != null || Errors.any(),
@@ -762,7 +762,7 @@ NYI: UNDER DEVELOPMENT:
                  * actual: 'I : integer'
                  */
                 case ParametricType ->
-                  constraintAssignableFrom(context, actual.typeParameter().constraint(context), assignableTo);
+                  constraintSatisfiedBy(context, actual.typeParameter().constraint(context), assignableTo);
                 /**
                  * e.g.:
                  *
@@ -772,7 +772,7 @@ NYI: UNDER DEVELOPMENT:
                 case ValueType, RefType ->
                   // either directly
                   actual.feature() == feature() &&
-                    genericsAssignable(actual, context) &&
+                    genericsSatisfiedBy(actual, context) &&
                     (outer() == null && actual.outer() == null ||
                      outer().isAssignableFromDirectly(actual.outer()).yes())
                   ||
@@ -780,7 +780,7 @@ NYI: UNDER DEVELOPMENT:
                   actual.feature().inherits().stream().anyMatch(p ->
                     {
                       var pa = actual.actualType(p.type());
-                      return pa!=actual && constraintAssignableFrom(context, pa, assignableTo);
+                      return pa!=actual && constraintSatisfiedBy(context, pa, assignableTo);
                     });
                 /**
                  * e.g.:
@@ -803,9 +803,9 @@ NYI: UNDER DEVELOPMENT:
    *
    * @param actual the actual type.
    */
-  public boolean constraintAssignableFrom(AbstractType actual)
+  public boolean constraintSatisfiedBy(AbstractType actual)
   {
-    return constraintAssignableFrom(Context.NONE, actual, null);
+    return constraintSatisfiedBy(Context.NONE, actual, null);
   }
 
 
@@ -822,7 +822,7 @@ NYI: UNDER DEVELOPMENT:
    * call's target or actual type parameters. Also this is used to for error
    * messages that require the source position of the call.
    */
-  private boolean genericsAssignable(AbstractType actual, Context context)
+  private boolean genericsSatisfiedBy(AbstractType actual, Context context)
   {
     if (PRECONDITIONS) require
       (!this.isParametricType(),
@@ -849,7 +849,7 @@ NYI: UNDER DEVELOPMENT:
                                       // for now just prevent infinite recursion
                                       gt.compareTo(this) != 0
                                       &&
-                                      !gt.constraintAssignableFrom(context, og, null);
+                                      !gt.constraintSatisfiedBy(context, og, null);
               case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
             }
           )
@@ -2577,11 +2577,11 @@ there is no common super type of the two types (Types.t_ERROR)
         !constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
         !tp.isCoTypesRelayTypeParameter() &&
-        !constraint.constraintAssignableFrom(context, this, null)
+        !constraint.constraintSatisfiedBy(context, this, null)
        )
       {
         var assignableTo = new TreeSet<AbstractType>();
-        var ignore = constraint.constraintAssignableFrom(context, this, assignableTo);
+        var ignore = constraint.constraintSatisfiedBy(context, this, assignableTo);
         AstErrors.incompatibleActualGeneric(pos, tp, constraint, this, assignableTo);
         result = false;
       }
