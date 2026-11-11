@@ -2392,7 +2392,7 @@ there is no common super type of the two types (Types.t_ERROR)
           {
             var tp = typeParameter();
             yield tp.isCoTypesRelayTypeParameter()
-              ? (tp.state().atLeast(State.RESOLVED_DECLARATIONS) && (Types.resolved == null || tp.constraint().compareTo(Types.resolved.t_Any) != 0) ? tp.constraint().toString(humanReadable) + ".this" : "")
+              ? tp.constraint().asThis().toString(humanReadable)
               : (humanReadable ? tp.baseNameHuman() : tp.baseName());
           }
         case ThisType:
