@@ -46,7 +46,7 @@ is
 
 
   # set the given bit
-  public put (bit u64) bitset =>
+  public fixed put (bit u64) bitset =>
     if has bit
       bitset.this
     else
@@ -67,7 +67,7 @@ is
       x u64   => other.put x
       a array =>
         match other
-          nil     => bitset.this
+          nil     => a
           x u64   => bitset.this.put x
           b array =>
             array bool _ (max a.length b.length) (i -> (has i.as_u64) || (other.has i.as_u64))
