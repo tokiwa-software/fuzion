@@ -778,7 +778,7 @@ NYI: UNDER DEVELOPMENT:
                 case ValueType, RefType ->
                   // either directly
                   actual.feature() == feature() &&
-                    genericsAssignable(actual, context) &&
+                    genericsSatisfiedBy(actual, context) &&
                     (outer() == null && actual.outer() == null ||
                      outer().isAssignableFromDirectly(actual.outer()).yes())
                   ||
@@ -828,7 +828,7 @@ NYI: UNDER DEVELOPMENT:
    * call's target or actual type parameters. Also this is used to for error
    * messages that require the source position of the call.
    */
-  private boolean genericsAssignable(AbstractType actual, Context context)
+  private boolean genericsSatisfiedBy(AbstractType actual, Context context)
   {
     if (PRECONDITIONS) require
       (!this.isParametricType(),
