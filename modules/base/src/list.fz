@@ -105,7 +105,7 @@ is
   # This is a helper function that needs to be defined because list is an heir
   # of Sequence.
   #
-  public redef as_list list A => list.this
+  public redef fixed as_list list A => list.this
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -519,7 +519,7 @@ is
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
-  drop_list (n i64) list A =>
+  fixed drop_list (n i64) list A =>
     if n ≤ 0
       list.this
     else
@@ -615,7 +615,7 @@ is
   # create a lazy list of all the tails of this list, including the complete list
   # 'list.this' and the empty list 'nil'.
   #
-  public redef tails list (list A) =>
+  public redef fixed tails list (list A) =>
     lazy_value => (list.this ? nil => nil | c Cons => c.tail.tails)
     list
       (list A)
@@ -707,7 +707,7 @@ is
   #
   #     [4,1,2,2,3,2,2,2,4].unique_list = [4, 1, 2, 3]
   #
-  public unique_list list A
+  public fixed unique_list list A
     pre
       A : property.orderable
   =>

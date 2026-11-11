@@ -299,13 +299,13 @@ private:public jvm : effect is
 
   # shorthands
   #
-  public i8    .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i8_to_java_object  val
-  public i16   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i16_to_java_object val
-  public u16   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.u16_to_java_object val
-  public i32   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i32_to_java_object val
-  public i64   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i64_to_java_object val
-  public f32   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.f32_to_java_object val
-  public f64   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.f64_to_java_object val
-  public bool  .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.bool_to_java_object bool.this
-  public String.as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.string_to_java_object String.this
-  public array .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.array_to_java_object array.this
+  public fixed i8    .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i8_to_java_object  val
+  public fixed i16   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i16_to_java_object val
+  public fixed u16   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.u16_to_java_object val
+  public fixed i32   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i32_to_java_object val
+  public fixed i64   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i64_to_java_object val
+  public fixed f32   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.f32_to_java_object val
+  public fixed f64   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.f64_to_java_object val
+  public fixed bool  .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.bool_to_java_object bool.this
+  public fixed String.as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.string_to_java_object String.this
+  public fixed array .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.array_to_java_object array.this
