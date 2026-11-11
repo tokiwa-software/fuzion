@@ -2253,7 +2253,7 @@ public class Call extends AbstractCall
 
                                 setActual(argnum, actual);
                                 actualType = typeFromActual(res, context, actual, false);
-                                if (actualType != null && !c.constraintAssignableFrom(actualType))
+                                if (actualType != null && !c.constraintSatisfiedBy(actualType))
                                   { // in case actual is not assignabnle, not a lambda or partially applied call,
                                     // ignore this for type inference to avoid a bigger mess for code like
                                     //
@@ -2579,7 +2579,7 @@ public class Call extends AbstractCall
                  */
 
                 var cg = formalType.choiceGenerics(context);
-                var directlyAssignable = formalTypeIsConstraint && formalType.constraintAssignableFrom(actualType)
+                var directlyAssignable = formalTypeIsConstraint && formalType.constraintSatisfiedBy(actualType)
                   || cg.stream().anyMatch(x -> !x.dependsOnGenerics() && x.isAssignableFrom(actualType).yes());
 
                 if (!directlyAssignable)
