@@ -739,8 +739,8 @@ NYI: UNDER DEVELOPMENT:
         assignableTo.add(actual);
       }
 
-    var result = containsError()                   ||
-      actual.containsError()                       ||
+    var result = containsError() ||
+        actual.containsError()   ||
       this  .compareTo(actual) == 0;
 
     if (!result)
