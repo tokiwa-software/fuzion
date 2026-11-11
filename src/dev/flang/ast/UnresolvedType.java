@@ -678,13 +678,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             generics.contains(null)             || /* from tolerant resolve */
             generics.contains(Types.t_ERROR)       )
           {
-            f = Types.f_ERROR;
             if (!tolerant)
               {
                 f.generics().errorIfSizeDoesNotMatch(generics,
                                                      pos.pos(),
                                                      ()-> new Pair<>("type", "Type: " + thiz.toString(true) + "\n"));
               }
+            f = Types.f_ERROR;
           }
       }
 
