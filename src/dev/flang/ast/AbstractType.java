@@ -769,12 +769,6 @@ NYI: UNDER DEVELOPMENT:
                  * actual: 'concur.thread_pool'
                  */
                 case ValueType, RefType ->
-                  // either directly
-                  actual.feature() == feature() &&
-                    genericsSatisfiedBy(actual, context) &&
-                    (outer() == null && actual.outer() == null ||
-                     outer().isAssignableFromDirectly(actual.outer()).yes())
-                  ||
                   // or via some feature that actual inherits
                   actual.feature().inherits().stream().anyMatch(p ->
                     {
@@ -805,58 +799,6 @@ NYI: UNDER DEVELOPMENT:
   public boolean constraintSatisfiedBy(AbstractType actual)
   {
     return constraintSatisfiedBy(Context.NONE, actual, null);
-  }
-
-
-  /**
-   * Check if generics of type parameter {@code actual} are assignable to
-   * generics of type parameter with constraint {@code this}.
-   *
-   * @param actual the actual type to be checked
-   *
-   * @param context the source code context where this Type is used
-   *
-   * @param call if this is a formal type in a call, this is the call, otherwise
-   * null. This call is used to replace type parameters that depend on the
-   * call's target or actual type parameters. Also this is used to for error
-   * messages that require the source position of the call.
-   */
-  private boolean genericsSatisfiedBy(AbstractType actual, Context context)
-  {
-    if (PRECONDITIONS) require
-      (!this.isParametricType(),
-       !actual.isParametricType());
-
-    var ogs = actual.generics();
-    var i1 = actualGenerics().iterator();
-    var i2 = ogs.iterator();
-    AbstractType go = null;
-    while ((go != null || i1.hasNext()) && i2.hasNext())
-      {
-        var g = go != null ? go : i1.next();
-        go = g.isOpenGeneric() ? g : null;
-        var og = i2.next();
-        var gt = g.selfOrConstraint(context);
-
-        if (
-          switch (g.kind())
-            {
-              case ParametricType ->
-                                      // NYI: BUG: #5002: check recursive type, e.g.:
-                                      // this  = monad monad.A monad.MA
-                                      // other = monad option.T (option option.T)
-                                      // for now just prevent infinite recursion
-                                      gt.compareTo(this) != 0
-                                      &&
-                                      !gt.constraintSatisfiedBy(context, og, null);
-              case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
-            }
-          )
-          {
-            return false;
-          }
-      }
-    return !i1.hasNext() && !i2.hasNext();
   }
 
 

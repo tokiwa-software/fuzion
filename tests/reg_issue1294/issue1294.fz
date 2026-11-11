@@ -240,8 +240,10 @@ scenario7 is
   # respectively. `v1`, `v2`, `w1` and `w2` inherit from `u1` or `u2` giving `q2` or `q3` as
   # type parameters in both possible orders.
   #
-  u1(A : p A, B : p B) : p A is
-  u2(A : p A, B : p B) : p B is
+  # NYI: UNDER DEVELOPMENT: support this?
+  #
+  # u1(A : p A, B : p B) : p A is
+  # u2(A : p A, B : p B) : p B is
 
   v1 : u1 q2 q3 is
   v2 : u1 q3 q2 is
