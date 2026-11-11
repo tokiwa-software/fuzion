@@ -670,31 +670,24 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     if (tolerant) { originalGenericsPos = HasSourcePosition.NONE; }
 
-    if (!ignoreActualTypePars)
+    if (!ignoreActualTypePars && typeKind != TypeKind.ThisType)
       {
-        if (typeKind == TypeKind.ThisType && generics.isEmpty())
+        if (tolerant)
           {
-            generics = f.genericsAsActuals();
+            generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, context, true) : t);
+            if (!f.generics().sizeMatches(generics) || generics.contains(Types.t_ERROR))
+              {
+                f = Types.f_ERROR;
+              }
           }
         else
           {
-            if (tolerant)
+            generics = res.resolveTypes(generics, context);
+            if (!f.generics().errorIfSizeDoesNotMatch(generics,
+                                                      pos.pos(),
+                                                      ()-> new Pair<>("type", "Type: " + thiz.toString(true) + "\n")))
               {
-                generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, context, true) : t);
-                if (!f.generics().sizeMatches(generics) || generics.contains(null))
-                  {
-                    f = Types.f_ERROR;
-                  }
-              }
-            else
-              {
-                generics = res.resolveTypes(generics, context);
-                if (!f.generics().errorIfSizeDoesNotMatch(generics,
-                                                          pos.pos(),
-                                                          ()-> new Pair<>("type", "Type: " + thiz.toString(true) + "\n")))
-                  {
-                    f = Types.f_ERROR;
-                  }
+                f = Types.f_ERROR;
               }
           }
         generics.freeze();
