@@ -741,7 +741,7 @@ NYI: UNDER DEVELOPMENT:
 
     var result = containsError() ||
         actual.containsError()   ||
-      this  .compareTo(actual) == 0;
+        this.compareTo(actual) == 0;
 
     if (!result)
       {
