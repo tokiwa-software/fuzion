@@ -1,7 +1,7 @@
 
 reg_issue5417.fz:32:15: error 1: Ambiguous type
             f ex.this,               # 1. should flag an error: Ambiguous type
---------------^^
+--------------^^^^^^^
 The compiler cannot resolve the type in this declaration because it is ambiguous.
 Ambiguous type: 'ex'
 Matching features found:
@@ -18,9 +18,9 @@ ex is
 To solve this, rename these features so that each has a unique name.
 
 
-reg_issue5417.fz:33:15: error 2: Ambiguous type
+reg_issue5417.fz:33:18: error 2: Ambiguous type
             g ex.ex.this) is         # 2. should flag an error: Ambiguous type
---------------^^^^^
+-----------------^^^^^^^
 The compiler cannot resolve the type in this declaration because it is ambiguous.
 Ambiguous type: 'ex'
 Matching features found:
