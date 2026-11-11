@@ -781,7 +781,8 @@ public class Call extends AbstractCall
     if (_calledFeature == null && targetFeature != null)
       {
         res.resolveDeclarations(targetFeature);
-        var fo = findOnTarget(res, targetFeature, true).v1();
+        var allowFixed = _target == null || !_target.type().isThisType() || ((ThisType) _target.type()).isFixedFor(context);
+        var fo = findOnTarget(res, targetFeature, true, allowFixed).v1();
         if (fo != null)
           {
             setCalledFeatureAndTarget(res, context, fo);
@@ -867,7 +868,7 @@ public class Call extends AbstractCall
       }
     else
       {
-        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true).v0()
+        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true, true /* NYI: CHECK IF THIS IS OK FOR TARGET TYPE */ ).v0()
                                         : new List<FeatureAndOuter>();
         setPendingError(
           (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
@@ -897,13 +898,16 @@ public class Call extends AbstractCall
    *          1) all found features matching the name
    *          2) the matching feature or null if none was found
    */
-  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target, boolean mayBeSpecialWrtArgs)
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
+                                                                    AbstractFeature target,
+                                                                    boolean mayBeSpecialWrtArgs,
+                                                                    boolean allowFixed)
   {
     if (PRECONDITIONS) require
       (target != null);
 
     var calledName = FeatureName.get(_name, _actuals.size());
-    var fos = res._module.lookup(target, _name, this, _target == null, false);
+    var fos = res._module.lookup(target, _name, this, _target == null, allowFixed, false);
     for (var fo : fos)
       {
         if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
@@ -1044,13 +1048,13 @@ public class Call extends AbstractCall
       {
         var fos = targetFeature == null // could still find type applicable type feature
           ? new List<FeatureAndOuter>()
-          : res._module.lookup(targetFeature, _name, this, traverseOuter, false);
+          : res._module.lookup(targetFeature, _name, this, traverseOuter, true /* NYI: CHECK IF FIXED ALLOWED */, false);
         if (_target != null && _target.asParsedType() != null)
           {
             var tt = _target.asParsedType().resolve(res, context, true);
             if (tt != null && tt.isNormalType() && tt.feature().hasCotype() && tt.feature().cotype() != targetFeature)
               {
-                fos.addAll(res._module.lookup(tt.feature().cotype(), _name, this, false, false));
+                fos.addAll(res._module.lookup(tt.feature().cotype(), _name, this, false, true /* NYI: CHECK IF FIXED ALLOWED */, false));
               }
           }
         var n = a + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
@@ -1087,7 +1091,7 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (targetFeature  != null);
 
-    var fos = res._module.lookup(targetFeature, _name, this, _target == null, true);
+    var fos = res._module.lookup(targetFeature, _name, this, _target == null, true /* NYI: CHECK IF FIXED ALLOWED */, true);
     for (var fo : fos)
       {
         if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
@@ -1178,7 +1182,7 @@ public class Call extends AbstractCall
     if (isOperatorCall())
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
-        var fo = res._module.lookup(context.outerFeature(), _name, this, true, false);
+        var fo = res._module.lookup(context.outerFeature(), _name, this, true, true /* NYI: CHECK IF FIXED ALLOWED */, false);
         var foa = FeatureAndOuter.filter(fo, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> mayMatchArgList(ff, true));
         if (foa != null && _target != Universe.instance)
           {
@@ -2906,9 +2910,9 @@ public class Call extends AbstractCall
         var tf = tt.feature();
         var ct = res.cotype(tf);
         res.resolveDeclarations(ct);
-        if (res._module.lookup(tf, _name, this, false, false).isEmpty() &&
-            res._module.lookup(ct, _name, this, false, false).stream().anyMatch(fo -> fo._feature.isTypeFeature())&&
-            findOnTarget(res, ct, true).v1() == null) // a matching type feature is found by tryResolveTypeCall
+        if (res._module.lookup(tf, _name, this, false, true /* NYI: CHECK IF FIXED ALLOWED */, false).isEmpty() &&
+            res._module.lookup(ct, _name, this, false, true /* NYI: CHECK IF FIXED ALLOWED */, false).stream().anyMatch(fo -> fo._feature.isTypeFeature())&&
+            findOnTarget(res, ct, true, true /* NYI: CHECK IF FIXED ALLOWED" */).v1() == null) // a matching type feature is found by tryResolveTypeCall
           {
             return ct;
           }
@@ -2947,10 +2951,11 @@ public class Call extends AbstractCall
           res.resolveDeclarations(tf);
           if (!tf.isTypeParameter())
             {
+              var allowFixed = !tt.isThisType() || ((ThisType) tt).isFixedFor(context);
               var ttf = tf.isUniverse() ? tf : res.cotype(tf);
               res.resolveDeclarations(tf);
-              var fo = findOnTarget(res, tf, false).v1();
-              var tfo = findOnTarget(res, ttf, false).v1();
+              var fo = findOnTarget(res, tf, false, allowFixed).v1();
+              var tfo = findOnTarget(res, ttf, false, allowFixed).v1();
               var f = tfo == null ? null : tfo._feature;
               if (f != null
                   && f.outer() != null

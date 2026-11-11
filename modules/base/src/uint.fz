@@ -374,9 +374,9 @@ is
 
   # this uint as a string, may contain leading zeros
   #
-  as_string0 String =>
+  fixed as_string0 String =>
     mrd := uint 1_000_000_000
-    q, rem := uint.this.divide_with_remainder mrd
+    q, rem := divide_with_remainder mrd
     rd => $(rem.data.first 0)
     if q = uint.zero
       rd

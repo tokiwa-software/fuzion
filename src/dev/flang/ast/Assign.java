@@ -150,6 +150,7 @@ public class Assign extends AbstractAssign
                                                            _name,
                                                            this,
                                                            true,
+                                                           true /* NYI: CHECK IF FIXED ALLOWED */,
                                                            false),
                                         pos(), FuzionConstants.OPERATION_ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
         if (fo != null)
