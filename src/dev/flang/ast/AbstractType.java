@@ -780,7 +780,7 @@ NYI: UNDER DEVELOPMENT:
                   actual.feature() == feature() &&
                     genericsAssignable(actual, context) &&
                     (outer() == null && actual.outer() == null ||
-                     outer().isAssignableFromDirectly(actual.outer()).yes())
+                     outer().compareTo(actual.outer()) == 0)
                   ||
                   // or via some feature that actual inherits
                   actual.feature().inherits().stream().anyMatch(p ->
