@@ -251,3 +251,26 @@ public dedup(by (T,T) -> bool) Sequence T
     T : property.equatable
   =>
     as_list.dedup_list by
+
+
+# filter out duplicate elements.
+#
+# Keep the order of elements unchanged.
+#
+# Other languages call this 'distinct' (eg., Java, C# or Kotlin)
+# or `nub` (Haskell).
+#
+# ex.
+#
+#     [4,1,2,2,3,2,2,2,4].unique = [4, 1, 2, 3]
+#
+public unique Sequence T
+=>
+  if T : property.orderable
+    as_list.unique_list
+  else if T : property.hashable
+    as_list.unique_list
+  else
+    compile_time_panic
+
+

@@ -32,7 +32,8 @@ private:public hash_map(
         vs Sequence V) : container.Map HK V
   pre
     debug   : ks.count        = vs.count
-    debug 2 : ks.map HK.hash_code .unique.count = ks.count
+    analysis: ks.unique.count = ks.count  # would cause unbounded recursion if not HK : property.orderable
+    debug 2 : if HK : property.orderable then ks.unique.count = ks.count else true
     debug   : ks.count.as_u64 <= (hash_map HK V).max_size  # we impose a max. size due to our collision avoidance algorithm
 is
 
