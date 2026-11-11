@@ -595,7 +595,7 @@ public class Html extends ANY
         universeFunctions.removeIf(
           af->af.typeArguments().isEmpty()
           || af.typeArguments().stream().noneMatch(typeParam->typeParam.constraint().compareTo(Types.resolved.t_Any ) != 0
-                                                              && typeParam.constraint().constraintAssignableFrom(outer.resultType())));
+                                                              && typeParam.constraint().constraintSatisfiedBy(outer.resultType())));
       }
 
     return mainSection0("Type Parameters",              null,         explicitTypeParameters, outer, false)

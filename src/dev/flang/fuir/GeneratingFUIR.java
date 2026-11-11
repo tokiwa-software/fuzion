@@ -2788,13 +2788,13 @@ public class GeneratingFUIR extends FUIR
         if (cf == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
-            if (!T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
+            if (!T._type.constraintSatisfiedBy(tclazz._type.generics().get(0))
             // NYI: CLEANUP: need to detect pre condition feature properly!
              && outerClazz.feature().featureName().isInternal())
               {
                 FuirErrors.unmetTypeContraint(c.pos(), tclazz._type.generics().get(0), T);
               }
-            cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
+            cf = T._type.constraintSatisfiedBy(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;
             innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature) cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
