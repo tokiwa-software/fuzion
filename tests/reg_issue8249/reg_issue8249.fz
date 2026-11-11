@@ -1,0 +1,92 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8249
+#
+# -----------------------------------------------------------------------
+
+# Thie issue was about validity tests for `this`-types that were not done systematically, but
+# instead engrafted into unrelated code resulting in redundant checks, repeated errors and the risk
+# of missing some checks.
+#
+reg_issue8249 =>
+
+  # The original code from #8249 that used to create 3 instead of 1 errors
+
+  a is
+  _ := id (list (option a.this)) nil  # 1. should flag an error: illegal `this` type
+
+
+  # variations of the theme going more wild
+
+  b is
+    _ := id (list (option bf.this )) nil   # 2. should flag an error: illegal `this` type
+    _ := id (list (option bft.this)) nil   # 3. should flag an error: type not found
+    _ := id (list (option c.this  )) nil   # 4. should flag an error: illegal `this` type
+    _ := id (list (option b.this  )) nil   # ok
+
+    bf is
+      _ := id (list (option bf.this )) nil   # ok
+      _ := id (list (option bft.this)) nil   # 5. should flag an error: type not found
+      _ := id (list (option b.this  )) nil   # ok
+
+    type.bft is
+      _ := id (list (option bf.this )) nil   # 6. should flag an error: illegal `this` type
+      _ := id (list (option bft.this)) nil   # ok
+      _ := id (list (option b.this  )) nil   # ok
+
+    c is
+      _ := id (list (option cf.this )) nil   # 7. should flag an error: illegal `this` type
+      _ := id (list (option cft.this)) nil   # 8. should flag an error: type not found
+      _ := id (list (option d.this  )) nil   # 9. should flag an error: illegal `this` type
+      _ := id (list (option c.this  )) nil   # ok
+      _ := id (list (option b.this  )) nil   # ok
+
+      cf is
+        _ := id (list (option cf.this )) nil   # ok
+        _ := id (list (option cft.this)) nil   # 10. should flag an error: type not found
+        _ := id (list (option c.this  )) nil   # ok
+        _ := id (list (option b.this  )) nil   # ok
+
+      type.cft is
+        _ := id (list (option cf.this )) nil   # 11. should flag an error: illegal `this` type
+        _ := id (list (option cft.this)) nil   # ok
+        _ := id (list (option c.this  )) nil   # ok
+        _ := id (list (option b.this  )) nil   # ok
+
+      d is
+        _ := id (list (option df.this )) nil   # 12. should flag an error: illegal `this` type
+        _ := id (list (option dft.this)) nil   # 13. should flag an error: type not found
+        _ := id (list (option d.this  )) nil   # ok
+        _ := id (list (option c.this  )) nil   # ok
+        _ := id (list (option b.this  )) nil   # ok
+
+        df is
+          _ := id (list (option df.this )) nil   # ok
+          _ := id (list (option dft.this)) nil   # 14. should flag an error: type not found
+          _ := id (list (option d.this  )) nil   # ok
+          _ := id (list (option c.this  )) nil   # ok
+          _ := id (list (option b.this  )) nil   # ok
+
+        type.dft is
+          _ := id (list (option df.this )) nil   # 15. should flag an error: illegal `this` type
+          _ := id (list (option dft.this)) nil   # ok
+          _ := id (list (option d.this  )) nil   # ok
+          _ := id (list (option c.this  )) nil   # ok
+          _ := id (list (option b.this  )) nil   # ok

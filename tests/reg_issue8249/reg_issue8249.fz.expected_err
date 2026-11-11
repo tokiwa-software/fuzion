@@ -1,0 +1,136 @@
+
+reg_issue8249.fz:33:25: error 1: Illegal '.this' type: 'reg_issue8249.a.this'
+  _ := id (list (option a.this)) nil  # 1. should flag an error: illegal `this` type
+------------------------^^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue8249.fz:39:27: error 2: Illegal '.this' type: 'reg_issue8249.b.bf.this'
+    _ := id (list (option bf.this )) nil   # 2. should flag an error: illegal `this` type
+--------------------------^^^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue8249.fz:40:27: error 3: Type not found
+    _ := id (list (option bft.this)) nil   # 3. should flag an error: type not found
+--------------------------^^^^^^^^
+Type 'bft' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'bft'
+in feature: 'reg_issue8249.b'
+To solve this, check the spelling of the type you have used.
+
+
+reg_issue8249.fz:41:27: error 4: Illegal '.this' type: 'reg_issue8249.b.c.this'
+    _ := id (list (option c.this  )) nil   # 4. should flag an error: illegal `this` type
+--------------------------^^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue8249.fz:46:29: error 5: Type not found
+      _ := id (list (option bft.this)) nil   # 5. should flag an error: type not found
+----------------------------^^^^^^^^
+Type 'bft' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'bft'
+in feature: 'reg_issue8249.b.bf'
+To solve this, check the spelling of the type you have used.
+
+
+reg_issue8249.fz:55:29: error 6: Illegal '.this' type: 'reg_issue8249.b.c.cf.this'
+      _ := id (list (option cf.this )) nil   # 7. should flag an error: illegal `this` type
+----------------------------^^^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue8249.fz:56:29: error 7: Type not found
+      _ := id (list (option cft.this)) nil   # 8. should flag an error: type not found
+----------------------------^^^^^^^^
+Type 'cft' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'cft'
+in feature: 'reg_issue8249.b.c'
+To solve this, check the spelling of the type you have used.
+
+
+reg_issue8249.fz:57:29: error 8: Illegal '.this' type: 'reg_issue8249.b.c.d.this'
+      _ := id (list (option d.this  )) nil   # 9. should flag an error: illegal `this` type
+----------------------------^^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue8249.fz:50:29: error 9: Illegal '.this' type: 'reg_issue8249.b.bf.this'
+      _ := id (list (option bf.this )) nil   # 6. should flag an error: illegal `this` type
+----------------------------^^^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue8249.fz:63:31: error 10: Type not found
+        _ := id (list (option cft.this)) nil   # 10. should flag an error: type not found
+------------------------------^^^^^^^^
+Type 'cft' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'cft'
+in feature: 'reg_issue8249.b.c.cf'
+To solve this, check the spelling of the type you have used.
+
+
+reg_issue8249.fz:74:31: error 11: Illegal '.this' type: 'reg_issue8249.b.c.d.df.this'
+        _ := id (list (option df.this )) nil   # 12. should flag an error: illegal `this` type
+------------------------------^^^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue8249.fz:75:31: error 12: Type not found
+        _ := id (list (option dft.this)) nil   # 13. should flag an error: type not found
+------------------------------^^^^^^^^
+Type 'dft' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'dft'
+in feature: 'reg_issue8249.b.c.d'
+To solve this, check the spelling of the type you have used.
+
+
+reg_issue8249.fz:68:31: error 13: Illegal '.this' type: 'reg_issue8249.b.c.cf.this'
+        _ := id (list (option cf.this )) nil   # 11. should flag an error: illegal `this` type
+------------------------------^^^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue8249.fz:82:33: error 14: Type not found
+          _ := id (list (option dft.this)) nil   # 14. should flag an error: type not found
+--------------------------------^^^^^^^^
+Type 'dft' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'dft'
+in feature: 'reg_issue8249.b.c.d.df'
+To solve this, check the spelling of the type you have used.
+
+
+reg_issue8249.fz:88:33: error 15: Illegal '.this' type: 'reg_issue8249.b.c.d.df.this'
+          _ := id (list (option df.this )) nil   # 15. should flag an error: illegal `this` type
+--------------------------------^^^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+15 errors.

@@ -2581,7 +2581,6 @@ there is no common super type of the two types (Types.t_ERROR)
        constraint != null);
 
     var result = true;
-    checkLegalThisType(pos, context);
     if (!isArtificialType() &&
         !constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
@@ -2595,47 +2594,6 @@ there is no common super type of the two types (Types.t_ERROR)
         result = false;
       }
     return result;
-  }
-
-
-  /**
-   * If the type contains a this-type, check if it is legal.
-   */
-  public void checkLegalThisType(SourcePosition pos, AbstractFeature outer)
-  {
-    checkLegalThisType(pos, outer.context());
-  }
-
-
-  /**
-   * If the type contains a this-type, check if it is legal.
-   */
-  private void checkLegalThisType(SourcePosition pos, Context context)
-  {
-    if (isThisType() && !isCotypeType())
-      {
-        var subject = feature();
-        var found = false;
-        AbstractFeature o = context.outerFeature();
-        while (o != null)
-          {
-            o = o.isCotype() ? o.cotypeOrigin() : o;
-            if (subject == o)
-              {
-                found = true;
-                break;
-              }
-            o = o.outer();
-          }
-        if (!found)
-          {
-            AstErrors.illegalThisType(pos, this);
-          }
-      }
-    applyToGenericsAndOuter(t -> {
-      t.checkLegalThisType(pos, context);
-      return t;
-    });
   }
 
 
