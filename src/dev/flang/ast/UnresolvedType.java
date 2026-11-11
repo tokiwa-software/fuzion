@@ -675,7 +675,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         if (tolerant)
           {
             generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, context, true) : t);
-            if (!f.generics().sizeMatches(generics) || generics.contains(Types.t_ERROR))
+            if (!f.generics().sizeMatches(generics) ||
+                generics.contains(null)             || /* from tolerant resolve */
+                generics.contains(Types.t_ERROR)       )
               {
                 f = Types.f_ERROR;
               }
