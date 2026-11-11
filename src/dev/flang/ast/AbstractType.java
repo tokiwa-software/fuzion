@@ -837,22 +837,8 @@ NYI: UNDER DEVELOPMENT:
         var g = go != null ? go : i1.next();
         go = g.isOpenGeneric() ? g : null;
         var og = i2.next();
-        var gt = g.selfOrConstraint(context);
 
-        if (
-          switch (g.kind())
-            {
-              case ParametricType ->
-                                      // NYI: BUG: #5002: check recursive type, e.g.:
-                                      // this  = monad monad.A monad.MA
-                                      // other = monad option.T (option option.T)
-                                      // for now just prevent infinite recursion
-                                      gt.compareTo(this) != 0
-                                      &&
-                                      !gt.constraintAssignableFrom(context, og, null);
-              case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
-            }
-          )
+        if (g.compareTo(og) != 0)
           {
             return false;
           }
