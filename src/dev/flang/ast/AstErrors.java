@@ -1046,9 +1046,9 @@ public class AstErrors extends ANY
         var spaces = lines.substring(0, nspaces);
         error(target.pos(),
               "Illegal inheritance call target",
-              "Target in inheritance call: " + s(target) + "\n" +
+              "Target in inheritance call: " + expr(target.pos().sourceTextPrefix("")) + "\n" +
               "To solve this, you could wrap the target into a new feature and use a call to this feature instead:\n" +
-              code(spaces + "target => " + target.sourceText() + "\n" +
+              code(spaces + "target => " + ("\n" + target.pos().sourceTextPrefix(spaces+"  ")) + "\n" +
                    target.pos().lines().replace(target.sourceText(),"target"))
              );
       }
