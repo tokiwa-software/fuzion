@@ -86,6 +86,9 @@ public class Universe extends ExprWithPos
   }
 
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
   {
