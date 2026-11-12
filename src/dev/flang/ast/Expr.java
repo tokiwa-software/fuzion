@@ -135,10 +135,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * If Expr.this is used as the target feature in an inheritance call, this gives the feature that
    * should be used to lookup the parent. E.g., in code like
-   *
+   * <pre>{@code
    *     xyz : abc.def.ghi is
    *       ...
-   *
+   * }</pre>
    * This is used on {@code abc.def} to determine the result type, which will be used as outer value
    * for features inherited from `ghi`.
    *
