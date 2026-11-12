@@ -591,6 +591,9 @@ public class Call extends AbstractCall
   }
 
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
   {

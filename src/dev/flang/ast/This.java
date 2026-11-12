@@ -238,6 +238,9 @@ public class This extends ExprWithPos
   }
 
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
   {
