@@ -88,11 +88,17 @@ public class Html extends ANY
   static final String RUNCODE_BOX_HTML = """
     <div class="runcode-wrapper">
       <i class="far fa-spinner fa-spin"></i>
-      <div class="mb-15 runcode" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;">
+      <div class="mb-15 runcode" style="
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch)));
+        max-width: 49rem;
+        opacity: 0;
+      ">
         <div class="position-relative">
           <form id="##id##">
             <label for="##id##.code" class="visually-hidden">Code input</label>
-            <textarea class="code-input" required="required" maxlength="4096" id="##id##.code" name="code" rows="3" spellcheck="false">##code##</textarea>
+            <textarea class="code-input" required="required" maxlength="4096"
+                      id="##id##.code" name="code" rows="3" spellcheck="false">##code##</textarea>
             <div class="position-absolute run-buttons">
               <input type="button" onclick="runit('##id##')" class="run-button" value="Run!" />
               <input type="button" onclick="runiteff('##id##')" class="run-button" value="Effects!" />
@@ -237,7 +243,9 @@ public class Html extends ANY
   private String typePrfx(AbstractFeature af)
   {
     // NYI: BUG: does not show features that `Type` inherits but does not redefine as type features, see #3913
-    return af.outer() != null && (af.outer().isCotype() || af.outer() == Types.resolved.f_Type) && !af.isCotype() ? "<span class=\"fd-keyword\">type</span>." : "";
+    return af.outer() != null && (af.outer().isCotype() || af.outer() == Types.resolved.f_Type) && !af.isCotype()
+            ? "<span class=\"fd-keyword\">type</span>."
+            : "";
   }
 
 
@@ -353,7 +361,9 @@ public class Html extends ANY
     else
       {
         AbstractFeature relativeTo = outer != null ? outer : af;
-        return fillTemplate("<span class='fd-parent ml-10'>[Inherited from&nbsp; <span class=fz-code><a class='' href='##url##'>##name##</a></span>]</span>", Map.of(
+        return fillTemplate("""
+          <span class='fd-parent ml-10'>[Inherited from&nbsp; \
+          <span class=fz-code><a class='' href='##url##'>##name##</a></span>]</span>""", Map.of(
           "url", featureRelativeURL(af.outer(), relativeTo),
           "name", htmlEncodedBasename(af.outer())));
 
@@ -677,7 +687,13 @@ public class Html extends ANY
       }
 
     var content = features.map(af ->
-      fillTemplate("<details id='##id##' ##attributes##><summary>##summary##</summary><div class='fd-comment'>##comment##</div>##redefines##</details>", Map.of(
+      fillTemplate("""
+        <details id='##id##' ##attributes##>
+          <summary>##summary##</summary>
+          <div class='fd-comment'>##comment##</div>
+          ##redefines##
+        </details>
+        """, Map.of(
         "id", htmlID(af),
         // NYI: UNDER DEVELOPMENT: rename fd-private?
         "attributes", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'",
@@ -698,10 +714,20 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return fillTemplate("<h1 hidden>##title##</h1><h1>##heading##</h1><div class='heading-summary'>##summary##</div><div class='fd-comment'>##comment##</div><div class='fd-contract'>##contract##</div>##redefines##", Map.of(
+    return fillTemplate("""
+      <h1 hidden>##title##</h1>
+      <h1>##heading##</h1>
+      <div class='heading-summary'>##summary##</div>
+      <div class='fd-comment'>##comment##</div>
+      <div class='fd-contract'>##contract##</div>
+      ##redefines##
+      """, Map.of(
       "title",     f.isUniverse() ? lm.name() : htmlEncodedBasename(f), // short version of title for nav-title
-      "heading",   f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: baseline;\">" + lm.name() + "</code>" : anchorTags(f),
-      "summary",   f.isUniverse() ? "": summary(f),
+      "heading",   f.isUniverse() ? """
+        API-Documentation: module \
+        <code style="font-size: 1.4em; vertical-align: baseline;">""" + lm.name() + "</code>"
+        : anchorTags(f),
+      "summary",   f.isUniverse() ? "" : summary(f),
       "comment",   commentOf(f),
       "contract",  contractOf(f),
       "redefines", redefines(f, f)));
@@ -742,7 +768,12 @@ public class Html extends ANY
                 + "</pre></div>")
       .collect(Collectors.joining());
 
-    return res.isBlank() ? "" : fillTemplate("<details class=\"cursor-pointer\" open><summary><span class=fd-contract-title>##title##</span></summary>##content##</details>", Map.of(
+    return res.isBlank() ? "" : fillTemplate("""
+      <details class="cursor-pointer" open>
+        <summary><span class=fd-contract-title>##title##</span></summary>
+        ##content##
+      </details>
+      """, Map.of(
       "title", contractType,
       "content", res));
   }
@@ -1453,7 +1484,13 @@ public class Html extends ANY
           "main",       toggleFeatureDetails + main,
           "navigation", navigation(lm.universe(), af),
           "expand_btn", config.ignoreVisibility()
-                          ? "<button onclick=\"for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }\">Toggle hidden features</button>"
+                          ? """
+                            <button onclick="
+                              for (let element of document.getElementsByClassName('fd-private')) {
+                                element.hidden = !element.hidden;
+                              }
+                            ">Toggle hidden features</button>
+                            """
                           : "",
           "version", Tool.fullVersion()));
 
