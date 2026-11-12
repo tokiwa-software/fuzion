@@ -769,8 +769,8 @@ NYI: UNDER DEVELOPMENT:
                 /**
                  * e.g.:
                  *
-                 * this: 'TP : concur.thread_pool'
-                 * actual: 'concur.thread_pool'
+                 * this: 'TP : property.orderable'
+                 * actual: 'integer'
                  */
                 case ValueType, RefType ->
                   // via some feature that actual inherits
