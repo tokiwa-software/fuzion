@@ -1215,11 +1215,11 @@ public class Html extends ANY
       .stream()
       .filter(a -> !freeTypes.contains(a))
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
-      .map(a -> htmlEncodedBasename(a) + "&nbsp;" +
+      .map(a -> htmlEncodedBasename(a) + (a.isTypeParameter() ? "" : "&nbsp;") +
         (a.isTypeParameter()             ? typeArgAsString(a, relativeTo) :
         (a.resultType().isParametricType() &&
          a.resultType().typeParameter() instanceof AbstractFeature freeType &&
-         freeType.isFreeTypeParameter()) ? htmlEncodedBasename(freeType) + "&nbsp;" +
+         freeType.isFreeTypeParameter()) ? htmlEncodedBasename(freeType) +
                                            typeArgAsString(freeType, relativeTo)
                                          : anchorType(a, f, relativeTo)))
       .collect(Collectors.toList());
@@ -1228,25 +1228,12 @@ public class Html extends ANY
 
   private String typeArgAsString(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.constraint().dependsOnGenerics())
-      {
-        return "<span class='fd-keyword'>type</span>"
-               + (f.isOpenTypeParameter() ? "..." : "")
-               + "<span class='mx-5'>:</span>  <a class='fd-feature fd-inherited' href='$1'>$2</a>"
-               .replace("$1", featureRelativeURL(f.constraint().feature(), relativeTo))
-               .replace("$2", htmlEncodeNbsp(f.constraint().toString(true)));
-      }
-    else
-      {
-        var constraint = f.constraint().feature();
+    var constraint = f.constraint();
 
-        return "<span class='fd-keyword'>type</span>"
-                + (f.isOpenTypeParameter() ? "..." : "")
-                + (f.constraint().compareTo(Types.resolved.t_Any) == 0 ? "" :
-                    "<span class='mx-5'>:</span><a class='fd-feature fd-inherited' href='$1'>$2</a>"
-                    .replace("$1", featureRelativeURL(constraint, relativeTo))
-                    .replace("$2", htmlEncodedQualifiedName(constraint)));
-      }
+    return (f.isOpenTypeParameter() ? "..." : "")
+           + "<span class='mx-5'>:</span><a class='fd-feature fd-inherited' href='$1'>$2</a>"
+           .replace("$1", featureRelativeURL(constraint.feature(), relativeTo))
+           .replace("$2", htmlEncodeNbsp(constraint.toString(true)));
   }
 
 
