@@ -1,8 +1,14 @@
 
-error 1: IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature:
-q.type.b.type.me
-private type.q(public fixed _ Type (type parameter)) q.type : a q.this is
-private type.a(public fixed _ Type (type parameter)) a.type : has_me a.this is
+/home/fridi/fuzion/clean/fuzion.1/tests/reg_issue5583/reg_issue5583.fz:30:22: error 1: Wrong result type in redefined feature
+    fixed redef type.me => a.this.me.b
+---------------------^^
+In 'a.b.type.me' that redefines 'has_me.type.me'
+result type is       : 'a.this.b'
+result type should be: 'a.b.this' (from 'has_me.type._')
 
-*** fatal errors encountered, stopping.
+Original feature declared at /home/fridi/fuzion/clean/fuzion.1/tests/reg_issue5583/reg_issue5583.fz:25:8
+  type.me has_me.this => abstract
+-------^^
+To solve this, change type of result to 'a.b.this'
+
 one error.
