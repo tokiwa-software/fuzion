@@ -754,6 +754,11 @@ public class Call extends AbstractCall
       {
         res.resolveDeclarations(targetFeature);
         var allowFixed = targetFeature.isUniverse() || targetFeature == Types.f_ERROR || _target != null && !(_target instanceof This) || !(new ThisType(targetFeature).isFixedFor(context));
+        if (_target != null)
+          {
+            var tt = _target.typeForInferencing();
+            allowFixed = allowFixed && (!(tt instanceof ThisType ttt) || ttt.isFixedFor(context));
+          }
         var fo = findOnTarget(res, targetFeature, true, allowFixed).v1();
         if (fo != null)
           {
