@@ -2629,7 +2629,7 @@ public class Call extends AbstractCall
                              // && tp.typeParameterIndex() instanceof int ti  // always true, NYI: UNDER DEVELOPMENT:  preview feature, use when available
                                 && /* ti */ tp.typeParameterIndex() < _generics.size()
                                 && _generics.get(/* ti */ tp.typeParameterIndex()) instanceof AbstractType gt  // always true
-                                && (gt == Types.t_UNDEFINED || gt.commonSupertype(actualType, context) != Types.t_ERROR)
+                                && gt == Types.t_UNDEFINED
                                )
                               {
                                 inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
