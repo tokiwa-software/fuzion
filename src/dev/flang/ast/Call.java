@@ -606,27 +606,6 @@ public class Call extends AbstractCall
    */
   protected AbstractFeature targetFeature(Resolution res, Context context)
   {
-    return targetFeature(res, context, false);
-  }
-
-
-  /**
-   * Get the feature of the target of this call.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Call is used. For a call
-   * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
-   * feature of f.
-   *
-   * @param urgent if true run pending errors immediately and return f_ERROR instead of null
-   *
-   * @return the feature of the target of this call, null if lookup for the
-   * target feature failed, or f_ERROR on error.
-   */
-  private AbstractFeature targetFeature(Resolution res, Context context, boolean urgent)
-  {
     AbstractFeature result = null;
 
     // are we searching for features called via outer's inheritance calls?
@@ -664,11 +643,6 @@ public class Call extends AbstractCall
         else if (tt == null && _target instanceof Call c)
           {
             c.setPendingError(()->AstErrors.forwardTypeInference(c.pos(), c._calledFeature));
-            if (urgent)
-              {
-                c._pendingError.run();
-                result = Types.f_ERROR;
-              }
           }
         else if (tt != null)
           {
@@ -679,9 +653,6 @@ public class Call extends AbstractCall
       { // search for feature in outer
         result = context.outerFeature();
       }
-
-    if (POSTCONDITIONS) ensure
-      (!urgent || result != null);
 
     return result != null && result.isField()
       ? result.resultTypeIfPresentUrgent(res, true).backingFeature()
@@ -2633,7 +2604,7 @@ public class Call extends AbstractCall
                              // && tp.typeParameterIndex() instanceof int ti  // always true, NYI: UNDER DEVELOPMENT:  preview feature, use when available
                                 && /* ti */ tp.typeParameterIndex() < _generics.size()
                                 && _generics.get(/* ti */ tp.typeParameterIndex()) instanceof AbstractType gt  // always true
-                                && (gt == Types.t_UNDEFINED || gt.commonSupertype(actualType, context) != Types.t_ERROR)
+                                && gt == Types.t_UNDEFINED
                                )
                               {
                                 inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
