@@ -238,6 +238,13 @@ public class This extends ExprWithPos
   }
 
 
+  @Override
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    return resolveFeature(context);
+  }
+
+
   /**
    * determine the static type of all expressions and declared features in this feature
    *

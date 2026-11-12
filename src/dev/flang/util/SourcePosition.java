@@ -296,6 +296,22 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
 
   /**
+   * @return the complete lines touched by this source position, all ended with "\n".
+   */
+  public String lines()
+  {
+    int start = line();
+    int end = _sourceFile.lineNum(byteEndPos());
+    var sb = new StringBuilder();
+    for (var l = start; l<=end; l++)
+      {
+        sb.append(_sourceFile.line(l)).append("\n");
+      }
+    return sb.toString();
+  }
+
+
+  /**
    * @return the column of this source position,
    * starting at 1.
    */
