@@ -210,6 +210,44 @@ public class This extends ExprWithPos
   /**
    * determine the static type of all expressions and declared features in this feature
    *
+   * @param context the source code context where this Call is used
+   *
+   * @return a call to the outer references to access the value represented by
+   * this.
+   */
+  AbstractFeature resolveFeature(Context context)
+  {
+    if (PRECONDITIONS) require
+      (context != null);
+
+    if (_feature == null)
+      {
+        AbstractFeature result;
+        var outer = context.outerFeature();
+        if (_qual != null)
+          {
+            result = getThisFeature(pos(), this, _qual, outer);
+          }
+        else   /* convenience for This(pos) constructor that does not provide outer */
+          {
+            result = outer;
+          }
+        _feature = result;
+      }
+    return _feature;
+  }
+
+
+  @Override
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    return resolveFeature(context);
+  }
+
+
+  /**
+   * determine the static type of all expressions and declared features in this feature
+   *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
@@ -225,14 +263,7 @@ public class This extends ExprWithPos
        context != null);
 
     var outer = context.outerFeature();
-    if (_qual != null)
-      {
-        this._feature = getThisFeature(pos(), this, _qual, outer);
-      }
-    else if (this._feature == null)  /* convenience for This(pos) constructor that does not provide outer */
-      {
-        this._feature = outer;
-      }
+    resolveFeature(context);
 
     Expr getOuter;
     var f = this._feature;

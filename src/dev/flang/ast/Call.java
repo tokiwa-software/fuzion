@@ -591,15 +591,23 @@ public class Call extends AbstractCall
   }
 
 
+  @Override
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    loadCalledFeature(res, context);
+    return calledFeature();
+  }
+
+
   /**
    * Get the feature of the target of this call.
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param context the source code context where this Call is used. For a call
-   * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
-   * feature of f.
+   * @param context the source code context where this Call is used.  For a call {@code abc.def} in
+   * an inherits call {@code xyz : abc.def.ghi is}, {@code context.outerFeature()} is the feature
+   * {@code xyz}.
    *
    * @return the feature of the target of this call, null if lookup for the
    * target feature failed, or f_ERROR on error.
@@ -611,20 +619,10 @@ public class Call extends AbstractCall
     // are we searching for features called via outer's inheritance calls?
     if (res.state(context.outerFeature()) == State.RESOLVING_INHERITANCE)
       {
-        if (_target instanceof Universe)
-          {
-            result = _target.type().feature();
-          }
-        else if (_target instanceof Call tc)
-          {
-            _target.loadCalledFeature(res, context);
-            result = tc.calledFeature();
-          }
-        else
-          {
-            result = context.outerFeature().outer();   // For an inheritance call, we do not permit call to outer' features,
-                                                       // but only to the outer clazz' features:
-          }
+        result = _target == null
+          ?  context.outerFeature().outer()    // For an inheritance call, we do not permit call to outer' features,
+                                               // but only to the outer clazz' features:
+          : _target.inheritanceCallTargetFeature(res, context);
       }
     else if (_target != null)
       {

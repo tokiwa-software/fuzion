@@ -1032,6 +1032,29 @@ public class AstErrors extends ANY
           "To solve this, you could add a redefinition of " + sbnf(f1) + " to " + s(heir) + ".");
   }
 
+
+  public static void illegalInheritanceCallTarget(Expr target)
+  {
+    if (!any() || target != Call.ERROR)
+      {
+        var lines = target.pos().lines();
+        var nspaces = 0;
+        while (nspaces < lines.length() && lines.charAt(nspaces) == ' ')
+          {
+            nspaces++;
+          }
+        var spaces = lines.substring(0, nspaces);
+        error(target.pos(),
+              "Illegal inheritance call target",
+              "Target in inheritance call: " + s(target) + "\n" +
+              "To solve this, you could wrap the target into a new feature and use a call to this feature instead:\n" +
+              code(spaces + "target => " + target.sourceText() + "\n" +
+                   target.pos().lines().replace(target.sourceText(),"target"))
+             );
+      }
+  }
+
+
   public static void duplicateFeatureDeclaration(AbstractFeature a, AbstractFeature b)
   {
     // suppress error message if errors were reported already and any feature
