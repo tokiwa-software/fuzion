@@ -668,44 +668,35 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                                     boolean ignoreActualTypePars,
                                     boolean tolerant)
   {
-    if (tolerant) { originalGenericsPos = HasSourcePosition.NONE; }
+    if (tolerant) { originalGenericsPos = HasSourcePosition.NONE; }  // NYI: CLEANUP: check why this is needed
 
     if (!ignoreActualTypePars && typeKind != TypeKind.ThisType)
       {
-        if (tolerant)
+        generics = (tolerant ? generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, context, true) : t)
+                             : res.resolveTypes(generics, context)                                                   ).freeze();
+        if (!f.generics().sizeMatches(generics) ||
+            generics.contains(null)             || /* from tolerant resolve */
+            generics.contains(Types.t_ERROR)       )
           {
-            generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, context, true) : t);
-            if (!f.generics().sizeMatches(generics) ||
-                generics.contains(null)             || /* from tolerant resolve */
-                generics.contains(Types.t_ERROR)       )
+            if (!tolerant)
               {
-                f = Types.f_ERROR;
+                f.generics().errorIfSizeDoesNotMatch(generics,
+                                                     pos.pos(),
+                                                     ()-> new Pair<>("type", "Type: " + thiz.toString(true) + "\n"));
               }
+            f = Types.f_ERROR;
           }
-        else
-          {
-            generics = res.resolveTypes(generics, context);
-            if (!f.generics().errorIfSizeDoesNotMatch(generics,
-                                                      pos.pos(),
-                                                      ()-> new Pair<>("type", "Type: " + thiz.toString(true) + "\n")))
-              {
-                f = Types.f_ERROR;
-              }
-          }
-        generics.freeze();
       }
 
-    return typeKind == TypeKind.ThisType
-      ? new ThisType(f)
-      : !f.generics().sizeMatches(generics) && ignoreActualTypePars
-      ? new IncompleteType(f, typeKind)
-      : !f.generics().sizeMatches(generics)
-      ? (tolerant ? null : Types.t_ERROR)
-      : ResolvedNormalType.create(generics,
-                                  originalGenericsPos,
-                                  o,
-                                  f,
-                                  typeKind);
+    return
+      f == Types.f_ERROR                  ? (tolerant ? null : Types.t_ERROR) :
+      typeKind == TypeKind.ThisType       ? new ThisType(f)                   :
+      !f.generics().sizeMatches(generics) ? new IncompleteType(f, typeKind)     // this can only happen if ignoreActualTypePars, see `if` above
+                                          : ResolvedNormalType.create(generics,
+                                                                      originalGenericsPos,
+                                                                      o,
+                                                                      f,
+                                                                      typeKind);
   }
 
 
