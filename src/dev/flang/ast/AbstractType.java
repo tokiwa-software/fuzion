@@ -785,8 +785,14 @@ NYI: UNDER DEVELOPMENT:
                  * this: 'TP : concur.thread_pool'
                  * actual: 'my_thread_pool.this'
                  */
-                // NYI: BUG:  #4756, #5002, likely unsound
-                case ThisType -> actual.feature().inheritsFrom(feature());
+                case ThisType ->
+                  constraintSatisfiedBy(context, actual.feature().selfType(), assignableTo) ||
+                  // via some feature that actual inherits
+                  actual.feature().inherits().stream().anyMatch(p ->
+                    {
+                      var pa = actual.actualType(p.type());
+                      return pa!=actual && constraintSatisfiedBy(context, pa, assignableTo);
+                    });
                 };
           };
       }
