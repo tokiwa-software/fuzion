@@ -81,6 +81,16 @@ public class Current extends AbstractCurrent
   }
 
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    return type().feature();
+  }
+
+
 }
 
 /* end of file */
