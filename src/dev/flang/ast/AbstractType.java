@@ -761,7 +761,11 @@ NYI: UNDER DEVELOPMENT:
                  * actual: 'I : integer'
                  */
                 case ParametricType ->
-                  constraintSatisfiedBy(context, actual.typeParameter().constraint(context), assignableTo);
+                  constraintSatisfiedBy(context, actual.typeParameter().constraint(context), assignableTo)
+                  // self recursive TP, structurally equal, e.g.:
+                  // this:   'W: p W'
+                  // actual: 'A: p A'
+                  || compareTo(actual.typeParameter().constraint(context), true) == 0;
                 /**
                  * e.g.:
                  *
@@ -769,13 +773,7 @@ NYI: UNDER DEVELOPMENT:
                  * actual: 'concur.thread_pool'
                  */
                 case ValueType, RefType ->
-                  // either directly
-                  actual.feature() == feature() &&
-                    genericsSatisfiedBy(actual, context) &&
-                    (outer() == null && actual.outer() == null ||
-                     outer().isAssignableFromDirectly(actual.outer()).yes())
-                  ||
-                  // or via some feature that actual inherits
+                  // via some feature that actual inherits
                   actual.feature().inherits().stream().anyMatch(p ->
                     {
                       var pa = actual.actualType(p.type());
@@ -805,58 +803,6 @@ NYI: UNDER DEVELOPMENT:
   public boolean constraintSatisfiedBy(AbstractType actual)
   {
     return constraintSatisfiedBy(Context.NONE, actual, null);
-  }
-
-
-  /**
-   * Check if generics of type parameter {@code actual} are assignable to
-   * generics of type parameter with constraint {@code this}.
-   *
-   * @param actual the actual type to be checked
-   *
-   * @param context the source code context where this Type is used
-   *
-   * @param call if this is a formal type in a call, this is the call, otherwise
-   * null. This call is used to replace type parameters that depend on the
-   * call's target or actual type parameters. Also this is used to for error
-   * messages that require the source position of the call.
-   */
-  private boolean genericsSatisfiedBy(AbstractType actual, Context context)
-  {
-    if (PRECONDITIONS) require
-      (!this.isParametricType(),
-       !actual.isParametricType());
-
-    var ogs = actual.generics();
-    var i1 = actualGenerics().iterator();
-    var i2 = ogs.iterator();
-    AbstractType go = null;
-    while ((go != null || i1.hasNext()) && i2.hasNext())
-      {
-        var g = go != null ? go : i1.next();
-        go = g.isOpenGeneric() ? g : null;
-        var og = i2.next();
-        var gt = g.selfOrConstraint(context);
-
-        if (
-          switch (g.kind())
-            {
-              case ParametricType ->
-                                      // NYI: BUG: #5002: check recursive type, e.g.:
-                                      // this  = monad monad.A monad.MA
-                                      // other = monad option.T (option option.T)
-                                      // for now just prevent infinite recursion
-                                      gt.compareTo(this) != 0
-                                      &&
-                                      !gt.constraintSatisfiedBy(context, og, null);
-              case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
-            }
-          )
-          {
-            return false;
-          }
-      }
-    return !i1.hasNext() && !i2.hasNext();
   }
 
 
@@ -1709,12 +1655,31 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   public int compareTo(AbstractType other)
   {
+    return compareTo(other, false);
+  }
+
+
+  /**
+   * Compare this to other ignoring the outer type. This is used for created in
+   * clazzes when the outer clazz is known.
+   */
+  public int compareToIgnoreOuter(AbstractType other)
+  {
+    return compareToIgnoreOuter(other, false);
+  }
+
+
+  /**
+   * Compare this to other for creating unique types.
+   */
+  private int compareTo(AbstractType other, boolean considerSelfReferenceSame)
+  {
     if (PRECONDITIONS) require
       (other != null,
        (this  instanceof ResolvedType),
        (other instanceof ResolvedType));
 
-    int result = compareToIgnoreOuter(other);
+    int result = compareToIgnoreOuter(other, considerSelfReferenceSame);
     if (result == 0 && isNormalType())
       {
         var to = this .outer();
@@ -1732,7 +1697,7 @@ there is no common super type of the two types (Types.t_ERROR)
    * Compare this to other ignoring the outer type. This is used for created in
    * clazzes when the outer clazz is known.
    */
-  public int compareToIgnoreOuter(AbstractType other)
+  private int compareToIgnoreOuter(AbstractType other, boolean considerSelfReferenceSame)
   {
     if (PRECONDITIONS) require
       (other != null,
@@ -1770,6 +1735,19 @@ there is no common super type of the two types (Types.t_ERROR)
                     if (tgt != null && ogt != null)
                       {
                         result = tgt.compareTo(ogt);
+                        // this : 'p W' where 'W: p W'
+                        // other: 'p A' where 'A: p A'
+                        // we are comparing W and A and consider them to be the same
+                        // if their constraints both refer to this or other respectively.
+                        if (result != 0 &&
+                            considerSelfReferenceSame &&
+                            tgt.isParametricType() &&
+                            ogt.isParametricType() &&
+                            tgt.typeParameter().constraint(Context.NONE) == this &&
+                            ogt.typeParameter().constraint(Context.NONE) == other)
+                          {
+                            result = 0;
+                          }
                       }
                   }
               }
