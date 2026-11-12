@@ -445,21 +445,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Constructor for a call to an anonymous feature declared in an expression.
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param anonymous the anonymous feature
-   */
-  public Call(SourcePosition pos,
-              Feature anonymous)
-  {
-    this(pos, new This(pos), anonymous);
-  }
-
-
-
-  /**
    * Constructor to low-level initialize all the fields directly.  This is
    * currently used to create calls to construct type features.
    *

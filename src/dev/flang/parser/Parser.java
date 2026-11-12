@@ -3264,7 +3264,7 @@ anonymous   : "_"
     match(Token.t_is, "anonymous");
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
-    var ca = new Call(SourceRange.range(new List<>(pos, b)), f);
+    var ca = new Call(SourceRange.range(new List<>(pos, b)), new This(pos), f);
     sameLine(sl);
     setMinIndent(oldIndent);
     return new Block(new List<>(f, ca));
