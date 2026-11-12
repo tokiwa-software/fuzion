@@ -233,13 +233,13 @@ ring_buf =>
     t4.join.or_panic
 
     # output results after `t4.join` to avoid races with `t3` during output:
-    expect "t0" "O"     (ro           )    # blocking take from ring_buffer [O?,P?,Q?] -> [P?,Q?]
-    expect "t0" "P"     (rp           )    # blocking take from ring_buffer [P?,Q?]    -> [Q?]
-    expect "t0" "Q"     (rq           )    # blocking take from ring_buffer [Q?]       -> []
-    expect "t0" "R"     (rr           )    # blocking take from ring_buffer [R?,..]    -> [S?,..]
-    expect "t0" "S"     (rs           )    # blocking take from ring_buffer [S?,..]    -> [T?,..]
-    expect "t0" "T"     (rt           )    # blocking take from ring_buffer [T?,..]    -> [U?]
-    expect "t0" "U"     (ru           )    # blocking take from ring_buffer [U?,..]    -> []
+    expect "t0" $"O"    (ro           )    # blocking take from ring_buffer [O?,P?,Q?] -> [P?,Q?]
+    expect "t0" $"P"    (rp           )    # blocking take from ring_buffer [P?,Q?]    -> [Q?]
+    expect "t0" $"Q"    (rq           )    # blocking take from ring_buffer [Q?]       -> []
+    expect "t0" $"R"    (rr           )    # blocking take from ring_buffer [R?,..]    -> [S?,..]
+    expect "t0" $"S"    (rs           )    # blocking take from ring_buffer [S?,..]    -> [T?,..]
+    expect "t0" $"T"    (rt           )    # blocking take from ring_buffer [T?,..]    -> [U?]
+    expect "t0" $"U"    (ru           )    # blocking take from ring_buffer [U?,..]    -> []
     expect "t0" nil     (rn2          )    # poll on empty ring buffer      []         -> []
 
     # testing mutable arrays from another thread
