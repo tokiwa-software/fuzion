@@ -384,8 +384,8 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
 
   /**
-   * The actual text in the source code this source position points to, with indentation changed to
-   * newIndent.
+   * The actual text in the source code this source position points to, with indentation replaced by
+   * prefix.
    *
    * @return
    */
