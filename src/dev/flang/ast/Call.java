@@ -611,7 +611,12 @@ public class Call extends AbstractCall
     // are we searching for features called via outer's inheritance calls?
     if (res.state(context.outerFeature()) == State.RESOLVING_INHERITANCE)
       {
-        if (_target instanceof Universe)
+        if (_target == null)
+          {
+            result = context.outerFeature().outer();   // For an inheritance call, we do not permit call to outer' features,
+                                                       // but only to the outer clazz' features:
+          }
+        else if (_target instanceof Universe)
           {
             result = _target.type().feature();
           }
@@ -620,10 +625,14 @@ public class Call extends AbstractCall
             _target.loadCalledFeature(res, context);
             result = tc.calledFeature();
           }
+        else if (_target instanceof This thiz)
+          {
+            result = thiz.resolveFeature(context);
+            System.out.println("CALL TARGET IS "+result.qualifiedName()+" at "+pos().show());
+          }
         else
           {
-            result = context.outerFeature().outer();   // For an inheritance call, we do not permit call to outer' features,
-                                                       // but only to the outer clazz' features:
+            Errors.error("Illgeal call target "+_target.getClass()+" at "+pos().show());
           }
       }
     else if (_target != null)
