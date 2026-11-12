@@ -299,7 +299,7 @@ public class Html extends ANY
       + inherited(af, relativeTo)
       + (signatureWithArrow(af) ? "<span class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</span>" + anchorType(af, af, relativeTo)
          : af.isConstructor()   ? "<span class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</span>"
-         : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.baseName() + "_out:" + (outer != null ? outer.baseName() : "_out=null")
+         : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo)
                                 : "")
       + annotateUnitType(af)
       + annotateInherited(af, outer)
