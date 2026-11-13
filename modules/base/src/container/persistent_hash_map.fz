@@ -1,0 +1,237 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature persistent_hash_map
+#
+# -----------------------------------------------------------------------
+
+
+
+# Persistent_Hash_Map_Entry -- an entry of a persistent hash map
+#
+Persistent_Hash_Map_Entry(KEY : property.hashable, VAL : Any, key KEY, val VAL, left, right option (Persistent_Hash_Map_Entry KEY VAL)) ref is
+
+
+  height := max i64 (left.bind (.height) .or_default 0) (right.bind (.height) .or_default 0)
+
+
+  # get the value stored in this submap at key k, nil if k is not a key
+  # in this submap
+  #
+  get(k KEY) =>
+    if KEY.hash_code k < KEY.hash_code key
+      left.bind VAL (.get k)
+    else if KEY.hash_code key < KEY.hash_code k
+      right.bind VAL (.get k)
+    else if key != k
+      left.bind VAL (.get k)
+    else
+      val
+
+
+  # get a sequence of all key/value pairs in this Persistent_Hash_Map_Entry
+  #
+  items Sequence (tuple KEY VAL) =>
+    [(key,val)] ++
+      (left.bind (.items)).or_else (list (tuple KEY VAL)).empty ++
+      (right.bind (.items)).or_else (list (tuple KEY VAL)).empty
+
+
+
+# persistent_hash_map -- a persistent map using an AVL tree
+#
+private:public persistent_hash_map(
+  KEY : property.hashable,
+  VAL : Any,
+  root option (Persistent_Hash_Map_Entry KEY VAL)) : container.Persistent_Map KEY VAL
+is
+
+  # returns the size of the map, i.e. the number of elements it contains
+  #
+  public redef size i64 =>
+    fold i64 0 ((i, _) -> i + 1)
+
+
+  # get a sequence of all key/value pairs in this map
+  #
+  public redef items Sequence (tuple KEY VAL) =>
+    match root
+      e Persistent_Hash_Map_Entry => e.items
+      nil => []
+
+
+  # get the value stored in this map at key k, nil if k is not
+  # contained in this map
+  #
+  public redef index [] (k KEY) option VAL =>
+    root.bind (.get k)
+
+
+  # add the mapping k -> v as a new entry to this map
+  #
+  public redef fixed put(k KEY, v VAL) persistent_hash_map KEY VAL =>
+    # helper feature to add a mapping to this map. this feature
+    # additionally takes the node we are currently working at, and
+    # also returns any new node, or the reference to the existing
+    # node that was worked on.
+    #
+    # in this step, the helper feature to actually add the mapping
+    # is called first. then the AVL rebalancing is done
+    #
+    put_recursively(node option (Persistent_Hash_Map_Entry KEY VAL)) tuple (option (Persistent_Hash_Map_Entry KEY VAL)) (option VAL) =>
+      new_node, old_val := insert_or_modify_entries node
+      (rebalance new_node, old_val)
+
+
+    # helper feature to add a mapping to this map. this feature
+    # additionally takes the node we are currently working at, and
+    # also returns any new node, or the reference to the existing
+    # node that was worked on.
+    #
+    # in this step, the actual addition of the mapping to the binary
+    # tree is done, but this might violate the AVL invariants.
+    #
+    insert_or_modify_entries(node option (Persistent_Hash_Map_Entry KEY VAL)) tuple (option (Persistent_Hash_Map_Entry KEY VAL)) (option VAL) =>
+      match node
+        nil =>
+          new_node := Persistent_Hash_Map_Entry k v nil nil
+          (option new_node, option VAL nil)
+        e Persistent_Hash_Map_Entry =>
+          if KEY.hash_code k < KEY.hash_code e.key
+            node0, old_val := put_recursively e.left
+            (option (Persistent_Hash_Map_Entry e.key e.val node0 e.right), old_val)
+          else if KEY.hash_code e.key < KEY.hash_code k
+            node0, old_val := put_recursively e.right
+            (option (Persistent_Hash_Map_Entry e.key e.val e.left node0), old_val)
+          else if e.key != k
+            node0, old_val := put_recursively e.left
+            (option (Persistent_Hash_Map_Entry e.key e.val node0 e.right), old_val)
+          else
+            old_val := e.val
+            new_node := Persistent_Hash_Map_Entry k v e.left e.right
+            (option new_node, option old_val)
+
+
+    new_root, _ := put_recursively root
+    persistent_hash_map new_root
+
+
+  # rebalances a tree whose AVL invariants might be violated
+  #
+  # this determines the balance factor of the given node and applies
+  # the appropriate rotations
+  #
+  rebalance(node option (Persistent_Hash_Map_Entry KEY VAL)) =>
+    # returns the height of the subtree whose root is the given
+    # node, or -1 if an empty subtree is given
+    #
+    height(n option (Persistent_Hash_Map_Entry KEY VAL)) =>
+      match n
+        nil => -1
+        e Persistent_Hash_Map_Entry => e.height
+
+
+    # returns the (AVL) balance factor of the given node, or
+    # 0 if a nil node is given
+    #
+    balance_factor(n option (Persistent_Hash_Map_Entry KEY VAL)) =>
+      match n
+        nil => 0
+        e Persistent_Hash_Map_Entry => (height e.right) - (height e.left)
+
+
+    # rotate right at the given node
+    #
+    rotate_right(n Persistent_Hash_Map_Entry KEY VAL) =>
+      # because this feature is only called when the tree is out of balance,
+      # i.e. the left subtree has more nodes than the right one, we can safely
+      # assume here that node and node.left are not nil.
+      l := n.left.or_panic
+      Persistent_Hash_Map_Entry l.key l.val l.left (Persistent_Hash_Map_Entry n.key n.val l.right n.right)
+
+
+    # rotate left at the given node
+    #
+    rotate_left(n Persistent_Hash_Map_Entry KEY VAL) =>
+      # because this feature is only called when the tree is out of balance,
+      # i.e. the right subtree has more nodes than the left one, we can safely
+      # assume here that node and node.right are not nil.
+      r := n.right.or_panic
+      Persistent_Hash_Map_Entry r.key r.val (Persistent_Hash_Map_Entry n.key n.val n.left r.left) r.right
+
+
+    bf := balance_factor node
+
+    if bf < -1
+      # we can safely do node.or_panic here because if node was empty,
+      # its balance factor would be 0.
+      n := node.or_panic
+      if balance_factor n.left <= 0
+        rotate_right n
+      else
+        rotate_right (Persistent_Hash_Map_Entry n.key n.val (rotate_left n.left.or_panic) n.right)
+    else if bf > 1
+      # we can safely do node.or_panic here because if node was empty,
+      # its balance factor would be 0.
+      n := node.or_panic
+      if balance_factor n.right >= 0
+        rotate_left n
+      else
+        rotate_left (Persistent_Hash_Map_Entry n.key n.val n.left (rotate_right n.right.or_panic))
+    else
+      # do nothing
+      node
+
+
+  # perform an in-order traversal of the tree and process the entries
+  # encountered using the initial value init and the combinator feature
+  # f. the latter takes the last result of the computation and the node
+  # currently visited and combines this information in some way.
+  #
+  fold(B : Any, init B, f (B, Persistent_Hash_Map_Entry KEY VAL) -> B) =>
+    fold0(init B, node option (Persistent_Hash_Map_Entry KEY VAL)) =>
+      node ? nil => fold0.this.init
+           | n Persistent_Hash_Map_Entry => fold0 (f (fold0 fold0.this.init n.left) n) n.right
+
+    fold0 init root
+
+
+  # returns an empty tree of elements of type A.
+  #
+  public fixed redef type.empty container.persistent_hash_map KEY VAL =>
+    container.persistent_hash_map KEY VAL nil
+
+
+  # initialize a map from a Sequence of key value tuples
+  #
+  module type.from_sequence(kvs Sequence (tuple KEY VAL)) container.persistent_hash_map KEY VAL =>
+    kvs.reduce empty (r,t)->
+      r.put t.0 t.1
+
+
+  # initialize a persistent_hash_map from data
+  #
+  public type.from(data tuple KEY VAL
+                      | Sequence (tuple KEY VAL)) container.persistent_hash_map KEY VAL =>
+
+    match data
+      t tuple =>
+        (container.persistent_hash_map KEY VAL).from_sequence [t]
+      kvs Sequence =>
+        (container.persistent_hash_map KEY VAL).from_sequence kvs
