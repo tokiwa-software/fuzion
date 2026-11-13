@@ -92,13 +92,12 @@ public class Html extends ANY
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch)));
         max-width: 49rem;
-        opacity: 0;
       ">
         <div class="position-relative">
           <form id="##id##">
             <label for="##id##.code" class="visually-hidden">Code input</label>
             <textarea class="code-input" required="required" maxlength="4096"
-                      id="##id##.code" name="code" rows="3" spellcheck="false">##code##</textarea>
+                      id="##id##.code" name="code" rows="##rows##" spellcheck="false">##code##</textarea>
             <div class="position-absolute run-buttons">
               <input type="button" onclick="runit('##id##')" class="run-button" value="Run!" />
               <input type="button" onclick="runiteff('##id##')" class="run-button" value="Effects!" />
@@ -1010,7 +1009,10 @@ public class Html extends ANY
           .stream()
           .map(cl -> { return cl.replaceAll("^    ", ""); })
           .collect(Collectors.joining(System.lineSeparator()));
-        resultLines.add(fillTemplate(RUNCODE_BOX_HTML, Map.of("id", id, "code", code)));
+        resultLines.add(fillTemplate(RUNCODE_BOX_HTML, Map.of(
+          "id", id,
+          "rows", Integer.toString(Math.max(3, codeLines.size())),
+          "code", code.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))));
         codeLines.clear();
         codeNo[0]++;
       }
@@ -1094,8 +1096,11 @@ public class Html extends ANY
         <title>##name## | Fuzion Docs</title>
         <link rel="icon" sizes="32x32" href="##root##32.png">
         <link rel="stylesheet" type="text/css" href="##root##style.css" />
+        <script defer src="##root##ace.js"></script>
+        <script defer src="##root##ace-mode-fuzion.js"></script>
+        <script defer src="##root##standalone.js"></script>
       </head>
-      <body>##body##</body>
+      <body class="standalone-docs">##body##</body>
       </html>
       """, Map.of(
         "name", String.join(" • ", java.util.List.of(qualifiedName.split("\\.")).reversed()),

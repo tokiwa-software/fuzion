@@ -147,6 +147,36 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   position: relative;
 }
 
+.fd .runcode{
+  opacity: 0;
+}
+
+/* Standalone examples remain readable even if Ace cannot be loaded. */
+.standalone-docs .runcode{
+  display: block;
+  opacity: 1;
+  margin: 1em 0;
+}
+
+.standalone-docs .ace_cursor-layer,
+.standalone-docs .runcode-wrapper > .fa-spinner,
+.standalone-docs .runcode .run-buttons,
+.standalone-docs .runcode .computer-output,
+.standalone-docs .runcode label{
+  display: none;
+}
+
+.standalone-docs .runcode .code-input{
+  box-sizing: border-box;
+  width: 100%;
+  font-family: monospace;
+  caret-color: transparent;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+}
+
 .fd a{
   text-decoration: none;
 }
