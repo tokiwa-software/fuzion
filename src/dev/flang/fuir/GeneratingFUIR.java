@@ -52,7 +52,6 @@ import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.NumLiteral;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.AbstractFeature.Kind;
@@ -1735,11 +1734,12 @@ public class GeneratingFUIR extends FUIR
   @Override
   protected Object getExpr(int s)
   {
+    var result = super.getExpr(s);
     if (!_lookupDone)
       {
         _accessedSites.set(s-SITE_BASE);
       }
-    return super.getExpr(s);
+    return result;
   }
 
 
@@ -3307,7 +3307,7 @@ public class GeneratingFUIR extends FUIR
 
     var e = getExpr(s + 1 + cix);
 
-    return ((NumLiteral) e).intValue().intValueExact();
+    return (Integer) e;
   }
 
 
