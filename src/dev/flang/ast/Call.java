@@ -753,13 +753,8 @@ public class Call extends AbstractCall
     if (_calledFeature == null && targetFeature != null)
       {
         res.resolveDeclarations(targetFeature);
-        var allowFixed = targetFeature.isUniverse() || targetFeature == Types.f_ERROR || _target != null && !(_target instanceof This) || !(new ThisType(targetFeature).isFixedFor(context));
-        if (_target != null)
-          {
-            var tt = _target.typeForInferencing();
-            allowFixed = allowFixed && (!(tt instanceof ThisType ttt) || ttt.isFixedFor(context));
-          }
-        var fo = findOnTarget(res, targetFeature, true, allowFixed).v1();
+        var tt = _target != null ? _target.typeForInferencing() : null;
+        var fo = findOnTarget2(res, context, targetFeature, tt, true).v1();
         if (fo != null)
           {
             if (_target == null)
@@ -875,6 +870,22 @@ public class Call extends AbstractCall
    *          1) all found features matching the name
    *          2) the matching feature or null if none was found
    */
+
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget2(Resolution res,
+                                                                     Context context,
+                                                                     AbstractFeature targetFeature,
+                                                                     AbstractType targetType,
+                                                                     boolean mayBeSpecialWrtArgs)
+  {
+    var allowFixed =
+      targetFeature.isUniverse()     ||
+      targetFeature == Types.f_ERROR ||
+      targetType == null && !new ThisType(targetFeature).isFixedFor(context) ||
+      targetType != null && !(targetType instanceof ThisType ttt);  // NYI: STRANGE, why not check ttt.isFixedFor(context)?
+
+    return findOnTarget(res, targetFeature, mayBeSpecialWrtArgs, allowFixed);
+  }
+
   private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
                                                                     AbstractFeature target,
                                                                     boolean mayBeSpecialWrtArgs,
@@ -2924,10 +2935,9 @@ public class Call extends AbstractCall
           res.resolveDeclarations(tf);
           if (!tf.isTypeParameter())
             {
-              var allowFixed = !tt.isThisType() || ((ThisType) tt).isFixedFor(context);
               var ttf = tf.isUniverse() ? tf : res.cotype(tf);
-              var fo  = findOnTarget(res, tf,  false, allowFixed).v1();
-              var tfo = findOnTarget(res, ttf, false, allowFixed).v1();
+              var fo  = findOnTarget2(res, context, tf,  tt, false).v1();
+              var tfo = findOnTarget2(res, context, ttf, tt, false).v1();
               var f = tfo == null ? null : tfo._feature;
               if (f != null && f.outer() != null
                   /* omitting dot-type does not work when calling the inherited methods of

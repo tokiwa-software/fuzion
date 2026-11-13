@@ -186,7 +186,9 @@ public class This extends ExprWithPos
   @Override
   AbstractType typeForInferencing()
   {
-    return null;  // After type resolution, This is no longer part of the code.
+    return (_feature != null && !_feature.isUniverse() && _feature != Types.f_ERROR)
+      ? new ThisType(_feature)
+      : null;
   }
 
 
