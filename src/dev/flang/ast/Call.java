@@ -877,13 +877,43 @@ public class Call extends AbstractCall
                                                                      AbstractType targetType,
                                                                      boolean mayBeSpecialWrtArgs)
   {
-    var allowFixed =
-      targetFeature.isUniverse()     ||
-      targetFeature == Types.f_ERROR ||
-      targetType == null && !new ThisType(targetFeature).isFixedFor(context) ||
-      targetType != null && !(targetType instanceof ThisType ttt);  // NYI: STRANGE, why not check ttt.isFixedFor(context)?
+    if (targetFeature == Types.f_ERROR || targetType == Types.t_ERROR)
+      {
+        return new Pair<>(new List<>(FeatureAndOuter.ERROR), FeatureAndOuter.ERROR);
+      }
+    else
+      {
+        var allowFixed =
+          targetFeature.isUniverse()     ||
+          (targetType == null                  ? true :
+           targetType instanceof ThisType tttt ? tttt.isFixedFor(context)
+                                               : true);
+        var allowFixed0 =
+          targetFeature.isUniverse()     ||
+          (targetType == null                  ? false :
+           targetType instanceof ThisType tttt ? tttt.isFixedFor(context)
+                                               : true);
 
-    return findOnTarget(res, targetFeature, mayBeSpecialWrtArgs, allowFixed);
+    var calledName = FeatureName.get(_name, _actuals.size());
+    var fos = res._module.lookup(targetFeature, _name, this, _target == null, allowFixed, false);
+    for (var fo : fos)
+      {
+        if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
+          {
+            ff.resolveArgumentTypes(res);
+          }
+      }
+    var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
+                                    ff -> (mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res)),
+                                    fao -> !fao._feature.isFixed() || allowFixed0 || new ThisType(fao._outer).isFixedFor(context)
+                                   );
+    if (fo == null && mayBeSpecialWrtArgs)
+      { // handle implicit calls `f()` that expand to `f.call()`:
+        fo =
+          FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.arguments().size()==0);
+      }
+    return new Pair<>(fos, fo);
+      }
   }
 
   private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
@@ -904,7 +934,7 @@ public class Call extends AbstractCall
           }
       }
     var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
-      ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
+      ff -> (mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res)));
     if (fo == null && mayBeSpecialWrtArgs)
       { // handle implicit calls `f()` that expand to `f.call()`:
         fo =
