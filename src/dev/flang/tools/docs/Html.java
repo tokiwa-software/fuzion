@@ -88,11 +88,7 @@ public class Html extends ANY
   static final String RUNCODE_BOX_HTML = """
     <div class="runcode-wrapper">
       <i class="far fa-spinner fa-spin"></i>
-      <div class="mb-15 runcode" style="
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch)));
-        max-width: 49rem;
-      ">
+      <div class="mb-15 runcode">
         <div class="position-relative">
           <form id="##id##">
             <label for="##id##.code" class="visually-hidden">Code input</label>
