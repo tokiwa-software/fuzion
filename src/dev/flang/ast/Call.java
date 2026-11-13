@@ -762,8 +762,12 @@ public class Call extends AbstractCall
         var fo = findOnTarget(res, targetFeature, true, allowFixed).v1();
         if (fo != null)
           {
+            if (_target == null)
+              {
+                _target = fo.target(pos(), res, context);
+                _targetFrom = fo;
+              }
             setCalledFeatureAndTarget(res, context, fo);
-            splitOffTypeArgs(res, context);
           }
       }
 
@@ -824,11 +828,7 @@ public class Call extends AbstractCall
   private void setCalledFeatureAndTarget(Resolution res, Context context, FeatureAndOuter fo)
   {
     _calledFeature = fo._feature;
-    if (_target == null)
-      {
-        _target = fo.target(pos(), res, context);
-        _targetFrom = fo;
-      }
+    splitOffTypeArgs(res, context);
   }
 
 
@@ -2940,19 +2940,16 @@ public class Call extends AbstractCall
                       setToErrorState();
                     }
                   else
-                    {
-                      // we found a feature that fits a dot-type-call.
-                      _calledFeature = f;
+                    { // we found a feature that fits a dot-type-call.
                       suspendPendingNotFound();
+                      check(!((tf == context.outerFeature() && !tf.isCotype()))); // NYI: remove if never fires
                       var t = tf == context.outerFeature() && !tf.isCotype()
                         ? tf.thisType().cotypeType(res)
-                        : _target.asParsedType();
-                      _target = Call.typeAsValue(_pos, t).resolveTypes(res, context);
+                        : pt;
+                      _target = typeAsValue(_pos, t).resolveTypes(res, context);
+                      _targetFrom = null;
+                      setCalledFeatureAndTarget(res, context, tfo);
                     }
-                }
-              if (_calledFeature != null)
-                {
-                  splitOffTypeArgs(res, context);
                 }
             }
         }
