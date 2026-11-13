@@ -895,7 +895,7 @@ public class Call extends AbstractCall
                                                : true);
 
     var calledName = FeatureName.get(_name, _actuals.size());
-    var fos = res._module.lookup(targetFeature, _name, this, _target == null, allowFixed, false);
+    var fos = res._module.lookup(targetFeature, _name, this, _target == null, !true || allowFixed /* why not true? */, false);
     for (var fo : fos)
       {
         if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
@@ -2982,9 +2982,8 @@ public class Call extends AbstractCall
                   else
                     { // we found a feature that fits a dot-type-call.
                       suspendPendingNotFound();
-                      check(!((tf == context.outerFeature() && !tf.isCotype()))); // NYI: remove if never fires
                       var t = tf == context.outerFeature() && !tf.isCotype()
-                        ? tf.thisType().cotypeType(res)
+                        ? tf.thisType().cotypeType(res)       // NYI: CHECK: This happens in reg_issue8142, reg_issue5697, reg_issue3801 and type_in_cotype
                         : _target.asParsedType(); // just `pt` does not work, unclear why.
                       _target = typeAsValue(_pos, t).resolveTypes(res, context);
                       _targetFrom = null;
