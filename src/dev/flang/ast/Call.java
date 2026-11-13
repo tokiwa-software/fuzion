@@ -2945,7 +2945,7 @@ public class Call extends AbstractCall
                       check(!((tf == context.outerFeature() && !tf.isCotype()))); // NYI: remove if never fires
                       var t = tf == context.outerFeature() && !tf.isCotype()
                         ? tf.thisType().cotypeType(res)
-                        : pt;
+                        : _target.asParsedType(); // just `pt` does not work, unclear why.
                       _target = typeAsValue(_pos, t).resolveTypes(res, context);
                       _targetFrom = null;
                       setCalledFeatureAndTarget(res, context, tfo);
