@@ -43,6 +43,8 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import java.util.function.Predicate;
+
 import java.util.stream.Collectors;
 import java.util.stream.Gatherer;
 
@@ -948,7 +950,7 @@ A post-condition of a feature that redefines one or several inherited features m
 A feature that does not redefine an inherited feature must not use the `redef` modifier.
     // end::fuzion_rule_PARS_NO_REDEF[]
             */
-            List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.baseName(), null, true, true /* NYI: CHECK IF FIXED ALLOWED */, true)
+            List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.baseName(), null, true, true)
               .stream()
               .filter(fo -> fo._feature != f // excluding the feature itself
                           && !visibleFor(fo._feature, f) // only truly invisible features
@@ -1160,7 +1162,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean allowFixed, boolean hidden)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden, Predicate<AbstractFeature> isFixedFor)
   {
     if (PRECONDITIONS) require
       (outer != null);
@@ -1168,7 +1170,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
     List<FeatureAndOuter> result = new List<>();
     for (var n : ParsedOperatorCall.lookupNames(name))
       {
-        result.addAll(lookup0(outer, n, use, traverseOuter, allowFixed, hidden));
+        result.addAll(lookup0(outer, n, use, traverseOuter, hidden, isFixedFor));
       }
     return result;
   }
@@ -1196,7 +1198,12 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  private List<FeatureAndOuter> lookup0(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean allowFixed, boolean hidden)
+  private List<FeatureAndOuter> lookup0(AbstractFeature outer,
+                                        String name,
+                                        Expr use,
+                                        boolean traverseOuter,
+                                        boolean hidden,
+                                        Predicate<AbstractFeature> isFixedFor)
   {
     if (PRECONDITIONS) require
       (outer != null,
@@ -1219,7 +1226,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               {
                 if (isVisible(v, use, hidden))
                   {
-                    if (!Errors.any() && !allowFixed && v.isFixed() && !v.isTypeParameter())
+                    if (!Errors.any() && v.isFixed() && !v.isTypeParameter() && !isFixedFor.test(curOuter))
                       {
                         for (var orig : v.redefines())
                           {
@@ -1496,13 +1503,13 @@ A post-condition of a feature that does not redefine an inherited feature must s
         _res.resolveDeclarations(outer);
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
-        var fs = lookup(outer, name, null, traverseOuter, true /* NYI: CHECK IF FIXED ALLOWED */, false);
+        var fs = lookup(outer, name, null, traverseOuter, false);
         var o = outer;
         while (traverseOuter && o != null)
           {
             if (o.isCotype())
               {
-                lookup(o.cotypeOrigin(), name, null, false, true /* NYI: CHECK IF FIXED ALLOWED */, false)
+                lookup(o.cotypeOrigin(), name, null, false, false)
                   .stream()
                   .filter(fo -> !fo._feature.isTypeParameter())  // type parameters are duplicated in type feature and taken from there
                   .forEach(fo -> fs.add(fo));

@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -60,7 +61,11 @@ public interface SrcModule extends AbstractModule
   void forEachDeclaredOrInheritedFeature(AbstractFeature af, Consumer<AbstractFeature> f);
   AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
   void findDeclaredOrInheritedFeatures(Feature outer);
-  List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean allowFixed, boolean hidden);
+  List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden, Predicate<AbstractFeature> isFixedFor);
+  default List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
+  {
+    return lookup(outer, name, use, traverseOuter, hidden, x->false);
+  }
   AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use);
   AbstractFeature findLambdaTarget(AbstractFeature outer);
   void checkTypes(Feature f);

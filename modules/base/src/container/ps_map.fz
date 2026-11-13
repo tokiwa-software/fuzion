@@ -333,7 +333,7 @@ O(n log n).
 
   # infix operator synonym for union of two ps_maps
   #
-  public infix ∪ (other ps_map PK V) ps_map PK V => union other
+  public fixed infix ∪ (other ps_map PK V) ps_map PK V => union other
 
   # ps_map -- routine to initialize a partially sorted map from key value pairs
   #

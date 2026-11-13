@@ -131,9 +131,10 @@ class ThisType extends ResolvedType {
    */
   boolean isFixedFor(Context context)
   {
+    var fo = _feature;
     var f = context.outerFeature();
     var o = f.outer();
-    while (o != null && !(f.isFixed() && o == _feature))
+    while (o != null && !(f.isFixed() && o == fo))
       {
         f = o;
         o = f.outer();

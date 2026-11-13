@@ -529,17 +529,17 @@ _calledFeature to error */
       {
 
         var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
-        var fos = res._module.lookup(paa._feature.outer(), _name, this, false, true /* NYI: CHECK IF FIXED ALLOWED */, false);
+        var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
         // inner features of the target type are candidates only if the target
         // can be called without arguments, otherwise `t.f` cannot call inner `f`
         if (tf != null && tf != paa._feature.outer() && tf.valueArguments().isEmpty())
           {
-            fos.addAll(res._module.lookup(tf, _name, this, false, true /* NYI: CHECK IF FIXED ALLOWED */, false));
+            fos.addAll(res._module.lookup(tf, _name, this, false, false));
           }
         // type features in the cotype of the target are candidates as well
         if (tf != null && tf.hasCotype() && tf.cotype() != paa._feature.outer())
           {
-            fos.addAll(res._module.lookup(tf.cotype(), _name, this, false, true /* NYI: CHECK IF FIXED ALLOWED */, false));
+            fos.addAll(res._module.lookup(tf.cotype(), _name, this, false, false));
           }
         var direct = FeatureAndOuter.filter(fos,
                                             pos(),
