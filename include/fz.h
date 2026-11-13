@@ -444,6 +444,13 @@ int fzE_thread_setschedparam(void * thrd, int policy, int priority);
  */
 int fzE_thread_setaffinity(void * thrd, const void * cores, int length);
 
+
+/**
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd);
+
+
 /**
  * Global lock
  *
