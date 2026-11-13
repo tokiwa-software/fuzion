@@ -244,6 +244,8 @@ public class Types extends ANY
     public final AbstractFeature f_Native_Ref;
     public final AbstractFeature f_Internal_Thread;
     public final AbstractFeature f_stackoverflow_cause;
+    public final AbstractFeature f_fuzion_runtime_init;
+    public final AbstractFeature f_fuzion_runtime_deinit;
     public final Set<AbstractType> numericTypes;
     public Resolved(AbstractModule mod, AbstractFeature universe, boolean forFrontEnd)
     {
@@ -339,6 +341,8 @@ public class Types extends ANY
       f_Native_Ref              = universe            .get(mod, "Native_Ref", 0);
       f_Internal_Thread         = universe            .get(mod, "Internal_Thread", 0);
       f_stackoverflow_cause     = universe            .get(mod, "stackoverflow_cause", 1);
+      f_fuzion_runtime_init     = universe            .get(mod, "fuzion_runtime_init", 0);
+      f_fuzion_runtime_deinit   = universe            .get(mod, "fuzion_runtime_deinit", 0);
 
       numericTypes = new TreeSet<AbstractType>(new List<>(
         t_i8,
