@@ -143,12 +143,21 @@ $(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZI
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -api-src=/api $(@D)
 
 # NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs
-.phony: debug_api_docs
-debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
+.PHONY: standalone_api_docs
+standalone_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(CLASS_FILES_TOOLS) $(BUILD_DIR)/generated/doc/ace.js
 	mkdir -p $(BUILD_DIR)/debugdocs
-	cp assets/docs/style.css $(BUILD_DIR)/debugdocs/
-	cp assets/docs/32.png $(BUILD_DIR)/debugdocs/
+	cp assets/docs/style.css assets/docs/32.png assets/docs/standalone.js $(BUILD_DIR)/debugdocs/
+	cp $(BUILD_DIR)/generated/doc/ace.js $(BUILD_DIR)/debugdocs/
+	$(FZ) -acemode > $(BUILD_DIR)/debugdocs/ace-mode-fuzion.js
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
+
+# Bundle Ace so standalone docs also work offline and via file:// URLs.
+$(BUILD_DIR)/generated/doc/ace.js:
+	mkdir -p $(@D)
+	wget -O $@ https://raw.githubusercontent.com/ajaxorg/ace-builds/v1.43.3/src/ace.js
+
+.phony: debug_api_docs
+debug_api_docs: standalone_api_docs
 	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
 
 .phony: serve_docs
