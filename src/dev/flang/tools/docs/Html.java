@@ -1456,20 +1456,20 @@ public class Html extends ANY
             <div class="sidenav" id="sidenav">
               <button
                 class="toggle-nav"
-                aria-expanded="true"
+                aria-expanded="false"
                 aria-controls="sidenav"
                 aria-label="Toggle navigation"
                 onclick="
                   const nav = document.querySelector('.fd .sidenav nav');
-                  const hidden = nav.style.display === 'none';
-                  nav.style.display = hidden ? '' : 'none';
+                  const hidden = nav.hidden;
+                  nav.hidden = !hidden;
                   this.textContent = hidden ? '«' : '»';
                   this.setAttribute('aria-expanded', hidden);
                 "
               >
                 »
               </button>
-              <nav style="display: none">##navigation##</nav>
+              <nav hidden>##navigation##</nav>
             </div>
             <div class="container">
               <section>##heading##</section>
@@ -1514,20 +1514,20 @@ public class Html extends ANY
       <div class="sidenav" id="sidenav">
         <button
         class="toggle-nav"
-        aria-expanded="true"
+        aria-expanded="false"
         aria-controls="sidenav"
         aria-label="Toggle navigation"
         onclick="
           const nav = document.querySelector('.fd .sidenav nav');
-          const hidden = nav.style.display === 'none';
-          nav.style.display = hidden ? '' : 'none';
+          const hidden = nav.hidden;
+          nav.hidden = !hidden;
           this.textContent = hidden ? '«' : '»';
           this.setAttribute('aria-expanded', hidden);
         "
         >
           »
         </button>
-        <nav style="display: none">##navigation##</nav>
+        <nav hidden>##navigation##</nav>
       </div>
       <div class="container">
         <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
