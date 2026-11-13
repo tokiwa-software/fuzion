@@ -58,7 +58,7 @@ DOCUMENTATION = \
 	$(REALTIME_MANUAL_PDF) \
 	$(REALTIME_MANUAL_HTML) \
 	$(DOC_JAVA)          \
-	$(BUILD_DIR)/apidocs/index.html
+	$(BUILD_DIR)/apidocs_web/index.html
 
 $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
@@ -139,17 +139,17 @@ $(BUILD_DIR)/generated/doc/stringEscapes.adoc: $(CLASS_FILES_PARSER)
 	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -stringLiteralEscapes >$@
 
 # NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs
-$(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES) $(MOD_FZ_CMD)
+$(BUILD_DIR)/apidocs_web/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES) $(MOD_FZ_CMD)
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -api-src=/api $(@D)
 
 # NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs
 .PHONY: standalone_api_docs
 standalone_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(CLASS_FILES_TOOLS) $(BUILD_DIR)/generated/doc/ace.js
-	mkdir -p $(BUILD_DIR)/debugdocs
-	cp assets/docs/style.css assets/docs/32.png assets/docs/standalone.js $(BUILD_DIR)/debugdocs/
-	cp $(BUILD_DIR)/generated/doc/ace.js $(BUILD_DIR)/debugdocs/
-	$(FZ) -acemode > $(BUILD_DIR)/debugdocs/ace-mode-fuzion.js
-	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
+	mkdir -p $(BUILD_DIR)/apidocs_standalone
+	cp assets/docs/style.css assets/docs/32.png assets/docs/standalone.js $(BUILD_DIR)/apidocs_standalone/
+	cp $(BUILD_DIR)/generated/doc/ace.js $(BUILD_DIR)/apidocs_standalone/
+	$(FZ) -acemode > $(BUILD_DIR)/apidocs_standalone/ace-mode-fuzion.js
+	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/apidocs_standalone
 
 # Bundle Ace so standalone docs also work offline and via file:// URLs.
 $(BUILD_DIR)/generated/doc/ace.js:
@@ -158,7 +158,7 @@ $(BUILD_DIR)/generated/doc/ace.js:
 
 .phony: debug_api_docs
 debug_api_docs: standalone_api_docs
-	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
+	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/apidocs_standalone)
 
 .phony: serve_docs
 serve_docs: $(DOCUMENTATION)
