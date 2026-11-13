@@ -88,11 +88,7 @@ public class Html extends ANY
   static final String RUNCODE_BOX_HTML = """
     <div class="runcode-wrapper">
       <i class="far fa-spinner fa-spin"></i>
-      <div class="mb-15 runcode" style="
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch)));
-        max-width: 49rem;
-      ">
+      <div class="mb-15 runcode">
         <div class="position-relative">
           <form id="##id##">
             <label for="##id##.code" class="visually-hidden">Code input</label>
@@ -724,7 +720,7 @@ public class Html extends ANY
       "title",     f.isUniverse() ? lm.name() : htmlEncodedBasename(f), // short version of title for nav-title
       "heading",   f.isUniverse() ? """
         API-Documentation: module \
-        <code style="font-size: 1.4em; vertical-align: baseline;">""" + lm.name() + "</code>"
+        <code class="fd-module-name">""" + lm.name() + "</code>"
         : anchorTags(f),
       "summary",   f.isUniverse() ? "" : summary(f),
       "comment",   commentOf(f),
@@ -1394,7 +1390,7 @@ public class Html extends ANY
       <ul class="white-space-no-wrap">
         <li>
           <div><a href=##root##>Modules</a></div>
-            <ul style="list-style: disc inside">
+            <ul class="fd-module-list">
               ##modules##
             </ul>
         </li>
@@ -1460,20 +1456,20 @@ public class Html extends ANY
             <div class="sidenav" id="sidenav">
               <button
                 class="toggle-nav"
-                aria-expanded="true"
+                aria-expanded="false"
                 aria-controls="sidenav"
                 aria-label="Toggle navigation"
                 onclick="
                   const nav = document.querySelector('.fd .sidenav nav');
-                  const hidden = nav.style.display === 'none';
-                  nav.style.display = hidden ? '' : 'none';
+                  const hidden = nav.hidden;
+                  nav.hidden = !hidden;
                   this.textContent = hidden ? '«' : '»';
                   this.setAttribute('aria-expanded', hidden);
                 "
               >
                 »
               </button>
-              <nav style="display: none">##navigation##</nav>
+              <nav hidden>##navigation##</nav>
             </div>
             <div class="container">
               <section>##heading##</section>
@@ -1518,20 +1514,20 @@ public class Html extends ANY
       <div class="sidenav" id="sidenav">
         <button
         class="toggle-nav"
-        aria-expanded="true"
+        aria-expanded="false"
         aria-controls="sidenav"
         aria-label="Toggle navigation"
         onclick="
           const nav = document.querySelector('.fd .sidenav nav');
-          const hidden = nav.style.display === 'none';
-          nav.style.display = hidden ? '' : 'none';
+          const hidden = nav.hidden;
+          nav.hidden = !hidden;
           this.textContent = hidden ? '«' : '»';
           this.setAttribute('aria-expanded', hidden);
         "
         >
           »
         </button>
-        <nav style="display: none">##navigation##</nav>
+        <nav hidden>##navigation##</nav>
       </div>
       <div class="container">
         <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
