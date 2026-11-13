@@ -2914,31 +2914,24 @@ public class Call extends AbstractCall
     var outer = context.outerFeature();
     if (_calledFeature == null && _target != null && outer.state().atLeast(State.RESOLVED_INHERITANCE))
     {
-      AbstractType tt = _target.asParsedType();
-      if (tt instanceof UnresolvedType ut)
+      // check if this might be a left hand side of dot-type-call
+      var pt = _target.asParsedType();
+      var tt = pt != null ? pt.resolve(res, context, true)
+                          : null;
+      if (tt != null)
         {
-          // check if this might be a
-          // left hand side of dot-type-call
-          tt = ut.resolve(res, context, true);
-          tt = tt != null && tt != Types.t_ERROR ? tt.selfOrConstraint(res, context) : tt;
-        }
-      if (tt != null && tt != Types.t_ERROR)
-        {
-          var tf = tt.feature();
+          var tf = tt.selfOrConstraint(res, context).feature();
           res.resolveDeclarations(tf);
           if (!tf.isTypeParameter())
             {
               var allowFixed = !tt.isThisType() || ((ThisType) tt).isFixedFor(context);
               var ttf = tf.isUniverse() ? tf : res.cotype(tf);
-              res.resolveDeclarations(tf);
-              var fo = findOnTarget(res, tf, false, allowFixed).v1();
+              var fo  = findOnTarget(res, tf,  false, allowFixed).v1();
               var tfo = findOnTarget(res, ttf, false, allowFixed).v1();
               var f = tfo == null ? null : tfo._feature;
-              if (f != null
-                  && f.outer() != null
-                  /* omitting dot-type does not work when calling
-                   the inherited methods of `Type`. Otherwise we
-                   would always have an ambiguity when calling `as_string` */
+              if (f != null && f.outer() != null
+                  /* omitting dot-type does not work when calling the inherited methods of
+                   * `Type`. Otherwise we would always have an ambiguity when calling `as_string` */
                   && f.outer().isCotype())
                 {
                   if (fo != null && !fo._feature.isTypeParameter() && tf.valueArguments().isEmpty() /* otherwise `t.f` cannot call inner `f` */)
