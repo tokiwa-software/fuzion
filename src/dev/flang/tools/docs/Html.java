@@ -720,7 +720,7 @@ public class Html extends ANY
       "title",     f.isUniverse() ? lm.name() : htmlEncodedBasename(f), // short version of title for nav-title
       "heading",   f.isUniverse() ? """
         API-Documentation: module \
-        <code style="font-size: 1.4em; vertical-align: baseline;">""" + lm.name() + "</code>"
+        <code class="fd-module-name">""" + lm.name() + "</code>"
         : anchorTags(f),
       "summary",   f.isUniverse() ? "" : summary(f),
       "comment",   commentOf(f),

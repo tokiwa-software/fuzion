@@ -65,6 +65,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   margin-left: .2em;
 }
 
+.fd-module-name{
+  font-size: 1.4em;
+  vertical-align: baseline;
+}
+
 /* Keep the grid inside summary so its native disclosure marker is preserved. */
 .fd-summary{
   display: grid;
