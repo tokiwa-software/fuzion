@@ -1390,7 +1390,7 @@ public class Html extends ANY
       <ul class="white-space-no-wrap">
         <li>
           <div><a href=##root##>Modules</a></div>
-            <ul style="list-style: disc inside">
+            <ul class="fd-module-list">
               ##modules##
             </ul>
         </li>
