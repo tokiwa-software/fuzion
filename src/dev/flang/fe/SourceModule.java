@@ -278,8 +278,8 @@ public class SourceModule extends Module implements SrcModule
         f
           .impl()
           .addCalls(
-            plainCall("fuzion_runtime_init"),
-            plainCall("fuzion_runtime_deinit")
+            plainCall(Types.resolved.f_fuzion_runtime_init),
+            plainCall(Types.resolved.f_fuzion_runtime_deinit)
           );
       }
   }
@@ -291,12 +291,8 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param featureName
    */
-  private AbstractCall plainCall(String featureName)
+  private AbstractCall plainCall(AbstractFeature feature)
   {
-    var feature = lookupFeature(_universe, FeatureName.get(featureName, 0));
-    if (CHECKS) check
-      (feature.arguments().isEmpty(),
-       feature.outer().isUniverse());
     return new AbstractCall() {
       @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
       @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
