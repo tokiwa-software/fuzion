@@ -133,6 +133,33 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
+   * If Expr.this is used as the target feature in an inheritance call, this gives the feature that
+   * should be used to lookup the parent. E.g., in code like
+   * <pre>{@code
+   *     xyz : abc.def.ghi is
+   *       ...
+   * }</pre>
+   * This is used on {@code abc.def} to determine the result type, which will be used as outer value
+   * for features inherited from `ghi`.
+   *
+   * Note that this is essentially the same as `type().feature()`, but we cannot determine `type()`
+   * at this point since this may result in cyclic resolution dependencies: An inheritance call may
+   * use types based the feature that is inheriting and that is not yet resolved.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used.  For a call {@code abc.def} in
+   * an inherits call {@code xyz : abc.def.ghi is}, {@code context.outerFeature()} is the feature
+   * {@code xyz}.
+   */
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    AstErrors.illegalInheritanceCallTarget(this);
+    return Types.f_ERROR;
+  }
+
+
+  /**
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
    *

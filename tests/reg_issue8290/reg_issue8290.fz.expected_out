@@ -1,0 +1,3 @@
+child1 is ((reg_issue8290.test i32 unit).inner void).child1
+child2 is ((reg_issue8290.test i32 unit).inner void).child2
+child3 is ((reg_issue8290.test i32 unit).inner void).child3
