@@ -83,27 +83,63 @@ public class Html extends ANY
 
   /*----------------------------  constants  ----------------------------*/
 
+  private static final Pattern TEMPLATE_TOKEN = Pattern.compile("##([A-Za-z_0-9]+)##");
+
   static final String RUNCODE_BOX_HTML = """
     <div class="runcode-wrapper">
       <i class="far fa-spinner fa-spin"></i>
-      <div class="mb-15 runcode" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;">
+      <div class="mb-15 runcode" style="
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch)));
+        max-width: 49rem;
+        opacity: 0;
+      ">
         <div class="position-relative">
-          <form id="##ID##">
-            <label for="##ID##.code" class="visually-hidden">Code input</label>
-            <textarea class="code-input" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
+          <form id="##id##">
+            <label for="##id##.code" class="visually-hidden">Code input</label>
+            <textarea class="code-input" required="required" maxlength="4096"
+                      id="##id##.code" name="code" rows="3" spellcheck="false">##code##</textarea>
             <div class="position-absolute run-buttons">
-              <input type="button" onclick="runit('##ID##')" class="run-button" value="Run!" />
-              <input type="button" onclick="runiteff('##ID##')" class="run-button" value="Effects!" />
+              <input type="button" onclick="runit('##id##')" class="run-button" value="Run!" />
+              <input type="button" onclick="runiteff('##id##')" class="run-button" value="Effects!" />
               <a href="/tutorial/effects.html"><i>What are effects?</i></a>
             </div>
           </form>
         </div>
-        <div class="computer-output" id="##ID##.result"></div>
+        <div class="computer-output" id="##id##.result"></div>
       </div>
     </div>""";
 
 
   /*-----------------------------  private methods  -----------------------------*/
+
+  /**
+   * Replace ##name## placeholders in the original template only. Inserted values
+   * are literal, even if they contain placeholders, dollar signs or backslashes.
+   * Callers must escape values for their HTML context before substitution.
+   *
+   * @throws IllegalArgumentException when a replacement is missing or null
+   */
+  private static String fillTemplate(String template, Map<String, String> values)
+  {
+    var matcher = TEMPLATE_TOKEN.matcher(template);
+    var result = new StringBuilder(template.length());
+    var end = 0;
+    while (matcher.find())
+      {
+        var name = matcher.group(1);
+        var value = values.get(name);
+        if (value == null)
+          {
+            throw new IllegalArgumentException("Missing template value: " + name);
+          }
+        result.append(template, end, matcher.start());
+        result.append(value);
+        end = matcher.end();
+      }
+    result.append(template, end, template.length());
+    return result.toString();
+  }
 
 
 
@@ -131,9 +167,9 @@ public class Html extends ANY
       {
         var constraintType = af.constraint();
         var constraint = constraintType.feature();
-        return "<span class='fd-keyword mx-5'>:</span><a class='fd-feature fd-inherited' href='$1'>$2</a>"
-          .replace("$1", featureRelativeURL(constraint, relativeTo))
-          .replace("$2", htmlEncodeNbsp(constraintType.toString(true, af)));
+        return fillTemplate("<span class='fd-keyword mx-5'>:</span><a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
+          "url", featureRelativeURL(constraint, relativeTo),
+          "name", htmlEncodeNbsp(constraintType.toString(true, af))));
       }
     else
       {
@@ -144,12 +180,13 @@ public class Html extends ANY
                      c.calledFeature().visibility().eraseTypeVisibility() == Visi.PUB)
           .<String>map(c -> {
             var f = c.calledFeature();
-            return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureRelativeURL(f, relativeTo))
-              + htmlEncodedBasename(f)
-              + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
-              + c.actualTypeParameters().stream()
-                 .map(at -> htmlEncodeNbsp(at.toString(true, af)))
-                 .collect(Collectors.joining(", ")) + "</a>";
+            return fillTemplate("<a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
+              "url", featureRelativeURL(f, relativeTo),
+              "name", htmlEncodedBasename(f)
+                      + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
+                      +  c.actualTypeParameters().stream()
+                          .map(at -> htmlEncodeNbsp(at.toString(true, af)))
+                          .collect(Collectors.joining(", "))));
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
       }
@@ -170,8 +207,9 @@ public class Html extends ANY
         return htmlEncodeNbsp(at.toString(true, context))
                + (at.isOpenGeneric() ? "..." : "");
       }
-    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(true, context)))
-      .replace("$2", featureRelativeURL(at.feature(), relativeTo));
+    return fillTemplate("<a class='fd-type' href='##url##'>##name##</a>", Map.of(
+      "url", featureRelativeURL(at.feature(), relativeTo),
+      "name", htmlEncodeNbsp(at.toString(true, context))));
   }
 
 
@@ -191,8 +229,9 @@ public class Html extends ANY
         return Stream.empty();
       }
     return Stream.concat(anchorTags0(f.outer(), relativeTo),
-      Stream.of(typePrfx(f) + "<a class='fd-feature font-weight-600' href='$2'>$1</a>".replace("$1", htmlEncodedBasename(f))
-        .replace("$2", featureRelativeURL(f, relativeTo))));
+      Stream.of(typePrfx(f) + fillTemplate("<a class='fd-feature font-weight-600' href='##url##'>##name##</a>", Map.of(
+        "url", featureRelativeURL(f, relativeTo),
+        "name", htmlEncodedBasename(f)))));
   }
 
 
@@ -204,7 +243,9 @@ public class Html extends ANY
   private String typePrfx(AbstractFeature af)
   {
     // NYI: BUG: does not show features that `Type` inherits but does not redefine as type features, see #3913
-    return af.outer() != null && (af.outer().isCotype() || af.outer() == Types.resolved.f_Type) && !af.isCotype() ? "<span class=\"fd-keyword\">type</span>." : "";
+    return af.outer() != null && (af.outer().isCotype() || af.outer() == Types.resolved.f_Type) && !af.isCotype()
+            ? "<span class=\"fd-keyword\">type</span>."
+            : "";
   }
 
 
@@ -258,7 +299,7 @@ public class Html extends ANY
       + inherited(af, relativeTo)
       + (signatureWithArrow(af) ? "<span class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</span>" + anchorType(af, af, relativeTo)
          : af.isConstructor()   ? "<span class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</span>"
-         : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.baseName() + "_out:" + (outer != null ? outer.baseName() : "_out=null")
+         : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo)
                                 : "")
       + annotateUnitType(af)
       + annotateInherited(af, outer)
@@ -320,10 +361,12 @@ public class Html extends ANY
     else
       {
         AbstractFeature relativeTo = outer != null ? outer : af;
-        String anchorParent = "<a class='' href='" + featureRelativeURL(af.outer(), relativeTo) + "'>"
-                              + htmlEncodedBasename(af.outer()) + "</a>";
-        return "<span class='fd-parent ml-10'>[Inherited from&nbsp; <span class=fz-code>$0</span>]</span>"
-          .replace("$0", anchorParent);
+        return fillTemplate("""
+          <span class='fd-parent ml-10'>[Inherited from&nbsp; \
+          <span class=fz-code><a class='' href='##url##'>##name##</a></span>]</span>""", Map.of(
+          "url", featureRelativeURL(af.outer(), relativeTo),
+          "name", htmlEncodedBasename(af.outer())));
+
       }
   }
 
@@ -362,17 +405,18 @@ public class Html extends ANY
     AbstractFeature relativeTo = outer != null ? outer : af;
     return redefs.isEmpty()
             ? ""
-            : "<span class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</span>"
-              .replace("$0", (redefs.stream()
-                                    .map(f->relativeAnchor(f, relativeTo))
-                                    .collect(Collectors.joining(",&nbsp;")) ));
+            : "<span class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>"
+              + redefs.stream()
+                      .map(f->relativeAnchor(f, relativeTo))
+                      .collect(Collectors.joining(",&nbsp;")) + "</span>]</span>";
   }
 
 
   private String relativeAnchor(AbstractFeature f, AbstractFeature relativeTo)
   {
-    return "<a class='' href='" + featureRelativeURL(f, relativeTo) + "'>" +
-              htmlEncodedQualifiedName(f) + "</a>";
+    return fillTemplate("<a class='' href='##url##'>##name##</a>", Map.of(
+      "url", featureRelativeURL(f, relativeTo),
+      "name", htmlEncodedQualifiedName(f)));
   }
 
 
@@ -502,9 +546,12 @@ public class Html extends ANY
     return af
       .redefines()
       .stream()
-      .map(f -> """
-        <li><a href="$1">$2</a></li>$3
-      """.replace("$1", featureRelativeURL(f, relativeTo)).replace("$2", htmlEncodeNbsp(f.qualifiedNameHuman())).replace("$3", redefines0(f, relativeTo)))
+      .map(f -> fillTemplate("""
+        <li><a href="##url##">##name##</a></li>##redefines##
+      """, Map.of(
+        "url", featureRelativeURL(f, relativeTo),
+        "name", htmlEncodeNbsp(f.qualifiedNameHuman()),
+        "redefines", redefines0(f, relativeTo))))
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
@@ -640,13 +687,19 @@ public class Html extends ANY
       }
 
     var content = features.map(af ->
-      "<details id='" + htmlID(af)
-      + "' $0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
+      fillTemplate("""
+        <details id='##id##' ##attributes##>
+          <summary>##summary##</summary>
+          <div class='fd-comment'>##comment##</div>
+          ##redefines##
+        </details>
+        """, Map.of(
+        "id", htmlID(af),
         // NYI: UNDER DEVELOPMENT: rename fd-private?
-        .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-        .replace("$1", summary(af, outer))
-        .replace("$2", commentOf(af))
-        .replace("$3", redefines(af, (outer != null ? outer : af)))
+        "attributes", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'",
+        "summary", summary(af, outer),
+        "comment", commentOf(af),
+        "redefines", redefines(af, (outer != null ? outer : af))))
     )
     .collect(Collectors.joining(System.lineSeparator()));
 
@@ -661,13 +714,23 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div><div class='fd-contract'>$4</div>$5"
-      .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for nav-title
-      .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: baseline;\">" + lm.name() + "</code>" : anchorTags(f))
-      .replace("$2", f.isUniverse() ? "": summary(f))
-      .replace("$3", commentOf(f))
-      .replace("$4", contractOf(f))
-      .replace("$5", redefines(f, f));
+    return fillTemplate("""
+      <h1 hidden>##title##</h1>
+      <h1>##heading##</h1>
+      <div class='heading-summary'>##summary##</div>
+      <div class='fd-comment'>##comment##</div>
+      <div class='fd-contract'>##contract##</div>
+      ##redefines##
+      """, Map.of(
+      "title",     f.isUniverse() ? lm.name() : htmlEncodedBasename(f), // short version of title for nav-title
+      "heading",   f.isUniverse() ? """
+        API-Documentation: module \
+        <code style="font-size: 1.4em; vertical-align: baseline;">""" + lm.name() + "</code>"
+        : anchorTags(f),
+      "summary",   f.isUniverse() ? "" : summary(f),
+      "comment",   commentOf(f),
+      "contract",  contractOf(f),
+      "redefines", redefines(f, f)));
   }
 
 
@@ -705,7 +768,14 @@ public class Html extends ANY
                 + "</pre></div>")
       .collect(Collectors.joining());
 
-    return res.isBlank() ? "" : "<details class=\"cursor-pointer\" open><summary><span class=fd-contract-title>" + contractType + "</span></summary>" + res + "</details>";
+    return res.isBlank() ? "" : fillTemplate("""
+      <details class="cursor-pointer" open>
+        <summary><span class=fd-contract-title>##title##</span></summary>
+        ##content##
+      </details>
+      """, Map.of(
+      "title", contractType,
+      "content", res));
   }
 
   /**
@@ -864,8 +934,7 @@ public class Html extends ANY
    */
   private String source(AbstractFeature feature)
   {
-    return "<a class='fd-src-link pl-5' href='$1'>[src]</a>"
-      .replace("$1", featureURL(feature));
+    return "<a class='fd-src-link pl-5' href='" + featureURL(feature) + "'>[src]</a>";
   }
 
 
@@ -941,7 +1010,7 @@ public class Html extends ANY
           .stream()
           .map(cl -> { return cl.replaceAll("^    ", ""); })
           .collect(Collectors.joining(System.lineSeparator()));
-        resultLines.add(RUNCODE_BOX_HTML.replace("##ID##", id).replace("##CODE##", code));
+        resultLines.add(fillTemplate(RUNCODE_BOX_HTML, Map.of("id", id, "code", code)));
         codeLines.clear();
         codeNo[0]++;
       }
@@ -1016,23 +1085,22 @@ public class Html extends ANY
   {
     int upDirCorrection = qualifiedName.equals("Modules") || qualifiedName.endsWith(".universe") ? 0 : 1;
 
-    return ("""
+    var root = upDirs((int) qualifiedName.chars().filter(c -> c == '.').count() + upDirCorrection);
+    return fillTemplate("""
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="utf-8" />
-        <title>$qualifiedName | Fuzion Docs</title>
-        <link rel="icon" sizes="32x32" href="$root32.png">
-        <link rel="stylesheet" type="text/css" href="$rootstyle.css" />
+        <title>##name## | Fuzion Docs</title>
+        <link rel="icon" sizes="32x32" href="##root##32.png">
+        <link rel="stylesheet" type="text/css" href="##root##style.css" />
       </head>
-      <body>""" +
-      bareHtml
-      + """
-        </body>
-        </html>
-        """)
-        .replace("$qualifiedName", String.join(" • ", java.util.List.of(qualifiedName.split("\\.")).reversed()))
-        .replace("$root", upDirs((int) qualifiedName.chars().filter(c -> c == '.').count() + upDirCorrection));
+      <body>##body##</body>
+      </html>
+      """, Map.of(
+        "name", String.join(" • ", java.util.List.of(qualifiedName.split("\\.")).reversed()),
+        "root", root,
+        "body", bareHtml));
   }
 
 
@@ -1231,9 +1299,9 @@ public class Html extends ANY
     var constraint = f.constraint();
 
     return (f.isOpenTypeParameter() ? "..." : "")
-           + "<span class='mx-5'>:</span><a class='fd-feature fd-inherited' href='$1'>$2</a>"
-           .replace("$1", featureRelativeURL(constraint.feature(), relativeTo))
-           .replace("$2", htmlEncodeNbsp(constraint.toString(true)));
+           + fillTemplate("<span class='mx-5'>:</span><a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
+             "url", featureRelativeURL(constraint.feature(), relativeTo),
+             "name", htmlEncodeNbsp(constraint.toString(true))));
   }
 
 
@@ -1285,20 +1353,13 @@ public class Html extends ANY
                                       : iter.hasNext() ? "│<span class=space-2></span>"
                                                        : "<span class=space-3></span>";
 
-        sb.append(
-          """
-
-          <li>$0$1</li>"""
-            .replace("$0", navFeatHtml(f, outerPrefix + featPrfx, relativeTo))
-            .replace("$1", navigationFeatures(innerFeatures, outerPrefix + subPrfx, relativeTo)));
+        sb.append(fillTemplate("\n<li>##feature####children##</li>", Map.of(
+          "feature", navFeatHtml(f, outerPrefix + featPrfx, relativeTo),
+          "children", navigationFeatures(innerFeatures, outerPrefix + subPrfx, relativeTo))));
       }
     while (iter.hasNext());
 
-    return """
-
-      <ul class="white-space-no-wrap">$0
-      </ul>"""
-        .replace("$0", sb.toString());
+    return "\n<ul class=\"white-space-no-wrap\">" + sb + "\n</ul>";
   }
 
   /**
@@ -1310,8 +1371,10 @@ public class Html extends ANY
   private String navFeatHtml(AbstractFeature f, String prefix, AbstractFeature relativeTo)
   {
     var fName = htmlEncodedBasename(f) + (f.isUniverse() ? " (module " + lm.name() + ")" : "");
-    var fHTML = "<a href='" + featureRelativeURL(f, relativeTo) + "'>" + fName + args(f) + "</a>";
-    return "<div>" + prefix + fHTML + "</div>";
+    return fillTemplate("<div>##prefix##<a href='##url##'>##name##</a></div>", Map.of(
+      "prefix", prefix,
+      "url", featureRelativeURL(f, relativeTo),
+      "name", fName + args(f)));
   }
 
 
@@ -1322,23 +1385,23 @@ public class Html extends ANY
   {
     String relativeToStr = relativeTo == null ? "" : featureAbsoluteURL(relativeTo);
 
-    return """
+    return fillTemplate("""
       <ul class="white-space-no-wrap">
         <li>
-          <div><a href=$0>Modules</a></div>
+          <div><a href=##root##>Modules</a></div>
             <ul style="list-style: disc inside">
-              $1
+              ##modules##
             </ul>
         </li>
       </ul>
-      """
-      .replace("$1", libModules.stream()
+      """, Map.of(
+      "modules", libModules.stream()
                                .map(m->m.name())
-                               .map(s->(config.bare()
-                                          ? ("<li><a href=" + config.docsRoot() + "/" + s + ">" + s + "</a></li>")
-                                          : ("<li><a href=" + relativePath("/" + s, relativeToStr) + ">" + s + "</a></li>")))
-                               .collect(Collectors.joining("\n")))
-      .replace("$0", config.bare() ? config.docsRoot() + "/" : relativePath("", relativeToStr));
+                               .map(s->fillTemplate("<li><a href=##url##>##name##</a></li>", Map.of(
+                                 "url", config.bare() ? config.docsRoot() + "/" + s : relativePath("/" + s, relativeToStr),
+                                 "name", s)))
+                               .collect(Collectors.joining("\n")),
+      "root", config.bare() ? config.docsRoot() + "/" : relativePath("", relativeToStr)));
   }
 
 
@@ -1386,7 +1449,7 @@ public class Html extends ANY
       """;
 
     var bareHtml =
-      """
+      fillTemplate("""
           <!-- GENERATED BY FZDOCS -->
           <div class='fd'>
             <div class="sidenav" id="sidenav">
@@ -1405,25 +1468,31 @@ public class Html extends ANY
               >
                 »
               </button>
-              <nav style="display: none">$2</nav>
+              <nav style="display: none">##navigation##</nav>
             </div>
             <div class="container">
-              <section>$0</section>
+              <section>##heading##</section>
               <section>
-                $1
+                ##main##
               </section>
-              $3
+              ##expand_btn##
             </div>
           </div>
-          <div class=version-hash>$4</div>
-        """
-        .replace("$0", headingSection(af))
-        .replace("$1", toggleFeatureDetails + main)
-        .replace("$2", navigation(lm.universe(), af))
-        .replace("$3", config.ignoreVisibility() ? """
-          <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
-        """ : "")
-        .replace("$4", Tool.fullVersion());
+          <div class=version-hash>##version##</div>
+        """, Map.of(
+          "heading",    headingSection(af),
+          "main",       toggleFeatureDetails + main,
+          "navigation", navigation(lm.universe(), af),
+          "expand_btn", config.ignoreVisibility()
+                          ? """
+                            <button onclick="
+                              for (let element of document.getElementsByClassName('fd-private')) {
+                                element.hidden = !element.hidden;
+                              }
+                            ">Toggle hidden features</button>
+                            """
+                          : "",
+          "version", Tool.fullVersion()));
 
     return config.bare()
       ? bareHtml
@@ -1438,7 +1507,7 @@ public class Html extends ANY
   {
     // NYI: BUG: some things (e.g. html id or links) might break if there are spaces in a module name
     StringBuilder modPage = new StringBuilder();
-    modPage.append("""
+    modPage.append(fillTemplate("""
       <!-- GENERATED BY FZDOCS -->
       <div class="fd">
       <div class="sidenav" id="sidenav">
@@ -1457,28 +1526,28 @@ public class Html extends ANY
         >
           »
         </button>
-        <nav style="display: none">$0</nav>
+        <nav style="display: none">##navigation##</nav>
       </div>
       <div class="container">
         <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
           <div class='fd-comment'></div>
         </section>
         <section>
-      """.replace("$0", navigationModules(null)));
+      """, Map.of("navigation", navigationModules(null))));
 
     for (LibraryModule mod : libModules)
       {
-        modPage.append("""
-          <details id="$2" class="cursor-pointer">
+        modPage.append(fillTemplate("""
+          <details id="##name##" class="cursor-pointer">
             <summary>
               <span class="overflow-wrap-break-word fz-code fd-signature">
-                <a class="fd-feature font-weight-600 ml-2" href="$1">$2</a>
-                <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
+                <a class="fd-feature font-weight-600 ml-2" href="##url##">##name##</a>
+                <a class="fd-anchor-sign mr-2" href="###name##">¶</a>
               </span>
             </summary>
           </details>
-          """.replace("$1", mod.name() + "/index.html")
-             .replace("$2", mod.name()));
+          """, Map.of("url",  mod.name() + "/index.html",
+                      "name", mod.name())));
       }
 
     modPage.append("""
