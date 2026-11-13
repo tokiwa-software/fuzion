@@ -1,0 +1,11 @@
+
+reg_issue8292.fz:27:18: error 1: Incompatible type parameter 'reg_issue8292.b.this' for 'T : reg_issue8292.b A'
+    say (a i32 _ b.this)
+-----------------^^^^^^
+formal type parameter 'T : reg_issue8292.b A' with constraint 'reg_issue8292.b i32'
+actual type parameter 'reg_issue8292.b.this'
+assignable to constraint: 'Any',
+                          'reg_issue8292.b E',
+                          'reg_issue8292.b.this'
+
+one error.
