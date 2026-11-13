@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = reg_issue5061
-include ../simple.mk
+include ../compile.mk # due to infinite recursion
