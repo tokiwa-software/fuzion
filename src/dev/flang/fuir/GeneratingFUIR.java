@@ -478,10 +478,6 @@ public class GeneratingFUIR extends FUIR
                  tagNumArrayCompl[t] = t < tagNum ? t : t+1;
                }
              var types = new List<>(g);
-             var tf_call = tf.lookup(new FeatureAndActuals((LibraryFeature) Types.resolved.f_Typed_Combiner_call,
-                                                           types),
-                                     FuzionConstants.NO_SELECT,
-                                     false /* isInheritanceCall */);
 
              vcazes.add(new AbstractCase(call.pos())
                {
@@ -2043,7 +2039,6 @@ public class GeneratingFUIR extends FUIR
       {
         var o = clazz(s._outer);
         var oc = clazz(o);
-        var of = (LibraryFeature) oc.feature();
         var f = s._getFeature.get();
         result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
         if (CHECKS) check

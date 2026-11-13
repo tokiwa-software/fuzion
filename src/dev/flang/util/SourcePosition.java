@@ -305,7 +305,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
     var sb = new StringBuilder();
     for (var l = start; l<=end; l++)
       {
-        sb.append(_sourceFile.line(l)).append("\n");
+        sb.append(_sourceFile.line(l));
       }
     return sb.toString();
   }
@@ -380,6 +380,49 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   public String sourceText()
   {
     return _sourceFile.asString(bytePos(), byteEndPos());
+  }
+
+
+  /**
+   * The actual text in the source code this source position points to, with indentation replaced by
+   * prefix.
+   *
+   * @return
+   */
+  public String sourceTextPrefix(String prefix)
+  {
+    var res = sourceText();
+
+    /* if the sourceText extends several lines, e.g, the condition in this `if`
+     *
+     *     if (a > b &&
+     *         c < d    ) then
+     *
+     * res looks a bit ugly
+     *
+     *     (a > b &&
+     *         c < d    )
+     *
+     * so we remove to indentation to get (for prefix=="")
+     *
+     *     (a > b &&
+     *      c < d    )
+     *
+     * or, for prefix="____"
+     *
+     *     ____(a > b &&
+     *     ____ c < d    )
+     */
+    var p = bytePos();
+    var i = 0;
+    var spaces = new StringBuilder();
+    while (p-1-i >= 0 && _sourceFile.byteAt(p-1-i) != (byte) '\n')
+      {
+        i++;
+        spaces.append(" ");
+      }
+
+    return prefix + res.replaceAll("\n"+spaces, "\n"+prefix);
   }
 
 

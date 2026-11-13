@@ -57,13 +57,6 @@ public abstract class LibraryCall extends AbstractCall
    */
   public final LibraryModule _libModule;
 
-
-  /**
-   * index of this call within _libModule.
-   */
-  private final int _index;
-
-
   private final AbstractType _type;
   private final Expr _target;
   private final List<Expr> _actuals;
@@ -81,7 +74,6 @@ public abstract class LibraryCall extends AbstractCall
   LibraryCall(LibraryModule lib, int index, Stack<Expr> s)
   {
     _libModule = lib;
-    _index = index;
     _type = lib.callType(index);
     var na = _libModule.callNumArgs(index);
     var actuals = new List<Expr>();

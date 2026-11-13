@@ -769,8 +769,8 @@ NYI: UNDER DEVELOPMENT:
                 /**
                  * e.g.:
                  *
-                 * this: 'TP : concur.thread_pool'
-                 * actual: 'concur.thread_pool'
+                 * this: 'TP : property.orderable'
+                 * actual: 'integer'
                  */
                 case ValueType, RefType ->
                   // via some feature that actual inherits
@@ -2507,12 +2507,12 @@ there is no common super type of the two types (Types.t_ERROR)
     var ai = 0;  // index in actuals
     for (var tp : af.typeArguments())
       {
+        var c = adjustConstraint.apply(tp.constraint(context));
         var ai0 = ai;
         while ((ai0==ai || tp.isOpenTypeParameter()) && ai < actuals.size())  // run repeatedly for openTypesParameter
           {
             var a = actuals.get(ai);
             var ap = actualPositions.size() > ai ? actualPositions.get(ai) : null;
-            var c = adjustConstraint.apply(tp.constraint(context));
             result = a.checkActualTypePar(context, tp,
                                           ap != null ? ap.pos() : pos,
                                           c) && result;
