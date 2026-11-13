@@ -29,6 +29,37 @@
 #
 test_ternary is
 
+  # chained ternary with conditions aligned and '?'/' :' at different columns
+  _ := false ? 1 :
+       false ? 2 :
+       false ? 3 :
+       false ? 4
+             : 5
+
+  # chained ternary with '?' and ':' at the beginning of each line
+  _ := false
+          ? 1
+          : false
+          ? 2
+          : false
+          ? 3
+          : false
+          ? 4
+          : 5
+
+  # chained ternary with '?' and ':' indented diagonally
+  _ := false ? 1 : false
+                 ? 2 : false
+                     ? 3 : false
+                         ? 4 : 5
+
+  # chained ternary with ':' aligned with the first ':'
+  _ := false ? 1
+             : false ? 2
+             : false ? 3
+             : false ? 4
+             : 5
+
   a is
     ternary ? : (b, c Any) is say "a ? $b : $c"
 
