@@ -1,0 +1,105 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test Makefile
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+reg_issue37 =>
+
+  a(T : Any) is
+    b : a b is                     # 1. should flag an error: `b` found in `a.b` and in `a`
+
+  x is
+    y : x is
+      f(v z) => say "f"            # 4. should flag an error: `z` found in `x.y` and in `x`
+    z is
+
+  # several type parameters
+  a2(S : Any, T : Any) is
+    b2 : a2 S b2 is                # 2. should flag an error, suggest `(a2 S T).b2`
+
+  # ambiguous type nested in an actual type parameter of the inherit call
+  c(T : Any) is
+    d : c (option d) is            # 3. should flag an error, suggest `(c T).d`
+
+  # outer that defines a type is part of the relative name
+  m is
+    n is
+      o : n is
+        f(v l) => say "f"          # 5. should flag an error, suggest `reg_issue37.m.n.o.this.l` or `m.n.l`
+      l is
+
+  # three levels: two heirs and the declaring outer
+  s is
+    t : s is
+      w : s is
+        f(v e) => say "f"          # 6. should flag an error, three suggestions
+    e is
+
+  # qualified versions as suggested by the errors above must work
+  a3(S : Any, T : Any) is
+    b3 : a3 S (a3 S T).b3 is
+      say "ok in a3.b3"
+
+  c3(T : Any) is
+    d3 : c3 (option (c3 T).d3) is
+      say "ok in c3.d3"
+
+  m3 is
+    n is
+      o : n is
+        f(v reg_issue37.m3.n.o.this.l) => say "f"
+        g(v m3.n.l)                    => say "g"
+      l is
+
+  s3 is
+    t : s3 is
+      w : s3 is
+        f1(v reg_issue37.s3.t.w.this.e) => say "f1"
+        f2(v reg_issue37.s3.t.this.e)   => say "f2"
+        f3(v s3.e)                      => say "f3"
+    e is
+
+  p(T : Any) is
+    q : p (p T).q is
+      say "ok in p.q"
+
+  u is
+    v : u is
+      g(w reg_issue37.u.v.this.k) => say "g"
+      h(w u.k)                    => say "h"
+    k is
+
+  _ := (p i32).q
+  _ := (a3 i32 bool).b3
+  _ := (c3 i32).d3
+  m3.n.o.f m3.n.o.l
+  m3.n.o.g m3.n.l
+  s3.t.w.f1 s3.t.w.e
+  s3.t.w.f2 s3.t.e
+  s3.t.w.f3 s3.e
+  u.v.g u.v.k
+  u.v.h u.k
+
+  # the suggested qualified types are different types
+  u.v.g u.k                        # 7. should flag an error: expected `u.v.k`, found `u.k`
+  u.v.h u.v.k                      # 8. should flag an error: expected `u.k`, found `u.v.k`

@@ -136,9 +136,9 @@ Type inference failed for one type parameter 'T'
 generics_negative.fz:193:22: error 17: Ambiguous type
         _  := option X  nil      # 52. should flag an error: ambiguous type parameter
 ---------------------^
-For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
-Type that is ambiguous: 'X'
-Possible features that match this type:
+The compiler cannot resolve the type in this declaration because it is ambiguous.
+Ambiguous type: 'X'
+Matching features found:
 'generics_negative.ambiguousTypeParameterName.outer.inner.X' defined at generics_negative.fz:191:13
       inner(X : Any, Y2 : Any, Z : Any)
 ------------^
@@ -146,15 +146,15 @@ and 'generics_negative.ambiguousTypeParameterName.outer.X' defined at generics_n
     outer(X, Y, Z : Any) is
 ----------^
 
-To solve this, rename these features such that each one has a unique name.
+To solve this, rename these features so that each has a unique name.
 
 
 generics_negative.fz:196:22: error 18: Ambiguous type
         _  := option Z  nil      # 53. should flag an error: ambiguous type parameter
 ---------------------^
-For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
-Type that is ambiguous: 'Z'
-Possible features that match this type:
+The compiler cannot resolve the type in this declaration because it is ambiguous.
+Ambiguous type: 'Z'
+Matching features found:
 'generics_negative.ambiguousTypeParameterName.outer.inner.Z' defined at generics_negative.fz:191:32
       inner(X : Any, Y2 : Any, Z : Any)
 -------------------------------^
@@ -162,7 +162,7 @@ and 'generics_negative.ambiguousTypeParameterName.outer.Z' defined at generics_n
     outer(X, Y, Z : Any) is
 ----------------^
 
-To solve this, rename these features such that each one has a unique name.
+To solve this, rename these features so that each has a unique name.
 
 
 generics_negative.fz:211:20: error 19: Type not found

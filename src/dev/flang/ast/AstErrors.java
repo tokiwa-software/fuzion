@@ -1457,15 +1457,89 @@ public class AstErrors extends ANY
 
   public static void ambiguousType(SourcePosition pos,
                                    String t,
-                                   List<AbstractFeature> possibilities)
+                                   List<FeatureAndOuter> possibilities)
   {
+    if (PRECONDITIONS) require
+      (possibilities.size() > 1);
+
+    var qualifiedTypes = new StringBuilder();
+    var features = new TreeSet<AbstractFeature>();
+    for (var fo : possibilities)
+      {
+        features.add(fo._feature);
+        var q = qualifiedTypeSuggestion(pos, t, fo, possibilities);
+        if (q != null)
+          {
+            qualifiedTypes
+              .append(qualifiedTypes.length() > 0 ? " or " : "")
+              .append(code(q));
+          }
+      }
     error(pos,
           "Ambiguous type",
-          "For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.\n" +
-          "Type that is ambiguous: " + st(t) + "\n" +
-          "Possible features that match this type:\n" +
-          featureList(possibilities) + "\n" +
-          "To solve this, rename these features such that each one has a unique name.");
+          "The compiler cannot resolve the type in this declaration because it is ambiguous.\n" +
+          "Ambiguous type: " + st(t) + "\n" +
+          (features.size() == possibilities.size()
+           ? ("Matching features found:\n" +
+              featureList(possibilities.map2(fo -> fo._feature)) + "\n" +
+                "To solve this, rename these features so that each has a unique name.")
+           : ("The same feature was found at different levels of outer features, resulting in different types:\n" +
+              featuresAndOuterList(possibilities) + "\n" +
+              (qualifiedTypes.length() > 0
+               ? "To solve this, qualify the type using " + qualifiedTypes + "."
+               : "To solve this, rename these features so that each has a unique name."))));
+  }
+
+  private static String qualifiedTypeSuggestion(SourcePosition pos,
+                                                String t,
+                                                FeatureAndOuter fo,
+                                                List<FeatureAndOuter> possibilities)
+  {
+    var o = fo._outer;
+    var declaringOuter = fo._feature.outer();
+    String result;
+    if (o.isUniverse() || o.isCotype())
+      {
+        result = o.qualifiedNameHuman() + "." + t;
+      }
+    else if (declaringOuter != o)
+      {
+        result = isInInheritsOf(o, pos) ? null : o.qualifiedNameHuman() + ".this." + t;
+      }
+    else if (possibilities.stream().anyMatch(x -> x._outer != o && x._feature.outer() == o))
+      {
+        result = relativeTypeName(o) + "." + t;
+      }
+    else
+      {
+        result = o.qualifiedNameHuman() + ".this." + t;
+      }
+    return result;
+  }
+
+    private static boolean isInInheritsOf(AbstractFeature o, SourcePosition pos)
+  {
+    return o.inherits().stream()
+      .anyMatch(c -> c.actualTypeParameters().stream().anyMatch(at -> containsPos(at, pos)));
+  }
+
+  private static boolean containsPos(AbstractType t, SourcePosition pos)
+  {
+    return t instanceof UnresolvedType ut &&
+      (ut.pos()._sourceFile == pos._sourceFile && ut.pos().bytePos() == pos.bytePos() ||
+       ut.generics().stream().anyMatch(g -> containsPos(g, pos)));
+  }
+
+  private static String relativeTypeName(AbstractFeature o)
+  {
+    var outer = o.outer();
+    var name = (outer == null || outer.isUniverse() || !outer.definesType()
+                ? ""
+                : relativeTypeName(outer) + ".") + o.featureName().baseNameHuman();
+    var tps = o.typeArguments();
+    return tps.isEmpty()
+      ? name
+      : "(" + name + " " + tps.stream().map(tp -> tp.featureName().baseNameHuman()).collect(Collectors.joining(" ")) + ")";
   }
 
   public static void typeNotFound(SourcePosition pos,

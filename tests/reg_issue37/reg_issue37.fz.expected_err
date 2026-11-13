@@ -1,0 +1,130 @@
+
+reg_issue37.fz:29:11: error 1: Ambiguous type
+    b : a b is                     # 1. should flag an error: `b` found in `a.b` and in `a`
+----------^
+The compiler cannot resolve the type in this declaration because it is ambiguous.
+Ambiguous type: 'b'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.a.b' found 'reg_issue37.a.b' defined at reg_issue37.fz:29:5
+    b : a b is                     # 1. should flag an error: `b` found in `a.b` and in `a`
+----^
+and in 'reg_issue37.a' found 'reg_issue37.a.b' defined at reg_issue37.fz:29:5
+    b : a b is                     # 1. should flag an error: `b` found in `a.b` and in `a`
+----^
+
+To solve this, qualify the type using '(a T).b'.
+
+
+reg_issue37.fz:38:15: error 2: Ambiguous type
+    b2 : a2 S b2 is                # 2. should flag an error, suggest `(a2 S T).b2`
+--------------^^
+The compiler cannot resolve the type in this declaration because it is ambiguous.
+Ambiguous type: 'b2'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.a2.b2' found 'reg_issue37.a2.b2' defined at reg_issue37.fz:38:5
+    b2 : a2 S b2 is                # 2. should flag an error, suggest `(a2 S T).b2`
+----^^
+and in 'reg_issue37.a2' found 'reg_issue37.a2.b2' defined at reg_issue37.fz:38:5
+    b2 : a2 S b2 is                # 2. should flag an error, suggest `(a2 S T).b2`
+----^^
+
+To solve this, qualify the type using '(a2 S T).b2'.
+
+
+reg_issue37.fz:42:19: error 3: Ambiguous type
+    d : c (option d) is            # 3. should flag an error, suggest `(c T).d`
+------------------^
+The compiler cannot resolve the type in this declaration because it is ambiguous.
+Ambiguous type: 'd'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.c.d' found 'reg_issue37.c.d' defined at reg_issue37.fz:42:5
+    d : c (option d) is            # 3. should flag an error, suggest `(c T).d`
+----^
+and in 'reg_issue37.c' found 'reg_issue37.c.d' defined at reg_issue37.fz:42:5
+    d : c (option d) is            # 3. should flag an error, suggest `(c T).d`
+----^
+
+To solve this, qualify the type using '(c T).d'.
+
+
+reg_issue37.fz:33:11: error 4: Ambiguous type
+      f(v z) => say "f"            # 4. should flag an error: `z` found in `x.y` and in `x`
+----------^
+The compiler cannot resolve the type in this declaration because it is ambiguous.
+Ambiguous type: 'z'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.x.y' found 'reg_issue37.x.z' defined at reg_issue37.fz:34:5
+    z is
+----^
+and in 'reg_issue37.x' found 'reg_issue37.x.z' defined at reg_issue37.fz:34:5
+    z is
+----^
+
+To solve this, qualify the type using 'reg_issue37.x.y.this.z' or 'x.z'.
+
+
+reg_issue37.fz:48:13: error 5: Ambiguous type
+        f(v l) => say "f"          # 5. should flag an error, suggest `reg_issue37.m.n.o.this.l` or `m.n.l`
+------------^
+The compiler cannot resolve the type in this declaration because it is ambiguous.
+Ambiguous type: 'l'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.m.n.o' found 'reg_issue37.m.n.l' defined at reg_issue37.fz:49:7
+      l is
+------^
+and in 'reg_issue37.m.n' found 'reg_issue37.m.n.l' defined at reg_issue37.fz:49:7
+      l is
+------^
+
+To solve this, qualify the type using 'reg_issue37.m.n.o.this.l' or 'm.n.l'.
+
+
+reg_issue37.fz:55:13: error 6: Ambiguous type
+        f(v e) => say "f"          # 6. should flag an error, three suggestions
+------------^
+The compiler cannot resolve the type in this declaration because it is ambiguous.
+Ambiguous type: 'e'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.s.t.w' found 'reg_issue37.s.e' defined at reg_issue37.fz:56:5
+    e is
+----^
+and in 'reg_issue37.s.t' found 'reg_issue37.s.e' defined at reg_issue37.fz:56:5
+    e is
+----^
+and in 'reg_issue37.s' found 'reg_issue37.s.e' defined at reg_issue37.fz:56:5
+    e is
+----^
+
+To solve this, qualify the type using 'reg_issue37.s.t.w.this.e' or 'reg_issue37.s.t.this.e' or 's.e'.
+
+
+reg_issue37.fz:104:9: error 7: Incompatible types when passing argument in a call
+  u.v.g u.k                        # 7. should flag an error: expected `u.v.k`, found `u.k`
+--------^^^
+Actual type for argument #1 'w' does not match expected type.
+In call to          : 'reg_issue37.u.v.g'
+expected formal type: 'reg_issue37.this.u.v.k'
+actual type found   : 'reg_issue37.this.u.k'
+assignable to       : 'reg_issue37.this.u.k'
+for value assigned  : 'u.k'
+To solve this you could:
+  • make  'reg_issue37.this.u.v.k' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'w' to 'reg_issue37.this.u.k', or
+  • convert the type of the assigned value to 'reg_issue37.this.u.v.k'.
+
+
+reg_issue37.fz:105:9: error 8: Incompatible types when passing argument in a call
+  u.v.h u.v.k                      # 8. should flag an error: expected `u.k`, found `u.v.k`
+--------^^^^^
+Actual type for argument #1 'w' does not match expected type.
+In call to          : 'reg_issue37.u.v.h'
+expected formal type: 'reg_issue37.this.u.k'
+actual type found   : 'reg_issue37.this.u.v.k'
+assignable to       : 'reg_issue37.this.u.v.k'
+for value assigned  : 'u.v.k'
+To solve this you could:
+  • make  'reg_issue37.this.u.k' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'w' to 'reg_issue37.this.u.v.k', or
+  • convert the type of the assigned value to 'reg_issue37.this.u.k'.
+
+8 errors.
