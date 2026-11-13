@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.mir;
 
 import dev.flang.ast.AbstractModule; // NYI: CLEANUP: Remove dependency!
+import dev.flang.fe.LibraryFeature;
 
 
 /**
@@ -37,6 +38,27 @@ import dev.flang.ast.AbstractModule; // NYI: CLEANUP: Remove dependency!
  */
 public interface MirModule extends AbstractModule
 {
+
+  public LibraryFeature f_Typed_Combiner_call();
+  public LibraryFeature f_typed_applicator_apply();
+  public LibraryFeature f_Open_Types_type_foldf();
+  public LibraryFeature f_choice_apply();
+  public LibraryFeature f_Typed_Function_call();
+  public LibraryFeature f_choice_apply_f();
+  public LibraryFeature f_choice_combine();
+  public LibraryFeature f_choice_combine_other();
+  public LibraryFeature f_choice_combine_e();
+  public LibraryFeature f_effect_types_type_foldf();
+  public LibraryFeature f_Function_call();
+  public LibraryFeature f_flow_fallible_cause();
+  public LibraryFeature f_mutate_var_mutable_value();
+  public LibraryFeature f_Type_infix_colon();
+  public LibraryFeature f_Type_infix_colon_true();
+  public LibraryFeature f_Type_infix_colon_false();
+  public LibraryFeature f_effect_static_finally();
+  public LibraryFeature f_fuzion_Java_Object_Ref();
+  public LibraryFeature f_type_applicator_apply();
+  public LibraryFeature f_choice_combine_f();
 
 }
 
