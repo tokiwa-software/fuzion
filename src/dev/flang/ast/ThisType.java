@@ -139,7 +139,8 @@ class ThisType extends ResolvedType {
         f = o;
         o = f.outer();
       }
-    return o != null;
+    return o != null ||
+      fo.kind() == Feature.Kind.Function; // NYI: UNDER DEVELOPMENT: Do not create `ThisType` for a Function in the first place!
   }
 
 
