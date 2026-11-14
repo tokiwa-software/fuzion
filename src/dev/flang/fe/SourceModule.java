@@ -43,6 +43,8 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import java.util.function.Predicate;
+
 import java.util.stream.Collectors;
 import java.util.stream.Gatherer;
 
@@ -1156,7 +1158,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden, Predicate<AbstractFeature> isFixedFor)
   {
     if (PRECONDITIONS) require
       (outer != null);
@@ -1164,7 +1166,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
     List<FeatureAndOuter> result = new List<>();
     for (var n : ParsedOperatorCall.lookupNames(name))
       {
-        result.addAll(lookup0(outer, n, use, traverseOuter, hidden));
+        result.addAll(lookup0(outer, n, use, traverseOuter, hidden, isFixedFor));
       }
     return result;
   }
@@ -1192,7 +1194,12 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  private List<FeatureAndOuter> lookup0(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
+  private List<FeatureAndOuter> lookup0(AbstractFeature outer,
+                                        String name,
+                                        Expr use,
+                                        boolean traverseOuter,
+                                        boolean hidden,
+                                        Predicate<AbstractFeature> isFixedFor)
   {
     if (PRECONDITIONS) require
       (outer != null,
@@ -1213,11 +1220,24 @@ A post-condition of a feature that does not redefine an inherited feature must s
           {
             for (var v : e.getValue())
               {
-                if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                    !(use instanceof Call c && !c.isInheritanceCall() && v.isChoice()) &&
-                    (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, v)))
+                if (isVisible(v, use, hidden))
                   {
-                    result.add(new FeatureAndOuter(v, curOuter, inner));
+                    if (isFixedFor != null && !Errors.any() && v.isFixed() && !v.isTypeParameter() && !isFixedFor.test(curOuter))
+                      {
+                        for (var orig : v.redefines())
+                          {
+                            if (CHECKS) check
+                              (Errors.any() || !orig.isFixed()); // a fixed feature can never be redefined since it is not inherited
+                            if (isVisible(orig, use, hidden))
+                              {
+                                result.add(new FeatureAndOuter(orig, curOuter, inner));
+                              }
+                          }
+                      }
+                    else
+                      {
+                        result.add(new FeatureAndOuter(v, curOuter, inner));
+                      }
                   }
               }
           }
@@ -1227,6 +1247,14 @@ A post-condition of a feature that does not redefine an inherited feature must s
       }
     while (traverseOuter && curOuter != null);
     return result;
+  }
+
+  boolean isVisible(AbstractFeature f, Expr use, boolean hidden)
+  {
+    return
+      (use == null || (hidden != featureVisible(use.pos()._sourceFile, f))) &&
+      !(use instanceof Call c && !c.isInheritanceCall() && f.isChoice()) &&
+      (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, f));
   }
 
   @Override

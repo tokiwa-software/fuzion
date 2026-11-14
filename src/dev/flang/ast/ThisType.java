@@ -119,4 +119,29 @@ class ThisType extends ResolvedType {
     s.add(_feature);
   }
 
+
+  /**
+   * A `ThisType` is fixed, i.e., equivalent to `_feature.thisType(true)` if used in the context of
+   * `f` and in the chain of `f`, `f.outer()`, `f.outer().outer()`, ... there is a feature `g` such
+   * that `g.isFixed()` and `g.outer()==_feature`.
+   *
+   * If so, `this` is equivalent to `_feature.thisType(true)`.
+   *
+   * @param context the context this is used in
+   */
+  boolean isFixedFor(Context context)
+  {
+    var fo = _feature;
+    var f = context.outerFeature();
+    var o = f.outer();
+    while (o != null && !(f.isFixed() && o == fo))
+      {
+        f = o;
+        o = f.outer();
+      }
+    return o != null ||
+      fo.kind() == Feature.Kind.Function; // NYI: UNDER DEVELOPMENT: Do not create `ThisType` for a Function in the first place!
+  }
+
+
 }

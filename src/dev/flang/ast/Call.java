@@ -28,6 +28,8 @@ package dev.flang.ast;
 
 import java.util.ListIterator;
 
+import java.util.function.Predicate;
+
 import dev.flang.ast.AbstractMatch.Kind;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -753,11 +755,16 @@ public class Call extends AbstractCall
     if (_calledFeature == null && targetFeature != null)
       {
         res.resolveDeclarations(targetFeature);
-        var fo = findOnTarget(res, targetFeature, true).v1();
+        var tt = _target != null ? _target.typeForInferencing() : null;
+        var fo = findOnTarget2(res, context, targetFeature, tt, true).v1();
         if (fo != null)
           {
+            if (_target == null)
+              {
+                _target = fo.target(pos(), res, context);
+                _targetFrom = fo;
+              }
             setCalledFeatureAndTarget(res, context, fo);
-            splitOffTypeArgs(res, context);
           }
       }
 
@@ -818,11 +825,7 @@ public class Call extends AbstractCall
   private void setCalledFeatureAndTarget(Resolution res, Context context, FeatureAndOuter fo)
   {
     _calledFeature = fo._feature;
-    if (_target == null)
-      {
-        _target = fo.target(pos(), res, context);
-        _targetFrom = fo;
-      }
+    splitOffTypeArgs(res, context);
   }
 
 
@@ -839,7 +842,7 @@ public class Call extends AbstractCall
       }
     else
       {
-        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true).v0()
+        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true /* NYI: CHECK IF THIS IS OK FOR TARGET TYPE */ ).v0()
                                         : new List<FeatureAndOuter>();
         setPendingError(
           (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
@@ -869,13 +872,29 @@ public class Call extends AbstractCall
    *          1) all found features matching the name
    *          2) the matching feature or null if none was found
    */
-  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target, boolean mayBeSpecialWrtArgs)
-  {
-    if (PRECONDITIONS) require
-      (target != null);
 
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget2(Resolution res,
+                                                                     Context context,
+                                                                     AbstractFeature targetFeature,
+                                                                     AbstractType targetType,
+                                                                     boolean mayBeSpecialWrtArgs)
+  {
+    if (targetFeature == Types.f_ERROR || targetType == Types.t_ERROR)
+      {
+        return new Pair<>(new List<>(FeatureAndOuter.ERROR), FeatureAndOuter.ERROR);
+      }
+    else if (true)
+      {
+        return findOnTarget(res, targetFeature, mayBeSpecialWrtArgs,
+                            o-> targetType != null ? (!(targetType instanceof ThisType tttt) || tttt.isFixedFor(context)) : new ThisType(o).isFixedFor(context)
+                           );
+      }
+    else
+      {
     var calledName = FeatureName.get(_name, _actuals.size());
-    var fos = res._module.lookup(target, _name, this, _target == null, false);
+    var fos = res._module.lookup(targetFeature, _name, this, _target == null, false,
+                                 o-> targetType != null ? (!(targetType instanceof ThisType tttt) || tttt.isFixedFor(context)) : new ThisType(o).isFixedFor(context)
+                                );
     for (var fo : fos)
       {
         if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
@@ -884,7 +903,41 @@ public class Call extends AbstractCall
           }
       }
     var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
-      ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
+                                    ff -> (mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res)));
+    if (fo == null && mayBeSpecialWrtArgs)
+      { // handle implicit calls `f()` that expand to `f.call()`:
+        fo =
+          FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.arguments().size()==0);
+      }
+    return new Pair<>(fos, fo);
+      }
+  }
+
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
+                                                                    AbstractFeature target,
+                                                                    boolean mayBeSpecialWrtArgs)
+  {
+    return findOnTarget(res, target, mayBeSpecialWrtArgs, null);
+  }
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
+                                                                    AbstractFeature target,
+                                                                    boolean mayBeSpecialWrtArgs,
+                                                                    Predicate<AbstractFeature> isFixedFor)
+  {
+    if (PRECONDITIONS) require
+      (target != null);
+
+    var calledName = FeatureName.get(_name, _actuals.size());
+    var fos = res._module.lookup(target, _name, this, _target == null, false, isFixedFor);
+    for (var fo : fos)
+      {
+        if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
+          {
+            ff.resolveArgumentTypes(res);
+          }
+      }
+    var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
+      ff -> (mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res)));
     if (fo == null && mayBeSpecialWrtArgs)
       { // handle implicit calls `f()` that expand to `f.call()`:
         fo =
@@ -2905,30 +2958,23 @@ public class Call extends AbstractCall
     var outer = context.outerFeature();
     if (_calledFeature == null && _target != null && outer.state().atLeast(State.RESOLVED_INHERITANCE))
     {
-      AbstractType tt = _target.asParsedType();
-      if (tt instanceof UnresolvedType ut)
+      // check if this might be a left hand side of dot-type-call
+      var pt = _target.asParsedType();
+      var tt = pt != null ? pt.resolve(res, context, true)
+                          : null;
+      if (tt != null)
         {
-          // check if this might be a
-          // left hand side of dot-type-call
-          tt = ut.resolve(res, context, true);
-          tt = tt != null && tt != Types.t_ERROR ? tt.selfOrConstraint(res, context) : tt;
-        }
-      if (tt != null && tt != Types.t_ERROR)
-        {
-          var tf = tt.feature();
+          var tf = tt.selfOrConstraint(res, context).feature();
           res.resolveDeclarations(tf);
           if (!tf.isTypeParameter())
             {
               var ttf = tf.isUniverse() ? tf : res.cotype(tf);
-              res.resolveDeclarations(tf);
-              var fo = findOnTarget(res, tf, false).v1();
-              var tfo = findOnTarget(res, ttf, false).v1();
+              var fo  = findOnTarget2(res, context, tf,  tt, false).v1();
+              var tfo = findOnTarget2(res, context, ttf, tt, false).v1();
               var f = tfo == null ? null : tfo._feature;
-              if (f != null
-                  && f.outer() != null
-                  /* omitting dot-type does not work when calling
-                   the inherited methods of `Type`. Otherwise we
-                   would always have an ambiguity when calling `as_string` */
+              if (f != null && f.outer() != null
+                  /* omitting dot-type does not work when calling the inherited methods of
+                   * `Type`. Otherwise we would always have an ambiguity when calling `as_string` */
                   && f.outer().isCotype())
                 {
                   if (fo != null && !fo._feature.isTypeParameter() && tf.valueArguments().isEmpty() /* otherwise `t.f` cannot call inner `f` */)
@@ -2937,19 +2983,15 @@ public class Call extends AbstractCall
                       setToErrorState();
                     }
                   else
-                    {
-                      // we found a feature that fits a dot-type-call.
-                      _calledFeature = f;
+                    { // we found a feature that fits a dot-type-call.
                       suspendPendingNotFound();
                       var t = tf == context.outerFeature() && !tf.isCotype()
-                        ? tf.thisType().cotypeType(res)
-                        : _target.asParsedType();
-                      _target = Call.typeAsValue(_pos, t).resolveTypes(res, context);
+                        ? tf.thisType().cotypeType(res)       // NYI: CHECK: This happens in reg_issue8142, reg_issue5697, reg_issue3801 and type_in_cotype
+                        : _target.asParsedType(); // just `pt` does not work, unclear why.
+                      _target = typeAsValue(_pos, t).resolveTypes(res, context);
+                      _targetFrom = null;
+                      setCalledFeatureAndTarget(res, context, tfo);
                     }
-                }
-              if (_calledFeature != null)
-                {
-                  splitOffTypeArgs(res, context);
                 }
             }
         }

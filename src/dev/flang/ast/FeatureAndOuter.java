@@ -229,6 +229,15 @@ public class FeatureAndOuter extends ANY
                                 FeatureName name,
                                 Predicate<AbstractFeature> isCandidate)
   {
+    return filter(l, pos, operation, name, isCandidate, null);
+  }
+  static FeatureAndOuter filter(List<FeatureAndOuter> l,
+                                SourcePosition pos,
+                                String operation,
+                                FeatureName name,
+                                Predicate<AbstractFeature> isCandidate,
+                                Predicate<FeatureAndOuter> isCandidate2)
+  {
     var found = findExactOrCandidate(l,
                                      (FeatureName fn) -> fn.equalsExceptId(name),
                                      isCandidate);
@@ -236,6 +245,10 @@ public class FeatureAndOuter extends ANY
     if (found.stream().anyMatch(fao->fao._feature.isFixed()))
       {
         found.removeIf(fao->fao._feature.isAbstract());
+      }
+    if (isCandidate2 != null && found.stream().anyMatch(fao -> !isCandidate2.test(fao)))
+      {
+        found.removeIf(fao -> !isCandidate2.test(fao));
       }
 
     return switch (found.size())

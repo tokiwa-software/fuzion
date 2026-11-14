@@ -21,22 +21,26 @@
 #
 # -----------------------------------------------------------------------
 
-# regression test for issue #7706: Calling `fixed` feature in outer feature ignores actual outer type
+# regression test for issue #7706: Calling `fixed` feature in outer feature ignores actual outer
+# type
 #
 # Calling the `fixed` feature `q` from the inner feature `n.x` must use the
 # actual outer type, so `m.n.x`, `b.n.x` and `a.n.x` print "m.q", "b.q", "a.q".
 #
-m is
+o is
+  q unit => abstract   # NYI: UNDER DEVELOPMENT: the abstract `q` should be defined in `m`
+
+m : o is
   n is
     x =>
       q
 
-  fixed q => say "m.q"
+  redef fixed q => say "m.q"
 
 b : m is
-  fixed q => say "b.q"
+  redef fixed q => say "b.q"
 a : m is
-  fixed q => say "a.q"
+  redef fixed q => say "a.q"
 
 m.n.x
 b.n.x

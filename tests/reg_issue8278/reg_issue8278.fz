@@ -1,0 +1,143 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8278
+#
+# -----------------------------------------------------------------------
+
+# This test calls fixed inner feature `s` of `b` from a non-fixed feature in `bb` via a child
+# feature `c` via `c.bb`.  The bug was that here, for a call `b.this.s`, the outer feature is `c`,
+# so we must not call the fixed feature but the inherited feature from parent `a`.
+#
+#
+reg_issue8278 =>
+
+  # the simplified version of the test from issue #8278
+
+  simplified =>
+    a is
+      s => "a"
+    b : a is
+      redef fixed s => "b"
+      bb =>
+        say b.this.s
+    c : b is
+
+    c.bb
+
+  yap "simplfied: expected `a`, got: "
+  simplified
+
+  # the original version from issue #8278 using
+
+  original =>
+    a is
+      type.s => "a"
+    b : a is
+      redef fixed type.s => "b"
+      bb => say b.this.s
+    c : b is
+
+    c.bb
+
+  yap "original expect `a`, got: "
+  original
+
+  # a more comprehensive version:
+
+  comprehensive =>
+
+    a is
+      type.t1        => "a.t1"
+      type.t2        => "a.t2"
+      type.t3 String => abstract
+      type.t4 String => abstract
+      q1             => "a.q1"
+      q2             => "a.q2"
+      q3      String => abstract
+      q4      String => abstract
+      r1             => "a.r1"
+      r2             => "a.r2"
+      r3      String => abstract
+      r4      String => abstract
+
+    b : a is
+      redef fixed type.t2 => "b.t2"
+      redef       type.t3 => "b.t3"
+      redef fixed q2      => "b.q2"
+      redef       q3      => "b.q3"
+      bb =>
+        yap "comprehensive `b` expected a.t1, got: "; say b.this.t1
+        yap "comprehensive `b` expected b.t2, got: "; say b.this.t2
+        yap "comprehensive `b` expected b.t3, got: "; say b.this.t3
+        # sayco b.this.t4   # -- abstract in 'b'
+        yap "comprehensive `b` expected a.q1, got: "; say b.this.q1
+        yap "comprehensive `b` expected b.q2, got: "; say b.this.q2
+        yap "comprehensive `b` expected b.q3, got: "; say b.this.q3
+        # say b.this.q4   # -- abstract in 'b'
+        yap "comprehensive `b` expected a.r1, got: "; say b.this.r1
+        yap "comprehensive `b` expected a.r2, got: "; say b.this.r2
+        # say b.this.r3   # -- abstract in 'b'
+        # say b.this.r4   # -- abstract in 'b'
+
+      cb =>
+        yap "comprehensive `c` expected a.t1, got: "; say b.this.t1
+        yap "comprehensive `c` expected a.t2, got: "; say b.this.t2
+        yap "comprehensive `c` expected b.t3, got: "; say b.this.t3
+        yap "comprehensive `c` expected c.t4, got: "; say b.this.t4
+        yap "comprehensive `c` expected a.q1, got: "; say b.this.q1
+        yap "comprehensive `c` expected a.q2, got: "; say b.this.q2
+        yap "comprehensive `c` expected b.q3, got: "; say b.this.q3
+        yap "comprehensive `c` expected c.q4, got: "; say b.this.q4
+        yap "comprehensive `c` expected a.r1, got: "; say b.this.r1
+        yap "comprehensive `c` expected a.r2, got: "; say b.this.r2
+        yap "comprehensive `c` expected c.r3, got: "; say b.this.r3
+        # say b.this.r4   # -- abstract in 'c'
+
+      db =>
+        yap "comprehensive `d` expected a.t1, got: "; say b.this.t1
+        yap "comprehensive `d` expected a.t2, got: "; say b.this.t2
+        yap "comprehensive `d` expected d.t3, got: "; say b.this.t3
+        yap "comprehensive `d` expected d.t4, got: "; say b.this.t4
+        yap "comprehensive `d` expected a.q1, got: "; say b.this.q1
+        yap "comprehensive `d` expected a.q2, got: "; say b.this.q2
+        yap "comprehensive `d` expected d.q3, got: "; say b.this.q3
+        yap "comprehensive `d` expected d.q4, got: "; say b.this.q4
+        yap "comprehensive `d` expected a.r1, got: "; say b.this.r1
+        yap "comprehensive `d` expected a.r2, got: "; say b.this.r2
+        # say b.this.r3 # -- abstract in 'd'
+        yap "comprehensive `d` expected c.r4, got: "; say b.this.r4
+
+    c : b is
+      redef fixed type.t4 => "c.t4"
+      redef fixed q4      => "c.q4"
+      redef fixed r3      => "c.r3"
+
+    d : c is
+      redef fixed type.t3 => "d.t3"
+      redef fixed type.t4 => "d.t4"
+      redef fixed q3      => "d.q3"
+      redef fixed q4      => "d.q4"
+      redef fixed r4      => "c.r4"
+
+    b.bb
+    c.cb
+    d.db
+
+  comprehensive
