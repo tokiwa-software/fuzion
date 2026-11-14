@@ -842,7 +842,7 @@ public class Call extends AbstractCall
       }
     else
       {
-        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true /* NYI: CHECK IF THIS IS OK FOR TARGET TYPE */ ).v0()
+        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true).v0()
                                         : new List<FeatureAndOuter>();
         setPendingError(
           (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
@@ -883,33 +883,11 @@ public class Call extends AbstractCall
       {
         return new Pair<>(new List<>(FeatureAndOuter.ERROR), FeatureAndOuter.ERROR);
       }
-    else if (true)
+    else
       {
         return findOnTarget(res, targetFeature, mayBeSpecialWrtArgs,
                             o-> targetType != null ? (!(targetType instanceof ThisType tttt) || tttt.isFixedFor(context)) : new ThisType(o).isFixedFor(context)
                            );
-      }
-    else
-      {
-    var calledName = FeatureName.get(_name, _actuals.size());
-    var fos = res._module.lookup(targetFeature, _name, this, _target == null, false,
-                                 o-> targetType != null ? (!(targetType instanceof ThisType tttt) || tttt.isFixedFor(context)) : new ThisType(o).isFixedFor(context)
-                                );
-    for (var fo : fos)
-      {
-        if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
-          {
-            ff.resolveArgumentTypes(res);
-          }
-      }
-    var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
-                                    ff -> (mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res)));
-    if (fo == null && mayBeSpecialWrtArgs)
-      { // handle implicit calls `f()` that expand to `f.call()`:
-        fo =
-          FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.arguments().size()==0);
-      }
-    return new Pair<>(fos, fo);
       }
   }
 
