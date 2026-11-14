@@ -131,15 +131,16 @@ class ThisType extends ResolvedType {
    */
   boolean isFixedFor(Context context)
   {
-    var fo = _feature;
-    var f = context.outerFeature();
-    var o = f.outer();
-    while (o != null && !(f.isFixed() && o == fo))
+    var result = _feature.kind() == Feature.Kind.Function;  // a function can not have children, so all is fixed
+    var cf = context.outerFeature();
+    var cfo = cf.outer();
+    while (cfo != null && !result)
       {
-        f = o;
-        o = f.outer();
+        result = cf.isFixed() && cfo == _feature;  // context is fixed and outer of context is _feature
+        cf = cfo;
+        cfo = cf.outer();
       }
-    return o != null;
+    return result;
   }
 
 
