@@ -756,7 +756,12 @@ public class Call extends AbstractCall
       {
         res.resolveDeclarations(targetFeature);
         var tt = _target != null ? _target.typeForInferencing() : null;
-        var fo = findOnTarget2(res, context, targetFeature, tt, true).v1();
+        var fos_fo = findOnTarget2(res, context, targetFeature, tt);
+        var fo = fos_fo.v1();
+        if (fo == null)
+          { // handle implicit calls `f()` that expand to `f.call()`:
+            fo = FeatureAndOuter.filter(fos_fo.v0(), pos(), FuzionConstants.OPERATION_CALL, FeatureName.get(_name, 0), ff->false);
+          }
         if (fo != null)
           {
             if (_target == null)
@@ -842,7 +847,7 @@ public class Call extends AbstractCall
       }
     else
       {
-        var fos = targetFeature != null ? findOnTarget(res, targetFeature).v0()
+        var fos = targetFeature != null ? findOnTarget(res, targetFeature, null).v0()
                                         : new List<FeatureAndOuter>();
         setPendingError(
           (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
@@ -876,22 +881,15 @@ public class Call extends AbstractCall
   private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget2(Resolution res,
                                                                      Context context,
                                                                      AbstractFeature targetFeature,
-                                                                     AbstractType targetType,
-                                                                     boolean mayBeSpecialWrtArgs)
+                                                                     AbstractType targetType)
   {
-    return findOnTarget(res, targetFeature, mayBeSpecialWrtArgs,
+    return findOnTarget(res, targetFeature,
                         o-> targetType != null ? (!(targetType instanceof ThisType tttt) || tttt.isFixedFor(context)) : new ThisType(o).isFixedFor(context)
                        );
-  }
-  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
-                                                                    AbstractFeature target)
-  {
-    return findOnTarget(res, target, true, null);
   }
 
   private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
                                                                     AbstractFeature target,
-                                                                    boolean mayBeSpecialWrtArgs,
                                                                     Predicate<AbstractFeature> isFixedFor)
   {
     if (PRECONDITIONS) require
@@ -913,11 +911,6 @@ public class Call extends AbstractCall
       }
     var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
       ff -> (mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res)));
-    if (fo == null && mayBeSpecialWrtArgs)
-      { // handle implicit calls `f()` that expand to `f.call()`:
-        fo =
-          FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.arguments().size()==0);
-      }
     return new Pair<>(fos, fo);
   }
 
@@ -2908,7 +2901,7 @@ public class Call extends AbstractCall
         res.resolveDeclarations(ct);
         if (res._module.lookup(tf, _name, this, false, false).isEmpty() &&
             res._module.lookup(ct, _name, this, false, false).stream().anyMatch(fo -> fo._feature.isTypeFeature())&&
-            findOnTarget(res, ct).v1() == null) // a matching type feature is found by tryResolveTypeCall
+            findOnTarget(res, ct, null).v1() == null) // a matching type feature is found by tryResolveTypeCall
           {
             return ct;
           }
@@ -2944,8 +2937,8 @@ public class Call extends AbstractCall
           if (!tf.isTypeParameter())
             {
               var ttf = tf.isUniverse() ? tf : res.cotype(tf);
-              var fo  = findOnTarget2(res, context, tf,  tt, false).v1();
-              var tfo = findOnTarget2(res, context, ttf, tt, false).v1();
+              var fo  = findOnTarget2(res, context, tf,  tt).v1();
+              var tfo = findOnTarget2(res, context, ttf, tt).v1();
               var f = tfo == null ? null : tfo._feature;
               if (f != null && f.outer() != null
                   /* omitting dot-type does not work when calling the inherited methods of
