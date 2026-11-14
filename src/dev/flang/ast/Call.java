@@ -554,7 +554,7 @@ public class Call extends AbstractCall
   private boolean targetErroneous(Resolution res, Context context)
   {
     return _target != null &&
-      (_target.asParsedType() == null || (_target.asParsedType() != null && _target.asParsedType().resolve(res, context, true) == null)) &&
+      (_target.asParsedType() == null || _target.asParsedType().resolve(res, context, true) == null) &&
       _target.type() == Types.t_ERROR;
   }
 
@@ -842,7 +842,7 @@ public class Call extends AbstractCall
       }
     else
       {
-        var fos = targetFeature != null ? findOnTarget(res, targetFeature, true).v0()
+        var fos = targetFeature != null ? findOnTarget(res, targetFeature).v0()
                                         : new List<FeatureAndOuter>();
         setPendingError(
           (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
@@ -879,24 +879,16 @@ public class Call extends AbstractCall
                                                                      AbstractType targetType,
                                                                      boolean mayBeSpecialWrtArgs)
   {
-    if (targetFeature == Types.f_ERROR || targetType == Types.t_ERROR)
-      {
-        return new Pair<>(new List<>(FeatureAndOuter.ERROR), FeatureAndOuter.ERROR);
-      }
-    else
-      {
-        return findOnTarget(res, targetFeature, mayBeSpecialWrtArgs,
-                            o-> targetType != null ? (!(targetType instanceof ThisType tttt) || tttt.isFixedFor(context)) : new ThisType(o).isFixedFor(context)
-                           );
-      }
+    return findOnTarget(res, targetFeature, mayBeSpecialWrtArgs,
+                        o-> targetType != null ? (!(targetType instanceof ThisType tttt) || tttt.isFixedFor(context)) : new ThisType(o).isFixedFor(context)
+                       );
+  }
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
+                                                                    AbstractFeature target)
+  {
+    return findOnTarget(res, target, true, null);
   }
 
-  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
-                                                                    AbstractFeature target,
-                                                                    boolean mayBeSpecialWrtArgs)
-  {
-    return findOnTarget(res, target, mayBeSpecialWrtArgs, null);
-  }
   private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
                                                                     AbstractFeature target,
                                                                     boolean mayBeSpecialWrtArgs,
@@ -904,6 +896,11 @@ public class Call extends AbstractCall
   {
     if (PRECONDITIONS) require
       (target != null);
+
+    if (target == Types.f_ERROR)
+      {
+        return new Pair<>(new List<>(FeatureAndOuter.ERROR), FeatureAndOuter.ERROR);
+      }
 
     var calledName = FeatureName.get(_name, _actuals.size());
     var fos = res._module.lookup(target, _name, this, _target == null, false, isFixedFor);
@@ -2911,7 +2908,7 @@ public class Call extends AbstractCall
         res.resolveDeclarations(ct);
         if (res._module.lookup(tf, _name, this, false, false).isEmpty() &&
             res._module.lookup(ct, _name, this, false, false).stream().anyMatch(fo -> fo._feature.isTypeFeature())&&
-            findOnTarget(res, ct, true).v1() == null) // a matching type feature is found by tryResolveTypeCall
+            findOnTarget(res, ct).v1() == null) // a matching type feature is found by tryResolveTypeCall
           {
             return ct;
           }
