@@ -1226,7 +1226,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               {
                 if (isVisible(v, use, hidden))
                   {
-                    if (!Errors.any() && v.isFixed() && !v.isTypeParameter() && !isFixedFor.test(curOuter))
+                    if (isFixedFor != null && !Errors.any() && v.isFixed() && !v.isTypeParameter() && !isFixedFor.test(curOuter))
                       {
                         for (var orig : v.redefines())
                           {
