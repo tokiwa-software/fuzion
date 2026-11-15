@@ -928,7 +928,7 @@ public class Call extends AbstractCall
   {
     var fos_fo = findOnTarget
       (res, target,
-       o -> target == null                    ? new ThisType(o).isFixedFor(context) :  // implicit target
+       o -> targetType == null                ? new ThisType(o).isFixedFor(context) :  // implicit target
             targetType instanceof ThisType tt ? tt             .isFixedFor(context)    // explicit .this target
                                               : true                                   // explicit other target
       );
