@@ -64,7 +64,7 @@ public interface SrcModule extends AbstractModule
   List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden, Predicate<AbstractFeature> isFixedFor);
   default List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
-    return lookup(outer, name, use, traverseOuter, hidden, x->false);
+    return lookup(outer, name, use, traverseOuter, hidden, null);
   }
   AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use);
   AbstractFeature findLambdaTarget(AbstractFeature outer);
