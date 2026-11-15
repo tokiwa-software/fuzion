@@ -33,7 +33,7 @@
 #
 # example:
 #
-#     mem := memoize (lock_free.Map i32 String) i32 String x->
+#     mem := memoize (lock_free.Map i64 String) i64 String x->
 #       say "computing $x"
 #       x.as_string
 #
@@ -70,7 +70,7 @@ public memoize(MM : container.Mutable_Map T R, T : property.equatable, R : Any, 
 #
 # you can now memoize this as follows
 #
-#     fib(n) i32 : memoize => keep n _->
+#     fib(n) i64 : memoize => keep n _->
 #       if n <= 1 then 1 else fib n-1 + fib n-2
 #
 # there are two things required: first, the function has to inherit from
@@ -83,7 +83,7 @@ public memoize(MM : container.Mutable_Map T R, T : property.equatable, R : Any, 
 #
 #     > ./build//bin/fz -effects fib.fz
 #      ...
-#     memoized_effect fib#1 i32 i32
+#     memoized_effect fib#1 i64 i64
 #      ...
 #
 # It might be desired not to keep memoized results forever. To do so, we have
@@ -91,7 +91,7 @@ public memoize(MM : container.Mutable_Map T R, T : property.equatable, R : Any, 
 # done as follows:
 #
 #     # define my own memoization effect
-#     my_fib_memo : memoize.memoized i32 i32 is
+#     my_fib_memo : memoize.memoized i64 i64 is
 #
 #     # create an instance of it and instate it
 #     my_fib_memo ! ()->
