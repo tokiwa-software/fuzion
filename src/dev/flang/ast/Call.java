@@ -2954,7 +2954,7 @@ public class Call extends AbstractCall
       var pt = _target.asParsedType();
       var tt = pt != null ? pt.resolve(res, context, true)
                           : null;
-      if (tt != null)
+      if (tt != null && tt != Types.t_ERROR)
         {
           var tf = tt.selfOrConstraint(res, context).feature();
           res.resolveDeclarations(tf);
@@ -2975,14 +2975,17 @@ public class Call extends AbstractCall
                       setToErrorState();
                     }
                   else
-                    { // we found a feature that fits a dot-type-call.
+                    {
+                      // we found a feature that fits a dot-type-call.
+                      _calledFeature = f;
                       suspendPendingNotFound();
                       var t = tf == context.outerFeature() && !tf.isCotype()
-                        ? tf.thisType().cotypeType(res)       // NYI: CHECK: This happens in reg_issue8142, reg_issue5697, reg_issue3801 and type_in_cotype
-                        : _target.asParsedType(); // just `pt` does not work, unclear why.
+                        ? tf.thisType().cotypeType(res)  // NYI: UNDER DEVELOPMENT: check why. This
+                                                         // happens in reg_issue8142, reg_issue5697,
+                                                         // reg_issue3801 and type_in_cotype
+                        : _target.asParsedType(); //  NYI: UNDER DEVELOPMENT: just `pt` does not work, unclear why.
                       _target = typeAsValue(_pos, t).resolveTypes(res, context);
                       _targetFrom = null;
-                      setCalledFeatureAndTarget(res, context, tfo);
                       splitOffTypeArgs(res, context);
                     }
                 }
