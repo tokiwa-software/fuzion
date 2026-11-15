@@ -756,12 +756,7 @@ public class Call extends AbstractCall
       {
         res.resolveDeclarations(targetFeature);
         var tt = _target != null ? _target.typeForInferencing() : null;
-        var fos_fo = findOnTargetHandleFixed(res, context, targetFeature, tt);
-        var fo = fos_fo.v1();
-        if (fo == null)
-          { // handle implicit calls `f()` that expand to `f.call()`:
-            fo = FeatureAndOuter.filter(fos_fo.v0(), pos(), FuzionConstants.OPERATION_CALL, FeatureName.get(_name, 0), ff->false);
-          }
+        var fo = findOnTargetHandleFixed(res, context, targetFeature, tt, true);
         if (fo != null)
           {
             setCalledFeatureAndTarget(res, context, fo);
@@ -878,7 +873,7 @@ public class Call extends AbstractCall
    *
    * @return a pair of
    *          1) all found features matching the name
-   *          2) the matching feature or null if none was found
+   *          2) the matching FeatureAndOuter or null if none was found
    */
   private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
                                                                     AbstractFeature target,
@@ -902,7 +897,7 @@ public class Call extends AbstractCall
           }
       }
     var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
-      ff -> (mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res)));
+      ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
     return new Pair<>(fos, fo);
   }
 
@@ -920,23 +915,33 @@ public class Call extends AbstractCall
    * inferred yet) or if the call is unqualified, i.e., we have to search for target in the outer
    * context.
    *
-   * @return a pair of
-   *          1) all found features matching the name
-   *          2) the matching feature or null if none was found
+   * @param mayBeSpeciaWrtArgs if nothing found try an implicit call `f()` that expand to
+   * `f.call()`.
+   *
+   * @return the matching FeatureAndOuter or null if none was found
    */
-  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTargetHandleFixed(Resolution res,
-                                                                               Context context,
-                                                                               AbstractFeature target,
-                                                                               AbstractType targetType)
+  private FeatureAndOuter findOnTargetHandleFixed(Resolution res,
+                                                  Context context,
+                                                  AbstractFeature target,
+                                                  AbstractType targetType,
+                                                  boolean mayBeSpeciaWrtArgs)
   {
-    return findOnTarget
+    var fos_fo = findOnTarget
       (res, target,
        o -> target == null                    ? new ThisType(o).isFixedFor(context) :  // implicit target
             targetType instanceof ThisType tt ? tt             .isFixedFor(context)    // explicit .this target
                                               : true                                   // explicit other target
       );
-  }
 
+    var fos = fos_fo.v0();
+    var fo = fos_fo.v1();
+    if (fo == null && mayBeSpeciaWrtArgs)
+      { // handle implicit calls `f()` that expand to `f.call()`:
+        fo =
+          FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, FeatureName.get(_name, 0), ff->false);
+      }
+    return fo;
+  }
 
 
   /**
@@ -2961,8 +2966,8 @@ public class Call extends AbstractCall
           if (!tf.isTypeParameter())
             {
               var ttf = tf.isUniverse() ? tf : res.cotype(tf);
-              var fo  = findOnTargetHandleFixed(res, context, tf,  tt).v1();
-              var tfo = findOnTargetHandleFixed(res, context, ttf, tt).v1();
+              var fo  = findOnTargetHandleFixed(res, context, tf,  tt, false);
+              var tfo = findOnTargetHandleFixed(res, context, ttf, tt, false);  // NYI: UNDER DEVELOPMENT: why not `true` as last argument?
               var f = tfo == null ? null : tfo._feature;
               if (f != null && f.outer() != null
                   /* omitting dot-type does not work when calling the inherited methods of
