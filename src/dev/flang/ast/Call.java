@@ -764,12 +764,8 @@ public class Call extends AbstractCall
           }
         if (fo != null)
           {
-            if (_target == null)
-              {
-                _target = fo.target(pos(), res, context);
-                _targetFrom = fo;
-              }
             setCalledFeatureAndTarget(res, context, fo);
+            splitOffTypeArgs(res, context);
           }
       }
 
@@ -830,7 +826,11 @@ public class Call extends AbstractCall
   private void setCalledFeatureAndTarget(Resolution res, Context context, FeatureAndOuter fo)
   {
     _calledFeature = fo._feature;
-    splitOffTypeArgs(res, context);
+    if (_target == null)
+      {
+        _target = fo.target(pos(), res, context);
+        _targetFrom = fo;
+      }
   }
 
 
@@ -2981,6 +2981,7 @@ public class Call extends AbstractCall
                       _target = typeAsValue(_pos, t).resolveTypes(res, context);
                       _targetFrom = null;
                       setCalledFeatureAndTarget(res, context, tfo);
+                      splitOffTypeArgs(res, context);
                     }
                 }
             }
