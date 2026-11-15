@@ -914,10 +914,11 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    *
-   * @param target the - assumed - target of the call
+   * @param target the - assumed - target of the call, null if call is unqualified
    *
-   * @param if target type is known, the type. If the call is unqualified, i.e., we have to search
-   * for target in the outer context, null.
+   * @param targetType if known, the type of the target.  null if type is still unknown (not
+   * inferred yet) or if the call is unqualified, i.e., we have to search for target in the outer
+   * context.
    *
    * @return a pair of
    *          1) all found features matching the name
@@ -928,11 +929,12 @@ public class Call extends AbstractCall
                                                                                AbstractFeature target,
                                                                                AbstractType targetType)
   {
-    return findOnTarget(res, target,
-                        o-> targetType != null
-                            ? (!(targetType instanceof ThisType tttt) || tttt.isFixedFor(context))
-                            : new ThisType(o).isFixedFor(context)
-                       );
+    return findOnTarget
+      (res, target,
+       o -> target == null                    ? new ThisType(o).isFixedFor(context) :  // implicit target
+            targetType instanceof ThisType tt ? tt             .isFixedFor(context)    // explicit .this target
+                                              : true                                   // explicit other target
+      );
   }
 
 
