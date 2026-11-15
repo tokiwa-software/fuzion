@@ -1155,6 +1155,9 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * @param hidden true to return features that are not visible, used for error
    * messages.
    *
+   * @param isFixedFor if given, a predicate that checks if a fixed feature would be allowed if
+   * found in given outer feature.  May be null.
+   *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
@@ -1190,6 +1193,9 @@ A post-condition of a feature that does not redefine an inherited feature must s
    *
    * @param hidden true to return features that are not visible, used for error
    * messages.
+   *
+   * @param isFixedFor if given, a predicate that checks if a fixed feature would be allowed if
+   * found in given outer feature.  May be null.
    *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.

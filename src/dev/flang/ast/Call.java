@@ -756,7 +756,7 @@ public class Call extends AbstractCall
       {
         res.resolveDeclarations(targetFeature);
         var tt = _target != null ? _target.typeForInferencing() : null;
-        var fos_fo = findOnTarget2(res, context, targetFeature, tt);
+        var fos_fo = findOnTargetHandleFixed(res, context, targetFeature, tt);
         var fo = fos_fo.v1();
         if (fo == null)
           { // handle implicit calls `f()` that expand to `f.call()`:
@@ -873,21 +873,13 @@ public class Call extends AbstractCall
    *
    * @param target the - assumed - target of the call
    *
+   * @param isFixedFor if given, a predicate that checks if a fixed feature would be allowed if
+   * found in given outer feature. May be null.
+   *
    * @return a pair of
    *          1) all found features matching the name
    *          2) the matching feature or null if none was found
    */
-
-  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget2(Resolution res,
-                                                                     Context context,
-                                                                     AbstractFeature targetFeature,
-                                                                     AbstractType targetType)
-  {
-    return findOnTarget(res, targetFeature,
-                        o-> targetType != null ? (!(targetType instanceof ThisType tttt) || tttt.isFixedFor(context)) : new ThisType(o).isFixedFor(context)
-                       );
-  }
-
   private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res,
                                                                     AbstractFeature target,
                                                                     Predicate<AbstractFeature> isFixedFor)
@@ -913,6 +905,36 @@ public class Call extends AbstractCall
       ff -> (mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res)));
     return new Pair<>(fos, fo);
   }
+
+
+  /**
+   * Find the feature that may be called on the given target
+   *
+   * @param res the resolution instance
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param target the - assumed - target of the call
+   *
+   * @param if target type is known, the type. If the call is unqualified, i.e., we have to search
+   * for target in the outer context, null.
+   *
+   * @return a pair of
+   *          1) all found features matching the name
+   *          2) the matching feature or null if none was found
+   */
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTargetHandleFixed(Resolution res,
+                                                                               Context context,
+                                                                               AbstractFeature target,
+                                                                               AbstractType targetType)
+  {
+    return findOnTarget(res, target,
+                        o-> targetType != null
+                            ? (!(targetType instanceof ThisType tttt) || tttt.isFixedFor(context))
+                            : new ThisType(o).isFixedFor(context)
+                       );
+  }
+
 
 
   /**
@@ -2937,8 +2959,8 @@ public class Call extends AbstractCall
           if (!tf.isTypeParameter())
             {
               var ttf = tf.isUniverse() ? tf : res.cotype(tf);
-              var fo  = findOnTarget2(res, context, tf,  tt).v1();
-              var tfo = findOnTarget2(res, context, ttf, tt).v1();
+              var fo  = findOnTargetHandleFixed(res, context, tf,  tt).v1();
+              var tfo = findOnTargetHandleFixed(res, context, ttf, tt).v1();
               var f = tfo == null ? null : tfo._feature;
               if (f != null && f.outer() != null
                   /* omitting dot-type does not work when calling the inherited methods of
