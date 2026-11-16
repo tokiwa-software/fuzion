@@ -348,7 +348,8 @@ class Clazz extends ANY implements Comparable<Clazz>
     // double check the semantics of fixed types to avoid runtime crashes in case of bugs like
     // #7158, #7707 or #6759.
     if (CHECKS) check
-      (!_feature.isFixed() || _type.outer().feature() == _feature.outer());
+      (_feature.isTypeParameter() ||
+       !_feature.isFixed() || _type.outer().feature() == _feature.outer());
 
     // needed in DFA-Phase to meet FUIR invariant that
     // stack must be empty at the end of a basic block
