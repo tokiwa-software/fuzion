@@ -216,6 +216,19 @@ class ValueSet extends Value
   }
 
 
+  /**
+   * Clone this ValueSet but set a different clazz.
+   *
+   * @param original
+   * @param cl
+   */
+  public ValueSet(ValueSet original, int cl)
+  {
+    super(cl);
+    _componentsArray = original._componentsArray;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -229,6 +242,10 @@ class ValueSet extends Value
    */
   public int compareTo(ValueSet other)
   {
+    if (_clazz != other._clazz)
+      {
+        return Integer.compare(_clazz, other._clazz);
+      }
     var s1 =       _componentsArray.length;
     var s2 = other._componentsArray.length;
     if (s1 == s2)
