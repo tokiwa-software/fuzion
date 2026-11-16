@@ -249,12 +249,12 @@ public class Intrinsics extends ANY
 
     put("mutate.read_fence", (c,cl,outer,in) ->
         {
-          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));  // NYI: UNDER_DEVELOPMENT: just a read fence would be enought here!
+          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_acquire")));
         });
 
     put("mutate.write_fence", (c,cl,outer,in) ->
         {
-          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));  // NYI: UNDER_DEVELOPMENT: just a write fence would be enought here!
+          return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_release")));
         });
 
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
