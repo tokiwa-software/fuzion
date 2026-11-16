@@ -31,8 +31,8 @@ test_fallible =>
 
   # success and failure using `flow.exception a`:
 
-  r0 := flow.exception a String (()->"ok")
-  r1 := flow.exception a String (()->(flow.exception a).env.cause (error "r1 fail"))
+  r0 := flow.exception a .on String (()->"ok")
+  r1 := flow.exception a .on String (()->(flow.exception a).env.cause (error "r1 fail"))
   say "0: expecting ok,    got $r0"
   say "1: expecting error, got $r1"
 

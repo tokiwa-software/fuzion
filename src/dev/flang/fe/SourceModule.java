@@ -43,6 +43,8 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import java.util.function.Predicate;
+
 import java.util.stream.Collectors;
 import java.util.stream.Gatherer;
 
@@ -278,8 +280,8 @@ public class SourceModule extends Module implements SrcModule
         f
           .impl()
           .addCalls(
-            plainCall("fuzion_runtime_init"),
-            plainCall("fuzion_runtime_deinit")
+            plainCall(Types.resolved.f_fuzion_runtime_init),
+            plainCall(Types.resolved.f_fuzion_runtime_deinit)
           );
       }
   }
@@ -291,12 +293,8 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param featureName
    */
-  private AbstractCall plainCall(String featureName)
+  private AbstractCall plainCall(AbstractFeature feature)
   {
-    var feature = lookupFeature(_universe, FeatureName.get(featureName, 0));
-    if (CHECKS) check
-      (feature.arguments().isEmpty(),
-       feature.outer().isUniverse());
     return new AbstractCall() {
       @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
       @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
@@ -1157,10 +1155,13 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * @param hidden true to return features that are not visible, used for error
    * messages.
    *
+   * @param isFixedFor if given, a predicate that checks if a fixed feature would be allowed if
+   * found in given outer feature.  May be null.
+   *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
+  public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden, Predicate<AbstractFeature> isFixedFor)
   {
     if (PRECONDITIONS) require
       (outer != null);
@@ -1168,7 +1169,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
     List<FeatureAndOuter> result = new List<>();
     for (var n : ParsedOperatorCall.lookupNames(name))
       {
-        result.addAll(lookup0(outer, n, use, traverseOuter, hidden));
+        result.addAll(lookup0(outer, n, use, traverseOuter, hidden, isFixedFor));
       }
     return result;
   }
@@ -1193,10 +1194,18 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * @param hidden true to return features that are not visible, used for error
    * messages.
    *
+   * @param isFixedFor if given, a predicate that checks if a fixed feature would be allowed if
+   * found in given outer feature.  May be null.
+   *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  private List<FeatureAndOuter> lookup0(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
+  private List<FeatureAndOuter> lookup0(AbstractFeature outer,
+                                        String name,
+                                        Expr use,
+                                        boolean traverseOuter,
+                                        boolean hidden,
+                                        Predicate<AbstractFeature> isFixedFor)
   {
     if (PRECONDITIONS) require
       (outer != null,
@@ -1217,11 +1226,24 @@ A post-condition of a feature that does not redefine an inherited feature must s
           {
             for (var v : e.getValue())
               {
-                if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                    !(use instanceof Call c && !c.isInheritanceCall() && v.isChoice()) &&
-                    (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, v)))
+                if (isVisible(v, use, hidden))
                   {
-                    result.add(new FeatureAndOuter(v, curOuter, inner));
+                    if (isFixedFor != null && !Errors.any() && v.isFixed() && !v.isTypeParameter() && !isFixedFor.test(curOuter))
+                      {
+                        for (var orig : v.redefines())
+                          {
+                            if (CHECKS) check
+                              (Errors.any() || !orig.isFixed()); // a fixed feature can never be redefined since it is not inherited
+                            if (isVisible(orig, use, hidden))
+                              {
+                                result.add(new FeatureAndOuter(orig, curOuter, inner));
+                              }
+                          }
+                      }
+                    else
+                      {
+                        result.add(new FeatureAndOuter(v, curOuter, inner));
+                      }
                   }
               }
           }
@@ -1231,6 +1253,14 @@ A post-condition of a feature that does not redefine an inherited feature must s
       }
     while (traverseOuter && curOuter != null);
     return result;
+  }
+
+  boolean isVisible(AbstractFeature f, Expr use, boolean hidden)
+  {
+    return
+      (use == null || (hidden != featureVisible(use.pos()._sourceFile, f))) &&
+      !(use instanceof Call c && !c.isInheritanceCall() && f.isChoice()) &&
+      (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, f));
   }
 
   @Override
@@ -1722,7 +1752,7 @@ An xref:fuzion_opentypeparameter[open type parameter] argument to a feature that
 A xref:fuzion_type_constraint[type constraint] of a xref:fuzion_typeparameter[type parameter] must be redefined using a xref:fuzion_type_constraint[type constraint] that is xref:fuzion_constraint_assignable[constraint assignable] from the original  xref:fuzion_typeparameter[type parameter]'s  xref:fuzion_type_constraint[type constraint].
     // end::fuzion_rule_REDEF_TYPE_CONSTRAINTS[]
             */
-                        ( argo.isTypeParameter() && !tr.constraintAssignableFrom(to)             ) ||
+                        ( argo.isTypeParameter() && !tr.constraintSatisfiedBy(to)             ) ||
             /*
     // tag::fuzion_rule_REDEF_VALUE_ARGUMENT[]
 A xref:fuzion_value_argument[value argument] must be redefined using a type that is a xref:fuzion_legal_covariant_this_type[legal covariant this_type] of the type of the corresponding xref:fuzion_value_argument[value argument] argument of the redefined feature.

@@ -1,10 +1,8 @@
 reg_issue5592.f
 reg_issue5592.f
-reg_issue5592.f
 option reg_issue5592.f
 Unary reg_issue5592.f (Sequence reg_issue5592.f)
 tuple reg_issue5592.f (array reg_issue5592.f)
-reg_issue5592.ff
 reg_issue5592.ff
 constraint not satisfied
 reg_issue5592.ff

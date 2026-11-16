@@ -1,0 +1,52 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8290
+#
+# -----------------------------------------------------------------------
+
+# the call target lookup for inheritance call `test.this.bla` in `child2`
+# failed.
+#
+reg_issue8290 =>
+
+  # the example from #8290 with `child3` added as a plain reference
+
+  test(A : Any, B : Any) is
+
+    inner(C : Any) is
+
+      child1 : bla f64 is
+
+        public redef as_string String => "child1 is $(child1.this.type)"
+
+      child2 : test.this.bla f32 is
+
+        public redef as_string String => "child2 is $(child2.this.type)"
+
+      child3 : Any is
+
+        public redef as_string String => "child3 is $(child3.this.type)"
+
+    bla(D : numeric) is
+
+
+  say <| test i32 unit .inner void .child1
+  say <| test i32 unit .inner void .child2
+  say <| test i32 unit .inner void .child3

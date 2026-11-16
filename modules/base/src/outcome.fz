@@ -103,7 +103,7 @@ public outcome(T : Any) : switch T error is
   #
   # this is essentially a no-op.
   #
-  public redef as_outcome outcome T
+  public redef fixed as_outcome outcome T
   =>
     outcome.this
 

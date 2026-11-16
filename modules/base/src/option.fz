@@ -41,7 +41,7 @@ public option(T : Any) : switch T nil is
 
   # 'prefix +' (identity)
   #
-  public prefix +? option T
+  public fixed prefix +? option T
   pre
     T : numeric
   => option.this >>= v -> +v
@@ -49,7 +49,7 @@ public option(T : Any) : switch T nil is
 
   # 'prefix -' (negation)
   #
-  public prefix -? option T
+  public fixed prefix -? option T
   pre
     T : numeric
   => option.this >>= v -> -?v
@@ -57,7 +57,7 @@ public option(T : Any) : switch T nil is
 
   # addition operator
   #
-  public infix +? (other option T) option T
+  public fixed infix +? (other option T) option T
   pre
     T : numeric
   => option.this >>= v -> other >>= w -> v +? w
@@ -65,7 +65,7 @@ public option(T : Any) : switch T nil is
 
   # subtraction operator
   #
-  public infix -? (other option T) option T
+  public fixed infix -? (other option T) option T
   pre
     T : numeric
   => option.this >>= v -> other >>= w -> v -? w
@@ -73,7 +73,7 @@ public option(T : Any) : switch T nil is
 
   # multiplication operator
   #
-  public infix *? (other option T) option T
+  public fixed infix *? (other option T) option T
   pre
     T : numeric
   => option.this >>= v -> other >>= w -> v *? w
@@ -81,7 +81,7 @@ public option(T : Any) : switch T nil is
 
   # exponentiation operator
   #
-  public infix **?(other option T) option T
+  public fixed infix **?(other option T) option T
   pre
     T : numeric
   => option.this >>= v -> other >>= w -> v **? w
@@ -89,7 +89,7 @@ public option(T : Any) : switch T nil is
 
   # division operator
   #
-  public infix /? (other option T) option T
+  public fixed infix /? (other option T) option T
     pre
       T : numeric
       safety: other != T.zero
@@ -99,7 +99,7 @@ public option(T : Any) : switch T nil is
 
   # modulo operator
   #
-  public infix %? (other option T) option T
+  public fixed infix %? (other option T) option T
     pre
       T : numeric
       safety: other != T.zero
@@ -109,7 +109,7 @@ public option(T : Any) : switch T nil is
 
   # equals operator
   #
-  public infix ==? (other option T) bool
+  public fixed infix ==? (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v = w
@@ -117,7 +117,7 @@ public option(T : Any) : switch T nil is
 
   # not equals operator
   #
-  public infix !=? (other option T) bool
+  public fixed infix !=? (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v != w
@@ -125,7 +125,7 @@ public option(T : Any) : switch T nil is
 
   # lower than operator
   #
-  public infix <?  (other option T) bool
+  public fixed infix <?  (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v <  w
@@ -133,7 +133,7 @@ public option(T : Any) : switch T nil is
 
   # lower or equal than operator
   #
-  public infix <=? (other option T) bool
+  public fixed infix <=? (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v ≤ w
@@ -141,7 +141,7 @@ public option(T : Any) : switch T nil is
 
   # greater than operator
   #
-  public infix >?  (other option T) bool
+  public fixed infix >?  (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v >  w
@@ -149,7 +149,7 @@ public option(T : Any) : switch T nil is
 
   # greater or equal than operator
   #
-  public infix >=? (other option T) bool
+  public fixed infix >=? (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v ≥ w
@@ -175,7 +175,7 @@ public option(T : Any) : switch T nil is
 
   # absolute value
   #
-  public abs option T
+  public fixed abs option T
   pre
     T : numeric
   =>
