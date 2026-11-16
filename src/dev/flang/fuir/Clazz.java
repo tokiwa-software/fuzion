@@ -345,8 +345,8 @@ class Clazz extends ANY implements Comparable<Clazz>
                      "actual outer  : " + _feature.outer().outer()          .qualifiedName());
       }
 
-    // double check the semantics of fixed types to avoid runtime crashes in case of bugs like #7707
-    // or #6759.
+    // double check the semantics of fixed types to avoid runtime crashes in case of bugs like
+    // #7158, #7707 or #6759.
     if (CHECKS) check
       (!_feature.isFixed() || _type.outer().feature() == _feature.outer());
 
