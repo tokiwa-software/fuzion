@@ -1,0 +1,18 @@
+m.q instance[reg_issue7707.original.m.n]
+b.q instance[reg_issue7707.original.b.n]
+b.q instance[reg_issue7707.original.a.n]
+m.q instance[reg_issue7707.second__.m.n]
+b.q instance[reg_issue7707.second__.b.n]
+b.q instance[reg_issue7707.second__.a.n]
+expecing m.q (vn in *.m) *.m.vn: m.q (vn in reg_issue7707.original_improved.m) reg_issue7707.original_improved.m.vn
+expecing b.q (vn in *.b) *.b.vn: b.q (vn in reg_issue7707.original_improved.b) reg_issue7707.original_improved.b.vn
+expecing a.q (vn in *.a) *.a.vn: a.q (vn in reg_issue7707.original_improved.a) reg_issue7707.original_improved.a.vn
+expecing m.q (vn in *.m) *.m.vn: m.q (vn in reg_issue7707.second___improved.m) reg_issue7707.second___improved.m.vn
+expecing b.q (vn in *.b) *.b.vn: b.q (vn in reg_issue7707.second___improved.b) reg_issue7707.second___improved.b.vn
+expecing a.q (vn in *.a) *.a.vn: a.q (vn in reg_issue7707.second___improved.a) reg_issue7707.second___improved.a.vn
+expecing m.q (Rn in *.m) *.m.Rn: m.q (Rn in reg_issue7707.original_ref_____.m) reg_issue7707.original_ref_____.m.Rn
+expecing b.q (Rn in *.b) *.b.Rn: b.q (Rn in reg_issue7707.original_ref_____.b) reg_issue7707.original_ref_____.b.Rn
+expecing a.q (Rn in *.a) *.a.Rn: a.q (Rn in reg_issue7707.original_ref_____.a) reg_issue7707.original_ref_____.a.Rn
+expecing m.q (Rn in *.m) *.m.Rn: m.q (Rn in reg_issue7707.second___ref_____.m) reg_issue7707.second___ref_____.m.Rn
+expecing b.q (Rn in *.b) *.b.Rn: b.q (Rn in reg_issue7707.second___ref_____.b) reg_issue7707.second___ref_____.b.Rn
+expecing a.q (Rn in *.a) *.a.Rn: a.q (Rn in reg_issue7707.second___ref_____.a) reg_issue7707.second___ref_____.a.Rn
