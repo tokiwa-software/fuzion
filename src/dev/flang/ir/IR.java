@@ -370,7 +370,7 @@ public abstract class IR extends ANY
         for (int i=cases.size()-1; i>=0; i--)
           {
             var caseCode = new List<Object>();
-            stack.push(() -> l.add(Integer.valueOf(addCode(caseCode))));
+            stack.push(() -> l.add(new MatchCaseIndex(addCode(caseCode))));
             var j = i;
             stack.push(() -> toStack(stack, caseCode, cases.get(j).code(), false));
           }
@@ -640,7 +640,7 @@ public abstract class IR extends ANY
       {
         result = ExprKind.Const;
       }
-    else if (e instanceof Integer)
+    else if (e instanceof MatchCaseIndex)
       {
         result = ExprKind.MatchCaseIndex;
       }

@@ -61,6 +61,7 @@ import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryFeature;
 
 import dev.flang.ir.Box;
+import dev.flang.ir.MatchCaseIndex;
 import dev.flang.ir.Tag;
 
 import dev.flang.mir.MIR;
@@ -1734,12 +1735,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   protected Object getExpr(int s)
   {
-    var result = super.getExpr(s);
     if (!_lookupDone)
       {
         _accessedSites.set(s-SITE_BASE);
       }
-    return result;
+    return super.getExpr(s);
   }
 
 
@@ -3307,7 +3307,7 @@ public class GeneratingFUIR extends FUIR
 
     var e = getExpr(s + 1 + cix);
 
-    return (Integer) e;
+    return ((MatchCaseIndex) e).idx();
   }
 
 
