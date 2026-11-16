@@ -616,13 +616,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   String qualifiedName(AbstractFeature context, boolean human)
   {
-    var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isCotype() ? outer().cotypeOrigin() : null;
-    return
-      isCoTypesRelayTypeParameter()
-        /* special type parameter used for this.type in type features */
-        ? (tfo != null ? tfo.qualifiedName(context, human) : "null")
-          + ".this.type"
-        : isCotype() && cotypeOrigin() != null
+    return isCotype() && cotypeOrigin() != null
           /* cotype: use original name and add ".type": */
           ? cotypeOrigin().qualifiedName(context, human) + ".type"
           /* a normal feature name */
@@ -980,7 +974,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isTypeFeature()
   {
     // NYI: BUG: wrongly returns false for features that a cotype inherits from Type but which are implemented in Any i.e. its outer feature is Any, see #3913
-    return outer() != null && (outer().isCotype() || Types.resolved != null && outer().compareTo(Types.resolved.f_Type) == 0);
+    return outer() != null && (outer().isCotype() || Types.resolved != null && outer() == Types.resolved.f_Type);
   }
 
 

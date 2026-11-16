@@ -87,6 +87,18 @@ public class Universe extends ExprWithPos
 
 
   /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    return Types.resolved != null
+      ? type().feature()
+      : super.inheritanceCallTargetFeature(res, context);  // create error, might happen while compiling base.fum
+  }
+
+
+  /**
    * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on

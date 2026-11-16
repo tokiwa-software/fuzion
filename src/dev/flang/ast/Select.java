@@ -212,49 +212,56 @@ public class Select extends Call {
   {
     var result = Call.ERROR;
 
-    var typeParameter = at.selfOrConstraint(context).feature();
-    var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
-
-    if (f != null)
+    if (at == Types.t_ERROR)
       {
-        if (_name == null)
-          {
-            result = new Call(pos(), _target, f.baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
-          }
-        else
-          {
-            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
-            result = new Call(pos(), selectTarget, f.baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null)
-            {
-              @Override
-              void checkTypes(Resolution res, Context context)
-              {
-                super.checkTypes(res, context);
-                if (_totalNames >= 0 && _totalNames < target().type().generics().size())
-                  {
-                    AstErrors.nonExhaustiveDestructuring(Select.this.pos(), target().type().generics().size(), _totalNames);
-                  }
-              }
-            };
-          }
-      }
-    else if (_allowValueArgumentAccess && _calledFeature != null)
-      {
-        var va = at.feature().valueArguments().size();
-
-        if (select() < va && _totalNames == va)
-          {
-            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
-            result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).baseName(), FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
-          }
-        else
-          {
-            AstErrors.destructuringMisMatch(pos(), va, _totalNames);
-          }
+        check(Errors.any());
       }
     else
       {
-        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, select(), at);
+        var typeParameter = at.selfOrConstraint(context).feature();
+        var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
+
+        if (f != null)
+          {
+            if (_name == null)
+              {
+                result = new Call(pos(), _target, f.baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
+              }
+            else
+              {
+                var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+                result = new Call(pos(), selectTarget, f.baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null)
+                  {
+                    @Override
+                    void checkTypes(Resolution res, Context context)
+                    {
+                      super.checkTypes(res, context);
+                      if (_totalNames >= 0 && _totalNames < target().type().generics().size())
+                        {
+                          AstErrors.nonExhaustiveDestructuring(Select.this.pos(), target().type().generics().size(), _totalNames);
+                        }
+                    }
+                  };
+              }
+          }
+        else if (_allowValueArgumentAccess && _calledFeature != null)
+          {
+            var va = at.feature().valueArguments().size();
+
+            if (select() < va && _totalNames == va)
+              {
+                var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+                result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).baseName(), FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+              }
+            else
+              {
+                AstErrors.destructuringMisMatch(pos(), va, _totalNames);
+              }
+          }
+        else
+          {
+            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, select(), at);
+          }
       }
     return result;
   }

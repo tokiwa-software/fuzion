@@ -478,10 +478,6 @@ public class GeneratingFUIR extends FUIR
                  tagNumArrayCompl[t] = t < tagNum ? t : t+1;
                }
              var types = new List<>(g);
-             var tf_call = tf.lookup(new FeatureAndActuals((LibraryFeature) Types.resolved.f_Typed_Combiner_call,
-                                                           types),
-                                     FuzionConstants.NO_SELECT,
-                                     false /* isInheritanceCall */);
 
              vcazes.add(new AbstractCase(call.pos())
                {
@@ -2043,7 +2039,6 @@ public class GeneratingFUIR extends FUIR
       {
         var o = clazz(s._outer);
         var oc = clazz(o);
-        var of = (LibraryFeature) oc.feature();
         var f = s._getFeature.get();
         result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
         if (CHECKS) check
@@ -2788,13 +2783,13 @@ public class GeneratingFUIR extends FUIR
         if (cf == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
-            if (!T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
+            if (!T._type.constraintSatisfiedBy(tclazz._type.generics().get(0))
             // NYI: CLEANUP: need to detect pre condition feature properly!
              && outerClazz.feature().featureName().isInternal())
               {
                 FuirErrors.unmetTypeContraint(c.pos(), tclazz._type.generics().get(0), T);
               }
-            cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
+            cf = T._type.constraintSatisfiedBy(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;
             innerClazz = tclazz.lookup(new FeatureAndActuals((FuirFeature) cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
