@@ -212,7 +212,7 @@ public class TailCall extends ANY
    */
   private boolean isTailCall(int cls, int s, int mustAssignTo)
   {
-    var isTC = _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
+    return switch (_fuir.codeAt(cls))
       {
       case Call ->
         {
@@ -273,8 +273,6 @@ public class TailCall extends ANY
       // any other code results in failure to detect a tail call:
       default -> false;
       };
-
-    return isTC;
   }
 
 
