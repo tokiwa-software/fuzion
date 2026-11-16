@@ -1,0 +1,28 @@
+
+reg_issue6857.fz:28:7: error 1: Incompatible types when passing argument in a call
+      list.this
+------^^^^^^^^^
+Actual type for argument #1 'h' does not match expected type.
+In call to          : 'list'
+expected formal type: 'list A'
+actual type found   : 'list.this'
+assignable to       : 'ref list A'
+for value assigned  : 'list.this'
+To solve this you could:
+  • change the type of the target 'h' to 'list.this', or
+  • convert the type of the assigned value to 'list A'.
+
+
+reg_issue6857.fz:29:7: error 2: Incompatible types in assignment
+      list.this
+------^^^^^^^^^
+assignment to field : 'list.some_feat.(λlist.this).call.result'
+expected formal type: 'list (list A)'
+actual type found   : 'list.this'
+assignable to       : 'ref list A'
+for value assigned  : 'list.this'
+To solve this you could:
+  • change the type of the target 'list.some_feat.(λlist.this).call.result' to 'list.this', or
+  • convert the type of the assigned value to 'list (list A)'.
+
+2 errors.

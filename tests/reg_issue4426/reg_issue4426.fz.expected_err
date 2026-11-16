@@ -17,6 +17,10 @@ While parsing: klammer, parse stack: klammer, bracketTerm, term, opExpr, operato
 reg_issue4426.fz:24:10: error 3: Wrong syntax in '.type' expression.
   while (b = 1 do
 ---------^^^^^^^^
+do
+^^
+  c := (t).type.x
+--^^^^^^^^^^^^^
 To solve this, make sure the expression to the left of '.type' denotes a type.
 
 3 errors.
