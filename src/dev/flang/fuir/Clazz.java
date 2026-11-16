@@ -334,19 +334,21 @@ class Clazz extends ANY implements Comparable<Clazz>
       : type;
     _feature = (FuirFeature) _type.feature();
 
-    /*
     if (_feature.isFixed() &&
         !_feature.isTypeParameter() &&
-        _type.outer().outer().feature() != _feature.outer().outer())
+        _type.outer().outer().feature() != _feature.outer().outer() &&
+        _type.feature().redefines().stream().anyMatch(f -> f == Types.resolved.f_effect_default_value))
       {
-        System.out.println("type is "+type);
-        System.out.println("_type is "+_type);
-        var x = "IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature:\n" +
-        _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _feature.outer().outer().toString();
-        Thread.dumpStack();
-        Errors.fatal(x);
+        Errors.fatal("NYI: BUG: #6759: redefinition of outer feature of effect with default value not supported yet\n" +
+                     "effect type: " + _type + "\n" +
+                     "required outer: " + _type   .outer().outer().feature().qualifiedName() + "\n" +
+                     "actual outer  : " + _feature.outer().outer()          .qualifiedName());
       }
-    */
+
+    // double check the semantics of fixed types to avoid runtime crashes in case of bugs like #7707
+    // or #6759.
+    if (CHECKS) check
+      (!_feature.isFixed() || _type.outer().feature() == _feature.outer());
 
     // needed in DFA-Phase to meet FUIR invariant that
     // stack must be empty at the end of a basic block
