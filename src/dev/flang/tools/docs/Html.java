@@ -1397,7 +1397,7 @@ public class Html extends ANY
       "modules", libModules.stream()
                                .map(m->m.name())
                                .map(s->fillTemplate("<li><a href=##url##>##name##</a></li>", Map.of(
-                                 "url", config.bare() ? config.docsRoot() + "/" + s : relativePath("/" + s, relativeToStr),
+                                 "url", config.bare() ? config.docsRoot() + "/" + s + "/" : relativePath("/" + s, relativeToStr),
                                  "name", s)))
                                .collect(Collectors.joining("\n")),
       "root", config.bare() ? config.docsRoot() + "/" : relativePath("", relativeToStr)));
