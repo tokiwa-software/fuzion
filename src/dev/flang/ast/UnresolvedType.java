@@ -369,7 +369,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   @Override
-  public String toString(boolean humanReadable, AbstractFeature context)
+  public String toString(boolean humanReadable)
   {
     return humanReadable && _name.startsWith(FuzionConstants.INTERNAL_NAME_SYMBOL) ? "_" : toString();
   }

@@ -2305,16 +2305,6 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * Get a String representation of this Type.
-   *
-   * Note that this does not work for instances of Type before they were
-   * resolved.  Use toString() for creating strings early in the front end
-   * phase.
-   */
-  public String toString(boolean humanReadable) { return toString(humanReadable, null); }
-
-
-  /**
    * Helper function for toString
    */
   private String featureName(boolean humanReadable)
@@ -2351,11 +2341,8 @@ there is no common super type of the two types (Types.t_ERROR)
    * Note that this does not work for instances of Type before they were
    * resolved.  Use toString() for creating strings early in the front end
    * phase.
-   *
-   * @param context the feature to which the name should be relative to
-   * NYI: CLEANUP: context seems unused?
    */
-  public String toString(boolean humanReadable, AbstractFeature context)
+  public String toString(boolean humanReadable)
   {
     String result = switch (kind())
       {
@@ -2380,7 +2367,7 @@ there is no common super type of the two types (Types.t_ERROR)
             // skip first generic 'RELAY#TYPE' for types of type features.
             for (var g : generics().drop(feature().isCotype() ? 1 : 0))
               {
-                res = res + " " + g.toStringWrapped(humanReadable, context);
+                res = res + " " + g.toStringWrapped(humanReadable);
               }
             yield res;
           }
@@ -2410,7 +2397,7 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   public String toString()
   {
-    return toString(false, null);
+    return toString(false);
   }
 
 
@@ -2429,17 +2416,6 @@ there is no common super type of the two types (Types.t_ERROR)
   public String toStringWrapped(boolean humanReadable)
   {
     return StringHelpers.wrapInParentheses(toString(humanReadable));
-  }
-
-
-  /**
-   * wrap the result of toString in parentheses if necessary
-   *
-   * @param context the feature to which the path should be relative to, universe if null
-   */
-  public String toStringWrapped(boolean humanReadable, AbstractFeature context)
-  {
-    return StringHelpers.wrapInParentheses(toString(humanReadable, context));
   }
 
 
