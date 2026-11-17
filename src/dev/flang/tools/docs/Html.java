@@ -164,7 +164,7 @@ public class Html extends ANY
         var constraint = constraintType.feature();
         return fillTemplate("<span class='fd-keyword mx-5'>:</span><a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
           "url", featureRelativeURL(constraint, relativeTo),
-          "name", htmlEncodeNbsp(constraintType.toString(true, af))));
+          "name", htmlEncodeNbsp(constraintType.toString(true))));
       }
     else
       {
@@ -180,7 +180,7 @@ public class Html extends ANY
               "name", htmlEncodedBasename(f)
                       + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
                       +  c.actualTypeParameters().stream()
-                          .map(at -> htmlEncodeNbsp(at.toString(true, af)))
+                          .map(at -> htmlEncodeNbsp(at.toString(true)))
                           .collect(Collectors.joining(", "))));
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
@@ -199,12 +199,12 @@ public class Html extends ANY
     var at = af.resultType();
     if (at.isParametricType())
       {
-        return htmlEncodeNbsp(at.toString(true, context))
+        return htmlEncodeNbsp(at.toString(true))
                + (at.isOpenGeneric() ? "..." : "");
       }
     return fillTemplate("<a class='fd-type' href='##url##'>##name##</a>", Map.of(
       "url", featureRelativeURL(at.feature(), relativeTo),
-      "name", htmlEncodeNbsp(at.toString(true, context))));
+      "name", htmlEncodeNbsp(at.toString(true))));
   }
 
 
