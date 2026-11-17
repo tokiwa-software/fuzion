@@ -32,10 +32,10 @@ public effect_wormhole is
   # the environment at the entry point of this wormhole, i.e., the
   # environment the effects are taken from
   #
-  effect_values := effect_types.type_foldf (Sequence container.Typed_Value).empty T,e->
+  effect_values := effect_types.type_foldf (Sequence (container.Typed_Value Any)).empty T,e->
       (if      T : local_effect then nil
        else if T : effect       then T.get_if_instated
-                                else nil              ).bind    (v -> e ++ [container.typed_value T v])
+                                else nil              ).bind    (v -> e ++ [container.typed_value Any T v])
                                                        .or_else e
 
 
