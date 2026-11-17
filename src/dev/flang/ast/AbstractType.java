@@ -987,40 +987,13 @@ NYI: UNDER DEVELOPMENT:
        Errors.any() || !isOpenGeneric(),
        Errors.any() || target.isParametricType() || target.isThisType() || target.feature().generics().sizeMatches(target.generics()));
 
-    AbstractType result = applyTypePars_(target);
-
-    if (POSTCONDITIONS) ensure
-      (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED,
-       result != null);
-
-    return result;
-  }
-
-
-  /**
-   * Replace generic types used by this type by the actual types given in
-   * target.
-   *
-   * Internal version of applyTypePars(target) that does not perform caching.
-   *
-   * @param tt a target type this is used in
-   *
-   * @return this with all generic arguments from target.feature._generics
-   * replaced by target._generics.
-   */
-  private AbstractType applyTypePars_(AbstractType tt)
-  {
-    /* NYI: Performance: This requires time in O(this.depth *
-     * feature.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
-     * is used to alleviate this a bit, but this is probably not sufficient!
-     */
     var result = this;
     if (dependsOnGenerics())
       {
-        var effectiveTargetType = tt.selfOrConstraint(Context.NONE);
+        var effectiveTargetType = target.selfOrConstraint(Context.NONE);
         result = switch(effectiveTargetType.kind())
           {
-            case ParametricType -> throw new Error("unexpected case in applyTypePars_");
+            case ParametricType -> throw new Error("unexpected case in applyTypePars");
             case ThisType -> applyTypePars(effectiveTargetType.feature(), effectiveTargetType.feature().genericsAsActuals());
             case ValueType, RefType ->
               {
@@ -1031,6 +1004,11 @@ NYI: UNDER DEVELOPMENT:
               }
           };
       }
+
+    if (POSTCONDITIONS) ensure
+      (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED,
+       result != null);
+
     return result;
   }
 
