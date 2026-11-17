@@ -851,14 +851,31 @@ wchar_t *build_unicode_environment_block(char *env[], size_t envLen) {
 }
 
 
-int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+// the pipe handles of a process to be created
+typedef struct {
+  HANDLE stdin_read, stdin_write;
+  HANDLE stdout_read, stdout_write;
+  HANDLE stderr_read, stderr_write;
+} fzE_process_pipes;
 
+// close all pipe handles that are still set
+static void fzE_close_process_pipes(fzE_process_pipes p)
+{
+  if (p.stdin_read) CloseHandle(p.stdin_read);
+  if (p.stdin_write) CloseHandle(p.stdin_write);
+  if (p.stdout_read) CloseHandle(p.stdout_read);
+  if (p.stdout_write) CloseHandle(p.stdout_write);
+  if (p.stderr_read) CloseHandle(p.stderr_read);
+  if (p.stderr_write) CloseHandle(p.stderr_write);
+}
+
+// create a process, the caller must hold fzE_lock
+static int fzE_process_create_locked(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result)
+{
   // Programmatically controlling which handles are inherited by new processes in Win32
   // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
 
-  HANDLE hStdinRead, hStdinWrite;
-  HANDLE hStdoutRead, hStdoutWrite;
-  HANDLE hStderrRead, hStderrWrite;
+  fzE_process_pipes p = {0};
 
   SECURITY_ATTRIBUTES saAttr = {
       .nLength = sizeof(SECURITY_ATTRIBUTES),
@@ -866,15 +883,17 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
       .lpSecurityDescriptor = NULL
   };
 
-  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0) ||
-      !CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0) ||
-      !CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
+  if (!CreatePipe(&p.stdin_read, &p.stdin_write, &saAttr, 0) ||
+      !CreatePipe(&p.stdout_read, &p.stdout_write, &saAttr, 0) ||
+      !CreatePipe(&p.stderr_read, &p.stderr_write, &saAttr, 0))
+    {
+      fzE_close_process_pipes(p);
       return -1;
-  }
+    }
 
-  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(p.stdin_write, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(p.stdout_read, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(p.stderr_read, HANDLE_FLAG_INHERIT, 0);
 
   // we resolve app path manually, because we
   // want to pass empty env where PATH is not set
@@ -891,59 +910,121 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
     NULL
   );
   free(app);
-  if (spw == 0) {
-    SetLastError(ERROR_FILE_NOT_FOUND);
-    return -1;
-  }
+  if (spw == 0)
+    {
+      SetLastError(ERROR_FILE_NOT_FOUND);
+      fzE_close_process_pipes(p);
+      return -1;
+    }
 
   wchar_t *args_w = build_unicode_args(args, argsLen);
   wchar_t *envBlock = build_unicode_environment_block(env, envLen);
 
-  if (!args_w) {
-    SetLastError(ERROR_INVALID_NAME);
-    return -1;
-  }
+  if (!args_w)
+    {
+      SetLastError(ERROR_INVALID_NAME);
+      free(envBlock);
+      fzE_close_process_pipes(p);
+      return -1;
+    }
+
+  // Only pass the three pipe ends used for the child's stdio to the child.
+  // Inheriting all inheritable handles would let concurrent children inherit
+  // each other's pipe ends, so readers may never see EOF.
+  STARTUPINFOEXW si = {0};
+  si.StartupInfo.cb = sizeof(STARTUPINFOEXW);
+  si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+  si.StartupInfo.hStdInput = p.stdin_read;
+  si.StartupInfo.hStdOutput = p.stdout_write;
+  si.StartupInfo.hStdError = p.stderr_write;
+
+  SIZE_T attr_size = 0;
+  InitializeProcThreadAttributeList(NULL, 1, 0, &attr_size);
+  si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)malloc(attr_size);
+  if (!si.lpAttributeList)
+    {
+      SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+      free(args_w);
+      free(envBlock);
+      fzE_close_process_pipes(p);
+      return -1;
+    }
+
+  if (!InitializeProcThreadAttributeList(si.lpAttributeList, 1, 0, &attr_size))
+    {
+      free(si.lpAttributeList);
+      free(args_w);
+      free(envBlock);
+      fzE_close_process_pipes(p);
+      return -1;
+    }
+
+  HANDLE inherited[] = { p.stdin_read, p.stdout_write, p.stderr_write };
+  if (!UpdateProcThreadAttribute(si.lpAttributeList, 0,
+                                 PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+                                 inherited, sizeof(inherited), NULL, NULL))
+    {
+      DeleteProcThreadAttributeList(si.lpAttributeList);
+      free(si.lpAttributeList);
+      free(args_w);
+      free(envBlock);
+      fzE_close_process_pipes(p);
+      return -1;
+    }
 
   PROCESS_INFORMATION pi;
-  STARTUPINFOW si = {0};
-  si.cb = sizeof(STARTUPINFOW);
-  si.dwFlags |= STARTF_USESTDHANDLES;
-  si.hStdInput = hStdinRead;
-  si.hStdOutput = hStdoutWrite;
-  si.hStdError = hStderrWrite;
-
   BOOL success = CreateProcessW(
     resolvedPath,
     args_w,
     NULL,
     NULL,
     TRUE,
-    CREATE_UNICODE_ENVIRONMENT,
+    EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT,
     envBlock,
     NULL,
-    &si,
+    &si.StartupInfo,
     &pi
   );
 
-  CloseHandle(hStdinRead);
-  CloseHandle(hStdoutWrite);
-  CloseHandle(hStderrWrite);
-
+  DeleteProcThreadAttributeList(si.lpAttributeList);
+  free(si.lpAttributeList);
   free(args_w);
   free(envBlock);
 
-  if (!success) {
-    return -1;
-  }
+  // these ends belong to the parent only
+  CloseHandle(p.stdin_read);
+  CloseHandle(p.stdout_write);
+  CloseHandle(p.stderr_write);
+  p.stdin_read = p.stdout_write = p.stderr_write = NULL;
+
+  if (!success)
+    {
+      fzE_close_process_pipes(p);
+      return -1;
+    }
 
   CloseHandle(pi.hThread);
 
   result[0] = (int64_t)pi.hProcess;
-  result[1] = (int64_t)hStdinWrite;
-  result[2] = (int64_t)hStdoutRead;
-  result[3] = (int64_t)hStderrRead;
+  result[1] = (int64_t)p.stdin_write;
+  result[2] = (int64_t)p.stdout_read;
+  result[3] = (int64_t)p.stderr_read;
 
   return 0;
+}
+
+
+int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+
+  // make sure no other process is created while we create this one
+  // and that only the intended handles are inherited
+  fzE_lock();
+
+  int ret = fzE_process_create_locked(args, argsLen, env, envLen, result);
+
+  fzE_unlock();
+
+  return ret;
 }
 
 
