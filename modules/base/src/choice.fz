@@ -140,7 +140,7 @@ is
 
   # create a string from this choice.
   #
-  # This will use the value stored stored in this choice and create its String
+  # This will use the value stored in this choice and create its String
   # representation using `prefix $` and return that without any additional
   # information.
   #
