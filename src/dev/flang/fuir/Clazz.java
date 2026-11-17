@@ -647,34 +647,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Special handling for features whose outer features are type features: Any
-   * references to x.this.type have to be replaced by the corresponding
-   * original. See example from #1260:
-   *
-   *   t is
-   *     h(B type) is
-   *     i : h i is
-   *     x := i.type
-   *
-   * Here, in the inherits call to {@code h i}, the type parameter is
-   * {@code t.this.type.i}. So in the corresponding type feature has two
-   *
-   *   t.type.h.type t.i t.this.type.i
-   *
-   * the second type parameter for {@code B} has to get it's {@code this.type} types
-   * replaced by the actual types given in the first type parameter
-   */
-  AbstractType replaceThisTypeViaRelayedType(AbstractType t)
-  {
-    return feature().isCotype()
-      ? _type.generics().get(0).actualType(t)
-      : _outer == null
-      ? t
-      : _outer.replaceThisTypeViaRelayedType(t);
-  }
-
-
-  /**
    * Convert the given generics to the actual generics of this class.
    *
    * @param generics a list of generic arguments that might itself consist of
