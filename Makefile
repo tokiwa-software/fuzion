@@ -432,7 +432,7 @@ $(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz") $(FUZIO
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/base $(@D)
 	cat $(FUZION_RUNTIME_VERSION_IN) | $(PROCESS_VERSION_IN) >$(FUZION_RUNTIME_VERSION)
-	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseModule=off -saveModule=$@ -XenableSetKeyword
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseModule=off -saveModule=$@ -XenableSetKeyword -XenableNativeKeyword
 	$(FZ) -XXcheckIntrinsics
 
 # keep make from deleting $(MOD_BASE) on ctrl-C:
@@ -466,7 +466,7 @@ $(MOD_SQLITE): $(MOD_DATABASE) $(FZ) $(shell find $(FZ_SRC)/modules/sqlite/src -
 	rm -rf $(@D)/sqlite
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/sqlite $(@D)
-	$(FZ) -modules=database -sourceDirs=$(BUILD_DIR)/modules/sqlite/src -saveModule=$@
+	$(FZ) -modules=database -sourceDirs=$(BUILD_DIR)/modules/sqlite/src -saveModule=$@ -XenableNativeKeyword
 
 $(MOD_MAIL): $(MOD_WOLFSSL) $(FZ) $(shell find $(FZ_SRC)/modules/mail/src -name "*.fz")
 	rm -rf $(@D)/mail
@@ -490,13 +490,13 @@ $(MOD_CLANG): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/clang/src -name "
 	rm -rf $(@D)/clang
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/clang $(@D)
-	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/clang/src -saveModule=$@
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/clang/src -saveModule=$@ -XenableNativeKeyword
 
 $(MOD_WOLFSSL): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/wolfssl/src -name "*.fz")
 	rm -rf $(@D)/wolfssl
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/wolfssl $(@D)
-	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/wolfssl/src -saveModule=$@
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/wolfssl/src -saveModule=$@ -XenableNativeKeyword
 
 $(MOD_JSON_ENCODE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/json_encode/src -name "*.fz")
 	rm -rf $(@D)/json_encode
@@ -514,7 +514,7 @@ $(MOD_SODIUM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/sodium/src -name
 	rm -rf $(@D)/sodium
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/sodium $(@D)
-	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/sodium/src -saveModule=$@
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/sodium/src -saveModule=$@ -XenableNativeKeyword
 
 $(MOD_CRYPTO): $(MOD_SODIUM) $(FZ) $(shell find $(FZ_SRC)/modules/crypto/src -name "*.fz")
 	rm -rf $(@D)/crypto

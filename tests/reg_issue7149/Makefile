@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = reg_issue7149
+FUZION_OPTIONS = -XenableNativeKeyword
 include ../simple.mk

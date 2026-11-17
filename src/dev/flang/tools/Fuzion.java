@@ -58,6 +58,8 @@ import dev.flang.fuir.analysis.dfa.DFA;
 
 import dev.flang.opt.Optimizer;
 
+import dev.flang.parser.Parser;
+
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Metrics;
@@ -776,7 +778,7 @@ public class Fuzion extends Tool
   protected String STANDARD_OPTIONS(boolean xtra)
   {
     return super.STANDARD_OPTIONS(xtra) +
-      (xtra ? "[-XfuzionHome=<path>] [-XloadBaseModule=(on|off)] " : "");
+      (xtra ? "[-XfuzionHome=<path>] [-XloadBaseModule=(on|off)] [-XenableNativeKeyword] " : "");
   }
 
 
@@ -1109,6 +1111,7 @@ public class Fuzion extends Tool
             else if (a.startsWith("-XdumpModules="           )) { _dumpModules             = parseStringListArg(a);     }
             else if (a.startsWith("-sourceDirs="             )) { _sourceDirs = new List<>(); _sourceDirs.addAll(parseStringListArg(a)); }
             else if (a.startsWith("-moduleDirs="             )) {                             _moduleDirs.addAll(parseStringListArg(a)); }
+            else if (a.equals    ("-XenableNativeKeyword"    )) { Parser.ENABLE_NATIVE_KEYWORD = true;                 }
             else if (_backend.runsCode() && a.matches("-debug(=\\d+|)"       )) { _debugLevel              = parseIntArg(a, 1); }
             else if (_backend.runsCode() && a.startsWith("-safety="          )) { _safety                  = parseOnOffArg(a);          }
             else if (_backend.handleOption(this, a))

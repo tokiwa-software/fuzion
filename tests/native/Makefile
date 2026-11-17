@@ -22,5 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = native
-
+FUZION_OPTIONS = -XenableNativeKeyword
 include ../simple.mk
