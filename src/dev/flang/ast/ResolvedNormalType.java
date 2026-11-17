@@ -300,13 +300,13 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * {@code this} as a value.
    *
-   * Requires that at isNormalType().
+   * Requires that at isPlainType().
    */
   @Override
   public AbstractType asValue()
   {
     if (PRECONDITIONS) require
-      (isNormalType());
+      (isPlainType());
 
     return switch (kind())
       {
