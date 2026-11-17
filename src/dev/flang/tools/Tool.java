@@ -279,6 +279,10 @@ public abstract class Tool extends ANY
       {
         Parser.ENABLE_SET_KEYWORD = true;
       }
+    else if (a.equals("-XdisableNativeKeyword"))
+      {
+        Parser.DISABLE_NATIVE_KEYWORD = true;
+      }
     else
       {
         return false;
