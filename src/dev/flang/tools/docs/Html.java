@@ -927,7 +927,7 @@ public class Html extends ANY
    */
   private String source(AbstractFeature feature)
   {
-    return "<a class='fd-src-link pl-5' href='" + featureURL(feature) + "'>[src]</a>";
+    return "<a class='fd-src-link ml-5' href='" + featureURL(feature) + "'>[src]</a>";
   }
 
 
