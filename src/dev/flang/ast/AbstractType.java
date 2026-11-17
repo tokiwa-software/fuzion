@@ -658,7 +658,14 @@ NYI: UNDER DEVELOPMENT:
           (switch (actual.kind())
             {
     // case 5: boxing is allowed, actual is a type parameter and the boxed constraint is directly assignable
-              case ParametricType -> assignable(actual.typeParameter().constraint(context).asRef(), context, false, false, assignableTo);
+              case ParametricType ->
+                {
+                  if (actual.typeParameter().constraint(context).isParametricType())
+                    {
+                      yield false;
+                    }
+                  yield assignable(actual.typeParameter().constraint(context).asRef(), context, false, false, assignableTo);
+                }
               case RefType -> false; // break recursion
     // case 6: boxing is allowed, actual is a this type
     //

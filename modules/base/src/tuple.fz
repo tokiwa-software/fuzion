@@ -191,7 +191,7 @@ is
   #
   public redef as_string String =>
 
-    concat : container.typed_applicator String is
+    concat : container.typed_applicator Any String is
       public redef apply(V : Any, e String, v V) String => e="" ? $v : "$e, $v"
 
     "($(values.typed_foldf "" concat))"
