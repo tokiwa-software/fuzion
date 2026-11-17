@@ -248,7 +248,7 @@ public class Docs extends ANY
       || af.featureName().isNameless()
       || !(ignoreVisibility || Util.isVisible(af))
       || af.isCotype()
-      || Util.isArgument(af)
+      || (Util.isArgument(af) && !Util.isConstructorArgument(af))
       || af.baseName().equals(FuzionConstants.RESULT_NAME);
   }
 

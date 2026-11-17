@@ -500,13 +500,14 @@ public class Html extends ANY
 
   /**
    * Should a hyperlink be created for feature af?
-   * Fields and type parameters don't have their own page in the docs.
+   * Function arguments and type parameters don't have their own page in the docs.
    * @param af the feature which should be checked
    * @return true iff there is no doc page for this feature and no hyperlink should be created
    */
   private boolean noFeatureLink(AbstractFeature af)
   {
-    return af.isArgument() || af.isTypeParameter() || af.isOpenTypeParameter();
+    return af.isTypeParameter() || af.isOpenTypeParameter()
+      || (af.isArgument() && !(Util.isConstructorArgument(af) && (config.ignoreVisibility() || Util.isVisible(af))));
   }
 
 
@@ -581,9 +582,6 @@ public class Html extends ANY
     if (!signatureWithArrow(outer))
       {
         fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
-        var valueArguments = outer.valueArguments().clone();
-        valueArguments.removeIf(a->a.visibility().eraseTypeVisibility() != Visi.PUB);
-        fields.addAll(valueArguments);
       }
 
     // Value arguments of function features
