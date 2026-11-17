@@ -234,11 +234,6 @@ public class TailCall extends ANY
       case Assign ->
         {
           var cc = _fuir.accessedClazz(cls);
-          if (cc != NO_CLAZZ &&
-              _fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)))
-            {
-              cc = NO_CLAZZ;
-            }
           yield
             // if this is an assignment to 'Current.mustAssignTo' with, recursively check if
             // the value assigned is the call s.
