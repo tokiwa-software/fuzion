@@ -337,63 +337,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a clone of this Type that uses originalOuterFeature as context to
-   * look up features the type is built from.  Generics will be looked up in the
-   * current context.
-   *
-   * This is used for type features that use types from the original feature,
-   * but needs to replace generics by the type feature's generics.
-   *
-   * @param originalOuterFeature the original feature, which is not a type
-   * feature.
-   */
-  AbstractType clone(AbstractFeature originalOuterFeature)
-  {
-    var result = this;
-    if (!isArtificialType())
-      {
-        var g = _generics;
-        if (!_generics.isEmpty())
-          {
-            g = new List<>();
-            for (var og : _generics)
-              {
-                var gc = (og instanceof ResolvedNormalType gt)
-                  ? gt.clone(originalOuterFeature)
-                  : og;
-                g.add(gc);
-              }
-            g.freeze();
-          }
-        var o = _outer instanceof ResolvedNormalType ot
-          ? ot.clone(originalOuterFeature)
-          : _outer;
-
-        result = new ResolvedNormalType(g, _originalGenericsPos, o, _feature, _typeKind)
-          {
-            AbstractType _resolved = null;
-
-            /**
-             * NYI: CLEANUP:
-             * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
-             */
-            @Override
-            AbstractType resolve(Resolution res, Context context)
-            {
-              if (_resolved == null)
-                {
-                  _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, originalGenericsPos(), outer(), kind(), false, false);
-                }
-              return _resolved;
-            }
-          };
-      }
-    return result;
-
-  }
-
-
-  /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
    *
