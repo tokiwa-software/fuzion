@@ -9,7 +9,7 @@ in 't1' found 't1.of' defined at partially_applicable_type_feature_negative.fz:3
 and in 't1.type' found 't1.type.of' defined at partially_applicable_type_feature_negative.fz:32:15
   public type.of(s String) t1 => t1
 --------------^^
-To solve this, you may qualify the feature using 't1.this.of' or 't1.type.this.of'.
+To solve this, you may qualify the feature using 't1.this.of' or 't1.type.of'.
 
 
 partially_applicable_type_feature_negative.fz:34:16: error 2: This call is ambiguous.
@@ -131,7 +131,7 @@ in 't9' found 't9.a' defined at partially_applicable_type_feature_negative.fz:10
 and in 't9.type' found 't9.type.a' defined at partially_applicable_type_feature_negative.fz:101:15
   public type.a(v i64) bool => v > 2
 --------------^
-To solve this, you may qualify the feature using 't9.this.a' or 't9.type.this.a'.
+To solve this, you may qualify the feature using 't9.this.a' or 't9.type.a'.
 
 
 partially_applicable_type_feature_negative.fz:103:26: error 12: This call is ambiguous.
