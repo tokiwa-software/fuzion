@@ -1313,17 +1313,17 @@ public class Html extends ANY
   {
     return config.bare() && navigationBareHTML != null
       ? navigationBareHTML  // cached navigation if absolute URLs are used
-      : navigationModules(relativeTo) + navigationFeatures(java.util.List.of(start), "", relativeTo);
+      : navigationModules(relativeTo) + "\n<ul class=\"fd-nav-tree white-space-no-wrap\">"
+        + navigationFeatures(java.util.List.of(start), relativeTo) + "\n</ul>";
   }
 
 
   /**
    * render the tree style list of (constructor)features for the navigation on the left side
    * @param features    features that should be contained in the same block
-   * @param outerPrefix prefix for the tree structure e.g. "│  │  "
    * @return rendered tree style block with sub blocks for inner features
    */
-  private String navigationFeatures(java.util.List<AbstractFeature> features, String outerPrefix, AbstractFeature relativeTo)
+  private String navigationFeatures(java.util.List<AbstractFeature> features, AbstractFeature relativeTo)
   {
     if (features.isEmpty())
       {
@@ -1342,36 +1342,26 @@ public class Html extends ANY
                               .sorted(Comparator.comparing(ft -> ft.baseName(), String.CASE_INSENSITIVE_ORDER))
                               .collect(Collectors.toList());
 
-        // addition to the tree structure prefix for current feature: universe / normal element / last element
-        var featPrfx = f.isUniverse() ? ""
-                                      : iter.hasNext() ? "├─<span class=space-1></span>"
-                                                       : "└─<span class=space-1></span>";
-
-        // addition to the tree structure prefix for inner features of current feature: universe / normal element / last element
-        var subPrfx  = f.isUniverse() ? ""
-                                      : iter.hasNext() ? "│<span class=space-2></span>"
-                                                       : "<span class=space-3></span>";
-
         sb.append(fillTemplate("\n<li>##feature####children##</li>", Map.of(
-          "feature", navFeatHtml(f, outerPrefix + featPrfx, relativeTo),
-          "children", navigationFeatures(innerFeatures, outerPrefix + subPrfx, relativeTo))));
+          "feature", navFeatHtml(f, relativeTo),
+          "children", innerFeatures.isEmpty()
+            ? ""
+            : "\n<ul>" + navigationFeatures(innerFeatures, relativeTo) + "\n</ul>")));
       }
     while (iter.hasNext());
 
-    return "\n<ul class=\"white-space-no-wrap\">" + sb + "\n</ul>";
+    return sb.toString();
   }
 
   /**
    * generate html for a single feature in the tree style navigation on the left side
    * @param f feature for which to generate the html for
-   * @param prefix prefix of the tree style structure for this feature
    * @return rendered html for the feature f
    */
-  private String navFeatHtml(AbstractFeature f, String prefix, AbstractFeature relativeTo)
+  private String navFeatHtml(AbstractFeature f, AbstractFeature relativeTo)
   {
     var fName = htmlEncodedBasename(f) + (f.isUniverse() ? " (module " + lm.name() + ")" : "");
-    return fillTemplate("<div>##prefix##<a href='##url##'>##name##</a></div>", Map.of(
-      "prefix", prefix,
+    return fillTemplate("<a href='##url##'>##name##</a>", Map.of(
       "url", featureRelativeURL(f, relativeTo),
       "name", fName));
   }
