@@ -1373,7 +1373,7 @@ public class Html extends ANY
     return fillTemplate("<div>##prefix##<a href='##url##'>##name##</a></div>", Map.of(
       "prefix", prefix,
       "url", featureRelativeURL(f, relativeTo),
-      "name", fName + args(f)));
+      "name", fName));
   }
 
 
@@ -1397,24 +1397,10 @@ public class Html extends ANY
       "modules", libModules.stream()
                                .map(m->m.name())
                                .map(s->fillTemplate("<li><a href=##url##>##name##</a></li>", Map.of(
-                                 "url", config.bare() ? config.docsRoot() + "/" + s : relativePath("/" + s, relativeToStr),
+                                 "url", config.bare() ? config.docsRoot() + "/" + s + "/" : relativePath("/" + s, relativeToStr),
                                  "name", s)))
                                .collect(Collectors.joining("\n")),
       "root", config.bare() ? config.docsRoot() + "/" : relativePath("", relativeToStr)));
-  }
-
-
-  private String args(AbstractFeature start)
-  {
-    if (start.valueArguments().size() == 0 || (start.isChoice() || start.visibility().eraseTypeVisibility() != Visi.PUB))
-      {
-        return "";
-      }
-    if (start.valueArguments().size() == 1)
-      {
-        return " <small>(" + start.valueArguments().size() + " arg)</small>";
-      }
-    return " <small>(" + start.valueArguments().size() + " args)</small>";
   }
 
 
