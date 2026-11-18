@@ -1482,12 +1482,12 @@ public class AstErrors extends ANY
           (features.size() == possibilities.size()
            ? ("Matching features found:\n" +
               featureList(possibilities.map2(fo -> fo._feature)) + "\n" +
-                "To solve this, rename these features so that each has a unique name.")
+                "To solve this, rename these features such that each one has a unique name.")
            : ("The same feature was found at different levels of outer features, resulting in different types:\n" +
               featuresAndOuterList(possibilities) + "\n" +
               (qualifiedTypes.length() > 0
                ? "To solve this, qualify the type using " + qualifiedTypes + "."
-               : "To solve this, rename these features so that each has a unique name."))));
+               : "To solve this, rename these features such that each one has a unique name."))));
   }
 
   private static String qualifiedTypeSuggestion(SourcePosition pos,

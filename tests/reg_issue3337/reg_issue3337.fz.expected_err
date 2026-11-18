@@ -12,7 +12,7 @@ and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
 -------^^^^^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:29:25: error 2: Ambiguous type
@@ -28,7 +28,7 @@ and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
 -------^^^^^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:34:23: error 3: Ambiguous type
@@ -44,7 +44,7 @@ and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
 -------^^^^^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:35:30: error 4: Ambiguous type
@@ -60,7 +60,7 @@ and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
 -------^^^^^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:30:32: error 5: Ambiguous type
@@ -76,7 +76,7 @@ and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
 -------^^^^^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:31:32: error 6: Ambiguous type
@@ -92,7 +92,7 @@ and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
 -------^^^^^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:32:18: error 7: Ambiguous type
@@ -108,7 +108,7 @@ and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
 -------^^^^^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:33:18: error 8: Ambiguous type
@@ -124,7 +124,7 @@ and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
 -------^^^^^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:36:38: error 9: Ambiguous type
@@ -140,7 +140,7 @@ and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
 -------^^^^^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue3337.fz:37:39: error 10: Ambiguous type
@@ -156,6 +156,6 @@ and 'String' defined at {base.fum}/String.fz:28:8
 public String ref : property.hashable, property.orderable is
 -------^^^^^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 10 errors.

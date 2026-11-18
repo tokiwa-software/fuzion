@@ -15,7 +15,7 @@ and 'ex' defined at reg_issue5417.fz:24:1
 ex is
 ^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue5417.fz:33:18: error 2: Ambiguous type
@@ -31,7 +31,7 @@ and 'ex.ex' defined at reg_issue5417.fz:26:3
   ex is
 --^^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 reg_issue5417.fz:35:16: error 3: Could not find called feature

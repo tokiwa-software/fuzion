@@ -15,7 +15,7 @@ and 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 overloading_negative.fz:46:8: error 2: Ambiguous type
@@ -34,7 +34,7 @@ and 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 overloading_negative.fz:47:8: error 3: Ambiguous type
@@ -53,7 +53,7 @@ and 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 overloading_negative.fz:62:8: error 4: Type not found

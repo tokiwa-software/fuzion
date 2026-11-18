@@ -146,7 +146,7 @@ and 'generics_negative.ambiguousTypeParameterName.outer.X' defined at generics_n
     outer(X, Y, Z : Any) is
 ----------^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 generics_negative.fz:196:22: error 18: Ambiguous type
@@ -162,7 +162,7 @@ and 'generics_negative.ambiguousTypeParameterName.outer.Z' defined at generics_n
     outer(X, Y, Z : Any) is
 ----------------^
 
-To solve this, rename these features so that each has a unique name.
+To solve this, rename these features such that each one has a unique name.
 
 
 generics_negative.fz:211:20: error 19: Type not found
