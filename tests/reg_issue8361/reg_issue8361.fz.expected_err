@@ -1,0 +1,49 @@
+
+reg_issue8361.fz:27:15: error 1: Duplicate feature declaration
+_ Da := (C -> C get => panic "")
+--------------^
+Feature that was declared repeatedly: '(λ(C -> C get => panic "")).apply.C'
+originally declared at reg_issue8361.fz:27:10
+_ Da := (C -> C get => panic "")
+---------^
+To solve this, consider renaming one of these two features, e.g., as 'Cʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
+
+
+reg_issue8361.fz:27:17: error 2: Type not found
+_ Da := (C -> C get => panic "")
+----------------^^^
+Type 'get' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'get'
+in feature: '(λ(C -> C get => panic "")).apply.C'
+To solve this, check the spelling of the type you have used.
+
+
+reg_issue8361.fz:27:10: error 3: Wrong type parameter constraint in redefined feature
+_ Da := (C -> C get => panic "")
+---------^
+In '(λ(C -> C get => panic "")).apply' that redefines 'Da.apply'
+type parameter constraint is       : 'Any'
+type parameter constraint should be: 'Any'
+
+Original argument declared at reg_issue8361.fz:30:9
+  apply(A : Any) unit : fuzion.lambda_target => abstract
+--------^
+To solve this, change constraint of type parameter to 'Any' at reg_issue8361.fz:27:10
+_ Da := (C -> C get => panic "")
+---------^
+
+
+reg_issue8361.fz:27:1: error 4: Incompatible types in assignment
+_ Da := (C -> C get => panic "")
+^
+assignment to field : '_'
+expected formal type: 'Da'
+actual type found   : '(λ(C -> C get => panic ""))'
+assignable to       : '(λ(C -> C get => panic ""))'
+for value assigned  : '(C -> C get => panic "")'
+To solve this you could:
+  • make  'Da' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target '_' to '(λ(C -> C get => panic ""))', or
+  • convert the type of the assigned value to 'Da'.
+
+4 errors.
