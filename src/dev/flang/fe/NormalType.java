@@ -103,7 +103,7 @@ class NormalType extends LibraryType
   /**
    * {@code this} as a value.
    *
-   * Requires that at isNormalType().
+   * Requires that at isPlainType().
    */
   @Override
   public AbstractType asValue()

@@ -89,7 +89,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    *
-   * Requires that this is resolved and isNormalType().
+   * Requires that this is resolved and isPlainType().
    */
   public abstract List<AbstractType> generics();
 
@@ -97,7 +97,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * The outer of this type. May be null.
    *
-   * Requires that this is resolved and isNormalType().
+   * Requires that this is resolved and isPlainType().
    */
   public abstract AbstractType outer();
 
@@ -127,12 +127,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * {@code this} as a value.
    *
-   * Requires that at isNormalType().
+   * Requires that at isPlainType().
    */
   public AbstractType asValue()
   {
     if (PRECONDITIONS) require
-      (isNormalType());
+      (isPlainType());
 
     throw new Error("asValue() not supported for "+getClass());
   }
@@ -391,7 +391,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = true;
       }
-    else if (isNormalType())
+    else if (isPlainType())
       {
         for (var t: generics())
           {
@@ -418,7 +418,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = true;
       }
-    else if (isNormalType())
+    else if (isPlainType())
       {
         for (var t: generics())
           {
@@ -426,19 +426,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
-  }
-
-
-  /**
-   * Is the type a _normal_ type, i.e. value or ref-type with generics and outer?
-   */
-  public boolean isNormalType()
-  {
-    return switch (kind())
-      {
-      case RefType, ValueType -> true;
-      default -> false;
-      };
   }
 
 
@@ -465,7 +452,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = true;
       }
-    else if (isNormalType())
+    else if (isPlainType())
       {
         int ix = 0;
         for (var t: generics())
@@ -907,7 +894,7 @@ NYI: UNDER DEVELOPMENT:
   public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
   {
     if (PRECONDITIONS) require
-      (isNormalType(),
+      (isPlainType(),
        Errors.any() ||
        feature().generics().sizeMatches(generics()),
        genericsToReplace != null);
@@ -1259,7 +1246,7 @@ NYI: UNDER DEVELOPMENT:
   public final AbstractType replaceGenericsAndOuter(List<AbstractType> g, AbstractType o)
   {
     if (PRECONDITIONS) require
-      (isNormalType(),
+      (isPlainType(),
        this instanceof ResolvedType,
        feature().generics().sizeMatches(g));
 
@@ -1287,7 +1274,7 @@ NYI: UNDER DEVELOPMENT:
   protected AbstractType replaceGenericsAndOuter0(List<AbstractType> g, AbstractType o)
   {
     if (PRECONDITIONS) require
-      (isNormalType(),
+      (isPlainType(),
        this instanceof ResolvedType,
        feature().generics().sizeMatches(g));
 
@@ -1669,7 +1656,7 @@ there is no common super type of the two types (Types.t_ERROR)
        (other instanceof ResolvedType));
 
     int result = compareToIgnoreOuter(other, considerSelfReferenceSame);
-    if (result == 0 && isNormalType())
+    if (result == 0 && isPlainType())
       {
         var to = this .outer();
         var oo = other.outer();
@@ -1703,7 +1690,7 @@ there is no common super type of the two types (Types.t_ERROR)
             result = normalizeCoTypeTypeParameter(backingFeature())
                         .compareTo(normalizeCoTypeTypeParameter(other.backingFeature()));
           }
-        if (result == 0 && isNormalType() /* no need for this since kind=o.kind :  && other.isNormalType()  */)
+        if (result == 0 && isPlainType() /* no need for this since kind=o.kind :  && other.isPlainType()  */)
           {
             if (generics().size() != other.generics().size())  // this may happen for open generics lists
               {
@@ -1861,7 +1848,7 @@ there is no common super type of the two types (Types.t_ERROR)
                }
              return target_type;
            });
-        tt = tt.isNormalType() ? tt.outer() : null;
+        tt = tt.isPlainType() ? tt.outer() : null;
       }
     while (tt != null);
     return result;
@@ -1929,7 +1916,7 @@ there is no common super type of the two types (Types.t_ERROR)
                                                         BiConsumer<AbstractType, AbstractType> foundRef)
   {
     if (PRECONDITIONS) require
-      (tt.isNormalType());
+      (tt.isPlainType());
     var result = this;
     // we have abc.this with tt == abc, so use tt
     if (isThisType() && tt.feature() == feature())
@@ -2232,7 +2219,7 @@ there is no common super type of the two types (Types.t_ERROR)
   public AbstractType applyToGenericsAndOuter(java.util.function.Function<AbstractType, AbstractType> f)
   {
     var result = this;
-    if (isNormalType())
+    if (isPlainType())
       {
         var g = generics();
         var ng = g.map(f);
@@ -2419,7 +2406,7 @@ there is no common super type of the two types (Types.t_ERROR)
   AbstractType checkConstraints(Context context)
   {
     var result = this;
-    if (result != Types.t_ERROR && isNormalType())
+    if (isPlainType())
       {
         if (!checkActualTypePars(context, feature(), generics(), originalGenericsPos(), feature().pos(), x->x))
           {
@@ -2699,7 +2686,7 @@ there is no common super type of the two types (Types.t_ERROR)
   public void selfOuterAndGenerics(Consumer<AbstractType> c)
   {
     c.accept(this);
-    if (isNormalType())
+    if (isPlainType())
       {
         generics().forEach(c);
         if (outer() != null)
