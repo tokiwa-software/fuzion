@@ -164,7 +164,7 @@ public class Html extends ANY
         var constraint = constraintType.feature();
         return fillTemplate("<span class='fd-keyword mx-5'>:</span><a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
           "url", featureRelativeURL(constraint, relativeTo),
-          "name", htmlEncodeNbsp(constraintType.toString(true, af))));
+          "name", htmlEncodeNbsp(constraintType.toString(true))));
       }
     else
       {
@@ -180,7 +180,7 @@ public class Html extends ANY
               "name", htmlEncodedBasename(f)
                       + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
                       +  c.actualTypeParameters().stream()
-                          .map(at -> htmlEncodeNbsp(at.toString(true, af)))
+                          .map(at -> htmlEncodeNbsp(at.toString(true)))
                           .collect(Collectors.joining(", "))));
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
@@ -199,12 +199,12 @@ public class Html extends ANY
     var at = af.resultType();
     if (at.isParametricType())
       {
-        return htmlEncodeNbsp(at.toString(true, context))
+        return htmlEncodeNbsp(at.toString(true))
                + (at.isOpenGeneric() ? "..." : "");
       }
     return fillTemplate("<a class='fd-type' href='##url##'>##name##</a>", Map.of(
       "url", featureRelativeURL(at.feature(), relativeTo),
-      "name", htmlEncodeNbsp(at.toString(true, context))));
+      "name", htmlEncodeNbsp(at.toString(true))));
   }
 
 
@@ -500,13 +500,14 @@ public class Html extends ANY
 
   /**
    * Should a hyperlink be created for feature af?
-   * Fields and type parameters don't have their own page in the docs.
+   * Function arguments and type parameters don't have their own page in the docs.
    * @param af the feature which should be checked
    * @return true iff there is no doc page for this feature and no hyperlink should be created
    */
   private boolean noFeatureLink(AbstractFeature af)
   {
-    return af.isArgument() || af.isTypeParameter() || af.isOpenTypeParameter();
+    return af.isTypeParameter() || af.isOpenTypeParameter()
+      || (af.isArgument() && !(Util.isConstructorArgument(af) && (config.ignoreVisibility() || Util.isVisible(af))));
   }
 
 
@@ -581,9 +582,6 @@ public class Html extends ANY
     if (!signatureWithArrow(outer))
       {
         fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
-        var valueArguments = outer.valueArguments().clone();
-        valueArguments.removeIf(a->a.visibility().eraseTypeVisibility() != Visi.PUB);
-        fields.addAll(valueArguments);
       }
 
     // Value arguments of function features
@@ -929,7 +927,7 @@ public class Html extends ANY
    */
   private String source(AbstractFeature feature)
   {
-    return "<a class='fd-src-link pl-5' href='" + featureURL(feature) + "'>[src]</a>";
+    return "<a class='fd-src-link ml-5' href='" + featureURL(feature) + "'>[src]</a>";
   }
 
 
@@ -1375,7 +1373,7 @@ public class Html extends ANY
     return fillTemplate("<div>##prefix##<a href='##url##'>##name##</a></div>", Map.of(
       "prefix", prefix,
       "url", featureRelativeURL(f, relativeTo),
-      "name", fName + args(f)));
+      "name", fName));
   }
 
 
@@ -1399,24 +1397,10 @@ public class Html extends ANY
       "modules", libModules.stream()
                                .map(m->m.name())
                                .map(s->fillTemplate("<li><a href=##url##>##name##</a></li>", Map.of(
-                                 "url", config.bare() ? config.docsRoot() + "/" + s : relativePath("/" + s, relativeToStr),
+                                 "url", config.bare() ? config.docsRoot() + "/" + s + "/" : relativePath("/" + s, relativeToStr),
                                  "name", s)))
                                .collect(Collectors.joining("\n")),
       "root", config.bare() ? config.docsRoot() + "/" : relativePath("", relativeToStr)));
-  }
-
-
-  private String args(AbstractFeature start)
-  {
-    if (start.valueArguments().size() == 0 || (start.isChoice() || start.visibility().eraseTypeVisibility() != Visi.PUB))
-      {
-        return "";
-      }
-    if (start.valueArguments().size() == 1)
-      {
-        return " <small>(" + start.valueArguments().size() + " arg)</small>";
-      }
-    return " <small>(" + start.valueArguments().size() + " args)</small>";
   }
 
 

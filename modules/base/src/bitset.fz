@@ -61,7 +61,7 @@ is
 
   # union of two bitsets
   #
-  public infix ∪ (other bitset) bitset =>
+  public fixed infix ∪ (other bitset) bitset =>
     match bitset.this
       nil     => other
       x u64   => other.put x

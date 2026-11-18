@@ -512,7 +512,7 @@ is
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
-  public redef drop (I : integer, n I) Sequence A =>
+  public redef fixed drop (I : integer, n I) Sequence A =>
     drop_list n.as_i64
 
 

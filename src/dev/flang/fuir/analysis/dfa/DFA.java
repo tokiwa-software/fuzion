@@ -3013,7 +3013,7 @@ public class DFA extends ANY
             else
               {
                 res = res != null
-                  ? new ValueSet((ValueSet)res, clazz)
+                  ? new ValueSet((ValueSet) res, clazz)
                   : new ValueSet(this, v, w, clazz);
                 res = cache(res);
               }
