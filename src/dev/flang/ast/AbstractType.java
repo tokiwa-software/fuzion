@@ -657,17 +657,28 @@ NYI: UNDER DEVELOPMENT:
         result = allowBoxing &&
           (switch (actual.kind())
             {
-    // case 5: boxing is allowed, actual is a type parameter and the boxed constraint is directly assignable
-              case ParametricType -> assignable(actual.typeParameter().constraint(context).asRef(), context, false, false, assignableTo);
+
+              case ParametricType ->
+                {
+                  var constraint = actual.typeParameter().constraint(context);
+                  yield switch (constraint.kind()) {
+    // case 5: boxing is allowed, actual is a type parameter whose constraint is a parametric type, check assignable for this parametric type
+    // NYI: UNDER DEVELOPMENT: currently Constraints for type parameter must not be a type parameters
+                    case ParametricType -> false; // assignable(constraint, context, allowBoxing, allowTagging, assignableTo);
+                    case ThisType -> false;
+    // case 6: boxing is allowed, actual is a type parameter and the boxed constraint is directly assignable
+                    case RefType, ValueType -> assignable(constraint.asRef(), context, false, false, assignableTo);
+                  };
+                }
               case RefType -> false; // break recursion
-    // case 6: boxing is allowed, actual is a this type
+    // case 7: boxing is allowed, actual is a this type
     //
     //      example where we consider the this type to be a ref and then tag
     //      this   : choice (Sequence u8) String
     //      actual : String.this
     //
               case ThisType -> assignable(actual.asRef(true), context, false, allowTagging, assignableTo);
-    // case 7: boxing is allowed, actual is a value type and the boxed value is assignable (potentially via tagging)
+    // case 8: boxing is allowed, actual is a value type and the boxed value is assignable (potentially via tagging)
     //
     //     example where we need to box (to Finger_Tree) then tag (to option):
     //     this   : option (container.Finger_Tree T)
