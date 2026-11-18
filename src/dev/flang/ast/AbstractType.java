@@ -642,7 +642,7 @@ NYI: UNDER DEVELOPMENT:
         for (var p: actual.feature().inherits())
           {
             var pt = actual.actualType(p.type(), context).asRef();
-            result = pt == actual ? false : assignable(pt, context, false, false, assignableTo);
+            result = pt != actual && assignable(pt, context, false, false, assignableTo);
             // until result
             if (result) { break; }
           }
