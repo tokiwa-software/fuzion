@@ -291,6 +291,7 @@ public class Function extends AbstractLambda
       {
         var cl = res._module.findLambdaTarget(t.feature());
         var argTypes = t.lambdaTargetArgumentTypes(res);
+        var tps_as_actuals = new List<AbstractType>();
         if (_names.size() != cl.typeArguments().size() + argTypes.size())
           {
             AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t, cl.typeArguments().size(), argTypes.size());
@@ -317,11 +318,10 @@ public class Function extends AbstractLambda
              * [..]
              */
             args = new List<AbstractFeature>();
-            var tps_as_actuals = new List<AbstractType>();
             for (var i = 0; t != Types.t_ERROR && i < _names.size(); i++)
               {
                 var at = i < cl.typeArguments().size()
-                  ? new BuiltInType(FuzionConstants.ANY_NAME) /* constraint */
+                  ? cl.typeArguments().get(i).constraint()
                   : argTypes.get(i - cl.typeArguments().size())
                       // if we redef
                       //
@@ -359,7 +359,8 @@ public class Function extends AbstractLambda
           }
         if (t != Types.t_ERROR)
           {
-            var rt0 = t.lambdaTargetResultType(res);
+            var rt0 = t.lambdaTargetResultType(res)
+                       .applyTypePars(cl, tps_as_actuals.map2(tp -> tp.resolve(res, context)));
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
             var feature = new Feature(pos(), Visi.PUB, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, AbstractCall.NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))

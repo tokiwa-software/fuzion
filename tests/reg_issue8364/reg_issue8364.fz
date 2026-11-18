@@ -1,0 +1,100 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8290
+#
+# -----------------------------------------------------------------------
+
+# Test that a constraint on a type parameter in a lambda target gets
+# propagated to the actual code created for the lambda
+#
+# Additionally has tests for #8367 using a type parameter from the lambda
+# in its result type
+#
+reg_issue8364 =>
+
+  # original code form #8364
+
+  has_bla is
+    bla => say "bla"
+  my_bla : has_bla is
+    redef bla => say "my_bla"
+
+  Fn ref is
+    a(T : has_bla, v T) unit
+      : fuzion.lambda_target
+    => abstract
+
+  test(f Fn) =>
+    f.a has_bla
+    f.a my_bla
+
+  # variant that requires propagated constraint
+  test A,a->
+    a.bla
+
+  # variant with manual constraint
+  test A,a->
+    if A : has_bla then
+      a.bla
+    else
+      panic "no bla"
+
+  # code from commit message
+
+  Arithmetic ref is
+    op(N : numeric, a,b N) N
+      : fuzion.lambda_target
+    => abstract
+
+  calc(a Arithmetic) =>
+    say ( a.op f64 3.14 2.18)
+    say ( a.op 3/-/4 1/-/8)
+    say <| a.op f64 3.14 2.18
+    say <| a.op 3/-/4 1/-/8
+
+  say "multiply:"
+  calc (M,a,b -> a*b)
+
+  say "subtract:"
+  calc (M,a,b -> a-b)
+
+  # code from #8367
+
+  Fun ref is
+    op(N : Any, a N) N
+      : fuzion.lambda_target
+    => abstract
+
+  tst(a Fun) =>
+    say ( a.op f64 3.14 )
+
+  tst M,b->b
+
+  # code from #8367 using `option N`
+
+  Fun1 ref is
+    op(N : Any, a N) option N
+      : fuzion.lambda_target
+    => abstract
+
+  tst1(a Fun) =>
+    say ( a.op f64 3.14 )
+
+  tst1 M,b->b
