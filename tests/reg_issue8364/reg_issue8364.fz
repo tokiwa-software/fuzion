@@ -120,7 +120,7 @@ reg_issue8364 =>
       : fuzion.lambda_target
     => abstract
 
-  tst3(a Fun2) =>
+  tst3(a Fun3) =>
     say ( a.op [3.14, 2.18] )
 
   tst3 M,Q,b->
