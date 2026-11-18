@@ -1472,7 +1472,7 @@ public class AstErrors extends ANY
           {
             qualifiedTypes
               .append(qualifiedTypes.length() > 0 ? " or " : "")
-              .append(code(q));
+              .append(st(q));
           }
       }
     error(pos,
