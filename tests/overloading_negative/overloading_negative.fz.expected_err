@@ -2,16 +2,16 @@
 overloading_negative.fz:45:8: error 1: Ambiguous type
     a1 a := a            # 1. should flag an error: ambiguous types
 -------^
-The compiler cannot resolve the type in this declaration because it is ambiguous.
-Ambiguous type: 'a'
-Matching features found:
-'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'a'
+Possible features that match this type:
+in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
     a is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
     a(i i32) is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
@@ -21,16 +21,16 @@ To solve this, rename these features such that each one has a unique name.
 overloading_negative.fz:46:8: error 2: Ambiguous type
     a2 a := a 42         # 2. should flag an error: ambiguous types
 -------^
-The compiler cannot resolve the type in this declaration because it is ambiguous.
-Ambiguous type: 'a'
-Matching features found:
-'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'a'
+Possible features that match this type:
+in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
     a is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
     a(i i32) is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
@@ -40,16 +40,16 @@ To solve this, rename these features such that each one has a unique name.
 overloading_negative.fz:47:8: error 3: Ambiguous type
     a3 a := a 47 11      # 3. should flag an error: ambiguous types
 -------^
-The compiler cannot resolve the type in this declaration because it is ambiguous.
-Ambiguous type: 'a'
-Matching features found:
-'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'a'
+Possible features that match this type:
+in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
     a is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
     a(i i32) is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
