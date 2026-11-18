@@ -317,24 +317,14 @@ public class Function extends AbstractLambda
              *         --Fun<id>--()
              * [..]
              */
-            args = new List<AbstractFeature>();
+
+            // we run two passes, first to find only the raw result or constraint types needed for
+            // correct type parameters, second to then actually create the args:
+            var raw_args = new List<Feature>();
             for (var i = 0; t != Types.t_ERROR && i < _names.size(); i++)
               {
-                var at = i < cl.typeArguments().size()
-                  ? cl.typeArguments().get(i).constraint()
-                  : argTypes.get(i - cl.typeArguments().size())
-                      // if we redef
-                      //
-                      //    x(A type, v option A)
-                      //
-                      // by
-                      //
-                      //    x(B type, w option B)
-                      //
-                      // we must replace `option A` by `option B`, i.e.,
-                      // replace original's type parameters by redefinition's:
-                      //
-                      .applyTypePars(cl, tps_as_actuals);
+                var at = i < cl.typeArguments().size() ? cl.typeArguments().get(i).constraint()
+                                                       : argTypes.get(i - cl.typeArguments().size());
                 if (at == Types.t_UNDEFINED)
                   {
                     t = Types.t_ERROR;
@@ -353,9 +343,29 @@ public class Function extends AbstractLambda
                       {
                         tps_as_actuals.add(arg.asParametricType());
                       }
-                    args.add(arg);
+                    raw_args.add(arg);
                   }
               }
+            raw_args.forEach(a ->
+              {
+                // if we redef
+                //
+                //    x(A type, v option A)
+                //
+                // by
+                //
+                //    x(B type, w option B)
+                //
+                // we must replace `option A` by `option B`, i.e.,
+                // replace original's type parameters by redefinition's:
+                //
+                // It is a little ugly to patch the feature result type here, but the easiest
+                // solution since the dependencies between these types can be complex.
+                var at = a.returnType().functionReturnType(false);
+                a._returnType = new FunctionReturnType(at.applyTypePars(cl, tps_as_actuals));
+              });
+            args = new List<AbstractFeature>();
+            args.addAll(raw_args);
           }
         if (t != Types.t_ERROR)
           {

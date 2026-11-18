@@ -98,3 +98,31 @@ reg_issue8364 =>
     say ( a.op f64 3.14 )
 
   tst1 M,b->b
+
+  # code using more complex constraint dependencies
+
+  Fun2 ref is
+    op(S : Sequence N, N : numeric, a S) option N
+      : fuzion.lambda_target
+    => abstract
+
+  tst2(a Fun2) =>
+    say ( a.op [3.14, 2.18] )
+
+  tst2 Q,M,b->
+    say "$Q $M $b"
+    b.is_empty ? nil : b.sum
+
+  # more code using more complex constraint dependencies
+
+  Fun3 ref is
+    op(N : numeric, S : Sequence N, a S) option N
+      : fuzion.lambda_target
+    => abstract
+
+  tst3(a Fun2) =>
+    say ( a.op [3.14, 2.18] )
+
+  tst3 M,Q,b->
+    say "$Q $M $b"
+    b.is_empty ? nil : b.sum
