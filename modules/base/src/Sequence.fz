@@ -142,6 +142,9 @@ is
   public as_list list T => abstract
 
 
+  public as_dynamic_list container.Dynamic_List T => abstract
+
+
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
@@ -570,6 +573,31 @@ is
       # NYI: BUG: debug: finite.is_no_or_unknown || count = result.count
   =>
     as_list.map_to_list f
+
+  public map_dl(B : Any, f _ : T->B) Sequence B
+    # NYI: BUG: count = result.count sometimes recursive
+    # post
+      # NYI: BUG: debug: finite = result.finite
+      # NYI: BUG: debug: finite.is_no_or_unknown || count = result.count
+  =>
+    as_dynamic_list.use2 (Sequence B) _ C,e,oc->
+      match oc
+        nil => Sequence B .empty
+        c C => panic "how do I continue from here? $c"
+
+
+  public foldf_dl (B : Any, e B, f (B,T)->B) B
+  =>
+    as_dynamic_list.use2 B _ C,ee,oc->
+      match oc
+        nil => ee
+        c C =>
+          if C : Dynamic_Cons T then apply (f e c.head) c.tail
+                                else panic "NYI: REMOVE WHEN constraints are propagated to lambda"
+
+
+
+
 
 
   # map the Sequence to a new Sequence applying function f to all elements
