@@ -19,6 +19,9 @@ panic#1 at {base.fum}/panic.fz:53:19
 test_option_void at issue1886.fz:44:10
   f void (panic "test")
 ---------^^^^^^^^^^^^^^
+universe at issue1886.fz:28:1
+test_option_void is
+^^^^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

@@ -34,7 +34,10 @@ public say(s Any) unit ! io.Out => io.Out.env.println s
 call 'say#1' at issue118.fz:56:3
   say a
 --^^^^^
-call 'issue118'
+call 'issue118' at issue118.fz:54:1
+issue118 is
+^^^^^^^^
+call 'universe'
 program entry point
 
 one error.

@@ -10,7 +10,10 @@ effect environment '--empty--' for call to 'reg_issue348.type.m.type.from_env' a
 effect environment '--empty--' for call to '(reg_issue348.type.m.type.array.type reg_issue348.a).new#3 i64' at reg_issue348.fz:33:10
   arr := m.array a .new 10 _->a
 ---------^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'reg_issue348'
+effect environment '--empty--' for call to 'reg_issue348' at reg_issue348.fz:24:1
+reg_issue348 =>
+^^^^^^^^^^^^
+effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'reg_issue348.m' is instated along all call paths to this effect use.

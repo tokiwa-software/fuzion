@@ -23,7 +23,10 @@ call 'infix <=#3 test.x' at reg_issue5330.fz:27:25
 call 'test.type.a.type.q#1' at reg_issue5330.fz:29:8
   _ := a.type.q a
 -------^^^^^^^^^^
-call 'test'
+call 'test' at reg_issue5330.fz:24:1
+test is
+^^^^
+call 'universe'
 program entry point
 
 one error.

@@ -28,6 +28,9 @@ pre issue270 at issue270.fz:25:7
 precall issue270 at issue270.fz:25:3
   pre false # 1. should flag an error: Precondition does not hold
 --^^^^^^^^^
+universe at issue270.fz:25:3
+  pre false # 1. should flag an error: Precondition does not hold
+--^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

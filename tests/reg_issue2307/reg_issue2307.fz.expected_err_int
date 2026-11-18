@@ -19,6 +19,9 @@ panic#1 at {base.fum}/panic.fz:53:19
 reg_issue2307 at reg_issue2307.fz:29:9
   _:= a (panic "hello")
 --------^^^^^^^^^^^^^^^
+universe at reg_issue2307.fz:24:1
+reg_issue2307 =>
+^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

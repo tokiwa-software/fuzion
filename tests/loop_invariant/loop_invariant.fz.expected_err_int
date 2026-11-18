@@ -34,6 +34,9 @@ loop_invariant at loop_invariant.fz:31:3
 --^^
     say "iteration $i"
 ----^^^^^^^^^^^^^^^^^^
+universe at loop_invariant.fz:24:1
+loop_invariant =>
+^^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

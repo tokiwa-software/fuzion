@@ -37,7 +37,7 @@ loop_variant_2.test_6 at loop_variant_2.fz:81:5
 (fuzion.type.runtime.type.variant_fault.type.try unit).catch0#1 at loop_variant_2.fz:85:3
   test_6 # no try catch, so the stacktrace gets printed
 --^^^^^^
-(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:51:7
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:53:7
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
 (instate_helper unit try_lm).call_code.call at {base.fum}/effect.fz:404:18
@@ -57,7 +57,7 @@ try_lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
 try_lm.infix !#2 unit at {base.fum}/effect.fz:228:5
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:50:5
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:52:5
     try_lm ! ()->
 ----^^^^^^^^^^^^^
       catch0 code_catch
@@ -76,7 +76,7 @@ loop_variant_2.test#2 at loop_variant_2.fz:32:5
 (fuzion.type.runtime.type.variant_fault.type.try unit).catch0#1 at loop_variant_2.fz:78:3
   test test_5 5
 --^^^^^^^^^^^^^
-(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:51:7
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:53:7
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
 (instate_helper unit try_lm).call_code.call at {base.fum}/effect.fz:404:18
@@ -96,7 +96,7 @@ try_lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
 try_lm.infix !#2 unit at {base.fum}/effect.fz:228:5
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:50:5
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:52:5
     try_lm ! ()->
 ----^^^^^^^^^^^^^
       catch0 code_catch
@@ -115,7 +115,7 @@ loop_variant_2.test#2 at loop_variant_2.fz:32:5
 (fuzion.type.runtime.type.variant_fault.type.try unit).catch0#1 at loop_variant_2.fz:71:3
   test test_4 4
 --^^^^^^^^^^^^^
-(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:51:7
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:53:7
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
 (instate_helper unit try_lm).call_code.call at {base.fum}/effect.fz:404:18
@@ -135,7 +135,7 @@ try_lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
 try_lm.infix !#2 unit at {base.fum}/effect.fz:228:5
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:50:5
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:52:5
     try_lm ! ()->
 ----^^^^^^^^^^^^^
       catch0 code_catch
@@ -154,7 +154,7 @@ loop_variant_2.test#2 at loop_variant_2.fz:32:5
 (fuzion.type.runtime.type.variant_fault.type.try unit).catch0#1 at loop_variant_2.fz:63:3
   test test_3 3
 --^^^^^^^^^^^^^
-(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:51:7
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1.(λ()-> catch0 code_catch).call at {base.fum}/flow/fallible/try.fz:53:7
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
 (instate_helper unit try_lm).call_code.call at {base.fum}/effect.fz:404:18
@@ -174,7 +174,7 @@ try_lm.instate_self#2 unit at {base.fum}/effect.fz:211:5
 try_lm.infix !#2 unit at {base.fum}/effect.fz:228:5
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:50:5
+(fuzion.type.runtime.type.variant_fault.type.try unit).catch#1 at {base.fum}/flow/fallible/try.fz:52:5
     try_lm ! ()->
 ----^^^^^^^^^^^^^
       catch0 code_catch
@@ -193,6 +193,9 @@ loop_variant_2.test#2 at loop_variant_2.fz:32:5
 loop_variant_2 at loop_variant_2.fz:55:3
   test test_2 2
 --^^^^^^^^^^^^^
+universe at loop_variant_2.fz:27:1
+loop_variant_2 =>
+^^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

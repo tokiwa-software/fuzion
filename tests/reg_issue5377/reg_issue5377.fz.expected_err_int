@@ -22,6 +22,9 @@ reg_issue5377.join at reg_issue5377.fz:31:19
 reg_issue5377 at reg_issue5377.fz:34:3
   join
 --^^^^
+universe at reg_issue5377.fz:24:1
+reg_issue5377 =>
+^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

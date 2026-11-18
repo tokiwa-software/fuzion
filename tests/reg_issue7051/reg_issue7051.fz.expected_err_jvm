@@ -8,6 +8,7 @@ reg_issue7051.outer2.post a i64 at reg_issue7051.fz:28
 reg_issue7051.outer2.post a i64 at reg_issue7051.fz:34
 reg_issue7051.outer2.a#2 i64 at reg_issue7051.fz:34
 reg_issue7051 at reg_issue7051.fz:37
+universe
 
 *** fatal errors encountered, stopping.
 one error.

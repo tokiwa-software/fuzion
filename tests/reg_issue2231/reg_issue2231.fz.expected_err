@@ -36,7 +36,10 @@ call 'reg_issue2231.ef.infix !#2 void' at reg_issue2231.fz:33:3
 --^^^^^^^^^
     reg_issue2231.ef.env.something
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-call 'reg_issue2231'
+call 'reg_issue2231' at reg_issue2231.fz:24:1
+reg_issue2231 is
+^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 one error.

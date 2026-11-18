@@ -5,6 +5,7 @@ fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 panic#1 at {base.fum}/panic.fz:53
 test_option_void at issue1886.fz:44
+universe
 
 *** fatal errors encountered, stopping.
 one error.

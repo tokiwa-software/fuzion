@@ -7,6 +7,7 @@ fuzion.runtime.variantcondition_fault#1 at {base.fum}/fuzion/runtime/variant_fau
 loop_variant_2.test_6.loop at loop_variant_2.fz:82
 loop_variant_2.test_6 at loop_variant_2.fz:81
 loop_variant_2 at loop_variant_2.fz:85
+universe
 
 *** fatal errors encountered, stopping.
 one error.

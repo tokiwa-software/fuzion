@@ -70,8 +70,8 @@ public class Interpreter extends FUIRContext
   {
     try
       {
-        FuzionThread.current()._callStackFrames.push(_fuir.mainClazz());
-        _ai.processClazz(_fuir.mainClazz());
+        FuzionThread.current()._callStackFrames.push(_fuir.clazzUniverse());
+        _ai.processClazz(_fuir.clazzUniverse());
       }
     catch (FatalError e)
       {

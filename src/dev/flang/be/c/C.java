@@ -1116,7 +1116,7 @@ public class C extends ANY
     cf.println("if ("+ _maxTagNum + " >= fzE_page_size()) { fprintf(stderr, \"*** number of choice tags exceed page size!\"); exit(EXIT_FAILURE); }");
     cf.print(CStmnt.seq(
       initializeEffectsEnvironment(),
-      CExpr.call(_names.function(_fuir.mainClazz()), new List<>())));
+      CExpr.call(_names.function(_fuir.clazzUniverse()), new List<>())));
     cf.unindent();
     cf.println("}");
 

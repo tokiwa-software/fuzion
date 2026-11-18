@@ -6,6 +6,7 @@ fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 panic#1 at {base.fum}/panic.fz:53
 reg_issue5377.join at reg_issue5377.fz:31
 reg_issue5377 at reg_issue5377.fz:34
+universe
 
 *** fatal errors encountered, stopping.
 one error.

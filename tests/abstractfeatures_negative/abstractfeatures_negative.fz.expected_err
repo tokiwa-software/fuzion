@@ -18,7 +18,10 @@ Callchain that lead to this point:
 call 'abstractfeatures_negative.opengenerics12' at abstractfeatures_negative.fz:42:3
   opengenerics12
 --^^^^^^^^^^^^^^
-call 'abstractfeatures_negative'
+call 'abstractfeatures_negative' at abstractfeatures_negative.fz:26:1
+abstractfeatures_negative is
+^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 
@@ -53,7 +56,10 @@ Callchain that lead to this point:
 call 'abstractfeatures_negative.opengenerics12a' at abstractfeatures_negative.fz:60:3
   opengenerics12a
 --^^^^^^^^^^^^^^^
-call 'abstractfeatures_negative'
+call 'abstractfeatures_negative' at abstractfeatures_negative.fz:26:1
+abstractfeatures_negative is
+^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 
@@ -76,7 +82,10 @@ Callchain that lead to this point:
 call 'abstractfeatures_negative.opengenerics12b' at abstractfeatures_negative.fz:72:3
   opengenerics12b
 --^^^^^^^^^^^^^^^
-call 'abstractfeatures_negative'
+call 'abstractfeatures_negative' at abstractfeatures_negative.fz:26:1
+abstractfeatures_negative is
+^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 
@@ -111,7 +120,10 @@ Callchain that lead to this point:
 call 'abstractfeatures_negative.opengenerics12c' at abstractfeatures_negative.fz:89:3
   opengenerics12c
 --^^^^^^^^^^^^^^^
-call 'abstractfeatures_negative'
+call 'abstractfeatures_negative' at abstractfeatures_negative.fz:26:1
+abstractfeatures_negative is
+^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 4 errors.
