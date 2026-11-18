@@ -150,6 +150,7 @@ standalone_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(CLASS_FILES_TOOL
 	cp $(BUILD_DIR)/generated/doc/ace.js $(BUILD_DIR)/apidocs_standalone/
 	$(FZ) -acemode > $(BUILD_DIR)/apidocs_standalone/ace-mode-fuzion.js
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/apidocs_standalone
+	@echo "Open file://$(abspath $(BUILD_DIR))/apidocs_standalone/index.html to start browsing standalone docs."
 
 # Bundle Ace so standalone docs also work offline and via file:// URLs.
 $(BUILD_DIR)/generated/doc/ace.js:
