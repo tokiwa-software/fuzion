@@ -321,6 +321,48 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   list-style: disc inside;
 }
 
+/* Tree structure using CSS borders, previously shown with box-drawing characters (├─, └─, │). */
+
+/* Remove extra vertical spacing around nested lists. */
+.fd .sidenav nav .fd-nav-tree ul{
+  margin: 0;
+}
+
+/* Indent nested items and position connectors relative to each item. */
+.fd .sidenav nav .fd-nav-tree ul > li{
+  position: relative;
+  padding-left: 3ch;
+}
+
+/* Shared setup for the two connector lines; the rules below draw their borders. */
+.fd .sidenav nav .fd-nav-tree ul > li::before,
+.fd .sidenav nav .fd-nav-tree ul > li::after{
+  content: "";
+  position: absolute;
+  left: .5ch;
+  pointer-events: none;
+}
+
+/* Draw the vertical line through the item and its descendants. */
+.fd .sidenav nav .fd-nav-tree ul > li::before{
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid currentColor;
+}
+
+/* Draw a horizontal branch halfway down the first text line. */
+.fd .sidenav nav .fd-nav-tree ul > li::after{
+  top: 0.5lh;
+  width: 1.5ch;
+  border-top: 1px solid currentColor;
+}
+
+/* Stop the last sibling's vertical line where its horizontal branch begins. */
+.fd .sidenav nav .fd-nav-tree ul > li:last-child::before{
+  bottom: auto;
+  height: 0.5lh;
+}
+
 .fd-contract a, .fd-comment a, .fd-parent a{
   color: unset;
 }
@@ -359,21 +401,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   text-align: center;
   color: #535353;
   font-size:0.7em;
-}
-
-.space-1{
-  display: inline-block;
-  width: 1ch;
-}
-
-.space-2{
-  display: inline-block;
-  width: 2ch;
-}
-
-.space-3{
-  display: inline-block;
-  width: 3ch;
 }
 
 .heading-summary{
