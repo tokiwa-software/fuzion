@@ -506,13 +506,13 @@ public class LibraryFuir extends FUIR {
   @Override
   public boolean alwaysResultsInVoid(int s)
   {
-    return s==NO_SITE || s<0 ? false : _sites[s-SITE_BASE].alwaysResultsInVoid();
+    return s!=NO_SITE && _sites[s-SITE_BASE].alwaysResultsInVoid();
   }
 
   @Override
   public boolean doesResultEscape(int s)
   {
-    return s==NO_SITE || s<0 ? false : _sites[s-SITE_BASE].doesResultEscape();
+    return s!=NO_SITE && : _sites[s-SITE_BASE].doesResultEscape();
   }
 
   @Override
