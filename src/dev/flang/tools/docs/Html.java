@@ -392,7 +392,7 @@ public class Html extends ANY
         return "";
       }
 
-    var redefs = af.redefines();
+    var redefs = new TreeSet<>(af.redefines());
 
     // don't show annotation if redefining a feature from a non public feature
     redefs.removeIf(f->nonPublicInheritanceChain(f));
