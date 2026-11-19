@@ -671,7 +671,7 @@ public class Html extends ANY
       {
         features = features
                     // filter out features of other modules which do not need to be shown for this module
-                    .filter(af -> (af instanceof LibraryFeature lf ? lf.showInMod(lm) : false))
+                    .filter(af -> af instanceof LibraryFeature lf && lf.showInMod(lm))
                     .sorted((af1, af2) -> af1.baseName().compareToIgnoreCase(af2.baseName()));
       }
 

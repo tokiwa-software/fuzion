@@ -3523,11 +3523,8 @@ public class Call extends AbstractCall
    */
   private boolean inSameEffect(AbstractFeature effect, AbstractFeature context)
   {
-    return context == effect
-      ? true
-      : context.outer() != null
-      ? inSameEffect(effect, context.outer())
-      : false;
+    return context == effect ||
+      context.outer() != null && inSameEffect(effect, context.outer());
   }
 
 

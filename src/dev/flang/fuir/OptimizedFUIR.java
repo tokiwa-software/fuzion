@@ -256,7 +256,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
                     codeAt != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
                     codeAt != ExprKind.Tag ? -1 : tagTagNum(s),
                     codeAt != ExprKind.Match ? null : matchCaseFields(s),
-                    codeAt.isCallOrAssign() ? accessIsDynamic(s) : false,
+                    codeAt.isCallOrAssign() && accessIsDynamic(s),
                     sitePos == null || sitePos.globalPos() == null
                       ? null : sitePos.globalPos().v0(),
                     sitePos == null || sitePos.globalPos() == null
