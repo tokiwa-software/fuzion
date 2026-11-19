@@ -249,11 +249,13 @@ public class Intrinsics extends ANY
 
     put("mutate.read_fence", (c,cl,outer,in) ->
         {
+          // see: https://en.cppreference.com/c/atomic/memory_order
           return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_acquire")));
         });
 
     put("mutate.write_fence", (c,cl,outer,in) ->
         {
+          // see: https://en.cppreference.com/c/atomic/memory_order
           return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_release")));
         });
 
