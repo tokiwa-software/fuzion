@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.Thread_CPU_Time
+#
+# -----------------------------------------------------------------------
+
+# time.Thread_CPU_Time -- clock providing access to the CPU time consumed by a
+# given thread
+#
+# In contrast to `time.Thread_Time`, which reads the CPU time of the current
+# thread, this can be used to read the CPU time of any thread, e.g., to
+# regularly check the CPU time budget of another thread.
+#
+# This clock advances only while `thread` is running, so it cannot be used
+# to sleep. It cannot be read any longer once `thread` was joined.
+#
+public Thread_CPU_Time(thread concur.Thread) ref : time.Clock is
+
+
+  # read the CPU time consumed by `thread` so far
+  #
+  public redef read time.instant
+  =>
+    ns := thread.cpu_time_ns
+    if ns < 0
+      panic "failed to read CPU time of $thread"
+    time.instant ns.as_u64
+
+
+  # sleeping is not possible on a CPU time clock
+  #
+  public redef sleep(d time.duration) unit
+  =>
+    panic "time.Thread_CPU_Time cannot be used to sleep"
