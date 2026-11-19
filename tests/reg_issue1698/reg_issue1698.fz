@@ -22,7 +22,6 @@
 # -----------------------------------------------------------------------
 
 reg_issue1698 is
-  a_exception is
-  x := flow.exception a_exception .on void ()->
-    (flow.exception a_exception).env.cause (error "a")
+  x := flow.exception reg_issue1698.this .on void ()->
+    (flow.exception reg_issue1698.this).env.cause (error "a")
   say x
