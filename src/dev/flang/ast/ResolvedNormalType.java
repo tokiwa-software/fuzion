@@ -170,7 +170,8 @@ public class ResolvedNormalType extends ResolvedType
        || generics().isEmpty() /* e.g. an incomplete type in a match case */,
         generics().stream().allMatch(x -> !x.isCotypeType()),
         // the outer of a cotype must be a parametric type or a cotype
-        o == null || o.backingFeature().isUniverse() || _feature == null || !_feature.isCotype() || o.isParametricType() || o.isCotypeType());
+        o == null || o.backingFeature().isUniverse() || _feature == null || !_feature.isCotype() || o.isParametricType() || o.isCotypeType(),
+        Errors.any() || _feature == null || _feature.outer() == null || _outer.isParametricType() || _outer.feature().inheritsFrom(_feature.outer()));
   }
 
   /**
@@ -333,26 +334,6 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType replaceGenericsAndOuter0(List<AbstractType> g2, AbstractType o2)
   {
     return ResolvedNormalType.create(this, g2, originalGenericsPos(), o2);
-  }
-
-
-  /**
-   * resolve this type. This is only needed for ast.Type, for fe.LibraryType
-   * this is a NOP.
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this type is used
-   */
-  @Override
-  AbstractType resolve(Resolution res, Context context)
-  {
-    // tricky: outers generics may not have been resolved yet.
-    if (_outer != null)
-      {
-        _outer = _outer.resolve(res, context);
-      }
-    return this;
   }
 
 
