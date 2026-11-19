@@ -17,36 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test lib_concur_thread_cpu_time
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# tests for concur.Thread.cpu_time
-#
-# NOTE: only success or failure is checked, not the values, since CPU time
-# clocks give no guarantees, see `time.Thread_Time`.
-#
-lib_concur_thread_cpu_time =>
-
-  done := concur.atomic bool .new false
-
-  # thread that is kept alive until `done` is set
-  #
-  t := concur.Threads.env.spawn ()->
-    while !done.read
-
-  # print whether `t.cpu_time` succeeded
-  #
-  show(name String) =>
-    match t.cpu_time
-      time.duration => say "$name: ok"
-      e error       => say "$name: $(e.msg)"
-
-  show "alive"
-  done.write true
-  t.join.or_panic
-  show "joined"
-
-  # after the thread finished, the recorded CPU time does not change
-  #
-  say "joined, stable: $(t.cpu_time.or_panic = t.cpu_time.or_panic)"
+override NAME = lib_time_thread_cpu_time
+include ../simple.mk
