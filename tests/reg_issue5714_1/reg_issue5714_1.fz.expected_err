@@ -1,5 +1,14 @@
 
-reg_issue5714_1.fz:37:7: error 1: Incompatible type parameter 'o.i' for 'A : p.this.i'
+reg_issue5714_1.fz:34:5: error 1: Illegal '.this' type: 'o.this'
+    outer := iv.get_o
+----^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue5714_1.fz:37:7: error 2: Incompatible type parameter 'o.i' for 'A : p.this.i'
 p.f o.i
 ------^
 formal type parameter 'A : p.this.i' with constraint 'p.i'
@@ -7,4 +16,4 @@ actual type parameter 'o.i'
 assignable to constraint: 'Any',
                           'o.i'
 
-one error.
+2 errors.
