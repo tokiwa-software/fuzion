@@ -92,16 +92,19 @@ public ip_address (val u128) : property.orderable is
 
   # parse an IPv4 address from a String
   #
-  type.from_string_v4 (s Sequence String) outcome net.ip_address =>
-    fuzion.runtime.fault
-      .try (outcome net.ip_address) ()->
-        x := s
-          .map (.parse_i32)
-          .map (.or_panic.as_u8)
-
-        from_sequence x
-      .catch m->
-        error "Unable to parse provided string as an IP address: $(m)"
+  type.from_string_v4 (s Sequence String) outcome net.ip_address
+    pre debug: s.count = 4
+  =>
+    s.reduce_or_error (Sequence u8 .empty) r,t->
+        match t.parse_i32
+          error =>
+            abort (outcome (Sequence u8)) (error "$t is not valid in an IPv4 address")
+          n i32 =>
+            if n.fits_in_u8
+              r ++ [n.as_u8]
+            else
+              abort (outcome (Sequence u8)) (error "$n is not valid in an IPv4 address")
+     .bind from_sequence
 
 
   # parse an IPv6 address from a String
