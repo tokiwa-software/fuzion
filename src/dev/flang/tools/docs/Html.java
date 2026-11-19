@@ -409,7 +409,7 @@ public class Html extends ANY
 
   private String relativeAnchor(AbstractFeature f, AbstractFeature relativeTo)
   {
-    return fillTemplate("<a class='' href='##url##'>##name##</a>", Map.of(
+    return fillTemplate("<a href=\"##url##\">##name##</a>", Map.of(
       "url", featureRelativeURL(f, relativeTo),
       "name", htmlEncodedQualifiedName(f)));
   }
