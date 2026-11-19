@@ -542,13 +542,9 @@ public class Html extends ANY
     return af
       .redefines()
       .stream()
-      .map(f -> fillTemplate("""
-        <li><a href="##url##">##name##</a></li>##redefines##
-      """, Map.of(
-        "url", featureRelativeURL(f, relativeTo),
-        "name", htmlEncodeNbsp(f.qualifiedNameHuman()),
-        "redefines", redefines0(f, relativeTo))))
-      .collect(Collectors.joining(System.lineSeparator()));
+      .map(f -> "<li>" + relativeAnchor(f, relativeTo) + "</li>"
+        + redefines0(f, relativeTo))
+      .collect(Collectors.joining());
   }
 
 
