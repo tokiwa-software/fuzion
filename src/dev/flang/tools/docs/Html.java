@@ -500,22 +500,20 @@ public class Html extends ANY
 
 
   private String anchor(AbstractFeature af, AbstractFeature relativeTo) {
-    return (noFeatureLink(af) ? "<span class='font-weight-600 ml-2'>"
+    return (!hasDocumentationPage(af) ? "<span class='font-weight-600 ml-2'>"
                               : "<a class='fd-feature font-weight-600 ml-2' href='" + featureRelativeURL(af, lm, relativeTo) + "'>")
             + typePrfx(af) + htmlEncodedBasename(af)
-            + (noFeatureLink(af) ? "</span>" : "</a>");
+            + (!hasDocumentationPage(af) ? "</span>" : "</a>");
   }
 
   /**
-   * Should a hyperlink be created for feature af?
-   * Function arguments and type parameters don't have their own page in the docs.
+   * Does this feature have a documentation page?
    * @param af the feature which should be checked
-   * @return true iff there is no doc page for this feature and no hyperlink should be created
+   * @return true iff the feature is selected for page generation
    */
-  private boolean noFeatureLink(AbstractFeature af)
+  private boolean hasDocumentationPage(AbstractFeature af)
   {
-    return af.isTypeParameter() || af.isOpenTypeParameter()
-      || (af.isArgument() && !(Util.isConstructorArgument(af) && (config.ignoreVisibility() || Util.isVisible(af))));
+    return documentedFeatures.containsKey(af);
   }
 
 
