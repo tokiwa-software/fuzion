@@ -120,27 +120,32 @@ is
 
   # Full file name or name of the last directory
   #
-  public base_name String
-    pre debug: !names.is_empty
+  public base_name option String
   =>
-    names.last.or_panic
+    names.last
 
   # consider this to represent a file
   # and return just name of the file
   # without its extension and path.
   #
-  public stem String =>
-    match base_name.find_last "."
-      i i64 => 0 < i < base_name.byte_count-1 ? base_name.substring 0 i : base_name
-      nil   => base_name
+  public stem option String =>
+    match base_name
+      nil => nil
+      bn String =>
+        match bn.find_last "."
+          i i64 => 0 < i < bn.byte_count-1 ? bn.substring 0 i : bn
+          nil   => bn
 
   # consider this to represent a file
   # and return the suffix of the file_name
   #
-  public suffix String =>
-    match base_name.find_last "."
-      i i64 => 0 < i < base_name.byte_count-1 ? base_name.substring i+1 : ""
-      nil   => ""
+  public suffix option String =>
+    match base_name
+      nil => nil
+      bn String =>
+        match bn.find_last "."
+          i i64 => 0 < i < bn.byte_count-1 ? bn.substring i+1 : ""
+          nil   => ""
 
 
   # get the parent of this path
