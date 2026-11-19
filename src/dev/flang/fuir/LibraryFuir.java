@@ -273,9 +273,9 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int clazz(SpecialClazzes c)
+  public int clazz(SpecialClazzes sc)
   {
-    return _specialClazzes[c.ordinal()];
+    return _specialClazzes[sc.ordinal()];
   }
 
   @Override

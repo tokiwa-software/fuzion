@@ -826,12 +826,12 @@ public class GeneratingFUIR extends FUIR
       }
 
     _specialFeatures = new TreeMap<>();
-    for (var s : SpecialClazzes.values())
+    for (var sc : SpecialClazzes.values())
       {
-        var f = s._getFeature.get();
+        var f = sc._getFeature.get();
         if (f != null)
           {
-            _specialFeatures.put(f, s);
+            _specialFeatures.put(f, sc);
           }
       }
 
@@ -1006,14 +1006,14 @@ public class GeneratingFUIR extends FUIR
 
         if (cl.isRef() == cl.feature().isRef())  // not a boxed or explicit value clazz
           {
-            var s = _specialFeatures.get(cl.feature());
-            if (s != null)
+            var sc = _specialFeatures.get(cl.feature());
+            if (sc != null)
               {
                 if (CHECKS) check
-                  (_specialClazzes[s.ordinal()] == null);
+                  (_specialClazzes[sc.ordinal()] == null);
 
-                _specialClazzes[s.ordinal()] = cl;
-                cl._specialClazzId = s;
+                _specialClazzes[sc.ordinal()] = cl;
+                cl._specialClazzId = sc;
               }
           }
 
@@ -2027,23 +2027,23 @@ public class GeneratingFUIR extends FUIR
   /**
    * Get the id of the given special clazz.
    *
-   * @param s the special clazz we are looking for
+   * @param sc the special clazz we are looking for
    */
-  Clazz specialClazz(SpecialClazzes s)
+  Clazz specialClazz(SpecialClazzes sc)
   {
     if (PRECONDITIONS) require
-      (s != SpecialClazzes.c_NOT_FOUND);
+      (sc != SpecialClazzes.c_NOT_FOUND);
 
-    var result = _specialClazzes[s.ordinal()];
+    var result = _specialClazzes[sc.ordinal()];
     if (result == null && !_lookupDone)
       {
-        var o = clazz(s._outer);
+        var o = clazz(sc._outer);
         var oc = clazz(o);
-        var f = s._getFeature.get();
+        var f = sc._getFeature.get();
         result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
         if (CHECKS) check
           (f.isRef() == (result.isRef()));
-        _specialClazzes[s.ordinal()] = result;
+        _specialClazzes[sc.ordinal()] = result;
       }
     return result;
   }
@@ -2052,16 +2052,16 @@ public class GeneratingFUIR extends FUIR
   /**
    * Get the id of the given special clazz.
    *
-   * @param s the special clazz we are looking for
+   * @param sc the special clazz we are looking for
    */
   @Override
-  public int clazz(SpecialClazzes s)
+  public int clazz(SpecialClazzes sc)
   {
     if (PRECONDITIONS) require
-      (s != SpecialClazzes.c_NOT_FOUND);
+      (sc != SpecialClazzes.c_NOT_FOUND);
 
-    var sc = specialClazz(s);
-    return sc == null ? NO_CLAZZ : sc._id;
+    var c = specialClazz(sc);
+    return c == null ? NO_CLAZZ : c._id;
   }
 
 
