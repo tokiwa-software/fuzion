@@ -61,18 +61,26 @@ import dev.flang.util.List;
 public class Html extends ANY
 {
   final DocsOptions config;
-  private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
+
+  /**
+   * Features selected for documentation pages, mapped to the declared and
+   * inherited members shown on each page, grouped by feature kind.
+   */
+  private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> documentedFeatures;
+
   private final String navigationBareHTML;
+
   private final LibraryModule lm;
+
   private final List<LibraryModule> libModules;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm, List<LibraryModule> libModules)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> documentedFeatures, AbstractFeature universe, LibraryModule lm, List<LibraryModule> libModules)
   {
     this.config = config;
-    this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
+    this.documentedFeatures = documentedFeatures;
     this.lm = lm;
     this.libModules = libModules;
 
@@ -621,7 +629,7 @@ public class Html extends ANY
 
     if (!signatureWithArrow(outer) && !outer.isUniverse())
       {
-        var allUniverseFeat = mapOfDeclaredFeatures.get(lm.universe());
+        var allUniverseFeat = documentedFeatures.get(lm.universe());
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Function, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
@@ -1409,7 +1417,7 @@ public class Html extends ANY
    */
   String content(AbstractFeature af, int directoryDepth)
   {
-    var main = mainSection(mapOfDeclaredFeatures.get(af), af);
+    var main = mainSection(documentedFeatures.get(af), af);
     var toggleFeatureDetails = main.isEmpty() ? "" : """
       <button type="button" class="toggle-feature-details cursor-pointer" onclick="
         const entries = this.parentElement.querySelectorAll(':scope > details');

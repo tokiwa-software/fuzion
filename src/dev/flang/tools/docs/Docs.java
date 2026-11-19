@@ -367,8 +367,9 @@ public class Docs extends ANY
               .filter(m->!m.name().equals(FuzionConstants.MAIN_MODULE_NAME)) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
               .collect(Collectors.toCollection(List::new));
 
-    // collect all features for all modules
-    var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<AbstractFeature.Kind, TreeSet<AbstractFeature>>>();
+    // Collect features selected for documentation pages across all modules,
+    // with their declared and inherited members grouped by kind.
+    var documentedFeatures = new HashMap<AbstractFeature, Map<AbstractFeature.Kind, TreeSet<AbstractFeature>>>();
 
     breadthFirstTraverse(feModule, feature -> {
       if (ignoreFeature(feature, config.ignoreVisibility()))
@@ -386,7 +387,7 @@ public class Docs extends ANY
             .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
         }
 
-      mapOfDeclaredFeatures.put(
+      documentedFeatures.put(
         feature,
         Stream
           .concat(s, st)
@@ -399,9 +400,9 @@ public class Docs extends ANY
     // generate documentation per module
     for (var module : all_modules)
       {
-        var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, module, all_modules);
+        var htmlTool = new Html(config, documentedFeatures, universe, module, all_modules);
 
-        mapOfDeclaredFeatures
+        documentedFeatures
           .keySet()
           .stream()
           .filter(af -> af.isUniverse() || lf(af).showInMod(module))
@@ -428,7 +429,7 @@ public class Docs extends ANY
     // generate overview page of modules
     var path = config.destination();
     path.toFile().mkdirs();
-    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
+    var htmlTool = new Html(config, documentedFeatures, universe, all_modules.getFirst(), all_modules);
 
     var file = new File(path.toFile(), "index.html");
     try (FileWriter writer = new FileWriter(file))
