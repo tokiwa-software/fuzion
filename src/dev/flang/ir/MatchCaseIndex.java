@@ -20,10 +20,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class IR
+ * Source of record MatchCaseIndex
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.ir;
 
+/**
+ * This denotes an index IR._allCode that points to
+ * where the code of a match case is at.
+ *
+ * MatchCaseIndex
+ * @param idx
+ */
 public record MatchCaseIndex(int idx) {}
