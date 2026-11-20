@@ -147,8 +147,8 @@ jitter_threaded =>
 
   # print histograms for one completed period immediately
   print_period_histograms(period time.duration,
-                           period_samples list time.duration,
-                           cycle_samples  list time.duration)
+                          period_samples list time.duration,
+                          cycle_samples  list time.duration)
   =>
     say "testing period $period for $test_duration..."
     h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
@@ -212,11 +212,11 @@ jitter_threaded =>
 
   # fold record for scheduler test: period_delta = (actual - expected) + period
   fold_record_scheduler(acc acc_state,
-                         period time.duration,
-                         actual time.instant,
-                         expected time.instant,
-                         done_flag bool)
-                         acc_state
+                        period time.duration,
+                        actual time.instant,
+                        expected time.instant,
+                        done_flag bool)
+                        acc_state
   =>
     # Compute safe absolute difference
     diff := if actual >= expected then actual - expected else expected - actual
