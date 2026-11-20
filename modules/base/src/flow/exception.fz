@@ -39,7 +39,7 @@
 # Instead, declare a dedicated type for each usage:
 #
 #     parse(s String) outcome i32 =>
-#       parse_exception :flow.exception_tag is
+#       parse_exception : flow.exception_tag is
 #       flow.exception parse_exception .on ()->
 #         if s.is_empty then (flow.exception parse_exception).env.cause (error "empty string")
 #         s.parse_i32.or_cause parse_exception id
