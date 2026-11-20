@@ -110,10 +110,9 @@ module:public process(public pid i64,
             io.end_of_file => false
             e error => panic e
 
-        # NYI: UNDER DEVELOPMENT: error handling
-        _ := p.close_in
-        _ := close_out
-        _ := close_err
+        p.close_in.otherwise Ignored_Failure.env.register_failure
+        close_out .otherwise Ignored_Failure.env.register_failure
+        close_err .otherwise Ignored_Failure.env.register_failure
 
       p
 
