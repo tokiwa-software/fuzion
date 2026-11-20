@@ -72,10 +72,8 @@ is
   # resulting 'outcome'.
   #
   public type.on(R : Any, f ()->R) outcome R =>
-    exception.this.try   (outcome R) ()->
-                    f()
-                  .catch
-                    id
+    exception.this.try (outcome R) f()
+                  .catch id
 
 
 # convenience routine to create a new instance of 'exception T' and run 'f' in
@@ -85,6 +83,4 @@ is
 public exception_or_panic(T : Any,
                           R : Any,
                           f ()->R) R =>
-  match (exception T).on f
-    e error => panic $e
-    r R => r
+  exception T .on f .or_panic ($)
