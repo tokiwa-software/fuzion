@@ -1097,17 +1097,12 @@ NYI: UNDER DEVELOPMENT:
       case RefType, ValueType, ThisType -> null;
       case ParametricType ->
         {
-          var res = typeParameter();
-          if (res.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
-            {
-               res = f.isCotype() ? res.cotypeGeneric()
-                                  : res.cotypeOriginGeneric();
-            }
-          if (res.outer().generics() != f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
-            {
-              res = null;
-            }
-          yield res;
+          var tp = f.isCotype()
+            ? typeParameter().cotypeGeneric()
+            : typeParameter().cotypeOriginGeneric();
+          yield f.generics() == tp.outer().generics()
+            ? tp
+            : null;
         }
       };
   }
