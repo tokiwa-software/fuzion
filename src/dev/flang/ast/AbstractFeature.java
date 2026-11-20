@@ -2206,7 +2206,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       (isTypeParameter());
 
     var o = outer();
-    return o.hasCotype()
+    return !o.isCotype() && o.hasCotype()
       ? o.cotype().typeArguments().get(typeParameterIndex()+1)
       : this;
   }
