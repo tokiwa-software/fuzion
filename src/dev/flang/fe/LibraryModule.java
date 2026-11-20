@@ -44,6 +44,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.TypeKind;
+import dev.flang.ast.Types;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Visi;
 
@@ -2509,6 +2510,107 @@ SourceFile
   {
     return lm == this || Arrays.asList(_modules).stream().map(r->r._module).anyMatch(x->x==lm);
   }
+
+
+  @Override public LibraryFeature f_Typed_Combiner_call() {
+    return (LibraryFeature) Types.resolved.f_Typed_Combiner_call;
+  }
+
+
+  @Override public LibraryFeature f_typed_applicator_apply() {
+    return (LibraryFeature) Types.resolved.f_typed_applicator_apply;
+  }
+
+
+  @Override public LibraryFeature f_Open_Types_type_foldf() {
+    return (LibraryFeature) Types.resolved.f_Open_Types_type_foldf;
+  }
+
+
+  @Override public LibraryFeature f_choice_apply() {
+    return (LibraryFeature) Types.resolved.f_choice_apply;
+  }
+
+
+  @Override public LibraryFeature f_Typed_Function_call() {
+    return (LibraryFeature) Types.resolved.f_Typed_Function_call;
+  }
+
+
+  @Override public LibraryFeature f_choice_apply_f() {
+    return (LibraryFeature) Types.resolved.f_choice_apply_f;
+  }
+
+
+  @Override public LibraryFeature f_choice_combine() {
+    return (LibraryFeature) Types.resolved.f_choice_combine;
+  }
+
+
+  @Override public LibraryFeature f_choice_combine_other() {
+    return (LibraryFeature) Types.resolved.f_choice_combine_other;
+  }
+
+
+  @Override public LibraryFeature f_choice_combine_e() {
+    return (LibraryFeature) Types.resolved.f_choice_combine_e;
+  }
+
+
+  @Override public LibraryFeature f_effect_types_type_foldf() {
+    return (LibraryFeature) Types.resolved.f_effect_types_type_foldf;
+  }
+
+
+  @Override public LibraryFeature f_Function_call() {
+    return (LibraryFeature) Types.resolved.f_Function_call;
+  }
+
+
+  @Override public LibraryFeature f_flow_fallible_cause() {
+    return (LibraryFeature) Types.resolved.f_flow_fallible_cause;
+  }
+
+
+  @Override public LibraryFeature f_mutate_var_mutable_value() {
+    return (LibraryFeature) Types.resolved.f_mutate_var_mutable_value;
+  }
+
+
+  @Override public LibraryFeature f_Type_infix_colon() {
+    return (LibraryFeature) Types.resolved.f_Type_infix_colon;
+  }
+
+
+  @Override public LibraryFeature f_Type_infix_colon_true() {
+    return (LibraryFeature) Types.resolved.f_Type_infix_colon_true;
+  }
+
+
+  @Override public LibraryFeature f_Type_infix_colon_false() {
+    return (LibraryFeature) Types.resolved.f_Type_infix_colon_false;
+  }
+
+
+  @Override public LibraryFeature f_effect_static_finally() {
+    return (LibraryFeature) Types.resolved.f_effect_static_finally;
+  }
+
+
+  @Override public LibraryFeature f_fuzion_Java_Object_Ref() {
+    return (LibraryFeature) Types.resolved.f_fuzion_Java_Object_Ref;
+  }
+
+
+  @Override public LibraryFeature f_type_applicator_apply() {
+    return (LibraryFeature) Types.resolved.f_type_applicator_apply;
+  }
+
+
+  @Override public LibraryFeature f_choice_combine_f() {
+    return (LibraryFeature) Types.resolved.f_choice_combine_f;
+  }
+
 
 }
 
