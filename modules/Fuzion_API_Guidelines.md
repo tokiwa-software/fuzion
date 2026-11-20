@@ -9,7 +9,7 @@ consistent API.
 
 ### Motivation
 
-A good API design is intuitive and as few surprises.  This means that similar services offered by
+A good API design is intuitive and has few surprises.  This means that similar services offered by
 different APIs should use similar names and a similar structure.  This common structure is not
 always obvious, so the purpose of this document is to collect aspects of this common structure.
 
@@ -28,7 +28,7 @@ Documentation](https://fuzion-lang.dev/design/identifiers). In particular
 
 * features and value types should use *snake_case* such as `to_string`
 
-* `ref`types and their constructors should use *Snake_Pascal_Case*, e.g., `Mutable_Map`
+* `ref` types and their constructors should use *Snake_Pascal_Case*, e.g., `Mutable_Map`
 
 ### Name prefixes or patterns
 
@@ -78,7 +78,7 @@ Certain categories of operations should use common names with a common style. Th
 
 API should be designed such that type parameters need to be specified only if needed.
 
-Example: The API to create an option from an a value `67` of type `i64` and store it in a field, one would need to write
+Example: The API to create an option from a value `67` of type `i64` and store it in a field, one would need to write
 
     f option i64 := 67
 
