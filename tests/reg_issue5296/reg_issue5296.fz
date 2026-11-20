@@ -1,0 +1,61 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5296
+#
+# -----------------------------------------------------------------------
+
+
+# negative indentation cases from issue #5296
+
+cond1 bool => true
+cond2 bool => true
+cond3 bool => true
+cond4 bool => true
+longcond2 bool => true
+
+val1 := "value 1"
+val2 := "value 2"
+val3 := "value 3"
+val4 := "value 4"
+val5 := "value 5"
+
+# '?' of chained ternary is not aligned with first '?' or ':'
+_ := cond1 ? val1 :
+      cond2 ? val2 :
+     cond3 ? val3 :
+             val4
+
+# '?' is not indented deeper than its condition
+_ := cond1
+     ? val1
+     : cond2
+     ? val2
+     : val3
+
+# diagonal chain starts misaligned
+_ := cond1 ? val1 : cond2
+                 ? val2 : cond3
+                        ? val3 : val4
+
+# long condition makes the chained '?' misaligned
+_ := cond1 ? val1 :
+      longcond2 ? val2 :
+      cond3 ? val3 :
+              val4
