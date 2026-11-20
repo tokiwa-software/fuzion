@@ -23,7 +23,13 @@
 
 # type denoting a started process
 #
-module:public process(public pid i64, module std_in, std_out, std_err i64, name String, args Sequence String) : property.orderable is
+module:public process(public pid i64,
+                     module std_in, std_out, std_err i64,
+                     name String,
+                     args Sequence String,
+                     # which pipes were closed already, shared by all copies
+                     pipes os.process_pipes
+                     ) : property.orderable is
 
 
   # predefined read handler for reading from
@@ -105,17 +111,19 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
             e error => panic e
 
         # NYI: UNDER DEVELOPMENT: error handling
-        _ := fzE_pipe_close p.std_in
-        _ := fzE_pipe_close process.this.std_out
-        _ := fzE_pipe_close process.this.std_err
+        _ := p.close_in
+        _ := close_out
+        _ := close_err
 
       p
 
 
   # close standard input of this process
   #
+  # Does nothing if stdin was closed already.
+  #
   public close_in outcome unit =>
-    if fzE_pipe_close std_in != 0
+    if pipes.in_closed.compare_and_set false true && fzE_pipe_close std_in != 0
       error "closing stdin of process $(description)" fzE_last_error
 
 
@@ -123,8 +131,10 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   # NYI: CLEANUP: should this better be done automatically by runtime?
   #
+  # Does nothing if stdout was closed already.
+  #
   public close_out outcome unit =>
-    if fzE_pipe_close std_out != 0
+    if pipes.out_closed.compare_and_set false true && fzE_pipe_close std_out != 0
       error "closing stdout of process $(description)" fzE_last_error
 
 
@@ -132,8 +142,10 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   # NYI: CLEANUP: should this better be done automatically by runtime?
   #
+  # Does nothing if stderr was closed already.
+  #
   public close_err outcome unit =>
-    if fzE_pipe_close std_err != 0
+    if pipes.err_closed.compare_and_set false true && fzE_pipe_close std_err != 0
       error "closing stderr of process $(description)" fzE_last_error
 
 
@@ -150,7 +162,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
     # NYI: UNDER DEVELOPMENT:
     # with fixed this should be possible:
     # os.Process.env.wait process.this timeout
-    os.Process.env.wait (os.process pid std_in std_out std_err name args) timeout
+    os.Process.env.wait (os.process pid std_in std_out std_err name args pipes) timeout
 
 
   # send signal to process
@@ -159,7 +171,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
     # NYI: UNDER DEVELOPMENT:
     # with fixed this should be possible:
     # os.Process.env.send_signal process.this sig
-    os.Process.env.send_signal (os.process pid std_in std_out std_err name args) sig
+    os.Process.env.send_signal (os.process pid std_in std_out std_err name args pipes) sig
 
 
   # send kill signal to process
