@@ -30,7 +30,7 @@ public read_request(
 =>
   # type used only to identify the exception used by `read_request`
   #
-  read_request_exception is
+  read_request_exception : flow.exception_tag is
 
   flow.exception read_request_exception .on _ ()->
 
