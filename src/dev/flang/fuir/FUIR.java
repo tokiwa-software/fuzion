@@ -1194,6 +1194,7 @@ public abstract class FUIR extends IR
                       }
       case Tag     -> "Tag";
       case Pop     -> "Pop";
+      case MatchCaseIndex -> "MatchCaseIndex";
       };
   }
 
@@ -1428,6 +1429,7 @@ public abstract class FUIR extends IR
         }
       case Tag     -> skipBack(codeIndex(s, -1));
       case Pop     -> skipBack(codeIndex(s, -1));
+      case MatchCaseIndex -> throw new UnsupportedOperationException("unexpected case MatchCaseIndex in skipBack");
       };
 
     if (POSTCONDITIONS) ensure

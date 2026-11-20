@@ -52,7 +52,6 @@ import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.NumLiteral;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.AbstractFeature.Kind;
@@ -62,6 +61,7 @@ import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryFeature;
 
 import dev.flang.ir.Box;
+import dev.flang.ir.MatchCaseIndex;
 import dev.flang.ir.Tag;
 
 import dev.flang.mir.MIR;
@@ -3302,7 +3302,7 @@ public class GeneratingFUIR extends FUIR
 
     var e = getExpr(s + 1 + cix);
 
-    return ((NumLiteral) e).intValue().intValueExact();
+    return ((MatchCaseIndex) e).idx();
   }
 
 
