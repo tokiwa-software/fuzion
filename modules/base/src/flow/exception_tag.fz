@@ -20,6 +20,7 @@
 #  Source code of Fuzion standard library feature exception_tag
 #
 # -----------------------------------------------------------------------
+
 # parent of all types used as type parameter of `flow.exception`
 #
 public flow.exception_tag is

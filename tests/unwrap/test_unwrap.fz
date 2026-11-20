@@ -28,6 +28,9 @@ test_unwrap =>
 
   say2(v i64) => say v
 
+  outer_exception : flow.exception_tag is
+  inner_exception : flow.exception_tag is
+
   (flow.exception (option i64)).on ()->
     (flow.exception (outcome i64)).on ()->
       say a

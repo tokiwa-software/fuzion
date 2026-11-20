@@ -82,7 +82,7 @@ jitter_threaded =>
   =>
 
       # type used to identify flow.exception to stop in case jitter is too high
-      jitter_too_high is
+      jitter_too_high : flow.exception_tag is
 
       # test payload, just some dummy code requiring a moderate amount of calculation
       payload =>

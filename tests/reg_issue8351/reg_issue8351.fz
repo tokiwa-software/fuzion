@@ -25,8 +25,8 @@ reg_issue8351 =>
 
   printed := mut 0
 
-  print_limit is
-  unprintable is
+  print_limit : flow.exception_tag is
+  unprintable : flow.exception_tag is
 
   print_trice(x Any) =>
     flow.exception print_limit
