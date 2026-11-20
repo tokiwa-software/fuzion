@@ -44,7 +44,7 @@ test_process =>
 
 
   test "write to stdin of process" ()->
-    (os.process.start "cat").bind p->
+    (os.Running_Process.start "cat").bind p->
       lm ! ()->
         _ := p.with_in unit lm ()->
           _ := (io.buffered lm).Writer.env.write "Hello from the other side."
@@ -56,7 +56,7 @@ test_process =>
 
 
   test "read stdout of process" ()->
-    (os.process.start "echo" ["eecchhoo"]).bind p->
+    (os.Running_Process.start "echo" ["eecchhoo"]).bind p->
       lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).or_panic
@@ -64,7 +64,7 @@ test_process =>
 
 
   test "pass environment variable" ()->
-    (os.process.start "printenv" [] (container.ps_map String String .of [("MYENVVAR", "content")])).bind p->
+    (os.Running_Process.start "printenv" [] (container.ps_map String String .of [("MYENVVAR", "content")])).bind p->
       lm ! ()->
         _ := p.with_out unit lm ()->
           out := ((io.buffered lm).read_string 1E9)
@@ -77,7 +77,7 @@ test_process =>
 
 
   test "feed output of process 1 to process 2" ()->
-    (os.process.start "echo" ["'feed me to cat'"]).bind p->
+    (os.Running_Process.start "echo" ["'feed me to cat'"]).bind p->
       (p | ["cat"]).bind p2->
         lm ! ()->
           _ := p2.with_out unit lm ()->
@@ -86,7 +86,7 @@ test_process =>
 
 
   test "1kb argument, piped to another process" ()->
-    (os.process.start "echo" ["-n", (get_str 1E3)]).bind p->
+    (os.Running_Process.start "echo" ["-n", (get_str 1E3)]).bind p->
       (p | ["cat"]).bind p2->
         lm ! ()->
           _ := p2.with_out unit lm ()->
@@ -97,7 +97,7 @@ test_process =>
 /* NYI: PERFORMANCE: Too slow
 
   test "100kb argument, piped to another process" ()->
-    (os.process.start "echo" ["-n", (get_str 1E5)]).bind p->
+    (os.Running_Process.start "echo" ["-n", (get_str 1E5)]).bind p->
       (p | ["cat"]).bind p2->
         say p2.read_string.or_panic.byte_count
         say "Exit.env.exit code: $(p2.wait)"
@@ -108,7 +108,7 @@ test_process =>
 
 
   test "10mb write to stdin, piped to another process"
-  p := os.process.start ["cat"]
+  p := os.Running_Process.start ["cat"]
     p := spawned
     concur.Threads.env.spawn ()->
       time.Nano.env.sleep (time.duration.s 1)
@@ -125,4 +125,4 @@ test_process =>
 
 
   test "start process that does not exist" ()->
-    say (os.process.start "ohQue1AheiPu4aaw").err.msg
+    say (os.Running_Process.start "ohQue1AheiPu4aaw").err.msg
