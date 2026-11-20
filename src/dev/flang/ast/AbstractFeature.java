@@ -316,7 +316,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * The inherits calls of this feature.
    * Almost never empty since almost every feature inherits from {@code Any}.
    */
-  public abstract List<AbstractCall> inherits();
+  public abstract List<? extends AbstractCall> inherits();
 
 
   /**

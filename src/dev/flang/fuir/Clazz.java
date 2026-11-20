@@ -1251,11 +1251,11 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         var o = _outer;
         String outer = o != null && !o.feature().isUniverse() ? StringHelpers.wrapInParentheses(o.toString(humanReadable)) + "." : "";
-        var f = feature();
+        AbstractFeature f = feature();
         var cotypeType = f.isCotype();
         if (cotypeType)
           {
-            f = (LibraryFeature) f.cotypeOrigin();
+            f = f.cotypeOrigin();
           }
         var fn = f.featureName();
         // for a feature that does not define a type itself, the name is not
@@ -1824,7 +1824,7 @@ class Clazz extends ANY implements Comparable<Clazz>
      */
     var of = handDown(o, NO_SELECT, (_,_)->{}, inh).feature();
     var res = this;
-    var i = feature();
+    AbstractFeature i = feature();
     while (i != null && i != of)
       {
         res = res._outer;
@@ -1842,9 +1842,9 @@ class Clazz extends ANY implements Comparable<Clazz>
         while (i != null && i != of)
           {
             res = i.hasOuterRef()
-              ? res.lookup(i.outerRef()).resultClazz()
+              ? res.lookup((FuirFeature) i.outerRef()).resultClazz()
               : res._outer;
-            i = (LibraryFeature) i.outer();
+            i = i.outer();
           }
       }
 

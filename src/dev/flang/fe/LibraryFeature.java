@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
-import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
@@ -99,7 +98,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * cached result of innerFeatures()
    */
-  List<FuirFeature> _innerFeatures;
+  List<LibraryFeature> _innerFeatures;
 
 
   /**
@@ -228,7 +227,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * The inner features declared within this feature's module file.
    */
-  List<FuirFeature> innerFeatures()
+  List<LibraryFeature> innerFeatures()
   {
     var result = _innerFeatures;
     if (result == null)
@@ -244,7 +243,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * The features declared within this feature.
    */
-  List<FuirFeature> declaredFeatures()
+  List<LibraryFeature> declaredFeatures()
   {
     return innerFeatures();
   }
@@ -562,8 +561,8 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  List<AbstractCall> _inherits = null;
-  public List<AbstractCall> inherits()
+  List<LibraryCall> _inherits = null;
+  public List<LibraryCall> inherits()
   {
     if (_inherits == null)
       {
@@ -572,8 +571,8 @@ public class LibraryFeature extends FuirFeature
         var ip = _libModule.featureInheritsPos(_index);
         for (var i = 0; i < n; i++)
           {
-            var p = (AbstractCall) code1(ip);
-            ((LibraryCall) p)._isInheritanceCall = true;
+            var p = (LibraryCall) code1(ip);
+            p._isInheritanceCall = true;
             _inherits.add(p);
             ip = _libModule.codeNextPos(ip);
           }

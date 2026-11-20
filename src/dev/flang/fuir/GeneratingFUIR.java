@@ -1800,7 +1800,7 @@ public class GeneratingFUIR extends FUIR
       {
         for (var p: ff.inherits())
           {
-            var pf = (LibraryFeature) p.calledFeature();
+            var pf = p.calledFeature();
             var of = pf.outerRef();
             Clazz or = (of == null) ? null : c.lookup(of);
             var needsOuterRef = outerRefNeeded(or);
