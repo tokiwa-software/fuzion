@@ -65,11 +65,11 @@ Certain categories of operations should use common names with a common style. Th
   array. `size` is preferred for something that usually would not be considered one-dimensional like
   sets, trees, etc.
 
-  `count` indicates that determining the number of elements may be expensive and require couting. It
+  `count` indicates that determining the number of elements may be expensive and require courting. It
   may even diverge if the number is infinite. In contrast to that, `size` or `length` are usually
   cheap operations.
 
-  In case there are several intepretation of what elements a structure contains, these should be
+  In case there are several interpretations of what elements a structure contains, these should be
   prefixed with the type of these elements, e.g., `String.codepoint_count`.
 
 ## Type Parameters
@@ -91,3 +91,7 @@ such that one can write
     f := option 67
 
 avoiding the redundant type parameter.
+
+<!--
+LocalWords:  Fuzion APIs bool trit codepoint
+ -->
