@@ -1,0 +1,5 @@
+e={}
+a={(1 => eins)}
+b={(1 => eins), (2 => zwei)}
+c={(1 => eins), (3 => drei)}
+d={(1 => one), (2 => two)}
