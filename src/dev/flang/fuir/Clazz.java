@@ -42,7 +42,6 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Expr;
-import dev.flang.ast.Types;
 
 import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryFeature;
@@ -320,7 +319,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        // NYI: UNDER DEVELOPMENT: currently not possible because of type_as_value and `Type.infix :`
        //  !type.feature().isTypeParameter(),
        type.feature().resultType().isOpenGeneric() == (select >= 0),
-       type != Types.t_ERROR,
+       !type.isArtificialType(),
        // outer clazzes of fields must be values
        outer == null || outer.isValue() || !type.feature().isField());
 
@@ -399,10 +398,10 @@ class Clazz extends ANY implements Comparable<Clazz>
                 // underlying type to avoid problems creating clazzes form
                 // this.types.
                 if (CHECKS) check
-                  (Errors.any() || feature() == Types.resolved.f_type_as_value);
+                  (Errors.any() || feature().isTypeAsValueFeature());
 
                 gi = gi.feature().isRef() ? gi.asRef() : gi.asValue();
-                }
+              }
             _actualTypeParameters[i] = _fuir.type2clazz(gi);
           }
       }
@@ -463,7 +462,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   private Clazz normalizeOuter(AbstractType t, Clazz outer)
   {
     var f = t.feature();
-    return outer == null || needsSpecialization(f) || f.isField() || t == Types.t_ERROR
+    return outer == null || needsSpecialization(f) || f.isField()
       ? outer
       : outer.normalize(f.outer());
   }
@@ -1230,8 +1229,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || fa._f.isTypeParameter() || findRedefinition(fa._f) == null || innerClazz._type != Types.t_ERROR,
-      innerClazz != null);
+      (innerClazz != null);
 
     return innerClazz;
   }
@@ -1703,10 +1701,10 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             result = typeParameterActualType().typeClazz();
           }
-        else if (f  == Types.resolved.f_type_as_value                          ||
-                 of == Types.resolved.f_type_as_value && f == of.resultField()   )
+        else if (f .isTypeAsValueFeature()                          ||
+                 of.isTypeAsValueFeature() && f == of.resultField()   )
           {
-            var ag = (f == Types.resolved.f_type_as_value ? this : o).actualTypeParameters();
+            var ag = (f.isTypeAsValueFeature() ? this : o).actualTypeParameters();
             result = ag[0].typeClazz();
           }
         else
@@ -1787,11 +1785,9 @@ class Clazz extends ANY implements Comparable<Clazz>
           case RefType, ValueType, ThisType ->
             {
               var tt = _type.cotypeType();
-              var ty = Types.resolved.f_Type.selfType();
               yield _type.containsError()  ? _fuir.error() :
                      feature().isUniverse() ? this    :
-                     tt.compareTo(ty) == 0  ? _fuir.newClazz(_fuir.universe()  , ty, FuzionConstants.NO_SELECT)
-                                            : _fuir.newClazz(_outer.typeClazz(), tt, FuzionConstants.NO_SELECT);
+                     _fuir.newClazz(_outer.typeClazz(), tt, FuzionConstants.NO_SELECT);
             }
           };
       }
@@ -1905,7 +1901,6 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (t != null,
-       Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
     return handDown(t, select, foundRef, inh, feature().isField());
@@ -1961,7 +1956,6 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (t != null,
-       Errors.any() || t != Types.t_ERROR,
        !t.isOpenGeneric(),
        inh != null);
 
@@ -2019,9 +2013,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   private int replaceOpenCount(AbstractFeature a)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || a != Types.f_ERROR || a.resultType().isOpenGeneric());
+      (Errors.any() || a.resultType().isOpenGeneric());
 
-    return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType(), a.outer()).size();
+    return replaceOpen(a.resultType(), a.outer()).size();
   }
 
 

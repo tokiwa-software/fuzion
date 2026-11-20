@@ -2258,7 +2258,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Is this an effect feature that requires to be called via `env`?
    */
-  public boolean isEffectFeature() {
+  public boolean isEffectFeature()
+  {
     return
       outer() != null &&
       outer().inheritsFrom(Types.resolved.f_effect) &&
@@ -2266,7 +2267,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-
+  /**
+   * Is this the feature `type_as_value`?
+   * @return
+   */
+  public boolean isTypeAsValueFeature()
+  {
+    return Types.resolved.f_type_as_value == this;
+  }
 
 }
 
