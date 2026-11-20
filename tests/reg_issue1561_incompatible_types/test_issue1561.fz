@@ -22,9 +22,11 @@
 # -----------------------------------------------------------------------
 
 test_issue1561 =>
+  read_line_exception is
+
   read_line option String =>
 
-    (flow.exception unit .on String ()->
+    (flow.exception read_line_exception .on String ()->
       _ : String is
         public redef utf8 Sequence u8 =>
           (list u8).empty

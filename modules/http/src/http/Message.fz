@@ -144,11 +144,14 @@ module next_line(LM : mutate) => (io.buffered LM).read_delimiter encodings.ascii
 
 
 module parse_header_fields(LM : mutate) outcome (container.Mutable_Tree_Map LM String String) =>
+  # type used only to identify the exception used by `parse_header_fields`
+  #
+  parse_header_fields_exception is
 
-  flow.exception unit .on _ ()->
+  flow.exception parse_header_fields_exception .on _ ()->
 
     cause(s String) void =>
-      (flow.exception unit).env.cause (error s)
+      (flow.exception parse_header_fields_exception).env.cause (error s)
 
     fields := (container.Mutable_Tree_Map LM String String) .empty
 
@@ -171,10 +174,14 @@ module parse_header_fields(LM : mutate) outcome (container.Mutable_Tree_Map LM S
 
 
 module body_helper(LM : mutate, is_req bool, header_fields container.Map String String) outcome (i64 -> choice (Sequence u8) io.end_of_file error) =>
-  flow.exception unit .on (i64 -> choice (Sequence u8) io.end_of_file error) ()->
+  # type used only to identify the exception used by `body_helper`
+  #
+  body_helper_exception is
+
+  flow.exception body_helper_exception .on (i64 -> choice (Sequence u8) io.end_of_file error) ()->
 
     cause(s String) void =>
-      (flow.exception unit).env.cause (error s)
+      (flow.exception body_helper_exception).env.cause (error s)
 
     # If a message is received with both a Transfer-Encoding and a Content-Length header field, the Transfer-Encoding overrides the Content-Length.
     # Such a message might indicate an attempt to perform request smuggling (Section 11.2) or response splitting (Section 11.1) and ought to be handled as an error.
