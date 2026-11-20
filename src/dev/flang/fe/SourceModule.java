@@ -1965,15 +1965,13 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkRedefVisibility(Feature f)
   {
-    if (!f.isCoTypesRelayTypeParameter())
-    {
-      for (var redefined : f.redefines()) {
+    for (var redefined : f.redefines())
+      {
         if (redefined.visibility().ordinal() > f.visibility().ordinal())
           {
             AstErrors.redefMoreRestrictiveVisibility(f, redefined);
           }
       }
-    }
   }
 
 
