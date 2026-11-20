@@ -86,26 +86,6 @@ public class ResolvedNormalType extends ResolvedType
   /*--------------------------  constructors  ---------------------------*/
 
 
-  /**
-   * Instantiate a new ResolvedNormalType.
-   *
-   * @param t the original type
-   *
-   * @param g the actual generic arguments that replace t.generics (resolved)
-   *
-   * @param ug the actual generic arguments that replace t.generics (unresolved)
-   *
-   * @param o the actual outer type, or null, that replaces t.outer
-   */
-  public static ResolvedType create(AbstractType t, List<AbstractType> g, List<HasSourcePosition> ug, AbstractType o)
-  {
-    if (PRECONDITIONS) require
-      ( t.feature().generics().sizeMatches(g),
-        t == Types.t_ERROR || (t.outer() == null) == (o == null));
-
-    return create(g, ug, o, t.feature(), t.kind());
-  }
-
 
   /**
    * Instantiate a new ResolvedNormalType.
@@ -186,19 +166,6 @@ public class ResolvedNormalType extends ResolvedType
     return f == Types.f_ERROR || g.contains(Types.t_ERROR)
       ? Types.t_ERROR
       : new ResolvedNormalType(g, ug, o, f, typeKind);
-  }
-
-
-  /**
-   * Instantiate a new ResolvedNormalType.
-   */
-  public static ResolvedNormalType create(ResolvedNormalType original, TypeKind typeKind)
-  {
-    if (PRECONDITIONS) require
-      (Types.resolved == null
-         || !original.isVoid(),
-       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType);
-    return new ResolvedNormalType(original._generics, original._originalGenericsPos, original._outer, original._feature, original._typeKind);
   }
 
 
@@ -333,7 +300,7 @@ public class ResolvedNormalType extends ResolvedType
   @Override
   public AbstractType replaceGenericsAndOuter0(List<AbstractType> g2, AbstractType o2)
   {
-    return ResolvedNormalType.create(this, g2, originalGenericsPos(), o2);
+    return ResolvedNormalType.create(g2, originalGenericsPos(), o2, feature(), kind());
   }
 
 
