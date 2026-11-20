@@ -117,14 +117,12 @@ public ip_address (val u128) : property.orderable is
      .map (.pad_left "0" 4)
      .flat_map (.chunk 2)
      .reduce_or_error (Sequence u8 .empty) r,t->
-        match t.parse_i32_hex
-          error =>
-            abort (outcome (Sequence u8)) (error "$t is not valid in an IPv6 address")
-          n i32 =>
-            if n.fits_in_u8
-              r ++ [n.as_u8]
-            else
-              abort (outcome (Sequence u8)) (error "$n is not valid in an IPv6 address")
+        t.parse_i32_hex
+         .as_option
+         .bind (Sequence u8 | (abort (outcome (Sequence u8)))) n->
+           if n.fits_in_u8 then r ++ [n.as_u8] else nil
+         .or_else
+           (abort (outcome (Sequence u8)) (error "$t is not valid in an IPv6 address"))
      .bind from_sequence
 
 
