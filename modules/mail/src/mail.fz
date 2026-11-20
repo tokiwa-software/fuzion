@@ -105,7 +105,7 @@ public mail is
 
     # type used only to identify the exception used by `send`
     #
-    send_exception is
+    send_exception : flow.exception_tag is
 
     # write and flush, cause an exception on any error
     #

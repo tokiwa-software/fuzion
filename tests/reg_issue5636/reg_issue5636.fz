@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-test is
+test : flow.exception_tag is
 match flow.exception test .on ()->
     (flow.exception test).env.cause (error "bla")
   e error => say $e

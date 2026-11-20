@@ -25,7 +25,7 @@ lib_switch_or_cause =>
 
   # type used only to identify the exception used in this test
   #
-  status_exception is
+  status_exception : flow.exception_tag is
 
   res := flow.exception status_exception .on _ ()->
     "GET 200 ..."

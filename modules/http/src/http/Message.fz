@@ -146,7 +146,7 @@ module next_line(LM : mutate) => (io.buffered LM).read_delimiter encodings.ascii
 module parse_header_fields(LM : mutate) outcome (container.Mutable_Tree_Map LM String String) =>
   # type used only to identify the exception used by `parse_header_fields`
   #
-  parse_header_fields_exception is
+  parse_header_fields_exception : flow.exception_tag is
 
   flow.exception parse_header_fields_exception .on _ ()->
 
@@ -176,7 +176,7 @@ module parse_header_fields(LM : mutate) outcome (container.Mutable_Tree_Map LM S
 module body_helper(LM : mutate, is_req bool, header_fields container.Map String String) outcome (i64 -> choice (Sequence u8) io.end_of_file error) =>
   # type used only to identify the exception used by `body_helper`
   #
-  body_helper_exception is
+  body_helper_exception : flow.exception_tag is
 
   flow.exception body_helper_exception .on (i64 -> choice (Sequence u8) io.end_of_file error) ()->
 
