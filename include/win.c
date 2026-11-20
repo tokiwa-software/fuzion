@@ -851,7 +851,7 @@ wchar_t *build_unicode_environment_block(char *env[], size_t envLen) {
 }
 
 
-int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+static int fzE_process_create0(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
 
   // Programmatically controlling which handles are inherited by new processes in Win32
   // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
@@ -944,6 +944,15 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   result[3] = (int64_t)hStderrRead;
 
   return 0;
+}
+
+
+int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+  // make sure no files are opened while we start child process
+  fzE_lock();
+  int res = fzE_process_create0(args, argsLen, env, envLen, result);
+  fzE_unlock();
+  return res;
 }
 
 
