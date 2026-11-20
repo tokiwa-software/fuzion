@@ -9,6 +9,7 @@ fuzion.runtime.postcondition_fault#1 at {base.fum}/fuzion/runtime/post_fault.fz:
 (catch_postcondition.test#1 i32).loop at catch_postcondition.fz:43
 catch_postcondition.test#1 i32 at catch_postcondition.fz:43
 catch_postcondition at catch_postcondition.fz:291
+universe
 
 *** fatal errors encountered, stopping.
 one error.

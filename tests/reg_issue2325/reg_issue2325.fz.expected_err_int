@@ -45,6 +45,9 @@ i32.type.sum.anonymous.op#2 at {base.fum}/Monoid.fz:60:26
 reg_issue2325 at reg_issue2325.fz:25:8
   n := ((i32 0)..100000).fold i32.type.sum
 -------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+universe at reg_issue2325.fz:24:1
+reg_issue2325 =>
+^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

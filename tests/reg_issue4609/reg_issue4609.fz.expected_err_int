@@ -34,6 +34,9 @@ reg_issue4609.q#1 at reg_issue4609.fz:35:20
 reg_issue4609 at reg_issue4609.fz:34:3
   q s
 --^^^
+universe at reg_issue4609.fz:27:1
+reg_issue4609 =>
+^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

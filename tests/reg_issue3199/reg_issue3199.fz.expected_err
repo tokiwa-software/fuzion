@@ -15,7 +15,10 @@ without providing an implementation
 
 Callchain that lead to this point:
 
-call 'reg_issue3199'
+call 'reg_issue3199' at reg_issue3199.fz:24:1
+reg_issue3199 is
+^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 one error.

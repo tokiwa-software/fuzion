@@ -1434,7 +1434,7 @@ public class DFA extends ANY
           {
             var m =
               newCall(null,
-                      _fuir.mainClazz(),
+                      _fuir.clazzUniverse(),
                       NO_SITE,
                       Value.UNIT,
                       new List<>(),

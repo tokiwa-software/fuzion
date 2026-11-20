@@ -79,6 +79,9 @@ fixed_capacity_array_test_negative at fixed_capacity_array_test_negative.fz:28:3
 ----^^^^^^^^^^^^^^^^^^
     fca.add 21 # should panic: Fixed_Capacity_Array can not grow, exceeded limit of 10 elements
 ----^^^^^^^^^^
+universe at fixed_capacity_array_test_negative.fz:24:1
+fixed_capacity_array_test_negative =>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

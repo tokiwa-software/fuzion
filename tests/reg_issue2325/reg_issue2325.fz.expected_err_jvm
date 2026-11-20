@@ -11,6 +11,7 @@ i32.type.sum.anonymous.op#2 at {base.fum}/Monoid.fz:60
 (list i32).fold#2 at {base.fum}/list.fz:274
 (interval i32).fold#1 at {base.fum}/Sequence.fz:624
 reg_issue2325 at reg_issue2325.fz:25
+universe
 
 *** fatal errors encountered, stopping.
 one error.

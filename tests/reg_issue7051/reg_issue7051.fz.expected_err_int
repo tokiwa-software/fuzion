@@ -34,6 +34,9 @@ reg_issue7051.outer2.a#2 i64 at reg_issue7051.fz:34:11
 reg_issue7051 at reg_issue7051.fz:37:3
   outer2.a 3
 --^^^^^^^^^^
+universe at reg_issue7051.fz:24:1
+reg_issue7051 =>
+^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

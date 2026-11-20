@@ -265,25 +265,48 @@ public class SourceModule extends Module implements SrcModule
     findDeclarations(_universe, null);
     _universe.scheduleForResolution(_res);
     _res.resolve();
-    addRuntimeInitCall();
+    if (!_options._compilingModule)
+      {
+        addInitialCallsToUniverse();
+      }
   }
 
 
   /**
-   * Add call at beginning of application
-   * to initialize the fuzion runtime system
+   * Add calls to runtime init/deinit
+   * and - if it exists - main to universe.
    */
-  private void addRuntimeInitCall()
+  private void addInitialCallsToUniverse()
   {
-    if (effectiveMain(_universe, _main) instanceof Feature f)
+    _universe
+      .impl()
+      .setExpr(new Block(new List<>(
+        plainCall(Types.resolved.f_fuzion_runtime_init),
+        _main == null
+          ? _universe.impl().expr()
+          : callToMain(),
+        plainCall(Types.resolved.f_fuzion_runtime_deinit))));
+  }
+
+
+
+  /**
+   * @return a call to then main feature
+   */
+  private Expr callToMain()
+  {
+    Expr result = Call.ERROR;
+    var mainFeature = lookupFeature(_universe, FeatureName.get(_main, 0));
+    if (mainFeature != null)
       {
-        f
-          .impl()
-          .addCalls(
-            plainCall(Types.resolved.f_fuzion_runtime_init),
-            plainCall(Types.resolved.f_fuzion_runtime_deinit)
-          );
+        var pac = mainFeature.preAndCallFeature();
+        if (pac != null)
+          {
+            mainFeature = pac;
+          }
+        result = plainCall(mainFeature);
       }
+    return result;
   }
 
 
@@ -296,7 +319,7 @@ public class SourceModule extends Module implements SrcModule
   private AbstractCall plainCall(AbstractFeature feature)
   {
     return new AbstractCall() {
-      @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
+      @Override public SourcePosition pos() { return feature.pos(); }
       @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
       @Override public AbstractFeature calledFeature() { return feature; }
       @Override public Expr target() { return Universe.instance; }

@@ -23,7 +23,10 @@ Callchain that lead to this point:
 call 'reg_issue3359.t#1 reg_issue3359.f' at reg_issue3359.fz:61:3
   t f
 --^^^
-call 'reg_issue3359'
+call 'reg_issue3359' at reg_issue3359.fz:26:1
+reg_issue3359 is
+^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 
@@ -51,7 +54,10 @@ Callchain that lead to this point:
 call 'reg_issue3359.t#1 reg_issue3359.g' at reg_issue3359.fz:64:3
   t g
 --^^^
-call 'reg_issue3359'
+call 'reg_issue3359' at reg_issue3359.fz:26:1
+reg_issue3359 is
+^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 
@@ -73,7 +79,10 @@ Callchain that lead to this point:
 call 'reg_issue3359.t#1 reg_issue3359.h' at reg_issue3359.fz:67:3
   t h
 --^^^
-call 'reg_issue3359'
+call 'reg_issue3359' at reg_issue3359.fz:26:1
+reg_issue3359 is
+^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 
@@ -102,7 +111,10 @@ Callchain that lead to this point:
 call 'reg_issue3359.u#1 reg_issue3359.i' at reg_issue3359.fz:103:3
   u i
 --^^^
-call 'reg_issue3359'
+call 'reg_issue3359' at reg_issue3359.fz:26:1
+reg_issue3359 is
+^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 
@@ -131,7 +143,10 @@ Callchain that lead to this point:
 call 'reg_issue3359.u#1 reg_issue3359.j' at reg_issue3359.fz:106:3
   u j
 --^^^
-call 'reg_issue3359'
+call 'reg_issue3359' at reg_issue3359.fz:26:1
+reg_issue3359 is
+^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 
@@ -154,7 +169,10 @@ Callchain that lead to this point:
 call 'reg_issue3359.u#1 reg_issue3359.k' at reg_issue3359.fz:109:3
   u k
 --^^^
-call 'reg_issue3359'
+call 'reg_issue3359' at reg_issue3359.fz:26:1
+reg_issue3359 is
+^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 6 errors.

@@ -744,17 +744,9 @@ public class Impl extends ANY
   }
 
 
-  /**
-   * Add surrounding calls to the expression of
-   * this implementation.
-   */
-  public void addCalls(AbstractCall start, AbstractCall end)
+  public void setExpr(Expr expr)
   {
-    if (PRECONDITIONS) require
-      (start.type().compareTo(Types.resolved.t_unit) == 0,
-       end.type().compareTo(Types.resolved.t_unit) == 0);
-
-    _expr = new Block(new List<>(start, _expr, end));
+    _expr = expr;
   }
 
 

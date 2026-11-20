@@ -10,7 +10,10 @@ effect environment '--empty--' for call to 'lm.type.from_env' at {base.fum}/muta
 effect environment '--empty--' for call to '(lm.type.array.type (Sequence (tuple i32 String i32))).new#3 i64' at reg_issue6959.fz:25:8
   _ := lm.array (Sequence (tuple i32 String i32)) .new 0 _->[]
 -------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'lm'
+effect environment '--empty--' for call to 'lm' at reg_issue6959.fz:24:1
+lm : mutate is
+^^
+effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'lm' is instated along all call paths to this effect use.

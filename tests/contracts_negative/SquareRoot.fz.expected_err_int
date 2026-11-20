@@ -33,6 +33,9 @@ SquareRoot.precall sqrt at SquareRoot.fz:29:5
 SquareRoot at SquareRoot.fz:44:22
   say "sqrt(-16) = $(sqrt(-16))" # 1. should flag an error, precondition failed
 ---------------------^^^^^^^^^
+universe at SquareRoot.fz:26:1
+SquareRoot is
+^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

@@ -56,7 +56,10 @@ effect environment '--empty--' for call to 'test_effect_neg.f.instate_self#2 uni
 effect environment '--empty--' for call to 'test_effect_neg.f.infix !#2 unit' at test_effect_neg.fz:63:3
   f ! ()->use_f
 --^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg'
+effect environment '--empty--' for call to 'test_effect_neg' at test_effect_neg.fz:29:1
+test_effect_neg is
+^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.e' is instated along all call paths to this effect use.
@@ -119,7 +122,10 @@ effect environment '--empty--' for call to 'test_effect_neg.e.instate_self#2 uni
 effect environment '--empty--' for call to 'test_effect_neg.e.infix !#2 unit' at test_effect_neg.fz:62:3
   e ! ()->use_e
 --^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg'
+effect environment '--empty--' for call to 'test_effect_neg' at test_effect_neg.fz:29:1
+test_effect_neg is
+^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.f' is instated along all call paths to this effect use.
@@ -182,7 +188,10 @@ effect environment '--empty--' for call to 'test_effect_neg.e.instate_self#2 uni
 effect environment '--empty--' for call to 'test_effect_neg.e.infix !#2 unit' at test_effect_neg.fz:62:3
   e ! ()->use_e
 --^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg'
+effect environment '--empty--' for call to 'test_effect_neg' at test_effect_neg.fz:29:1
+test_effect_neg is
+^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.g' is instated along all call paths to this effect use.
@@ -218,7 +227,10 @@ effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#
 effect environment '--empty--' for call to 'test_effect_neg.a.instate_self#2 unit' at test_effect_neg.fz:56:3
   a.instate_self unit fa
 --^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg'
+effect environment '--empty--' for call to 'test_effect_neg' at test_effect_neg.fz:29:1
+test_effect_neg is
+^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.b' is instated along all call paths to this effect use.
@@ -254,7 +266,10 @@ effect environment '--empty--' for call to 'test_effect_neg.type.b.type.instate#
 effect environment '--empty--' for call to 'test_effect_neg.b.instate_self#2 unit' at test_effect_neg.fz:57:3
   b.instate_self unit fb
 --^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg'
+effect environment '--empty--' for call to 'test_effect_neg' at test_effect_neg.fz:29:1
+test_effect_neg is
+^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.c' is instated along all call paths to this effect use.
@@ -290,7 +305,10 @@ effect environment '--empty--' for call to 'test_effect_neg.type.c.type.instate#
 effect environment '--empty--' for call to 'test_effect_neg.c.instate_self#2 unit' at test_effect_neg.fz:58:3
   c.instate_self unit fc
 --^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg'
+effect environment '--empty--' for call to 'test_effect_neg' at test_effect_neg.fz:29:1
+test_effect_neg is
+^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.a' is instated along all call paths to this effect use.
@@ -384,7 +402,10 @@ effect environment '--empty--' for call to 'test_effect_neg.type.a.type.instate#
 effect environment '--empty--' for call to 'test_effect_neg.a.instate_self#2 unit' at test_effect_neg.fz:56:3
   a.instate_self unit fa
 --^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'test_effect_neg'
+effect environment '--empty--' for call to 'test_effect_neg' at test_effect_neg.fz:29:1
+test_effect_neg is
+^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.d' is instated along all call paths to this effect use.

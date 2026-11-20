@@ -22,22 +22,25 @@ fuzion.runtime.pre_fault.cause#1 at {base.fum}/flow/fallible.fz:40:6
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56:3
   fuzion.runtime.pre_fault.env.cause msg
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(interval i64).pre sliding at {base.fum}/Sequence.fz:1175:7
+(interval i64).pre sliding at {base.fum}/Sequence.fz:1342:7
       debug: size > 0
 ------^^^^^^^^^^^^^^^
-(interval i64).precall sliding at {base.fum}/Sequence.fz:1174:5
+(interval i64).precall sliding at {base.fum}/Sequence.fz:1341:5
     pre
 ----^^^
       debug: size > 0
 ------^^^^^^^^^^^^^^^
       debug: step > 0
 ------^^^^^^^^^^^^^^^
-(interval i64).sliding#1 at {base.fum}/Sequence.fz:1160:5
+(interval i64).sliding#1 at {base.fum}/Sequence.fz:1318:5
     sliding size 1
 ----^^^^^^^^^^^^^^
 sequence_sliding at sequence_sliding.fz:41:10
   say <| (0..10).sliding 0
 ---------^^^^^^^^^^^^^^^^^
+universe at sequence_sliding.fz:24:1
+sequence_sliding =>
+^^^^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

@@ -8,6 +8,7 @@ reg_issue4609.s.call at reg_issue4609.fz:33
 reg_issue4609.r#1 at reg_issue4609.fz:36
 reg_issue4609.q#1 at reg_issue4609.fz:35
 reg_issue4609 at reg_issue4609.fz:34
+universe
 
 *** fatal errors encountered, stopping.
 one error.

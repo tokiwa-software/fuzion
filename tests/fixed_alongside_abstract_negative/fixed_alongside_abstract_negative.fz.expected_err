@@ -15,7 +15,10 @@ without providing an implementation
 
 Callchain that lead to this point:
 
-call 'fixed_alongside_abstract_negative'
+call 'fixed_alongside_abstract_negative' at fixed_alongside_abstract_negative.fz:24:1
+fixed_alongside_abstract_negative =>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'universe'
 program entry point
 
 one error.
