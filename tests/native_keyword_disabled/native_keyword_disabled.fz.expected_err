@@ -1,0 +1,7 @@
+
+native_keyword_disabled.fz:28:21: error 1: Illegal use of the 'native' keyword.
+syscall (x i64) i64 => native
+--------------------^
+This keyword may not be used in restricted mode of code execution.
+
+one error.

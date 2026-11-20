@@ -98,6 +98,15 @@ public class Parser extends Lexer
   public static boolean ENABLE_SET_KEYWORD = false;
 
   /**
+   * Whether to allow the usage of the {@code native} keyword.
+   *
+   * Controlled by the {@code -XdisableNativeKeyword} option to {@code fz}, if false,
+   * the parser will throw an {@code illegalUseOfNativeKeyword} error when encountering
+   * the {@code native} keyword.
+   */
+  public static boolean DISABLE_NATIVE_KEYWORD = false;
+
+  /**
    * Are we parsing for the language server and thus need to
    * be more tolerant for incomplete source code?
    */
@@ -3407,6 +3416,10 @@ implRout    : ARROW "abstract"
                                          {
                                            case Token.t_abstract, Token.t_intrinsic, Token.t_native ->
                                              {
+                                               if (current() == Token.t_native && DISABLE_NATIVE_KEYWORD)
+                                                 {
+                                                   AstErrors.illegalUseOfNativeKeyword(pos);
+                                                 }
                                                if (has_arrow)
                                                  {
                                                    yield skip(Token.t_abstract ) ? Impl.ABSTRACT  :
