@@ -84,7 +84,7 @@ Example: The API to create an option from an a value `67` of type `i64` and stor
 
 where `i64` is redundant.  To help with this, the API provides a helper function
 
-    option(T : Any, o T) option T => o
+    option(T : Any, o option T) option T => o
 
 such that one can write
 
