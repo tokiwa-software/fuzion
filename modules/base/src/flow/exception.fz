@@ -39,7 +39,7 @@
 # Instead, declare a dedicated type for each usage:
 #
 #     parse(s String) outcome i32 =>
-#       parse_exception is
+#       parse_exception :flow.exception_tag is
 #       flow.exception parse_exception .on ()->
 #         if s.is_empty then (flow.exception parse_exception).env.cause (error "empty string")
 #         s.parse_i32.or_cause parse_exception id
@@ -84,7 +84,7 @@ is
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # '(exception T).env.raise'.
 #
-public exception_or_panic(T : Any,
+public exception_or_panic(T : flow.exception_tag,
                           R : Any,
                           f ()->R) R =>
   match (exception T).on f
