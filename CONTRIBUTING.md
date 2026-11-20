@@ -177,6 +177,11 @@ Here is an example for a work-in-progress marker:
 
     if (!f.typeParameter().isCotypesRelayType())  // NYI: CLEANUP: #706: remove special handling for 'RELAY_TYPE'
 
+### Fuzion APIs
+
+Guidelines on Fuzion's API are collected in the [Fuzion API Gidelines](modules/Fuzion_API_Guidelines.md) document.
+
+
 ### Commit Messages
 
 The first line of a commit message should describe the part of Fuzion that is
