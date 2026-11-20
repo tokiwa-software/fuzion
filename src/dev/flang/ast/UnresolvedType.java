@@ -218,6 +218,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   /*-----------------------------  methods  -----------------------------*/
 
 
+  @Override
+  AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
+  {
+    return v.action(this);
+  }
+
+
   /**
    * Constructor for built-in types
    *

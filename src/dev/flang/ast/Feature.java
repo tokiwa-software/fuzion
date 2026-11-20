@@ -1502,9 +1502,7 @@ public class Feature extends AbstractFeature
     }
 
     @Override public Expr         action      (This            t) { return t.resolveTypes      (res,   _context); }
-    @Override public AbstractType action      (AbstractType    t) { return t.resolve           (res,   _context); }
     @Override public Expr         action      (AbstractCurrent c) { return c.resolveTypes      (res,   _context); }
-
     @Override public boolean doVisitActuals() { return false; }
   }
 
@@ -2064,7 +2062,6 @@ A ((Choice)) declaration must not contain a result type.
         @Override public Expr         action(Constant       c) {        c.checkRange(); return c;               }
         @Override public Expr         action(AbstractMatch  m) {        m.checkTypes(_context); return m; }
         @Override public Expr         action(InlineArray    i) {        i.checkTypes(_context); return i; }
-        @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
         @Override public Expr         action(Function       f) { return f.checkTypes();                         }
       });

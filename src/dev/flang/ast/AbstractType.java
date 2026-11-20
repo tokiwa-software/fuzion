@@ -1333,9 +1333,9 @@ NYI: UNDER DEVELOPMENT:
    *
    * @param outerfeat the feature surrounding this expression.
    */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
+  AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
-    return v.action(this);
+    return this;
   }
 
 
@@ -2392,28 +2392,6 @@ there is no common super type of the two types (Types.t_ERROR)
   public String toStringWrapped(boolean humanReadable)
   {
     return StringHelpers.wrapInParentheses(toString(humanReadable));
-  }
-
-
-  /**
-   * Check if constraints on type parameters of this type are satisfied.
-   *
-   * @return itself on success or t_ERROR if constraints are not met and an
-   * error was produced
-   *
-   * @param context the source code context where this Type is used
-   */
-  AbstractType checkConstraints(Context context)
-  {
-    var result = this;
-    if (isPlainType())
-      {
-        if (!checkActualTypePars(context, feature(), generics(), originalGenericsPos(), feature().pos(), x->x))
-          {
-            result = Types.t_ERROR;
-          }
-      }
-    return result;
   }
 
 

@@ -75,17 +75,6 @@ public abstract class LibraryType extends ResolvedType
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * Dummy visit() for Library types.
-   */
-  @Override
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return this;
-  }
-
-
-
 }
 
 /* end of file */
