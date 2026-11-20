@@ -2567,7 +2567,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   public AbstractType constraint()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_DECLARATIONS),
+      (Errors.any() || state().atLeast(State.RESOLVED_DECLARATIONS),
        isTypeParameter());
 
     var result = _returnType.functionReturnType();
