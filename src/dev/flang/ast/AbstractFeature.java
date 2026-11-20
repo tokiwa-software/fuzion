@@ -981,9 +981,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Is this the 'RELAY_TYPE' type parameter in a cotype?
    */
-  public boolean isCoTypesRelayTypeParameter()
+  boolean isRelayTypeParameter()
   {
-    return outer() != null
+    return state().atLeast(State.RESOLVED)
+      && outer() != null
       && outer().isCotype()
       && outer().typeArguments().get(0) == this;
   }
@@ -2187,7 +2188,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     var result = this;
     var o = outer();
-    if (!isCoTypesRelayTypeParameter() && o.isCotype())
+    if (!isRelayTypeParameter() && o.isCotype())
       {
         result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
       }

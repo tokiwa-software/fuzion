@@ -2713,20 +2713,6 @@ A pre-condition of a feature that does not redefine an inherited feature must st
 
 
   /**
-   * Is this the 'RELAY_TYPE' type parameter in a type feature?
-   *
-   * Overriding since AbstractFeature.isCoTypesThisType needs outer to be
-   * in state of at least FINDING_DECLARATIONS which is not always the case
-   * when isCoTypesThisType is called.
-   */
-  @Override
-  public boolean isCoTypesRelayTypeParameter()
-  {
-    return false;
-  }
-
-
-  /**
    * Is this base-lib's choice-feature?
    */
   @Override

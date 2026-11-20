@@ -2325,7 +2325,7 @@ there is no common super type of the two types (Types.t_ERROR)
         case ParametricType:
           {
             var tp = typeParameter();
-            yield tp.isCoTypesRelayTypeParameter()
+            yield tp.isRelayTypeParameter()
               ? tp.constraint().asThis().toString(humanReadable)
               : (humanReadable ? tp.baseNameHuman() : tp.baseName());
           }
@@ -2505,7 +2505,7 @@ there is no common super type of the two types (Types.t_ERROR)
     if (!isArtificialType() &&
         !constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
-        !tp.isCoTypesRelayTypeParameter() &&
+        !tp.isRelayTypeParameter() &&
         !constraint.constraintSatisfiedBy(context, this, null)
        )
       {
