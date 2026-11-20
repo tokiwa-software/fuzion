@@ -31,8 +31,8 @@ test_unwrap =>
   outer_exception : flow.exception_tag is
   inner_exception : flow.exception_tag is
 
-  (flow.exception (option i64)).on ()->
-    (flow.exception (outcome i64)).on ()->
+  (flow.exception outer_exception).on ()->
+    (flow.exception inner_exception).on ()->
       say a
       say b
 
