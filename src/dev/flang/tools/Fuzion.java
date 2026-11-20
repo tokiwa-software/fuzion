@@ -58,6 +58,8 @@ import dev.flang.fuir.analysis.dfa.DFA;
 
 import dev.flang.opt.Optimizer;
 
+import dev.flang.parser.Parser;
+
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Metrics;
@@ -432,7 +434,7 @@ public class Fuzion extends Tool
       }
       String usage()
       {
-        return "[-XeraseInternalNamesInMod=(on|off)] ";
+        return "[-XeraseInternalNamesInMod=(on|off)] [-XenableSetKeyword] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -440,6 +442,11 @@ public class Fuzion extends Tool
         if (o.startsWith("-XeraseInternalNamesInMod"))
           {
             f._eraseInternalNamesInMod = parseOnOffArg(o);
+            result = true;
+          }
+        else if (o.equals("-XenableSetKeyword"))
+          {
+            Parser.ENABLE_SET_KEYWORD = true;
             result = true;
           }
         return result;
