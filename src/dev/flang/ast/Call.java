@@ -1385,7 +1385,6 @@ public class Call extends AbstractCall
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this);
-    _generics = _generics.map(g -> g.visit(v, outer));
     if (v.doVisitActuals())
       {
         visitActuals(v, outer);
@@ -3168,7 +3167,7 @@ public class Call extends AbstractCall
   /**
    * Resolve the generics of this call.
    */
-  private void resolveGenerics(Resolution res, Context context)
+  void resolveGenerics(Resolution res, Context context)
   {
     _generics = res.resolveTypes(_generics, context);
   }

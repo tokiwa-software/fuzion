@@ -1326,20 +1326,6 @@ NYI: UNDER DEVELOPMENT:
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outerfeat the feature surrounding this expression.
-   */
-  AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return this;
-  }
-
-
-  /**
    * Check if this is a choice and exactly one variant of the choice matches the
    * given predicate. If so, return that variant.
    *

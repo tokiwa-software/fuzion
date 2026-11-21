@@ -72,19 +72,6 @@ public class ValueType extends ReturnType
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
-  public void visit(FeatureVisitor v, AbstractFeature outer)
-  {
-  }
-
-
-  /**
    * toString
    *
    * @return

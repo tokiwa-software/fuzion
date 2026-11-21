@@ -1263,7 +1263,6 @@ public class Feature extends AbstractFeature
           (Errors.any() || c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
     _impl.visit(v, this);
-    _returnType.visit(v, this);
   }
 
 
@@ -1432,6 +1431,10 @@ public class Feature extends AbstractFeature
          * this or any of this' outer classes.
          */
         resolveArgumentTypes(res);
+        if (returnType() instanceof FunctionReturnType frt)
+          {
+            frt.resolveType(res, context());
+          }
         visit(res.resolveTypesOnly(this));
 
         _state = State.RESOLVED_DECLARATIONS;
