@@ -217,7 +217,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /*-----------------------------  methods  -----------------------------*/
 
-
   /**
    * Constructor for built-in types
    *

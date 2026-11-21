@@ -158,10 +158,13 @@ public class Resolution extends ANY
    */
   FeatureVisitor resolveTypesOnly(AbstractFeature f)
   {
-    var c = f.context();
     return new FeatureVisitor()
       {
-        @Override public AbstractType action(AbstractType t) { return t.resolve(Resolution.this, c); }
+        @Override
+        public void actionBefore(Call c)
+        {
+          c.resolveGenerics(Resolution.this, f.context());
+        }
       };
   }
 

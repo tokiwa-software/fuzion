@@ -112,22 +112,6 @@ public class FunctionReturnType extends ReturnType
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
-  public void visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    _type = _type.visit(v, outer);
-    if (CHECKS) check
-      (_type != null);
-  }
-
-
-  /**
    * Resolve the type this function returns. This is needed to resolve free
    * types used in an argument type, which change the number of type parameters
    * in a call.
@@ -147,6 +131,12 @@ public class FunctionReturnType extends ReturnType
     _type = _type.resolve(res, outer.context());
     if (CHECKS) check
       (_type != null);
+  }
+
+
+  public void resolveType(Resolution res, Context context)
+  {
+    _type = _type.resolve(res, context);
   }
 
 

@@ -70,7 +70,6 @@ public abstract class FeatureVisitor extends ANY
   public Expr         action      (InlineArray      i                       ) { return i; }
   public Expr         action      (AbstractMatch    m                       ) { return m; }
   public Expr         action      (This             t                       ) { return t; }
-  public AbstractType action      (AbstractType     t                       ) { return t; }
 
   /**
    * Visit expression e with this visitor.
