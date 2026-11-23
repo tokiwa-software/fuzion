@@ -164,7 +164,7 @@ public class Html extends ANY
         var constraint = constraintType.feature();
         return fillTemplate("<span class='fd-keyword mx-5'>:</span><a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
           "url", featureRelativeURL(constraint, relativeTo),
-          "name", htmlEncodeNbsp(constraintType.toString(true, af))));
+          "name", htmlEncodeNbsp(constraintType.toString(true))));
       }
     else
       {
@@ -180,7 +180,7 @@ public class Html extends ANY
               "name", htmlEncodedBasename(f)
                       + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
                       +  c.actualTypeParameters().stream()
-                          .map(at -> htmlEncodeNbsp(at.toString(true, af)))
+                          .map(at -> htmlEncodeNbsp(at.toString(true)))
                           .collect(Collectors.joining(", "))));
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
@@ -199,12 +199,12 @@ public class Html extends ANY
     var at = af.resultType();
     if (at.isParametricType())
       {
-        return htmlEncodeNbsp(at.toString(true, context))
+        return htmlEncodeNbsp(at.toString(true))
                + (at.isOpenGeneric() ? "..." : "");
       }
     return fillTemplate("<a class='fd-type' href='##url##'>##name##</a>", Map.of(
       "url", featureRelativeURL(at.feature(), relativeTo),
-      "name", htmlEncodeNbsp(at.toString(true, context))));
+      "name", htmlEncodeNbsp(at.toString(true))));
   }
 
 
@@ -500,13 +500,14 @@ public class Html extends ANY
 
   /**
    * Should a hyperlink be created for feature af?
-   * Fields and type parameters don't have their own page in the docs.
+   * Function arguments and type parameters don't have their own page in the docs.
    * @param af the feature which should be checked
    * @return true iff there is no doc page for this feature and no hyperlink should be created
    */
   private boolean noFeatureLink(AbstractFeature af)
   {
-    return af.isArgument() || af.isTypeParameter() || af.isOpenTypeParameter();
+    return af.isTypeParameter() || af.isOpenTypeParameter()
+      || (af.isArgument() && !(Util.isConstructorArgument(af) && (config.ignoreVisibility() || Util.isVisible(af))));
   }
 
 
@@ -581,9 +582,6 @@ public class Html extends ANY
     if (!signatureWithArrow(outer))
       {
         fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
-        var valueArguments = outer.valueArguments().clone();
-        valueArguments.removeIf(a->a.visibility().eraseTypeVisibility() != Visi.PUB);
-        fields.addAll(valueArguments);
       }
 
     // Value arguments of function features
@@ -929,7 +927,7 @@ public class Html extends ANY
    */
   private String source(AbstractFeature feature)
   {
-    return "<a class='fd-src-link pl-5' href='" + featureURL(feature) + "'>[src]</a>";
+    return "<a class='fd-src-link ml-5' href='" + featureURL(feature) + "'>[src]</a>";
   }
 
 
@@ -1315,17 +1313,17 @@ public class Html extends ANY
   {
     return config.bare() && navigationBareHTML != null
       ? navigationBareHTML  // cached navigation if absolute URLs are used
-      : navigationModules(relativeTo) + navigationFeatures(java.util.List.of(start), "", relativeTo);
+      : navigationModules(relativeTo) + "\n<ul class=\"fd-nav-tree white-space-no-wrap\">"
+        + navigationFeatures(java.util.List.of(start), relativeTo) + "\n</ul>";
   }
 
 
   /**
    * render the tree style list of (constructor)features for the navigation on the left side
    * @param features    features that should be contained in the same block
-   * @param outerPrefix prefix for the tree structure e.g. "│  │  "
    * @return rendered tree style block with sub blocks for inner features
    */
-  private String navigationFeatures(java.util.List<AbstractFeature> features, String outerPrefix, AbstractFeature relativeTo)
+  private String navigationFeatures(java.util.List<AbstractFeature> features, AbstractFeature relativeTo)
   {
     if (features.isEmpty())
       {
@@ -1344,38 +1342,28 @@ public class Html extends ANY
                               .sorted(Comparator.comparing(ft -> ft.baseName(), String.CASE_INSENSITIVE_ORDER))
                               .collect(Collectors.toList());
 
-        // addition to the tree structure prefix for current feature: universe / normal element / last element
-        var featPrfx = f.isUniverse() ? ""
-                                      : iter.hasNext() ? "├─<span class=space-1></span>"
-                                                       : "└─<span class=space-1></span>";
-
-        // addition to the tree structure prefix for inner features of current feature: universe / normal element / last element
-        var subPrfx  = f.isUniverse() ? ""
-                                      : iter.hasNext() ? "│<span class=space-2></span>"
-                                                       : "<span class=space-3></span>";
-
         sb.append(fillTemplate("\n<li>##feature####children##</li>", Map.of(
-          "feature", navFeatHtml(f, outerPrefix + featPrfx, relativeTo),
-          "children", navigationFeatures(innerFeatures, outerPrefix + subPrfx, relativeTo))));
+          "feature", navFeatHtml(f, relativeTo),
+          "children", innerFeatures.isEmpty()
+            ? ""
+            : "\n<ul>" + navigationFeatures(innerFeatures, relativeTo) + "\n</ul>")));
       }
     while (iter.hasNext());
 
-    return "\n<ul class=\"white-space-no-wrap\">" + sb + "\n</ul>";
+    return sb.toString();
   }
 
   /**
    * generate html for a single feature in the tree style navigation on the left side
    * @param f feature for which to generate the html for
-   * @param prefix prefix of the tree style structure for this feature
    * @return rendered html for the feature f
    */
-  private String navFeatHtml(AbstractFeature f, String prefix, AbstractFeature relativeTo)
+  private String navFeatHtml(AbstractFeature f, AbstractFeature relativeTo)
   {
     var fName = htmlEncodedBasename(f) + (f.isUniverse() ? " (module " + lm.name() + ")" : "");
-    return fillTemplate("<div>##prefix##<a href='##url##'>##name##</a></div>", Map.of(
-      "prefix", prefix,
+    return fillTemplate("<a href='##url##'>##name##</a>", Map.of(
       "url", featureRelativeURL(f, relativeTo),
-      "name", fName + args(f)));
+      "name", fName));
   }
 
 
@@ -1399,24 +1387,10 @@ public class Html extends ANY
       "modules", libModules.stream()
                                .map(m->m.name())
                                .map(s->fillTemplate("<li><a href=##url##>##name##</a></li>", Map.of(
-                                 "url", config.bare() ? config.docsRoot() + "/" + s : relativePath("/" + s, relativeToStr),
+                                 "url", config.bare() ? config.docsRoot() + "/" + s + "/" : relativePath("/" + s, relativeToStr),
                                  "name", s)))
                                .collect(Collectors.joining("\n")),
       "root", config.bare() ? config.docsRoot() + "/" : relativePath("", relativeToStr)));
-  }
-
-
-  private String args(AbstractFeature start)
-  {
-    if (start.valueArguments().size() == 0 || (start.isChoice() || start.visibility().eraseTypeVisibility() != Visi.PUB))
-      {
-        return "";
-      }
-    if (start.valueArguments().size() == 1)
-      {
-        return " <small>(" + start.valueArguments().size() + " arg)</small>";
-      }
-    return " <small>(" + start.valueArguments().size() + " args)</small>";
   }
 
 

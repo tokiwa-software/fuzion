@@ -3006,13 +3006,15 @@ public class DFA extends ANY
         Long k = vi < wi ? (long) vi << 32 | wi & 0x7FFFFFFF
                          : (long) wi << 32 | vi & 0x7FFFFFFF;
         res = _joined.get(k);
-        if (res == null)
+        if (res == null || res._clazz != clazz)
           {
             if      (v.contains(w)) { res = v; }
             else if (w.contains(v)) { res = w; }
             else
               {
-                res = new ValueSet(this, v, w, clazz);
+                res = res != null
+                  ? new ValueSet((ValueSet) res, clazz)
+                  : new ValueSet(this, v, w, clazz);
                 res = cache(res);
               }
             _joined.put(k, res);

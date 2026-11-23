@@ -1255,6 +1255,20 @@ A post-condition of a feature that does not redefine an inherited feature must s
     return result;
   }
 
+
+  /**
+   * Check if given feature is visible for given use.
+   *
+   * @param f the used feature to be checked for visibility
+   *
+   * @param use the call, assign or destructure we are trying to resolve, used
+   * to find field in scope, or null if fields should not be checked for scope
+   *
+   * @param hidden true to return features that are not visible, used for error
+   * messages.
+   *
+   * @return true if f is visible at use.
+   */
   boolean isVisible(AbstractFeature f, Expr use, boolean hidden)
   {
     return

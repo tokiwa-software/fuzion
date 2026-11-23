@@ -1070,7 +1070,7 @@ public class Call extends AbstractCall
         if (_target != null && _target.asParsedType() != null)
           {
             var tt = _target.asParsedType().resolve(res, context, true);
-            if (tt != null && tt.isNormalType() && tt.feature().hasCotype() && tt.feature().cotype() != targetFeature)
+            if (tt != null && tt.isPlainType() && tt.feature().hasCotype() && tt.feature().cotype() != targetFeature)
               {
                 fos.addAll(res._module.lookup(tt.feature().cotype(), _name, this, false, false));
               }
@@ -2923,7 +2923,7 @@ public class Call extends AbstractCall
   {
     var pt = _target.asParsedType();
     var tt = pt == null ? null : pt.resolve(res, context, true);
-    if (tt != null && tt != Types.t_ERROR && tt.isNormalType() && !tt.feature().isTypeParameter())
+    if (tt != null && tt.isPlainType() && !tt.feature().isTypeParameter())
       {
         var tf = tt.feature();
         var ct = res.cotype(tf);
@@ -3332,7 +3332,7 @@ public class Call extends AbstractCall
     if (t != Types.t_ERROR)
       {
         var o = t;
-        while (o != null && o.isNormalType())
+        while (o != null && o.isPlainType())
           {
             o = o.outer();
             if (o != null && o.isRef() && !o.feature().isRef())
