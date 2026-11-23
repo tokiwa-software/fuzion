@@ -46,9 +46,9 @@ public tokiwa is
   ) outcome tokiwa.process_result =>
     seq := map (.as_string)
     ( if env_vars??
-        os.Running_Process.start seq.first.or_panic (seq.drop 1) env_vars.or_panic
+        os.process.start seq.first.or_panic (seq.drop 1) env_vars.or_panic
       else
-        os.Running_Process.start seq.first.or_panic (seq.drop 1)
+        os.process.start seq.first.or_panic (seq.drop 1)
     ).bind p->
       tokiwa.record_process p (Sequence.this.as_string " ") timeout feed_stdin
 
@@ -120,7 +120,7 @@ public tokiwa is
   # helper to get out, err, exit_code from started process
   #
   public record_process(
-        p os.Running_Process,
+        p os.process,
         # the command, for error messages
         cmd String,
         timeout option time.duration,
