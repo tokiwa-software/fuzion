@@ -28,20 +28,22 @@
 #
 lib_time_thread_cpu_time =>
 
-  done := concur.atomic bool .new false
+  m : concur.atomic_mutate is
+  m ! ()->
+    done := m.env.var false
 
-  # thread that is kept alive until `done` is set
-  #
-  t := concur.Threads.env.spawn ()->
-    while !done.read
+    # thread that is kept alive until `done` is set
+    #
+    t := concur.Threads.env.spawn ()->
+      while !done.get
 
-  # instate the clock for `t` and read it twice
-  #
-  time.Thread_CPU_Time t ! ()->
-    _ := time.Thread_CPU_Time.env.read
-    _ := time.Thread_CPU_Time.env.read
-    say "alive: ok"
+    # instate the clock for `t` and read it twice
+    #
+    time.Thread_CPU_Time t ! ()->
+      _ := time.Thread_CPU_Time.env.read
+      _ := time.Thread_CPU_Time.env.read
+      say "alive: ok"
 
-  done.write true
-  t.join.or_panic
-  say "joined"
+    done.put true
+    t.join.or_panic
+    say "joined"
