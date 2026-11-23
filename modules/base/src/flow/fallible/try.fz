@@ -80,6 +80,14 @@ public type.try(T : Any, code_try ()->T) is
       catch0 alt
 
 
+  # run code_try and return its result as an outcome, or the error in case of a fault
+  #
+  public or_outcome outcome T =>
+    fallible.this.try (outcome T) (()->code_try())
+      .catch e->
+        if ERROR : error then error e.msg e.error_code
+        else                  error e.as_string
+
 
   # infix alias for catch
   #

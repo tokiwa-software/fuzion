@@ -74,6 +74,12 @@ test_fallible =>
     .catch m->
       say "11: expecting fault, got fault: $(m.0) $(m.1)"
 
+  r12 := flow.exception a .try String (()->"ok")                                            .or_outcome
+  r13 := flow.exception a .try String (()->(flow.exception a).env.cause (error "r13 fail")) .or_outcome
+  r14 := panic.try String (()->panic "r14 fail")                                            .or_outcome
+  say "12: expecting ok,    got $r12"
+  say "13: expecting error, got $r13"
+  say "14: expecting error, got $r14"
 # run the tests:
 test_fallible
 
