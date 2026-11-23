@@ -120,10 +120,12 @@ public class FunctionReturnType extends ReturnType
   @Override
   void checkActualTypePars(Context context)
   {
-    if (_type.isPlainType())
-      {
-        AbstractType.checkActualTypePars(context, _type.feature(), _type.generics(), _type.originalGenericsPos(), _pos, x->x);
-      }
+    _type.selfOuterAndGenerics(t -> {
+      if (t.isPlainType())
+        {
+          AbstractType.checkActualTypePars(context, t.feature(), t.generics(), t.originalGenericsPos(), _pos, x->x);
+        }
+    });
   }
 
 

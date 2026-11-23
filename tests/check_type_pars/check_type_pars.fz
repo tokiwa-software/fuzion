@@ -1,0 +1,46 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test check_type_pars
+#
+# -----------------------------------------------------------------------
+
+check_type_pars =>
+
+  # in a type parameter constraint
+  a(HM: container.hash_map fuzion unit) is
+
+  # in a choice generic
+  b : choice unit (container.hash_map fuzion unit) is
+
+  # in a result type
+  c container.hash_map fuzion unit => abstract
+
+  # in a result type of an argument
+  d (e container.hash_map fuzion unit) unit =>
+
+  # same as above but the violation is _nested_ in the Sequence feature
+
+  aa(HM: Sequence (container.hash_map fuzion unit)) is
+
+  bb : choice unit (Sequence (container.hash_map fuzion unit)) is
+
+  cc Sequence (container.hash_map fuzion unit) => abstract
+
+  dd (e Sequence (container.hash_map fuzion unit)) unit =>
