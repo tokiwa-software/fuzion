@@ -1426,11 +1426,15 @@ public class Feature extends AbstractFeature
 
         if (CHECKS) check
           (_state == State.RESOLVING_DECLARATIONS);
-        /**
-         * Find all the types used in this that refer to formal generic arguments of
-         * this or any of this' outer classes.
-         */
-        resolveArgumentTypes(res);
+
+        valueArguments().stream().forEach(a ->
+          {
+            if (a instanceof Feature af && af.returnType() instanceof FunctionReturnType frt)
+              {
+                frt.resolveType(res, a.context());
+              }
+          }
+        );
         if (returnType() instanceof FunctionReturnType frt)
           {
             frt.resolveType(res, context());
@@ -1521,18 +1525,6 @@ public class Feature extends AbstractFeature
   public boolean isExtensionFeature()
   {
     return _qname.size() > 1 && _qname.get(0) != FuzionConstants.TYPE_NAME;
-  }
-
-
-  /**
-   * Resolve argument types such that type parameters for free types will be
-   * added.
-   *
-   * @param res the resolution instance.
-   */
-  void resolveArgumentTypes(Resolution res)
-  {
-    valueArguments().stream().forEach(a -> { if (a instanceof Feature af) af.returnType().resolveArgumentType(res, af); } );
   }
 
 
@@ -2054,6 +2046,11 @@ A ((Choice)) declaration must not contain a result type.
       (_state == State.RESOLVED_SUGAR2);
 
     _state = State.CHECKING_TYPES;
+
+    if (!isRelayTypeParameter())
+      {
+        returnType().checkActualTypePars(context());
+      }
 
     choiceTypeCheckAndInternalFields(res);
 

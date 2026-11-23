@@ -464,7 +464,7 @@ public class Resolution extends ANY
     else if (!_waitingForCalls.isEmpty())
       {
         // there are some features that still require calls for type resolution,
-        // so try to find those fot which we have found a call meanwhile.  Only if none
+        // so try to find those for which we have found a call meanwhile.  Only if none
         // was found, start resolving declarations anyways.
         resolveDelayed().resolveDeclarations(this);
       }

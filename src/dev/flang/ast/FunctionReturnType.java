@@ -111,32 +111,19 @@ public class FunctionReturnType extends ReturnType
   }
 
 
-  /**
-   * Resolve the type this function returns. This is needed to resolve free
-   * types used in an argument type, which change the number of type parameters
-   * in a call.
-   *
-   * @param res the resolution instance
-   *
-   * @param outer the outer feature, which is the argument this is the result
-   * type of.
-   */
-  void resolveArgumentType(Resolution res, Feature outer)
-  {
-    if (PRECONDITIONS) require
-      (outer.isArgument(),
-       this == outer.returnType());
-
-    res.resolveDeclarations(outer);
-    _type = _type.resolve(res, outer.context());
-    if (CHECKS) check
-      (_type != null);
-  }
-
-
   public void resolveType(Resolution res, Context context)
   {
     _type = _type.resolve(res, context);
+  }
+
+
+  @Override
+  void checkActualTypePars(Context context)
+  {
+    if (_type.isPlainType())
+      {
+        AbstractType.checkActualTypePars(context, _type.feature(), _type.generics(), _type.originalGenericsPos(), _pos, x->x);
+      }
   }
 
 
