@@ -31,6 +31,9 @@
 # This clock advances only while `thread` is running, so it cannot be used
 # to sleep. It cannot be read any longer once `thread` was joined.
 #
+# NYI: UNDER DEVELOPMENT: #8417: using a clock is an effect that must be
+# visible to DFA.
+#
 public Thread_CPU_Time(thread concur.Thread) ref : time.Clock is
 
 
