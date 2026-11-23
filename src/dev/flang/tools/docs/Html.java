@@ -1069,7 +1069,7 @@ public class Html extends ANY
 
   /**
    * get full html with doctype, head and body
-   * @param qualifiedNameHuman()
+   * @param qualifiedName the human-readable qualified name
    * @param bareHtml
    * @param directoryDepth the output directory depth below the documentation root
    * @return
