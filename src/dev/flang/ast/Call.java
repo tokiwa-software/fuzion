@@ -3372,10 +3372,10 @@ public class Call extends AbstractCall
               constraint -> adjustType(res, context, constraint, null));
 
             _generics.forEach(g -> {
-              g.selfOuterAndGenerics(x -> {
-                if (x.isPlainType())
+              g.selfOuterAndGenerics(t -> {
+                if (t.isPlainType())
                   {
-                    AbstractType.checkActualTypePars(context, x.feature(), x.generics(), x.originalGenericsPos(), _pos, constraint -> adjustType(res, context, constraint, null));
+                    AbstractType.checkActualTypePars(Context.NONE, t.feature(), t.generics(), t.originalGenericsPos(), _pos, constraint -> adjustType(res, context, constraint, null));
                   }
               });
             });
