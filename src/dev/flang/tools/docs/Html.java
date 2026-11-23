@@ -161,8 +161,7 @@ public class Html extends ANY
    */
   private String inherited(AbstractFeature af, AbstractFeature relativeTo)
   {
-    if (signatureWithArrow(af) // inheritance does not make sense for function features since no instance can be obtained
-        || !af.isTypeParameter() && af.inherits().isEmpty()) // type parameters always have a constraint to show
+    if (signatureWithArrow(af)) // inheritance does not make sense for function features since no instance can be obtained
       {
         return "";
       }
@@ -176,11 +175,9 @@ public class Html extends ANY
       }
     else
       {
-        return "<span class='fd-keyword mx-5'>:</span>" + af.inherits()
+        var parents = af.inherits()
           .stream()
-          // don't show inheritance from features that are not public
-          .filter(c->c.calledFeature().visibility().typeVisibility() == Visi.PUB ||
-                     c.calledFeature().visibility().eraseTypeVisibility() == Visi.PUB)
+          .filter(c -> isVisible(c.calledFeature()))
           .<String>map(c -> {
             var f = c.calledFeature();
             return fillTemplate("<a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
@@ -192,6 +189,7 @@ public class Html extends ANY
                           .collect(Collectors.joining(", "))));
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
+        return parents.isEmpty() ? "" : "<span class='fd-keyword mx-5'>:</span>" + parents;
       }
   }
 
@@ -402,8 +400,10 @@ public class Html extends ANY
 
     var redefs = new TreeSet<>(af.redefines());
 
-    // don't show annotation if redefining a feature from a non public feature
-    redefs.removeIf(f->nonPublicInheritanceChain(f));
+    // don't annotate redefinitions from non-public owners or internal implementations
+    // Don't annotate redefinition targets that are internal, non-public,
+    // or declared inside a type with non-public visibility.
+    redefs.removeIf(f -> nonPublicInheritanceChain(f) || Util.isInternalFeature(f));
 
     AbstractFeature relativeTo = outer != null ? outer : af;
     return redefs.isEmpty()
@@ -424,13 +424,14 @@ public class Html extends ANY
 
 
   /**
-   * Is this feature or any one of the features it inherits from not public
-   * i.e. has a type visibility other than public
+   * Does this feature or an enclosing feature have non-public type visibility?
+   * This preserves the existing annotation policy, not member accessibility.
    */
   private boolean nonPublicInheritanceChain(AbstractFeature f)
   {
     return !f.isUniverse() && (f.visibility().typeVisibility() != Visi.PUB || nonPublicInheritanceChain(f.outer()));
   }
+
 
   /**
    * Returns a html formatted annotation to indicate if a feature is abstract
@@ -469,9 +470,8 @@ public class Html extends ANY
   {
     var allInner = new List<AbstractFeature>();
     lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
-
     return allInner.stream()
-        .filter(f->isVisible(f))
+        .filter(this::isVisible)
         .filter(f->f instanceof LibraryFeature lf && lm.sameOrDependent(lf._libModule))
         .anyMatch(f->f.isAbstract())
              ? "<span class='fd-parent ml-10' title='This feature contains inner or inherited features " +
@@ -495,7 +495,7 @@ public class Html extends ANY
 
   private boolean isVisible(AbstractFeature af)
   {
-    return af.visibility().typeVisibility() == Visi.PUB;
+    return af.visibility().typeVisibility() == Visi.PUB && !Util.isInternalFeature(af);
   }
 
 
@@ -524,14 +524,9 @@ public class Html extends ANY
    */
   private String redefines(AbstractFeature af, AbstractFeature relativeTo)
   {
-    var result = "";
-
-    if (!af.redefines().isEmpty())
-      {
-        result = "<div class='fd-redefines'><br />redefines: <br /><ul>" + redefines0(af, relativeTo) + "</ul><br /></div>";
-      }
-
-    return result;
+    var entries = redefines0(af, relativeTo);
+    return entries.isEmpty() ? ""
+      : "<div class='fd-redefines'><br />redefines: <br /><ul>" + entries + "</ul><br /></div>";
   }
 
 
@@ -548,6 +543,7 @@ public class Html extends ANY
     return af
       .redefines()
       .stream()
+      .filter(f -> !Util.isInternalFeature(f))
       .map(f -> "<li>" + relativeAnchor(f, relativeTo) + "</li>"
         + redefines0(f, relativeTo))
       .collect(Collectors.joining());
@@ -756,7 +752,9 @@ public class Html extends ANY
 
     // first tuple element is the feature from which the contract was inherited, second is the contract itself
     var res = Stream.concat(Stream.of(new Tuple(null, contractFeature.apply(af))),
-                            af.redefinesFull().stream().map(f->new Tuple(f, contractFeature.apply(f))))
+                            af.redefinesFull().stream()
+                              .filter(f -> !Util.isInternalFeature(f))
+                              .map(f -> new Tuple(f, contractFeature.apply(f))))
       .filter(t->t.snd != null && startsWithKeyword(keyword, t.snd.sourceText()))
       .map(t->(t.fst != null ? "<br>Inherited from <span class=fd-fname>" + relativeAnchor(t.fst, af) + "</span><br>" : "")
                 + "<div class=fz-code><pre>" + contractSrc(t.snd)
@@ -819,6 +817,12 @@ public class Html extends ANY
    */
   String commentOf(AbstractFeature af)
   {
+    // Redefinition targets come from the frontend and may include internal
+    // implementations, even though those were excluded from page collection.
+    if (Util.isInternalFeature(af))
+      {
+        return "";
+      }
     if (af.isUniverse())
       {
         return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
@@ -1339,7 +1343,7 @@ public class Html extends ANY
 
         var innerFeatures = lm.declaredFeaturesShallow(f).values().stream()
                               .filter(ft -> ft.definesType()
-                                            && ft.visibility().typeVisibility() == Visi.PUB)
+                                            && isVisible(ft))
                               .sorted(Comparator.comparing(ft -> ft.baseName(), String.CASE_INSENSITIVE_ORDER))
                               .collect(Collectors.toList());
 

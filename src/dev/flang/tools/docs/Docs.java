@@ -107,6 +107,8 @@ public class Docs extends ANY
    */
   private static void breadthFirstTraverse(Module feModule, Consumer<AbstractFeature> c, AbstractFeature start)
   {
+    // NYI: UNDER DEVELOPMENT: currently pages for private features inside public ones are included, see #8425
+
     Queue<AbstractFeature> queue = new LinkedList<>();
     queue.add(start);
     while (!queue.isEmpty())
