@@ -1570,18 +1570,18 @@ public class Feature extends AbstractFeature
         visit(res.resolveTypesFully(this));
 
         if (_effects != null)
-        {
-          _effects = _effects.map(e -> {
-            var t = e.resolve(res, context());
+          {
+            _effects = _effects.map(e -> {
+              var t = e.resolve(res, context());
 
-            if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
-                                          .feature().inheritsFrom(Types.resolved.f_effect)))
-              {
-                AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
-              }
-            return t;
-          });
-        }
+              if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
+                                            .feature().inheritsFrom(Types.resolved.f_effect)))
+                {
+                  AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
+                }
+              return t;
+            });
+          }
 
         _state = State.RESOLVED_TYPES;
         while (!whenResolvedTypes.isEmpty())
