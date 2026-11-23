@@ -2325,7 +2325,7 @@ there is no common super type of the two types (Types.t_ERROR)
         case ParametricType:
           {
             var tp = typeParameter();
-            yield tp.isRelayTypeParameter()
+            yield tp.isRelayTypeParameter() && tp.state().atLeast(State.RESOLVED_DECLARATIONS)
               ? tp.constraint().asThis().toString(humanReadable)
               : (humanReadable ? tp.baseNameHuman() : tp.baseName());
           }
