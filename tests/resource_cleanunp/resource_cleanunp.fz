@@ -96,7 +96,7 @@ resource_cleanunp =>
   # now, open two resources P, Q and then throw `exc`
 
   # our flow.exception
-  exc is
+  exc : flow.exception_tag is
 
   test3 =>
     e.env.open "P"

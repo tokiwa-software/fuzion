@@ -31,15 +31,15 @@
 # The type parameter `T` is used to find the handler: `(flow.exception T).env`
 # returns the *innermost* installed instance of `flow.exception T`.
 #
-# Therefore, never use a common type such as `unit` for `T`: any unrelated
-# code that uses `flow.exception unit` and is executed within your `on` (e.g.,
-# via a call to a redefined feature or a callback) would cause an exception
-# that ends up in your handler, and backwards.
+# Therefore, `T` must inherit from `flow.exception_tag`, so a common type such as
+# `unit` cannot be used: any unrelated code using the same `T` that is executed
+# within your `on` (e.g., via a call to a redefined feature or a callback) would
+# cause an exception that ends up in your handler, and backwards.
 #
 # Instead, declare a dedicated type for each usage:
 #
 #     parse(s String) outcome i32 =>
-#       parse_exception is
+#       parse_exception : flow.exception_tag is
 #       flow.exception parse_exception .on ()->
 #         if s.is_empty then (flow.exception parse_exception).env.cause (error "empty string")
 #         s.parse_i32.or_cause parse_exception id
@@ -54,7 +54,9 @@ public exception (# type parameter used only to distinguish different
                   # errors raised by the reader from those raised
                   # by the writer.
                   #
-                  T : Any,
+                  # `T` must inherit from `flow.exception_tag`, e.g.,
+                  # `reader : flow.exception_tag is`
+                  T : flow.exception_tag,
 
                   h error->void
                   ) : flow.fallible error h
@@ -80,7 +82,7 @@ is
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # '(exception T).env.raise'.
 #
-public exception_or_panic(T : Any,
+public exception_or_panic(T : flow.exception_tag,
                           R : Any,
                           f ()->R) R =>
   exception T .on f .or_panic ($)
