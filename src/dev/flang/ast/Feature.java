@@ -1439,7 +1439,14 @@ public class Feature extends AbstractFeature
           {
             frt.resolveType(res, context());
           }
-        visit(res.resolveTypesOnly(this));
+        visit(new FeatureVisitor()
+        {
+          @Override
+          public void actionBefore(Call c)
+          {
+            c.resolveGenerics(res, context());
+          }
+        });
 
         _state = State.RESOLVED_DECLARATIONS;
         while (!whenResolvedDeclarations.isEmpty())
