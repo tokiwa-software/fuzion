@@ -72,24 +72,6 @@ public class Docs extends ANY
 
 
   /**
-   * recursive breadth first traversal
-   * @param c
-   * @param queue
-   */
-  private static void breadthFirstTraverse0(Module feModule, Consumer<AbstractFeature> c, Queue<AbstractFeature> queue)
-  {
-    if (queue.isEmpty())
-      {
-        return;
-      }
-    var head = queue.remove();
-    c.accept(head);
-    queue.addAll(declaredFeatures(feModule, head));
-    breadthFirstTraverse0(feModule, c, queue);
-  }
-
-
-  /**
    * Get the declared features of f as collection
    * @param f the feature for which the declared features are to be returned
    * @return a collection of the declared features of f
@@ -103,9 +85,9 @@ public class Docs extends ANY
 
 
   /**
-   * Get all features that can be called on f (declared and inherited) as stream
-   * @param f the feature for which the callable features are to be returned
-   * @return a stream of the callable (declared and inherited) features of f
+   * Get declared and inherited features from the frontend.
+   * @param f the feature whose declared and inherited members are requested
+   * @return the members before documentation visibility filtering
    */
   private static Stream<AbstractFeature> allInnerAndInheritedFeatures(Module feModule, AbstractFeature f)
   {
@@ -117,16 +99,26 @@ public class Docs extends ANY
 
 
   /**
-   * do a breath first traversal of declared features,
-   * passing found features to consumer c.
+   * Do a breadth first traversal of declared features, passing found features
+   * to consumer c. Exclude internal and anonymous implementation subtrees, but
+   * continue through ordinary private scopes to discover their public members.
    * @param c
    * @param start
    */
   private static void breadthFirstTraverse(Module feModule, Consumer<AbstractFeature> c, AbstractFeature start)
   {
-    var queue = new LinkedList<AbstractFeature>();
+    Queue<AbstractFeature> queue = new LinkedList<>();
     queue.add(start);
-    breadthFirstTraverse0(feModule, c, queue);
+    while (!queue.isEmpty())
+      {
+        var head = queue.remove();
+        if (Util.isInternalFeature(head))
+          {
+            continue;
+          }
+        c.accept(head);
+        queue.addAll(declaredFeatures(feModule, head));
+      }
   }
 
 
@@ -244,8 +236,7 @@ public class Docs extends ANY
         return false;
       }
 
-    return af.featureName().isInternal()
-      || af.featureName().isNameless()
+    return Util.isInternalFeature(af)
       || !(ignoreVisibility || Util.isVisible(af))
       || af.isCotype()
       || (Util.isArgument(af) && !Util.isConstructorArgument(af))
@@ -387,13 +378,10 @@ public class Docs extends ANY
             .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
         }
 
-      documentedFeatures.put(
-        feature,
-        Stream
-          .concat(s, st)
-          .collect(Collectors.groupingBy(x -> x.kind(), Collectors.toCollection(TreeSet::new)))
-      );
-
+      var members = Stream
+        .concat(s, st)
+        .collect(Collectors.groupingBy(x -> x.kind(), Collectors.toCollection(TreeSet::new)));
+      documentedFeatures.put(feature, members);
     }, universe);
 
 
