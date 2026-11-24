@@ -72,6 +72,7 @@ public class FList extends Expr
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _list.getFirst().pos();
@@ -81,6 +82,7 @@ public class FList extends Expr
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
+  @Override
   public boolean containsOnlyDeclarations()
   {
     throw new Error("FList must be used only during parsing");

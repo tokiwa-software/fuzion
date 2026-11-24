@@ -140,6 +140,7 @@ public class ParseUnicodeData extends ANY
     /*
      * compare this CP to other
      */
+    @Override
     public int compareTo(CP other)
     {
       return this._code - other._code;

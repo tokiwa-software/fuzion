@@ -58,6 +58,7 @@ public class ResolvedNormalType extends ResolvedType
    * For a normal type, this is the list of actual type parameters given to the type.
    */
   final List<AbstractType> _generics;
+  @Override
   public final List<AbstractType> generics() { return _generics; }
 
 
@@ -68,6 +69,7 @@ public class ResolvedNormalType extends ResolvedType
    * file.  The list might be shorter than generics().
    */
   private final List<HasSourcePosition> _originalGenericsPos;
+  @Override
   public final List<HasSourcePosition> originalGenericsPos() { return _originalGenericsPos; }
 
 
@@ -259,6 +261,7 @@ public class ResolvedNormalType extends ResolvedType
    * until Types.resolved.universe.selfType(), while the _outer field ends with
    * the outermost type explicitly written in the source code.
    */
+  @Override
   public AbstractType outer()
   {
     return _outer;
