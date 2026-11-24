@@ -83,3 +83,13 @@ test_fallible =>
 
 # run the tests:
 test_fallible
+
+try_unit_tag : flow.exception_tag is
+
+# our own child for `try` effect.
+#
+# Note that we have to declare this outside of `test_fallible` since creating an
+# instance via `test_fallible.try_unit h` would result in an endless recursion.
+#
+try_unit(h error->void) : flow.exception try_unit_tag h is
+  public fixed redef type.new(h error->void) try_unit => try_unit h
