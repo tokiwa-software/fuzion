@@ -2474,6 +2474,20 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * {@inheritDoc}
+   *
+   * Once DFA is done, this will return false for all code that was not accessed by DFA.
+   */
+  public boolean withinCode(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE);
+
+    return super.withinCode(s) && (!_lookupDone || _accessedSites.get(s - SITE_BASE));
+  }
+
+
+  /**
    * Get the expr at the given site
    *
    * @param s site
