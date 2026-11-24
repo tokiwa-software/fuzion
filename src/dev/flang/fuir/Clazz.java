@@ -912,19 +912,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   private AbstractFeature findRedefinition(AbstractFeature f)
   {
-    if (PRECONDITIONS) require
-      (// type parameters never get redefined, they are effectively fixed.
-       // However, type features get replaced by actual type parameters in the
-       // inheritance call. Instead of searching for the redefinition, the type
-       // should be replaced by the actual type.
-       !f.isTypeParameter());
-
-    var result = _fuir.findRedefinition(feature(), f);
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
+    return _fuir.findRedefinition(feature(), f);
   }
 
 
