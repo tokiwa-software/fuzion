@@ -193,6 +193,7 @@ public class List<T>
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return toString("", ", ", "");
@@ -358,6 +359,7 @@ public class List<T>
   /**
    * Get first element of the list.
    */
+  @Override
   public T getFirst()
   {
     return get(0);
@@ -387,6 +389,7 @@ public class List<T>
   /**
    * Get last element of the list.
    */
+  @Override
   public T getLast()
   {
     return get(size()-1);
@@ -408,6 +411,7 @@ public class List<T>
   /**
    * Remove the last element of the list.
    */
+  @Override
   public T removeLast()
   {
     if (ANY.PRECONDITIONS) ANY.require
@@ -504,6 +508,7 @@ public class List<T>
    *
    * @return the previous value of the element
    */
+  @Override
   public T set(int i, T x)
   {
     if (ANY.PRECONDITIONS) ANY.require
@@ -565,6 +570,7 @@ public class List<T>
    * Create a non-frozen clone of this list. This can be redefined in
    * sub-classes to return an instance of the same sub-class of List.
    */
+  @Override
   public List<T> clone()
   {
     return new List<>(this);

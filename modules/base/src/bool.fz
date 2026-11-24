@@ -40,7 +40,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # not, negates this boolean
   #
-  public prefix ! bool =>
+  public fixed prefix ! bool =>
     if bool.this
       false
     else
@@ -49,7 +49,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # or with lazy evaluation
   #
-  public infix || (other Lazy bool) bool =>
+  public fixed infix || (other Lazy bool) bool =>
     if bool.this
       true
     else
@@ -58,7 +58,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # and with lazy evaluation
   #
-  public infix && (other Lazy bool) bool =>
+  public fixed infix && (other Lazy bool) bool =>
     if bool.this
       other
     else
@@ -67,7 +67,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # or with eager evaluation
   #
-  public infix |   (other bool) bool =>
+  public fixed infix |   (other bool) bool =>
     if bool.this
       true
     else
@@ -76,7 +76,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # and with eager evaluation
   #
-  public infix &   (other bool) bool =>
+  public fixed infix &   (other bool) bool =>
     if bool.this
       other
     else
@@ -110,7 +110,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
   # true if exactly one of the two
   # bools is true
   #
-  public infix ^   (other bool) bool =>
+  public fixed infix ^   (other bool) bool =>
     if bool.this
       !other
     else
@@ -119,7 +119,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # implies
   #
-  public infix : (other Lazy bool) bool =>
+  public fixed infix : (other Lazy bool) bool =>
     if bool.this
       other
     else
@@ -128,7 +128,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
   #
-  public ternary ? : (T : Any, a, b Lazy T) T =>
+  public fixed ternary ? : (T : Any, a, b Lazy T) T =>
     if bool.this
       a
     else
@@ -137,7 +137,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # create an option from a lazily evaluated value depending on this bool
   #
-  public as_option(# value that will be evaluated and wrapped in an option
+  public fixed as_option(# value that will be evaluated and wrapped in an option
                    # iff bool.this holds.
                    v Lazy T) option T
   =>
@@ -149,7 +149,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # as human readable string
   #
-  public redef as_string String =>
+  public fixed redef as_string String =>
     if bool.this
       "true"
     else
@@ -158,7 +158,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # as a trit
   #
-  public as_trit trit =>
+  public fixed as_trit trit =>
     if bool.this
       trit.yes
     else

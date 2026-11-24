@@ -28,13 +28,35 @@
 # exception provides an operation 'cause' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
+# The type parameter `T` is used to find the handler: `(flow.exception T).env`
+# returns the *innermost* installed instance of `flow.exception T`.
+#
+# Therefore, `T` must inherit from `flow.exception_tag`, so a common type such as
+# `unit` cannot be used: any unrelated code using the same `T` that is executed
+# within your `on` (e.g., via a call to a redefined feature or a callback) would
+# cause an exception that ends up in your handler, and backwards.
+#
+# Instead, declare a dedicated type for each usage:
+#
+#     parse(s String) outcome i32 =>
+#       parse_exception : flow.exception_tag is
+#       flow.exception parse_exception .on ()->
+#         if s.is_empty then (flow.exception parse_exception).env.cause (error "empty string")
+#         s.parse_i32.or_cause parse_exception id
+#
+#     say (parse "42")   # 42
+#     say (parse "")     # --error: empty string--
+#     say (parse "x")    # --error: failed to parse 'x': invalid integer digit for base 10--
+#
 public exception (# type parameter used only to distinguish different
                   # instances of `exception`. This permits using, e.g.,
                   # `exception reader` and `exception writer` and distinguish the
                   # errors raised by the reader from those raised
                   # by the writer.
                   #
-                  T : Any,
+                  # `T` must inherit from `flow.exception_tag`, e.g.,
+                  # `reader : flow.exception_tag is`
+                  T : flow.exception_tag,
 
                   h error->void
                   ) : flow.fallible error h
@@ -52,29 +74,5 @@ is
   # resulting 'outcome'.
   #
   public type.on(R : Any, f ()->R) outcome R =>
-    exception.this.try   (outcome R) ()->
-                    f()
-                  .catch
-                    id
-
-
-# convenience routine to create a new instance of 'exception T' and run 'f' in
-# it.  The result will be an `outcome R` that, in case of success, contains
-# the result of `f`, or, in case of `(exception T).env.raise`, contains the error.
-#
-public exception(T : Any,
-           R : Any,
-           f ()->R) outcome R =>
-  (exception T).on f
-
-
-# convenience routine to create a new instance of 'exception T' and run 'f' in
-# it. Return the result of 'f' directly or panic in case 'f' calls
-# '(exception T).env.raise'.
-#
-public exception_or_panic(T : Any,
-                          R : Any,
-                          f ()->R) R =>
-  match (exception T).on f
-    e error => panic $e
-    r R => r
+    exception.this.try (outcome R) f()
+                  .catch id

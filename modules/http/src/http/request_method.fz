@@ -23,33 +23,45 @@
 
 
 # HTTP request method GET
+#
 public get is
 
 # HTTP request method HEAD
+#
 public head is
 
 # HTTP request method POST
+#
+# has _r suffix since `post` is a reserved keyword in Fuzion
+#
 public post_r is
 
 # HTTP request method PUT
+#
 public put is
 
 # HTTP request method DELETE
+#
 public delete is
 
 # HTTP request method CONNECT
+#
 public connect is
 
 # HTTP request method OPTIONS
+#
 public options is
 
 # HTTP request method TRACE
+#
 public trace is
 
 # HTTP request method PATCH
+#
 public patch is # NYI: is this part of HTTP 1.1
 
 # HTTP request method
+#
 public request_method : choice http.get http.head http.post_r http.put http.delete
                                http.connect http.options http.trace http.patch, property.equatable is
 

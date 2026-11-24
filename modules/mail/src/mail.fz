@@ -103,16 +103,19 @@ public mail is
     #
     net_lm : mutate is
 
+    # type used only to identify the exception used by `send`
+    #
+    send_exception : flow.exception_tag is
 
     # write and flush, cause an exception on any error
     #
     write_or_cause(LM : mutate, s String) =>
       (io.buffered LM).Writer.env
         .write s
-        .or_cause unit (x -> error "while writing $s, got $x")
+        .or_cause send_exception (x -> error "while writing $s, got $x")
       (io.buffered LM).Writer.env
         .flush
-        .or_cause unit (x -> error "while flushing for $s, got $x")
+        .or_cause send_exception (x -> error "while flushing for $s, got $x")
 
 
     # read a line, check if it starts with `expected`
@@ -121,7 +124,7 @@ public mail is
     read_or_cause(expected, where, wrote String) unit =>
       l := (io.buffered wolfssl_lm).read_line ? s String => s | io.end_of_file => ""
       if !l.starts_with expected
-        (flow.exception unit).env.cause <| error "expected $expected after sending $where, got $l, data: $wrote"
+        (flow.exception send_exception).env.cause <| error "expected $expected after sending $where, got $l, data: $wrote"
 
 
     # do the get request
@@ -172,7 +175,7 @@ public mail is
         .client family net.protocol.tcp host port
         .bind c->
           c.with _ net_lm ()->
-            flow.exception unit _ ()->
+            flow.exception send_exception .on _ ()->
 
               # do we need to initiate STARTTLS
               #
@@ -183,8 +186,8 @@ public mail is
                 match io.buffered net_lm .read_line
                   s String =>
                     if s != "220 OK"
-                      flow.exception unit .env.cause (error "Expected 220 OK, got $s")
+                      flow.exception send_exception .env.cause (error "Expected 220 OK, got $s")
                   io.end_of_file =>
-                    flow.exception unit .env.cause (error "Expected 220 OK, got end-of-file")
+                    flow.exception send_exception .env.cause (error "Expected 220 OK, got end-of-file")
 
               wolfssl _ net_lm host write_request

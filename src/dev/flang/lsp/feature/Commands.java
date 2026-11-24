@@ -70,6 +70,7 @@ public enum Commands
   showSyntaxTree,
   run, callGraph, codeActionFixIdentifier, codeActionGenerateMatchCases;
 
+  @Override
   public String toString()
   {
     switch (this)

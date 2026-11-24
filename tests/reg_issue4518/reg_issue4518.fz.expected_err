@@ -4,11 +4,4 @@ a(p) => _, x := p; $x
 --^
 For the formal argument 'a.p' the type can only be derived if there is a call to 'a'.
 
-
-reg_issue4518.fz:24:14: error 2: Destructuring mismatch between number of visible fields and number of target variables.
-a(p) => _, x := p; $x
--------------^
-Found no visible argument fields
-while there are 2 destructuring variables.
-
-2 errors.
+one error.

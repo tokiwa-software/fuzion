@@ -191,6 +191,7 @@ class CallGroup extends ANY implements Comparable<CallGroup>
   /**
    * Compare this to another Call.
    */
+  @Override
   public int compareTo(CallGroup other)
   {
     return _quickHash != -1 ? Long.compare(_quickHash, other._quickHash) :

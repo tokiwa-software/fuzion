@@ -198,6 +198,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Compare this to another Call.
    */
+  @Override
   public int compareTo(Call other)
   {
     var res = _group.compareTo(other._group);
@@ -491,6 +492,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Create human-readable string from this call.
    */
+  @Override
   public String toString()
   {
     if (_toStringRecursion_.contains(this))
@@ -528,6 +530,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Create human-readable string from this call with effect environment information
    */
+  @Override
   public String toString(boolean forEnv)
   {
     var on = _dfa._fuir.clazzOriginalName(calledClazz());
@@ -553,6 +556,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @return a string providing the indentation level for the caller in case of
    * nested contexts.  "  " is to be added to the result on each recursive call.
    */
+  @Override
   public String showWhy(StringBuilder sb)
   {
     var indent = _context.showWhy(sb);

@@ -176,6 +176,7 @@ class CString extends ANY
   /**
    * Create Java String from this.
    */
+  @Override
   public String toString()
   {
     return _sb.toString();

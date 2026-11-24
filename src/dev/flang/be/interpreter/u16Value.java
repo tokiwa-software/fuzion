@@ -68,6 +68,7 @@ public class u16Value extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return Integer.toUnsignedString(_val);
@@ -79,6 +80,7 @@ public class u16Value extends Value
    *
    * @return the u16 value
    */
+  @Override
   public int u16Value()
   {
     return _val;
@@ -92,6 +94,7 @@ public class u16Value extends Value
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require

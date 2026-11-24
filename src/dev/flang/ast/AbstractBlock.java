@@ -143,6 +143,7 @@ public abstract class AbstractBlock extends Expr
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
+  @Override
   public boolean containsOnlyDeclarations()
   {
     boolean result = true;
@@ -223,6 +224,7 @@ public abstract class AbstractBlock extends Expr
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return new StringBuilder().append("{\n").append(toString("  ")).append("}").toString();
