@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = inheritance_negative
-include ../simple_and_negative.mk
+override NAME = outer_value_type
+include ../simple.mk
