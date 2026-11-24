@@ -29,32 +29,35 @@ test_fallible =>
 
   a : flow.exception_tag is
 
-  # success and failure using `flow.exception a`:
+  # success and failure using `flow.exception a` and `or_outcome`:
 
-  r0 := flow.exception a .on String (()->"ok")
-  r1 := flow.exception a .on String (()->(flow.exception a).env.cause (error "r1 fail"))
+  r0 := flow.exception a .try String (()->"ok")                                           .or_outcome
+  r1 := flow.exception a .try String (()->(flow.exception a).env.cause (error "r1 fail")) .or_outcome
   say "0: expecting ok,    got $r0"
   say "1: expecting error, got $r1"
 
-  # success and failure using our own try feature `try_unit`:
+  # success and failure using our own fallible `try_unit` and `or_outcome`:
 
-  r2 := try_unit.on (()->"ok")
-  r3 := try_unit.on (()->(try_unit).env.cause (error "r3 fail"))
+  r2 := try_unit.try String (()->"ok")                                    .or_outcome
+  r3 := try_unit.try String (()->(try_unit).env.cause (error "r3 fail"))  .or_outcome
   say "2: expecting ok,    got $r2"
   say "3: expecting error, got $r3"
 
-  # success and failure using our own try feature `try_unit`:
+  # success and failure using our own fallible `try_unit` and `catch`:
 
   r4 := try_unit.try String (()->"ok")                                    .catch m->"*** fail $m ***"
   r5 := try_unit.try String (()->(try_unit).env.cause (error "r5a fail")) .catch m->"*** fail $m ***"
   say "4: expecting ok,    got $r4"
   say "5: expecting error, got $r5"
 
+  # success and failure using `panic` and `catch`:
 
-  r8 := panic.try String  ()->"ok"             .catch m->"panic $m"
-  r9 := panic.try String (()->panic "r9 fail") .catch m->"panic $m"
+  r8 := panic.try String (()->"ok")             .catch m->"panic $m"
+  r9 := panic.try String (()->panic "r9 fail")  .catch m->"panic $m"
   say "8: expecting ok,    got $r8"
   say "9: expecting error, got $r9"
+
+  # failure using `panic` with a multi-line `try` and `catch`:
 
   panic
     .try unit ()->
@@ -62,27 +65,21 @@ test_fallible =>
     .catch m->
       say "10: expecting fault, got fault: $m"
 
+  # failure using `fuzion.runtime.fault`:
+
   fuzion.runtime.fault
     .try ()->
       if 3 < 4 then panic "expected failure"
     .catch m->
       say "11: expecting fault, got fault: $(m.0) $(m.1)"
 
-  r12 := flow.exception a .try String (()->"ok")                                            .or_outcome
-  r13 := flow.exception a .try String (()->(flow.exception a).env.cause (error "r13 fail")) .or_outcome
-  r14 := panic.try String (()->panic "r14 fail")                                            .or_outcome
+  # success and failure using `panic` and `or_outcome`, the `String` error is wrapped in an `error`:
+
+  r12 := panic.try String (()->"ok")              .or_outcome
+  r13 := panic.try String (()->panic "r13 fail")  .or_outcome
   say "12: expecting ok,    got $r12"
   say "13: expecting error, got $r13"
-  say "14: expecting error, got $r14"
+
+
 # run the tests:
 test_fallible
-
-try_unit_tag : flow.exception_tag is
-
-# our own child for `try` effect.
-#
-# Note that we have to declare this outside of `test_fallible` since creating an
-# instance via `test_fallible.try_unit h` would result in an endless recursion.
-#
-try_unit(h error->void) : flow.exception try_unit_tag h is
-  public fixed redef type.new(h error->void) try_unit => try_unit h
