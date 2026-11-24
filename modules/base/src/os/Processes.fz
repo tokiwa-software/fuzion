@@ -99,7 +99,7 @@ public Processes ref : effect is
       public redef wait(p os.process, timeout time.duration) outcome u32
       =>
         if !started.contains p
-          error "process were not started by this os.Processes effect."
+          error "process was not started by this os.Processes effect."
         else
           start := time.Nano.env.read
 
