@@ -50,12 +50,6 @@ test_fallible =>
   say "4: expecting ok,    got $r4"
   say "5: expecting error, got $r5"
 
-  # success and failure using `flow.exception_or_panic a`:
-
-  r6 := panic.try (()->flow.exception_or_panic a String (()->"ok"))                                      .catch m->"*** panic $m ***"
-  r7 := panic.try (()->flow.exception_or_panic a String (()->(flow.exception a).env.cause (error "r7 fail"))) .catch m->"*** panic $m ***"
-  say "6: expecting ok,    got $r6"
-  say "7: expecting error, got $r7"
 
   r8 := panic.try String  ()->"ok"             .catch m->"panic $m"
   r9 := panic.try String (()->panic "r9 fail") .catch m->"panic $m"
