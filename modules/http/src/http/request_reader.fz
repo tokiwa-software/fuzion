@@ -28,11 +28,14 @@ public read_request(
   # mutate effect from which to read the bytes of the request
   LM : mutate) outcome request_message
 =>
+  # type used only to identify the exception used by `read_request`
+  #
+  read_request_exception : flow.exception_tag is
 
-  flow.exception unit .on _ ()->
+  flow.exception read_request_exception .on _ ()->
 
     cause(s String) void =>
-      (flow.exception unit).env.cause (error s)
+      (flow.exception read_request_exception).env.cause (error s)
 
     # NYI: must parse header as superset of ASCII
     # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-2
@@ -63,9 +66,9 @@ public read_request(
 
         if !rl[2].starts_with "HTTP/" then cause "unsupported protocol $(rl[2])"
 
-        major, minor := parse_http_version rl[2]
+        major, minor := parse_http_version read_request_exception rl[2]
 
-        tmp_parsed_fields := parse_header_fields LM .or_cause unit id
+        tmp_parsed_fields := parse_header_fields LM .or_cause read_request_exception id
 
         header_fields :=
           {
@@ -85,6 +88,6 @@ public read_request(
         # https://datatracker.ietf.org/doc/html/rfc9112#section-6-4
         #
         body :=
-          body_helper LM true header_fields .or_cause unit id
+          body_helper LM true header_fields .or_cause read_request_exception id
 
         request_message method target major minor header_fields body

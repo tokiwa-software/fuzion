@@ -111,17 +111,17 @@ is
   # Complexity: O(1).
   #
   #
-  public size option T
+  public size T
+  pre
+   debug: through.ok   # unbounded intervals have no size, use `size_option`
   =>
-    match through
-      nil => nil
-      t T =>
-        if from = t then
-          T.one
-        else if step.sign = (from ⋄ t).sign then
-          T.zero
-        else
-          (t - from) / step + 1
+    thru := through.or_panic
+    if from = thru then
+      1
+    else if step.sign = (from ⋄ thru).sign then
+      0
+    else
+      (thru - from) / step + 1
 
 
   # get the first element of this interval
@@ -189,9 +189,10 @@ is
   #
   public redef size_option option i64
   =>
-    match size
-      nil => nil
-      t T => if t.fits_in_i64 then t.as_i64 else nil
+    if through.ok && size.fits_in_i64
+      size.as_i64
+    else
+      nil
 
 
   # index of `e` in this interval, `nil` if not contained

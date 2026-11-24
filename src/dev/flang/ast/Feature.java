@@ -1570,18 +1570,18 @@ public class Feature extends AbstractFeature
         visit(res.resolveTypesFully(this));
 
         if (_effects != null)
-        {
-          _effects = _effects.map(e -> {
-            var t = e.resolve(res, context());
+          {
+            _effects = _effects.map(e -> {
+              var t = e.resolve(res, context());
 
-            if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
-                                          .feature().inheritsFrom(Types.resolved.f_effect)))
-              {
-                AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
-              }
-            return t;
-          });
-        }
+              if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
+                                            .feature().inheritsFrom(Types.resolved.f_effect)))
+                {
+                  AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
+                }
+              return t;
+            });
+          }
 
         _state = State.RESOLVED_TYPES;
         while (!whenResolvedTypes.isEmpty())
@@ -2567,7 +2567,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   public AbstractType constraint()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_DECLARATIONS),
+      (Errors.any() || state().atLeast(State.RESOLVED_DECLARATIONS),
        isTypeParameter());
 
     var result = _returnType.functionReturnType();
@@ -2707,20 +2707,6 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    */
   public boolean isLambdaCall()
-  {
-    return false;
-  }
-
-
-  /**
-   * Is this the 'RELAY_TYPE' type parameter in a type feature?
-   *
-   * Overriding since AbstractFeature.isCoTypesThisType needs outer to be
-   * in state of at least FINDING_DECLARATIONS which is not always the case
-   * when isCoTypesThisType is called.
-   */
-  @Override
-  public boolean isCoTypesRelayTypeParameter()
   {
     return false;
   }

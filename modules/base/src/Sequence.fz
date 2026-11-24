@@ -889,9 +889,12 @@ is
   #
   public as_tuples Sequence (T, T)
   =>
-    match as_tuple
-      nil => (Sequence (T,T)).empty
-      h tuple => h : (drop 2 .as_tuples .as_list)
+    h := take 2
+    t := drop 2
+    if h.count < 2
+      (Sequence (T,T)).empty
+    else
+      h.as_tuple : t.as_tuples.as_list
 
 
   # chop this Sequence into tuples of size 3.  In case
@@ -904,9 +907,12 @@ is
   #
   public as_3tuples Sequence (T, T, T)
   =>
-    match as_3tuple
-      nil => (Sequence (T,T,T)).empty
-      h tuple => h : (drop 3 .as_3tuples .as_list)
+    h := take 3
+    t := drop 3
+    if h.count < 3
+      (Sequence (T,T,T)).empty
+    else
+      h.as_3tuple : t.as_3tuples.as_list
 
 
   # chop this Sequence into tuples of size 4.  In case
@@ -919,9 +925,12 @@ is
   #
   public as_4tuples Sequence (T, T, T, T)
   =>
-    match as_4tuple
-      nil => (Sequence (T,T,T,T)).empty
-      h tuple => h : (drop 4 .as_4tuples .as_list)
+    h := take 4
+    t := drop 4
+    if h.count < 4
+      (Sequence (T,T,T,T)).empty
+    else
+      h.as_4tuple : t.as_4tuples.as_list
 
 
   # chop this Sequence into tuples of size 5.  In case
@@ -934,9 +943,12 @@ is
   #
   public as_5tuples Sequence (T, T, T, T, T)
   =>
-    match as_5tuple
-      nil => (Sequence (T,T,T,T,T)).empty
-      h tuple => h : (drop 5 .as_5tuples .as_list)
+    h := take 5
+    t := drop 5
+    if h.count < 5
+      (Sequence (T,T,T,T,T)).empty
+    else
+      h.as_5tuple : t.as_5tuples.as_list
 
 
   # chop this Sequence into tuples of size 6.  In case
@@ -949,9 +961,12 @@ is
   #
   public as_6tuples Sequence (T,T, T, T, T, T)
   =>
-    match as_6tuple
-      nil => (Sequence (T,T,T,T,T,T)).empty
-      h tuple => h : (drop 6 .as_6tuples .as_list)
+    h := take 6
+    t := drop 6
+    if h.count < 6
+      (Sequence (T,T,T,T,T,T)).empty
+    else
+      h.as_6tuple : t.as_6tuples.as_list
 
 
   # convert a Sequence's head into a 2-tuple.
@@ -960,17 +975,19 @@ is
   #
   #     [1,2,3,4,5].as_tuple  produces (1,2)
   #     [1,2].as_tuple        produces (1,2)
-  #     [1].as_tuple          produces nil
-  #     [].as_tuple           produces nil
+  #     [1].as_tuple          breaks the pre condition
+  #     [].as_tuple           breaks the pre condition
   #
-  public as_tuple() option (T, T)
+  public as_tuple() (T, T)
+    pre
+      debug: take 2 .count = 2
   =>
     match as_list
       c1 Cons =>
         match c1.tail
           c2 Cons => (c1.head, c2.head)
-          nil => nil
-      nil => nil
+          nil => panic "as_tuple called on single element $(Sequence.this.type.name)"
+      nil => panic "as_tuple called on empty $(Sequence.this.type.name)"
 
 
   # convert a Sequence's head into a 3-tuple.
@@ -979,21 +996,24 @@ is
   #
   #     [1,2,3,4,5].as_3tuple  produces (1,2,3)
   #     [1,2,3].as_3tuple      produces (1,2,3)
-  #     [1,2].as_3tuple        produces nil
-  #     [1].as_3tuple          produces nil
-  #     [].as_3tuple           produces nil
+  #     [1,2].as_3tuple        breaks the pre condition
+  #     [1].as_3tuple          breaks the pre condition
+  #     [].as_3tuple           breaks the pre condition
   #
-  public as_3tuple() option (T, T, T)
+  public as_3tuple() (T, T, T)
+    pre
+      debug: take 3 .count = 3
   =>
-    match as_list
-      c1 Cons =>
-        match c1.tail
-          c2 Cons =>
-            match c2.tail
-              c3 Cons => (c1.head, c2.head, c3.head)
-              nil => nil
-          nil => nil
-      nil => nil
+    r option (T, T, T) := match as_list
+                            c1 Cons =>
+                              match c1.tail
+                                c2 Cons =>
+                                  match c2.tail
+                                    c3 Cons => (c1.head, c2.head, c3.head)
+                                    nil => nil
+                                nil => nil
+                            nil => nil
+    r.or_panic
 
 
   # convert a Sequence's head into a 4-tuple.
@@ -1002,25 +1022,28 @@ is
   #
   #     [1,2,3,4,5].as_4tuple  produces (1,2,3,4)
   #     [1,2,3,4].as_4tuple    produces (1,2,3,4)
-  #     [1,2,3].as_4tuple      produces nil
-  #     [1,2].as_4tuple        produces nil
-  #     [1].as_4tuple          produces nil
-  #     [].as_4tuple           produces nil
+  #     [1,2,3].as_4tuple      breaks the pre condition
+  #     [1,2].as_4tuple        breaks the pre condition
+  #     [1].as_4tuple          breaks the pre condition
+  #     [].as_4tuple           breaks the pre condition
   #
-  public as_4tuple() option (T, T, T, T)
+  public as_4tuple() (T, T, T, T)
+    pre
+      debug: take 4 .count = 4
   =>
-    match as_list
-      c1 Cons =>
-        match c1.tail
-          c2 Cons =>
-            match c2.tail
-              c3 Cons =>
-                match c3.tail
-                  c4 Cons => (c1.head, c2.head, c3.head, c4.head)
-                  nil => nil
-              nil => nil
-          nil => nil
-      nil => nil
+    r option (T, T, T, T) := match as_list
+                               c1 Cons =>
+                                 match c1.tail
+                                   c2 Cons =>
+                                     match c2.tail
+                                       c3 Cons =>
+                                         match c3.tail
+                                           c4 Cons => (c1.head, c2.head, c3.head, c4.head)
+                                           nil => nil
+                                       nil => nil
+                                   nil => nil
+                               nil => nil
+    r.or_panic
 
 
   # convert a Sequence's head into a 5-tuple.
@@ -1029,28 +1052,31 @@ is
   #
   #     [1,2,3,4,5,6].as_5tuple  produces (1,2,3,4,5)
   #     [1,2,3,4,5].as_5tuple    produces (1,2,3,4,5)
-  #     [1,2,3,4].as_5tuple      produces nil
-  #     [1,2,3].as_5tuple        produces nil
+  #     [1,2,3,4].as_5tuple      breaks the pre condition
+  #     [1,2,3].as_5tuple        breaks the pre condition
   #      ...
-  #     [].as_5tuple             produces nil
+  #     [].as_5tuple             breaks the pre condition
   #
-  public as_5tuple() option (T, T, T, T, T)
+  public as_5tuple() (T, T, T, T, T)
+    pre
+      debug: take 5 .count = 5
   =>
-    match as_list
-      c1 Cons =>
-        match c1.tail
-          c2 Cons =>
-            match c2.tail
-              c3 Cons =>
-                match c3.tail
-                  c4 Cons =>
-                    match c4.tail
-                      c5 Cons => (c1.head, c2.head, c3.head, c4.head, c5.head)
-                      nil => nil
-                  nil => nil
-              nil => nil
-          nil => nil
-      nil => nil
+    r option (T, T, T, T, T) := match as_list
+                                  c1 Cons =>
+                                    match c1.tail
+                                      c2 Cons =>
+                                        match c2.tail
+                                          c3 Cons =>
+                                            match c3.tail
+                                              c4 Cons =>
+                                                match c4.tail
+                                                  c5 Cons => (c1.head, c2.head, c3.head, c4.head, c5.head)
+                                                  nil => nil
+                                              nil => nil
+                                          nil => nil
+                                      nil => nil
+                                  nil => nil
+    r.or_panic
 
 
   # convert a Sequence's head into a 6-tuple.
@@ -1059,31 +1085,34 @@ is
   #
   #     [1,2,3,4,5,6,7].as_6tuple  produces (1,2,3,4,5,6)
   #     [1,2,3,4,5,6].as_6tuple    produces (1,2,3,4,5,6)
-  #     [1,2,3,4,5].as_6tuple      produces nil
-  #     [1,2,3,4].as_6tuple        produces nil
+  #     [1,2,3,4,5].as_6tuple      breaks the pre condition
+  #     [1,2,3,4].as_6tuple        breaks the pre condition
   #      ...
-  #     [].as_6tuple               produces nil
+  #     [].as_6tuple               breaks the pre condition
   #
-  public as_6tuple() option (T, T, T, T, T, T)
+  public as_6tuple() (T, T, T, T, T, T)
+    pre
+      debug: take 6 .count = 6
   =>
-    match as_list
-      c1 Cons =>
-        match c1.tail
-          c2 Cons =>
-            match c2.tail
-              c3 Cons =>
-                match c3.tail
-                  c4 Cons =>
-                    match c4.tail
-                      c5 Cons =>
-                        match c5.tail
-                          c6 Cons => (c1.head, c2.head, c3.head, c4.head, c5.head, c6.head)
-                          nil => nil
-                      nil => nil
-                  nil => nil
-              nil => nil
-          nil => nil
-      nil => nil
+    r option (T, T, T, T, T, T) := match as_list
+                                     c1 Cons =>
+                                       match c1.tail
+                                         c2 Cons =>
+                                           match c2.tail
+                                             c3 Cons =>
+                                               match c3.tail
+                                                 c4 Cons =>
+                                                   match c4.tail
+                                                     c5 Cons =>
+                                                       match c5.tail
+                                                         c6 Cons => (c1.head, c2.head, c3.head, c4.head, c5.head, c6.head)
+                                                         nil => nil
+                                                     nil => nil
+                                                 nil => nil
+                                             nil => nil
+                                         nil => nil
+                                     nil => nil
+    r.or_panic
 
 
   # convert this Sequence to a Map
@@ -1145,7 +1174,7 @@ is
   #     [(0, 1, 2), (1, 2, 3), (2, 3, 4), (3, 4, 5)]
   #
   public tripletwise Sequence (T, T, T) =>
-    sliding 3 .map (.as_3tuple.or_panic)
+    sliding 3 .map (.as_3tuple)
 
 
   # sliding window of 4-tuple quads
@@ -1159,7 +1188,7 @@ is
   #     [(0, 1, 2, 3), (1, 2, 3, 4), (2, 3, 4, 5)]
   #
   public quadwise Sequence (T, T, T, T) =>
-    sliding 4 .map (.as_4tuple.or_panic)
+    sliding 4 .map (.as_4tuple)
 
 
   # sliding window of 5-tuple quints
@@ -1173,7 +1202,7 @@ is
   #     [(0, 1, 2, 3, 4), (1, 2, 3, 4, 5)]
   #
   public quintwise Sequence (T, T, T, T, T) =>
-    sliding 5 .map (.as_5tuple.or_panic)
+    sliding 5 .map (.as_5tuple)
 
 
   # sliding window of 6-tuple sextets
@@ -1187,7 +1216,7 @@ is
   #     [(0, 1, 2, 3, 4, 5)]
   #
   public sextetwise Sequence (T, T, T, T, T, T) =>
-    sliding 6 .map (.as_6tuple.or_panic)
+    sliding 6 .map (.as_6tuple)
 
 
   # apply f to sliding window of pairs

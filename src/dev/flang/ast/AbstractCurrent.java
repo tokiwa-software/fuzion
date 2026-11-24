@@ -56,8 +56,7 @@ public abstract class AbstractCurrent extends Expr
   public AbstractCurrent(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null,
-       Types.resolved == null || !t.isVoid());
+      (t.isThisType() || t.feature().isUniverse());
 
     this._type = t;
   }
@@ -93,9 +92,6 @@ public abstract class AbstractCurrent extends Expr
   @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _type = _type.visit(v, outer);
-    if (CHECKS) check
-      (_type != null);
     return v.action(this);
   }
 

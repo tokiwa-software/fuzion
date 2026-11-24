@@ -128,6 +128,17 @@ is
         error "fzE_thread_setaffinity error $(e)"
 
 
+  # CPU time in nano seconds consumed by this thread so far, negative in case
+  # of an error or if this thread was joined already.
+  #
+  # Use `time.Thread_CPU_Time` to access this as a `time.Clock`.
+  #
+  module cpu_time_ns i64
+  =>
+    # after a join, `thrd` must not be used any longer
+    joined.read.is_no ? fuzion.sys.thread.cpu_time0 thrd : -1
+
+
   # equality
   #
   public fixed redef type.equality(a, b Thread.this) bool

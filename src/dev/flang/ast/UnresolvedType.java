@@ -776,7 +776,14 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   @Override
   protected AbstractFeature backingFeature()
   {
-    throw new Error("backingFeature not available for unresolved type");
+    if (Errors.any())
+      {
+        return Types.f_ERROR;
+      }
+    else
+      {
+        throw new Error("backingFeature not available for unresolved type");
+      }
   }
 
 
@@ -836,7 +843,14 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public String freeTypeName()
   {
-    throw new Error("freeTypeName cannot be called on " + getClass());
+    if (Errors.any())
+      {
+        return Errors.ERROR_STRING;
+      }
+    else
+      {
+        throw new Error("freeTypeName cannot be called on " + getClass());
+      }
   }
 
 
@@ -874,6 +888,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         tp.scheduleForResolution(res);
         return g.asParametricType();
       }
+    else if (Errors.any())
+      {
+        return Types.t_ERROR;
+      }
     else
       {
         throw new Error("fz bug: free type added to "+outer.outer().getClass());
@@ -890,7 +908,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   @Override
   void usedFeatures(Set<AbstractFeature> s)
   {
-    throw new Error("must not be called on unresolved types.");
+    if (!Errors.any())
+      {
+        throw new Error("must not be called on unresolved types.");
+      }
   }
 
   /**
