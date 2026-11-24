@@ -2177,6 +2177,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return the index of the requested {@code mutate.var.mutable_value} field's clazz.
    */
+  @Override
   public int lookupMutableValue(int cl)
   {
     if (PRECONDITIONS) require

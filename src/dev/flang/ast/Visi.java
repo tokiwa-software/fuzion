@@ -86,6 +86,7 @@ public enum Visi
     _kind = s;
   }
 
+  @Override
   public String toString()
   {
     return this._kind;

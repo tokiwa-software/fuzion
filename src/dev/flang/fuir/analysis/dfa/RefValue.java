@@ -99,6 +99,7 @@ class RefValue extends Value
   /**
    * Add v to the set of values of given field within this instance.
    */
+  @Override
   public void setField(DFA dfa, int field, Value v)
   {
     if (PRECONDITIONS) require
@@ -112,6 +113,7 @@ class RefValue extends Value
   /**
    * Get set of values of given field within this instance.
    */
+  @Override
   Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     return _original.readFieldFromInstance(dfa, field, site, why);
@@ -121,6 +123,7 @@ class RefValue extends Value
   /**
    * Unbox this value.
    */
+  @Override
   Value unbox(DFA dfa, int vc)
   {
     return _original;
@@ -130,6 +133,7 @@ class RefValue extends Value
   /**
    * Create human-readable string from this value.
    */
+  @Override
   public String toString()
   {
     return "boxed("+_dfa._fuir.clazzName(_clazz)+"):" + _original;

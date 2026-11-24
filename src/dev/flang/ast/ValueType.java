@@ -65,6 +65,7 @@ public class ValueType extends ReturnType
    *
    * @return true for a constructor return type.
    */
+  @Override
   public boolean isConstructorType()
   {
     return true;
@@ -79,6 +80,7 @@ public class ValueType extends ReturnType
    *
    * @param outer the feature surrounding this expression.
    */
+  @Override
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
   }
@@ -89,6 +91,7 @@ public class ValueType extends ReturnType
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "value";

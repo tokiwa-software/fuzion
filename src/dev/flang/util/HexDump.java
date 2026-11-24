@@ -225,6 +225,7 @@ public class HexDump
   /**
    * Create the HexDump from data and the marked positions
    */
+  @Override
   public String toString()
   {
     var out = new StringBuilder();

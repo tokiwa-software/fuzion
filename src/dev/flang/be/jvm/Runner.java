@@ -101,6 +101,7 @@ public class Runner extends ClassLoader
    * @param name the class name, e.g. "java/lang/Object"
    */
   @SuppressWarnings({ "rawtypes", "unchecked" })
+  @Override
   public Class findClass(String name)
   {
     Class result = null;
@@ -122,6 +123,7 @@ public class Runner extends ClassLoader
    * @return  Corresponding input stream or {@code null}.
    *
    */
+  @Override
   public InputStream getResourceAsStream(String name)
   {
     if (name == Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME)

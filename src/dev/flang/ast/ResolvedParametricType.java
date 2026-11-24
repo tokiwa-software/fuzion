@@ -68,6 +68,7 @@ class ResolvedParametricType extends ResolvedType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
+  @Override
   public List<AbstractType> generics()
   {
     if (CHECKS) check
@@ -83,12 +84,14 @@ class ResolvedParametricType extends ResolvedType
    *
    * @return the Generic instance, never null.
    */
+  @Override
   protected AbstractFeature backingFeature()
   {
     return _generic;
   }
 
 
+  @Override
   public AbstractType outer()
   {
     if (CHECKS) check

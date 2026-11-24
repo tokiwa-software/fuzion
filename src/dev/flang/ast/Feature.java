@@ -97,6 +97,7 @@ public class Feature extends AbstractFeature
    * The visibility of this feature
    */
   private final Visi _visibility;
+  @Override
   public Visi visibility()
   {
     return _visibility == Visi.UNSPECIFIED
@@ -117,6 +118,7 @@ public class Feature extends AbstractFeature
    * the modifiers of this feature
    */
   public final int _modifiers;
+  @Override
   public int modifiers() { return _modifiers; }
 
 
@@ -160,6 +162,7 @@ public class Feature extends AbstractFeature
    * The formal arguments of this feature
    */
   private List<AbstractFeature> _arguments;
+  @Override
   public List<AbstractFeature> arguments()
   {
     return _arguments;
@@ -170,6 +173,7 @@ public class Feature extends AbstractFeature
    * The parents of this feature
    */
   private final List<AbstractCall> _inherits;
+  @Override
   public final List<AbstractCall> inherits() { return _inherits; }
 
 
@@ -177,6 +181,7 @@ public class Feature extends AbstractFeature
    * The contract of this feature
    */
   private final Contract _contract;
+  @Override
   public Contract contract() { return _contract; }
 
 
@@ -339,6 +344,7 @@ public class Feature extends AbstractFeature
    * LibraryFeature, this will be loaded from the library module file.
    */
   private Set<AbstractFeature> _redefines = null;
+  @Override
   public Set<AbstractFeature> redefines()
   {
     if (_redefines == null)
@@ -837,6 +843,7 @@ public class Feature extends AbstractFeature
   /**
    * Return the state of this feature.
    */
+  @Override
   public State state()
   {
     return _state;
@@ -858,6 +865,7 @@ public class Feature extends AbstractFeature
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _pos;
@@ -868,6 +876,7 @@ public class Feature extends AbstractFeature
    * The sourcecode position of this feature declaration's result type,
    * the features source position if not available
    */
+  @Override
   public SourcePosition resultTypePos()
   {
     return _returnType.posOrNull() == null
@@ -897,6 +906,7 @@ public class Feature extends AbstractFeature
    * the find declarations phase is done (i.e. we are in State.LOADED), or
    * before _outer was during the finding declarations phase.
    */
+  @Override
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
@@ -938,6 +948,7 @@ public class Feature extends AbstractFeature
    *
    * @return Routine, Field, Intrinsic, Abstract or Choice.
    */
+  @Override
   public Kind kind()
   {
     var result = _kind;
@@ -992,6 +1003,7 @@ public class Feature extends AbstractFeature
   /**
    * get the code of this feature.
    */
+  @Override
   public Expr code()
   {
     if (PRECONDITIONS) require
@@ -1455,6 +1467,7 @@ public class Feature extends AbstractFeature
    *
    * @param r the action
    */
+  @Override
   public void whenResolvedDeclarations(Runnable r)
   {
     if (_state.atLeast(State.RESOLVED_DECLARATIONS))
@@ -1608,6 +1621,7 @@ public class Feature extends AbstractFeature
    *
    * @param r the action
    */
+  @Override
   void whenResolvedTypes(Runnable r)
   {
     if (_state.atLeast(State.RESOLVED_TYPES))
@@ -1728,6 +1742,7 @@ public class Feature extends AbstractFeature
    * @param errorPos the position this error should be reported at, this should
    * be the definition of the choice type.
    */
+  @Override
   void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
   {
     var closureAccesses = closureAccesses(res);
@@ -1747,6 +1762,7 @@ public class Feature extends AbstractFeature
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
+  @Override
   public boolean containsOnlyDeclarations()
   {
     return switch (_impl._kind)
@@ -2237,6 +2253,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    * @return the result or null if this does not have a result field.
    */
+  @Override
   public Feature resultField()
   {
     if (PRECONDITIONS) require
@@ -2308,6 +2325,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    * @return this.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     // impl.initialValue is code executed by outer, not by this. So we visit it
@@ -2579,6 +2597,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
+  @Override
   public FeatureName featureName()
   {
     if (CHECKS) check
@@ -2652,6 +2671,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    * @return the outer ref if it exists, null otherwise.
    */
+  @Override
   public AbstractFeature outerRef()
   {
     if (PRECONDITIONS) require
@@ -2669,6 +2689,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   /**
    * Check if this is an outer ref field.
    */
+  @Override
   public boolean isOuterRef()
   {
     var o = outer();
@@ -2691,6 +2712,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   /**
    * Compare this to other for sorting Feature
    */
+  @Override
   public int compareTo(AbstractFeature other)
   {
     return (other instanceof Feature of)
