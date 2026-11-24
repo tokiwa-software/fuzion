@@ -294,7 +294,7 @@ public class CTypes extends ANY
     CStmnt result = CStmnt.EMPTY;
     if (needsTypeDeclaration(cl))
       {
-        var l = new List<CStmnt>(CStmnt.lineComment("for clazz#" + _fuir.clazzId2num(cl) + ": " + _fuir.clazzName(cl) + " " + _fuir.clazzIsUnitType(cl)));
+        var l = new List<CStmnt>(CStmnt.lineComment("for clazz#" + _fuir.clazzId2num(cl) + ": " + _fuir.clazzName(cl)));
         var els = new List<CStmnt>();
         if (_fuir.clazzIsRef(cl))
           {
