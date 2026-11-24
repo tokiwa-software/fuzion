@@ -120,6 +120,19 @@ such that one can write
 
 avoiding the redundant type parameter.
 
+## Error Handling
+
+NYI: UNDER DEVELOPMENT
+
+option vs. outcome vs. pre/postcondition vs. exception
+
+## Effects
+
+NYI: UNDER DEVELOPMENT
+
+what operations should be effects, global defaults vs. locally instated effects, safety, thread local vs. global, etc.
+
+
 <!--
 LocalWords:  Fuzion APIs bool trit codepoint modularity composability
  -->
