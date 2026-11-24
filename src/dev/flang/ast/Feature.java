@@ -1427,18 +1427,9 @@ public class Feature extends AbstractFeature
         if (CHECKS) check
           (_state == State.RESOLVING_DECLARATIONS);
 
-        valueArguments().stream().forEach(a ->
-          {
-            if (a instanceof Feature af && af.returnType() instanceof FunctionReturnType frt)
-              {
-                frt.resolveType(res, a.context());
-              }
-          }
-        );
-        if (returnType() instanceof FunctionReturnType frt)
-          {
-            frt.resolveType(res, context());
-          }
+        resolveReturnTypes(res);
+
+        // NYI: CLEANUP: unclear why this is necessary?
         _inherits.forEach(c -> ((Call)c).resolveGenerics(res, context()));
 
         _state = State.RESOLVED_DECLARATIONS;
@@ -1451,6 +1442,27 @@ public class Feature extends AbstractFeature
 
     if (POSTCONDITIONS) ensure
       (_state.atLeast(State.RESOLVING_DECLARATIONS));
+  }
+
+
+  /**
+   * This resolves the type of the return type of the feature and
+   * the type of the return type of all value arguments.
+   *
+   * This is necessary for the free type mechanism to work
+   *
+   * @param res the resolution instance
+   */
+  private void resolveReturnTypes(Resolution res) {
+    valueArguments().stream().forEach(a ->
+      {
+        if (a instanceof Feature af)
+          {
+            af.returnType().resolveType(res, a.context());
+          }
+      }
+    );
+    returnType().resolveType(res, context());
   }
 
 

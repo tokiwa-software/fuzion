@@ -65,7 +65,7 @@ public class RefType extends ReturnType
    *
    * @return true for a constructor return type.
    */
-  public boolean isConstructorType()
+  boolean isConstructorType()
   {
     return true;
   }

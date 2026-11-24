@@ -32,7 +32,7 @@ package dev.flang.ast;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ValueType extends ReturnType
+class ValueType extends ReturnType
 {
 
 
@@ -42,7 +42,7 @@ public class ValueType extends ReturnType
   /**
    * The singleton instance.
    */
-  public static final ValueType INSTANCE = new ValueType();
+  static final ValueType INSTANCE = new ValueType();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -65,7 +65,7 @@ public class ValueType extends ReturnType
    *
    * @return true for a constructor return type.
    */
-  public boolean isConstructorType()
+  boolean isConstructorType()
   {
     return true;
   }

@@ -47,7 +47,7 @@ public abstract class ReturnType extends ANY
   /**
    * Constructor
    */
-  public ReturnType()
+  ReturnType()
   {
   }
 
@@ -60,7 +60,7 @@ public abstract class ReturnType extends ANY
    *
    * @return the source position or null if there is none (e.g. for NoType).
    */
-  public SourcePosition posOrNull()
+  SourcePosition posOrNull()
   {
     return null;
   }
@@ -71,7 +71,7 @@ public abstract class ReturnType extends ANY
    *
    * @return true for a constructor return type, false for a function.
    */
-  public abstract boolean isConstructorType();
+  abstract boolean isConstructorType();
 
 
   /**
@@ -79,7 +79,7 @@ public abstract class ReturnType extends ANY
    *
    * @return the function result type.
    */
-  public AbstractType functionReturnType()
+  AbstractType functionReturnType()
   {
     return functionReturnType(false);
   }
@@ -93,7 +93,7 @@ public abstract class ReturnType extends ANY
    *
    * @return the function result type.
    */
-  public AbstractType functionReturnType(boolean allowIncomplete)
+  AbstractType functionReturnType(boolean allowIncomplete)
   {
     if (PRECONDITIONS) require
       (!isConstructorType());
@@ -102,7 +102,22 @@ public abstract class ReturnType extends ANY
   }
 
 
+  /**
+   * Used for checking an explicitly given return type for validity.
+   *
+   * @param context the source code context where this return type is used
+   */
   void checkActualTypePars(Context context) { }
+
+
+  /**
+   * used for resolving the (explicit) type of a return type
+   *
+   * @param res the resolution instance
+   *
+   * @param context the source code context where this return type is used
+   */
+  void resolveType(Resolution res, Context context) { }
 
 
 }

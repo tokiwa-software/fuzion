@@ -79,7 +79,7 @@ public class FunctionReturnType extends ReturnType
    *
    * @return true for a constructor return type, false for a function.
    */
-  public boolean isConstructorType()
+  boolean isConstructorType()
   {
     return false;
   }
@@ -91,7 +91,7 @@ public class FunctionReturnType extends ReturnType
    * @return the function return type.
    */
   @Override
-  public AbstractType functionReturnType(boolean allowIncomplete)
+  AbstractType functionReturnType(boolean allowIncomplete)
   {
     return _type == Types.t_UNDEFINED || _type.isIncompleteType() && !allowIncomplete
       ? null
@@ -105,18 +105,24 @@ public class FunctionReturnType extends ReturnType
    * @return the source position or null if there is none (e.g. for NoType).
    */
   @Override
-  public SourcePosition posOrNull()
+  SourcePosition posOrNull()
   {
     return _pos;
   }
 
 
-  public void resolveType(Resolution res, Context context)
+  /**
+   * @see dev.flang.ast.ReturnType#resolveType(dev.flang.ast.Resolution, dev.flang.ast.Context)
+   */
+  @Override
+  void resolveType(Resolution res, Context context)
   {
     _type = _type.resolve(res, context);
   }
 
-
+  /**
+   * @see dev.flang.ast.ReturnType#checkActualTypePars(dev.flang.ast.Context)
+   */
   @Override
   void checkActualTypePars(Context context)
   {
