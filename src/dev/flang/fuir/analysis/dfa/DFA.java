@@ -2884,12 +2884,26 @@ public class DFA extends ANY
   {
     var clnum = _fuir.clazzId2num(cl);
     return
-      !_hasFields.get(clnum) &&
+      (!_hasFields.get(clnum) || allFieldsNoDataOrNeverRead(cl)) &&
       _defaultEffects.get(cl) == null &&
       _fuir.isConstructor(cl) &&
       !_fuir.clazzIsRef(cl) &&
-      _fuir.clazzArgCount(cl) == 0 &&
       !isBuiltInNumeric(cl);
+  }
+
+
+  private boolean allFieldsNoDataOrNeverRead(int cl)
+  {
+    for (int fi = 0; fi < _fuir.clazzFieldCount(cl); fi++)
+      {
+        var fc = _fuir.clazzField(cl, fi);
+        var rc = _fuir.clazzResultClazz(fc);
+        if (_fuir.hasData(rc) && _readFields.get(_fuir.clazzId2num(fc)))
+          {
+            return false;
+          }
+      }
+    return true;
   }
 
 
@@ -3032,7 +3046,7 @@ public class DFA extends ANY
    */
   boolean onlyOneInstance(int clazz)
   {
-    return isUnitType(clazz) || ONLY_ONE_INSTANCE &&
+    return _fuir.clazzIsUnitType(clazz) || ONLY_ONE_INSTANCE &&
       // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
       // this should be something generic instead, e.g.
       //
@@ -3330,7 +3344,7 @@ public class DFA extends ANY
 
     Call e, r;
     r = _unitCalls.get(cl);
-    if (isUnitType(cl))
+    if (_fuir.clazzIsUnitType(cl))
       { // as long as we see unit values only, we put them all together
         e = r;
         if (r == null)
