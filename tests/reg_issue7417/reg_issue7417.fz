@@ -21,9 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
+# This originally triggered a NullPointerException, was then temporarily
+# fixed to compile, but it actually must produce an error since a `fixed`
+# feature `f` is called from a dynamic target `a.this`
+#
 a is
   and =>
-    f
+    f             # 1. should flag an error: a.this.f is dynamic, cannot call `fixed f`
   fixed f =>
     say "hello"
 

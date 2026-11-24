@@ -186,7 +186,9 @@ public class This extends ExprWithPos
   @Override
   AbstractType typeForInferencing()
   {
-    return null;  // After type resolution, This is no longer part of the code.
+    return (_feature != null && !_feature.isUniverse() && _feature != Types.f_ERROR)
+      ? new ThisType(_feature)
+      : null;
   }
 
 
@@ -201,6 +203,7 @@ public class This extends ExprWithPos
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     return v.action(this);
@@ -418,6 +421,7 @@ public class This extends ExprWithPos
    *
    * @return
    */
+  @Override
   public String toString()
   {
     if (_qual != null)

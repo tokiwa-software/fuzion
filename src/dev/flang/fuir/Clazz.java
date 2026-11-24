@@ -637,52 +637,12 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   AbstractType replaceThisType(AbstractType t, List<AbstractCall> inh)
   {
-    t = replaceThisTypeForCotype(t);
-    if (t.isThisType())
+    return switch (t.kind())
       {
-        t = findOuter(t, inh)._type;
-      }
-    return t.applyToGenericsAndOuter(g -> replaceThisType(g, inh));
-  }
-
-
-  /**
-   * Special handling for features whose outer features are type features: Any
-   * references to x.this.type have to be replaced by the corresponding
-   * original. See example from #1260:
-   *
-   *   t is
-   *     h(B type) is
-   *     i : h i is
-   *     x := i.type
-   *
-   * Here, in the inherits call to {@code h i}, the type parameter is
-   * {@code t.this.type.i}. So in the corresponding type feature has two
-   *
-   *   t.type.h.type t.i t.this.type.i
-   *
-   * the second type parameter for {@code B} has to get it's {@code this.type} types
-   * replaced by the actual types given in the first type parameter
-   */
-  AbstractType replaceThisTypeForCotype(AbstractType t)
-  {
-    if (
-      // clazz actually describes a cotype
-      feature().isCotype() &&
-      // NYI: UNDER DEVELOPMENT: can this logic be simplified?
-         (switch (t.kind())
-           {
-           case ParametricType               -> t.typeParameter().outer().isCotype();
-           case RefType, ValueType, ThisType -> t.feature() == _type.generics().get(0).actualType(t).feature();
-           }))
-      {
-        t = _type.generics().get(0).actualType(t);
-      }
-    else if (_outer != null)
-      {
-        t = _outer.replaceThisTypeForCotype(t);
-      }
-    return t;
+        case ParametricType -> t;
+        case ThisType -> replaceThisType0(t, inh);
+        case RefType, ValueType -> t.applyToGenericsAndOuter(g -> replaceThisType(g, inh));
+      };
   }
 
 
@@ -1715,8 +1675,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               {
                 f = f.openTypesFeature();
               }
-            var ft = replaceThisTypeForCotype(f.resultType());
-            result = handDown(ft, _select, new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
+            result = handDown(f.resultType(), _select, new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
           }
         _resultClazz = result;
       }
@@ -1814,7 +1773,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @return the outer clazz of this corresponding this-type {@code o}.
    */
   // NYI: UNDER DEVELOPMENT: logic too complicated and likely subtly wrong.
-  private Clazz findOuter(AbstractType o, List<AbstractCall> inh)
+  private AbstractType replaceThisType0(AbstractType o, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (o.isThisType());
@@ -1823,35 +1782,36 @@ class Clazz extends ANY implements Comparable<Clazz>
      * until we find o.
      */
     var of = handDown(o, NO_SELECT, (_,_)->{}, inh).feature();
-    var res = this;
-    AbstractFeature i = feature();
-    while (i != null && i != of)
+    var res = _type;
+    while (res != null && res.feature() != of && !res.feature().isCotype())
       {
-        res = res._outer;
-        i = res == null
-          ? null
-          : res.feature();
+        res = res.outer();
+      }
+    if (res != null )
+      {
+        // we arrived at a cotype, we use its relay type
+        // to determine the actual type.
+        return res.feature().isCotype()
+          ? res.generics().get(0).actualType(o)
+          : res;
       }
 
     // NYI: BUG: inh that is passed to handDown is incorrectly empty
     // for some cases in test/covariance
-    if (i == null)
+    else
       {
-        res = this;
-        i = feature();
+        var res2 = this;
+        AbstractFeature i = feature();
         while (i != null && i != of)
           {
-            res = i.hasOuterRef()
-              ? res.lookup((FuirFeature) i.outerRef()).resultClazz()
-              : res._outer;
+            res2 = i.hasOuterRef()
+              ? res2.lookup((FuirFeature) i.outerRef()).resultClazz()
+              : res2._outer;
             i = i.outer();
           }
+        return res2._type;
       }
 
-    if (CHECKS) check
-      (Errors.any() || i == of);
-
-    return i == null ? _fuir.error() : res;
   }
 
 

@@ -75,6 +75,7 @@ public class Current extends AbstractCurrent
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _pos;

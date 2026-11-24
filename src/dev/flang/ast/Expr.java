@@ -935,12 +935,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
       {
         return;
       }
-    // Case 1.1: types are equal, no tagging necessary
-    // NYI: BUG: soundness issue?
-    else if (at.isChoice() && frmlT.asThis().compareTo(at.asThis()) == 0)
-      {
-        return;
-      }
     // Case 2.1: ambiguous assignment via subtype
     //
     // example:

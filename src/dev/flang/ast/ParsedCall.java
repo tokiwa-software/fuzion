@@ -524,7 +524,7 @@ _calledFeature to error */
     var paa = partiallyApplicableAlternative(res, context, expectedType);
     var pt = _target == null ? null : _target.asParsedType();
     var tt = pt == null ? null : pt.resolve(res, context, true);
-    var tf = tt != null && tt != Types.t_ERROR && tt.isNormalType() ? tt.feature() : null;
+    var tf = tt != null && tt.isPlainType() ? tt.feature() : null;
     if (paa != null && (paa._feature.isTypeFeature() || paa._feature.outer() == tf))
       {
 

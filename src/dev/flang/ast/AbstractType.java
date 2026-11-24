@@ -89,7 +89,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    *
-   * Requires that this is resolved and isNormalType().
+   * Requires that this is resolved and isPlainType().
    */
   public abstract List<AbstractType> generics();
 
@@ -97,7 +97,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * The outer of this type. May be null.
    *
-   * Requires that this is resolved and isNormalType().
+   * Requires that this is resolved and isPlainType().
    */
   public abstract AbstractType outer();
 
@@ -127,12 +127,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * {@code this} as a value.
    *
-   * Requires that at isNormalType().
+   * Requires that at isPlainType().
    */
   public AbstractType asValue()
   {
     if (PRECONDITIONS) require
-      (isNormalType());
+      (isPlainType());
 
     throw new Error("asValue() not supported for "+getClass());
   }
@@ -391,7 +391,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = true;
       }
-    else if (isNormalType())
+    else if (isPlainType())
       {
         for (var t: generics())
           {
@@ -418,7 +418,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = true;
       }
-    else if (isNormalType())
+    else if (isPlainType())
       {
         for (var t: generics())
           {
@@ -426,19 +426,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
-  }
-
-
-  /**
-   * Is the type a _normal_ type, i.e. value or ref-type with generics and outer?
-   */
-  public boolean isNormalType()
-  {
-    return switch (kind())
-      {
-      case RefType, ValueType -> true;
-      default -> false;
-      };
   }
 
 
@@ -465,7 +452,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = true;
       }
-    else if (isNormalType())
+    else if (isPlainType())
       {
         int ix = 0;
         for (var t: generics())
@@ -642,7 +629,7 @@ NYI: UNDER DEVELOPMENT:
         for (var p: actual.feature().inherits())
           {
             var pt = actual.actualType(p.type(), context).asRef();
-            result = pt == actual ? false : assignable(pt, context, false, false, assignableTo);
+            result = pt != actual && assignable(pt, context, false, false, assignableTo);
             // until result
             if (result) { break; }
           }
@@ -657,17 +644,28 @@ NYI: UNDER DEVELOPMENT:
         result = allowBoxing &&
           (switch (actual.kind())
             {
-    // case 5: boxing is allowed, actual is a type parameter and the boxed constraint is directly assignable
-              case ParametricType -> assignable(actual.typeParameter().constraint(context).asRef(), context, false, false, assignableTo);
+
+              case ParametricType ->
+                {
+                  var constraint = actual.typeParameter().constraint(context);
+                  yield switch (constraint.kind()) {
+    // case 5: boxing is allowed, actual is a type parameter whose constraint is a parametric type, check assignable for this parametric type
+    // NYI: UNDER DEVELOPMENT: currently Constraints for type parameter must not be a type parameters
+                    case ParametricType -> false; // assignable(constraint, context, allowBoxing, allowTagging, assignableTo);
+                    case ThisType -> false;
+    // case 6: boxing is allowed, actual is a type parameter and the boxed constraint is directly assignable
+                    case RefType, ValueType -> assignable(constraint.asRef(), context, false, false, assignableTo);
+                  };
+                }
               case RefType -> false; // break recursion
-    // case 6: boxing is allowed, actual is a this type
+    // case 7: boxing is allowed, actual is a this type
     //
     //      example where we consider the this type to be a ref and then tag
     //      this   : choice (Sequence u8) String
     //      actual : String.this
     //
               case ThisType -> assignable(actual.asRef(true), context, false, allowTagging, assignableTo);
-    // case 7: boxing is allowed, actual is a value type and the boxed value is assignable (potentially via tagging)
+    // case 8: boxing is allowed, actual is a value type and the boxed value is assignable (potentially via tagging)
     //
     //     example where we need to box (to Finger_Tree) then tag (to option):
     //     this   : option (container.Finger_Tree T)
@@ -896,7 +894,7 @@ NYI: UNDER DEVELOPMENT:
   public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
   {
     if (PRECONDITIONS) require
-      (isNormalType(),
+      (isPlainType(),
        Errors.any() ||
        feature().generics().sizeMatches(generics()),
        genericsToReplace != null);
@@ -987,40 +985,13 @@ NYI: UNDER DEVELOPMENT:
        Errors.any() || !isOpenGeneric(),
        Errors.any() || target.isParametricType() || target.isThisType() || target.feature().generics().sizeMatches(target.generics()));
 
-    AbstractType result = applyTypePars_(target);
-
-    if (POSTCONDITIONS) ensure
-      (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED,
-       result != null);
-
-    return result;
-  }
-
-
-  /**
-   * Replace generic types used by this type by the actual types given in
-   * target.
-   *
-   * Internal version of applyTypePars(target) that does not perform caching.
-   *
-   * @param tt a target type this is used in
-   *
-   * @return this with all generic arguments from target.feature._generics
-   * replaced by target._generics.
-   */
-  private AbstractType applyTypePars_(AbstractType tt)
-  {
-    /* NYI: Performance: This requires time in O(this.depth *
-     * feature.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
-     * is used to alleviate this a bit, but this is probably not sufficient!
-     */
     var result = this;
     if (dependsOnGenerics())
       {
-        var effectiveTargetType = tt.selfOrConstraint(Context.NONE);
+        var effectiveTargetType = target.selfOrConstraint(Context.NONE);
         result = switch(effectiveTargetType.kind())
           {
-            case ParametricType -> throw new Error("unexpected case in applyTypePars_");
+            case ParametricType -> throw new Error("unexpected case in applyTypePars");
             case ThisType -> applyTypePars(effectiveTargetType.feature(), effectiveTargetType.feature().genericsAsActuals());
             case ValueType, RefType ->
               {
@@ -1031,6 +1002,11 @@ NYI: UNDER DEVELOPMENT:
               }
           };
       }
+
+    if (POSTCONDITIONS) ensure
+      (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED,
+       result != null);
+
     return result;
   }
 
@@ -1121,17 +1097,12 @@ NYI: UNDER DEVELOPMENT:
       case RefType, ValueType, ThisType -> null;
       case ParametricType ->
         {
-          var res = typeParameter();
-          if (res.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
-            {
-               res = f.isCotype() ? res.cotypeGeneric()
-                                  : res.cotypeOriginGeneric();
-            }
-          if (res.outer().generics() != f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
-            {
-              res = null;
-            }
-          yield res;
+          var tp = f.isCotype()
+            ? typeParameter().cotypeGeneric()
+            : typeParameter().cotypeOriginGeneric();
+          yield f.generics() == tp.outer().generics()
+            ? tp
+            : null;
         }
       };
   }
@@ -1270,7 +1241,7 @@ NYI: UNDER DEVELOPMENT:
   public final AbstractType replaceGenericsAndOuter(List<AbstractType> g, AbstractType o)
   {
     if (PRECONDITIONS) require
-      (isNormalType(),
+      (isPlainType(),
        this instanceof ResolvedType,
        feature().generics().sizeMatches(g));
 
@@ -1298,7 +1269,7 @@ NYI: UNDER DEVELOPMENT:
   protected AbstractType replaceGenericsAndOuter0(List<AbstractType> g, AbstractType o)
   {
     if (PRECONDITIONS) require
-      (isNormalType(),
+      (isPlainType(),
        this instanceof ResolvedType,
        feature().generics().sizeMatches(g));
 
@@ -1653,6 +1624,7 @@ there is no common super type of the two types (Types.t_ERROR)
   /**
    * Compare this to other for creating unique types.
    */
+  @Override
   public int compareTo(AbstractType other)
   {
     return compareTo(other, false);
@@ -1680,7 +1652,7 @@ there is no common super type of the two types (Types.t_ERROR)
        (other instanceof ResolvedType));
 
     int result = compareToIgnoreOuter(other, considerSelfReferenceSame);
-    if (result == 0 && isNormalType())
+    if (result == 0 && isPlainType())
       {
         var to = this .outer();
         var oo = other.outer();
@@ -1714,7 +1686,7 @@ there is no common super type of the two types (Types.t_ERROR)
             result = normalizeCoTypeTypeParameter(backingFeature())
                         .compareTo(normalizeCoTypeTypeParameter(other.backingFeature()));
           }
-        if (result == 0 && isNormalType() /* no need for this since kind=o.kind :  && other.isNormalType()  */)
+        if (result == 0 && isPlainType() /* no need for this since kind=o.kind :  && other.isPlainType()  */)
           {
             if (generics().size() != other.generics().size())  // this may happen for open generics lists
               {
@@ -1872,7 +1844,7 @@ there is no common super type of the two types (Types.t_ERROR)
                }
              return target_type;
            });
-        tt = tt.isNormalType() ? tt.outer() : null;
+        tt = tt.isPlainType() ? tt.outer() : null;
       }
     while (tt != null);
     return result;
@@ -1940,7 +1912,7 @@ there is no common super type of the two types (Types.t_ERROR)
                                                         BiConsumer<AbstractType, AbstractType> foundRef)
   {
     if (PRECONDITIONS) require
-      (tt.isNormalType());
+      (tt.isPlainType());
     var result = this;
     // we have abc.this with tt == abc, so use tt
     if (isThisType() && tt.feature() == feature())
@@ -2243,7 +2215,7 @@ there is no common super type of the two types (Types.t_ERROR)
   public AbstractType applyToGenericsAndOuter(java.util.function.Function<AbstractType, AbstractType> f)
   {
     var result = this;
-    if (isNormalType())
+    if (isPlainType())
       {
         var g = generics();
         var ng = g.map(f);
@@ -2305,16 +2277,6 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * Get a String representation of this Type.
-   *
-   * Note that this does not work for instances of Type before they were
-   * resolved.  Use toString() for creating strings early in the front end
-   * phase.
-   */
-  public String toString(boolean humanReadable) { return toString(humanReadable, null); }
-
-
-  /**
    * Helper function for toString
    */
   private String featureName(boolean humanReadable)
@@ -2351,18 +2313,15 @@ there is no common super type of the two types (Types.t_ERROR)
    * Note that this does not work for instances of Type before they were
    * resolved.  Use toString() for creating strings early in the front end
    * phase.
-   *
-   * @param context the feature to which the name should be relative to
-   * NYI: CLEANUP: context seems unused?
    */
-  public String toString(boolean humanReadable, AbstractFeature context)
+  public String toString(boolean humanReadable)
   {
     String result = switch (kind())
       {
         case ParametricType:
           {
             var tp = typeParameter();
-            yield tp.isCoTypesRelayTypeParameter()
+            yield tp.isRelayTypeParameter() && tp.state().atLeast(State.RESOLVED_DECLARATIONS)
               ? tp.constraint().asThis().toString(humanReadable)
               : (humanReadable ? tp.baseNameHuman() : tp.baseName());
           }
@@ -2380,7 +2339,7 @@ there is no common super type of the two types (Types.t_ERROR)
             // skip first generic 'RELAY#TYPE' for types of type features.
             for (var g : generics().drop(feature().isCotype() ? 1 : 0))
               {
-                res = res + " " + g.toStringWrapped(humanReadable, context);
+                res = res + " " + g.toStringWrapped(humanReadable);
               }
             yield res;
           }
@@ -2408,9 +2367,10 @@ there is no common super type of the two types (Types.t_ERROR)
   /**
    * Get a String representation of this Type.
    */
+  @Override
   public String toString()
   {
-    return toString(false, null);
+    return toString(false);
   }
 
 
@@ -2433,17 +2393,6 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * wrap the result of toString in parentheses if necessary
-   *
-   * @param context the feature to which the path should be relative to, universe if null
-   */
-  public String toStringWrapped(boolean humanReadable, AbstractFeature context)
-  {
-    return StringHelpers.wrapInParentheses(toString(humanReadable, context));
-  }
-
-
-  /**
    * Check if constraints on type parameters of this type are satisfied.
    *
    * @return itself on success or t_ERROR if constraints are not met and an
@@ -2454,7 +2403,7 @@ there is no common super type of the two types (Types.t_ERROR)
   AbstractType checkConstraints(Context context)
   {
     var result = this;
-    if (result != Types.t_ERROR && isNormalType())
+    if (isPlainType())
       {
         if (!checkActualTypePars(context, feature(), generics(), originalGenericsPos(), feature().pos(), x->x))
           {
@@ -2553,7 +2502,7 @@ there is no common super type of the two types (Types.t_ERROR)
     if (!isArtificialType() &&
         !constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
-        !tp.isCoTypesRelayTypeParameter() &&
+        !tp.isRelayTypeParameter() &&
         !constraint.constraintSatisfiedBy(context, this, null)
        )
       {
@@ -2734,7 +2683,7 @@ there is no common super type of the two types (Types.t_ERROR)
   public void selfOuterAndGenerics(Consumer<AbstractType> c)
   {
     c.accept(this);
-    if (isNormalType())
+    if (isPlainType())
       {
         generics().forEach(c);
         if (outer() != null)

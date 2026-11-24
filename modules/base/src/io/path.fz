@@ -129,7 +129,9 @@ is
   # and return just name of the file
   # without its extension and path.
   #
-  public stem String =>
+  public stem String
+    pre debug: !names.is_empty
+  =>
     match base_name.find_last "."
       i i64 => 0 < i < base_name.byte_count-1 ? base_name.substring 0 i : base_name
       nil   => base_name
@@ -137,7 +139,9 @@ is
   # consider this to represent a file
   # and return the suffix of the file_name
   #
-  public suffix String =>
+  public suffix String
+    pre debug: !names.is_empty
+  =>
     match base_name.find_last "."
       i i64 => 0 < i < base_name.byte_count-1 ? base_name.substring i+1 : ""
       nil   => ""

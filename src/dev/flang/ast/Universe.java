@@ -108,6 +108,7 @@ public class Universe extends ExprWithPos
    *
    * @return this.
    */
+  @Override
   protected Universe visit(FeatureVisitor v, AbstractFeature outer)
   {
     return this;
@@ -136,6 +137,7 @@ public class Universe extends ExprWithPos
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return FuzionConstants.UNIVERSE_NAME;

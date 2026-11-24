@@ -5,17 +5,17 @@ reg_issue5417.fz:32:15: error 1: Ambiguous type
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'ex'
 Possible features that match this type:
-'ex.ex.ex' defined at reg_issue5417.fz:28:5
+in 'ex.ex' found 'ex.ex.ex' defined at reg_issue5417.fz:28:5
     ex is
 ----^^
-and 'ex.ex' defined at reg_issue5417.fz:26:3
+and in 'ex' found 'ex.ex' defined at reg_issue5417.fz:26:3
   ex is
 --^^
-and 'ex' defined at reg_issue5417.fz:24:1
+and in 'universe' found 'ex' defined at reg_issue5417.fz:24:1
 ex is
 ^^
 
-To solve this, rename these features such that each one has a unique name.
+To solve this, qualify the type using 'ex.ex.this.ex' or 'ex.this.ex' or 'universe.this.ex'.
 
 
 reg_issue5417.fz:33:18: error 2: Ambiguous type
@@ -24,14 +24,14 @@ reg_issue5417.fz:33:18: error 2: Ambiguous type
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'ex'
 Possible features that match this type:
-'ex.ex.ex' defined at reg_issue5417.fz:28:5
+in 'ex.ex' found 'ex.ex.ex' defined at reg_issue5417.fz:28:5
     ex is
 ----^^
-and 'ex.ex' defined at reg_issue5417.fz:26:3
+and in 'ex' found 'ex.ex' defined at reg_issue5417.fz:26:3
   ex is
 --^^
 
-To solve this, rename these features such that each one has a unique name.
+To solve this, qualify the type using 'ex.ex.this.ex' or 'ex.this.ex'.
 
 
 reg_issue5417.fz:35:16: error 3: Could not find called feature
