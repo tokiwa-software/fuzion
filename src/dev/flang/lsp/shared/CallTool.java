@@ -27,32 +27,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.shared;
 
-import java.util.function.Predicate;
-
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.Constant;
 import dev.flang.ast.AbstractCurrent;
+import dev.flang.ast.Constant;
 import dev.flang.ast.Expr;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.ANY;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 public class CallTool extends ANY
 {
-
-  // NYI: UNDER DEVELOPMENT: this info should be part of an AbstractCall
-  public static final Predicate<? super AbstractCall> calledFeatureNotInternal = (c) -> {
-    return !c.calledFeature().isUniverse()
-      && !c.calledFeature().isBuiltInPrimitive()
-      && !c.calledFeature().isTypeParameter()
-      && !c.calledFeature().qualifiedName().equals("fuzion.sys")
-      && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array_init")
-      && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array." + FuzionConstants.FEATURE_NAME_INDEX_ASSIGN)
-      && !c.calledFeature().qualifiedName().equals("unit")
-      && !FeatureTool.isInternal(c.calledFeature());
-  };
 
   /**
    * Is prefix/infix/postfix call
