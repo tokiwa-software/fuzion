@@ -643,7 +643,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   }
 
 
-  /*
+  /**
    * Returns either result of asParsedType()
    * or Types.t_UNDEFINED in case types name is '_'.
    */
