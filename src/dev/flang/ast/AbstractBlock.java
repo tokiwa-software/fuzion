@@ -62,13 +62,7 @@ public abstract class AbstractBlock extends Expr
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -89,13 +83,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {
@@ -154,9 +142,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * Is this Expr a call to an outer ref?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean isCallToOuterRef()
   {
@@ -164,9 +150,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * This expression as a compile time constant.
-   */
+  /** {@inheritDoc} */
   @Override
   public Constant asCompileTimeConstant()
   {
@@ -174,12 +158,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * During type inference: Inform this expression that it is
-   * expected to result in the given type.
-   *
-   * @param t the expected type.
-   */
+  /** {@inheritDoc} */
   @Override
   protected void propagateExpectedType(AbstractType t)
   {
@@ -191,13 +170,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * typeForUnion returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForUnion()
   {

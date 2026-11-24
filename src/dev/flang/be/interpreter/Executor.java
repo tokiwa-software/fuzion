@@ -634,11 +634,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
 
-  /**
-   * Generate code to terminate the execution immediately.
-   *
-   * @param msg a message explaining the illegal state
-   */
+  /** {@inheritDoc} */
   @Override
   public Object reportErrorInCode(String msg)
   {

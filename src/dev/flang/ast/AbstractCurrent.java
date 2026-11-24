@@ -65,13 +65,7 @@ public abstract class AbstractCurrent extends Expr
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -79,16 +73,7 @@ public abstract class AbstractCurrent extends Expr
   }
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
+  /** {@inheritDoc} */
   @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {

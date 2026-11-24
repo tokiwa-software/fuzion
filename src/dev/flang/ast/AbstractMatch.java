@@ -117,13 +117,7 @@ public abstract class AbstractMatch extends ExprWithPos
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {
@@ -150,10 +144,7 @@ public abstract class AbstractMatch extends ExprWithPos
   }
 
 
-  /**
-   * Some Expressions do not produce a result, e.g., a Block
-   * whose last expression is not an expression that produces a result.
-   */
+  /** {@inheritDoc} */
   @Override public boolean producesResult()
   {
     return false;

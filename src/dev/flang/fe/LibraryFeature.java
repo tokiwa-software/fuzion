@@ -292,11 +292,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * The outer ref field field in case hasOuterRef().
-   *
-   * @return the outer ref or null if this does not have an outer ref.
-   */
+  /** {@inheritDoc} */
   @Override public FuirFeature outerRef()
   {
     var result = _outerRef;
@@ -315,11 +311,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * Check if a cotype exists already, either because this feature was
-   * loaded from a library .fum file that includes a cotype, or because one
-   * was created explicitly using cotype(res).
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean hasCotype()
   {
@@ -327,9 +319,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * Return existing cotype.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractFeature cotype()
   {
@@ -422,10 +412,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * For a type parameter, this gives the ResolvedParametricType instance
-   * corresponding to this type parameter.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType asParametricType()
   {
@@ -436,12 +423,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * createSelfType returns a new instance of the type of this feature's frame
-   * object.
-   *
-   * @return this feature's frame object
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType createSelfType()
   {
@@ -461,13 +443,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * type of this Expr. Since LibraryFeature is no longer an expression, this
-   * will cause an error.
-   *
-   * NYI: CLEANUP: AbstractFeature should best not inherit from Expr. Instead,
-   * it should be sufficient if dev.flang.ast.Feature does.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {
@@ -494,12 +470,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
-   *
-   * @return the constraint.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType constraint()
   {

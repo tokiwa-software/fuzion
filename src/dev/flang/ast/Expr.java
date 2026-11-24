@@ -91,23 +91,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * Source range of this Expr.  Note that this might be longer than the Expr
-   * itself, e.g., in a call
-   *
-   *    f (x.q y)
-   *
-   * The argument to f is the call {@code x.q y} whose position is
-   *
-   *    f (x.q y)
-   * --------^
-   *
-   * but the source range is
-   *
-   *    f (x.q y)
-   * -----^^^^^^^
-   *
-   */
+  /** {@inheritDoc} */
   @Override
   public SourcePosition sourceRange()
   {

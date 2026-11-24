@@ -157,10 +157,7 @@ public class ParsedCall extends Call
   }
 
 
-  /*
-   * Returns either result of asParsedType()
-   * or Types.t_UNDEFINED in case types name is '_'.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType asType()
   {
@@ -280,22 +277,7 @@ public class ParsedCall extends Call
   /*-------------------------------------------------------------------*/
 
 
-  /**
-   * if loadCalledFeature is about to fail, try if we can convert this call into
-   * a chain of boolean calls:
-   *
-   * check if we have a call of the form
-   *
-   * <pre>{@code a < b <= c}</pre>
-   *
-   * and convert it to
-   *
-   * <pre>{@code a < {tmp := b; tmp} && tmp <= c}</pre>
-   *
-   * @param res Resolution instance
-   *
-   * @param context the source code context where this Call is used
-   */
+  /** {@inheritDoc} */
   @Override
   protected void findChainedBooleans(Resolution res, Context context)
   {
@@ -445,23 +427,7 @@ public class ParsedCall extends Call
   }
 
 
-  /**
-   * Perform partial application for a Call. In particular, this can make the
-   * following changes:
-   *
-   *   f x y      ==>  a,b,c -> f x y a b c
-   *   ++ x       ==>  a -> a ++ x
-   *   x ++       ==>  a -> x ++ a
-   *
-   * @see Expr#propagateExpectedTypeForPartial for details.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param expectedType the expected type.
-   */
+  /** {@inheritDoc} */
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {

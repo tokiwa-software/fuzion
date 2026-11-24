@@ -117,11 +117,7 @@ class CodeGen
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * Join a List of RESULT from subsequent statements into a compound
-   * statement.  For a code generator, this could, e.g., join statements "a :=
-   * 3;" and "b(x);" into a block "{ a := 3; b(x); }".
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr sequence(List<Expr> l)
   {
@@ -138,10 +134,7 @@ class CodeGen
   }
 
 
-  /*
-   * Produce the unit type value.  This is used as a placeholder
-   * for the universe instance as well as for the instance 'unit'.
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr unitValue()
   {
@@ -149,12 +142,7 @@ class CodeGen
   }
 
 
-  /**
-   * Called before each statement is processed.  May be used to, e.g., produce
-   * tracing code for debugging or a comment.
-   *
-   * @param s site of the next expression
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr expressionHeader(int s)
   {
@@ -162,9 +150,7 @@ class CodeGen
   }
 
 
-  /**
-   * A comment, adds human readable information
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr comment(String s)
   {
@@ -172,9 +158,7 @@ class CodeGen
   }
 
 
-  /**
-   * no operation, like comment, but without giving any comment.
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr nop()
   {
@@ -182,17 +166,7 @@ class CodeGen
   }
 
 
-  /**
-   * drop a value, but process its side-effect.
-   *
-   * @param v an expression that calculates a value that is not needed, but
-   * where the calculation might have side-effects (like performing a call) that
-   * we do need.
-   *
-   * @param type clazz id for the type of the value
-   *
-   * @return code to perform the side effects of v and ignoring the produced value.
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr drop(Expr v, int type)
   {
@@ -203,19 +177,7 @@ class CodeGen
   }
 
 
-  /**
-   * Create code to assign value to a given field w/o dynamic binding.
-   *
-   * @param s cl id of clazz we are interpreting
-   *
-   * @param f clazz id of the assigned field
-   *
-   * @param tvalue the target instance
-   *
-   * @param val the new value to be assigned to the field.
-   *
-   * @return statement to perform the given assignment
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr assignStatic(int s, int f, Expr tvalue, Expr val)
   {
@@ -223,17 +185,7 @@ class CodeGen
   }
 
 
-  /**
-   * Perform an assignment of a value to a field in tvalue. The type of tvalue
-   * might be dynamic (a reference). See FUIR.access*().
-   * local variable.
-   *
-   * @param s site of the assignment
-   *
-   * @param tvalue the target instance
-   *
-   * @param avalue the new value to be assigned to the field.
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr assign(int s, Expr tvalue, Expr avalue)
   {
@@ -246,20 +198,7 @@ class CodeGen
   }
 
 
-  /**
-   * Perform a call of a feature with target instance tvalue with given
-   * arguments.  The type of tvalue might be dynamic (a reference). See
-   * FUIR.access*().
-   *
-   * Result.v0() may be null to indicate that code generation should stop here
-   * (due to an error or tail recursion optimization).
-   *
-   * @param si site of the call
-   *
-   * @param tvalue the target of this call, CExpr.UNIT if none.
-   *
-   * @param args the arguments of this call.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> call(int si, Expr tvalue, List<Expr> args)
   {
@@ -947,9 +886,7 @@ class CodeGen
   }
 
 
-  /**
-   * For a given value v of value type vc create a boxed ref value of type rc.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> box(int s, Expr val, int vc, int rc)
   {
@@ -967,9 +904,7 @@ class CodeGen
   }
 
 
-  /**
-   * Get the current instance
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> current(int s)
   {
@@ -985,9 +920,7 @@ class CodeGen
   }
 
 
-  /**
-   * Get the outer instance the given clazz is called on.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> outer(int s)
   {
@@ -1000,16 +933,7 @@ class CodeGen
   }
 
 
-  /**
-   * Get the value argument #i from the slot that contains the argument at the
-   * beginning of a call to the Java code of cl.
-   *
-   * @param s site of the current expression
-   *
-   * @param i index the local variable we want to get
-   *
-   * @return code to read arg #i from its slot.
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr arg(int s, int i)
   {
@@ -1053,9 +977,7 @@ class CodeGen
   }
 
 
-  /**
-   * Get a constant value of type constCl with given byte data d.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> constData(int si, int constCl, byte[] d)
   {
@@ -1197,17 +1119,7 @@ class CodeGen
   }
 
 
-  /**
-   * Perform a match on value subv.
-   *
-   * @param s site of the match
-   *
-   * @param ai the abstract interpreter instance
-   *
-   * @param sub code to produce the match subject value
-   *
-   * @return the code for the match, produces unit type result.
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr match(int s, AbstractInterpreter<Expr, Expr> ai, Expr sub)
   {
@@ -1215,20 +1127,7 @@ class CodeGen
   }
 
 
-  /**
-   * Create a tagged value of type newcl from an untagged value for type valuecl.
-   *
-   * @param s site of the match
-   *
-   * @param value code to produce the value we are tagging
-   *
-   * @param newcl the choice type after tagging
-   *
-   * @param tagNum the tag number, corresponding to the choice type in
-   * _fuir.clazzChoice(newcl, tagNum).
-   *
-   * @return code to produce the tagged value as a result.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> tag(int s, Expr value, int newcl, int tagNum)
   {
@@ -1270,11 +1169,7 @@ class CodeGen
   }
 
 
-  /**
-   * Generate code to terminate the execution immediately.
-   *
-   * @param msg a message explaining the illegal state
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr reportErrorInCode(String msg)
   {

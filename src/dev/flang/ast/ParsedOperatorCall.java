@@ -171,25 +171,7 @@ public class ParsedOperatorCall extends ParsedCall
   }
 
 
-  /**
-   * In case this is a parsed infix operator call, fix the associativity: the
-   * parser produces and AST assuming all infix operators are right associative
-   * (which is wrong for most operators).  This call rotates the operators
-   * accordingly if needed, i.e., changing
-   *
-   *    a - «b + c»
-   *
-   * into
-   *
-   *    «a - b» + c
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this Call is used
-   *
-   * @return null in case nothing was done, otherwise the fully resolved new
-   * call with fixed associativity.
-   */
+  /** {@inheritDoc} */
   @Override
   Call fixAssociativity(Resolution res, Context context)
   {

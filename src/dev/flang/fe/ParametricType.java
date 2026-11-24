@@ -82,12 +82,7 @@ class ParametricType extends LibraryType
   }
 
 
-  /**
-   * typeParameter gives the Generic instance of a type defined by a generic
-   * argument.
-   *
-   * @return the Generic instance, never null.
-   */
+  /** {@inheritDoc} */
   @Override
   protected AbstractFeature backingFeature()
   {
@@ -103,9 +98,7 @@ class ParametricType extends LibraryType
   }
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {

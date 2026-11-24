@@ -244,27 +244,7 @@ public class Function extends AbstractLambda
   }
 
 
-  /**
-   * Special version of propagateExpectedType(res, outer, t) tries to infer the
-   * result type of a lambda.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   *
-   * @param inferResultType true if the result type of this lambda should be
-   * inferred.
-   *
-   * @param from for error output: if non-null, produces a String describing
-   * where the expected type came from.
-   *
-   * @return if inferResultType, the result type inferred from this lambda or
-   * Types.t_UNDEFINED if no result type available.  if !inferResultType, t. In
-   * case of error, return Types.t_ERROR.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
@@ -375,13 +355,7 @@ public class Function extends AbstractLambda
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
             var feature = new Feature(pos(), Visi.PUB, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, AbstractCall.NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
-                /**
-                 * Is this the {@code call} implementation of a lambda?
-                 *
-                 * This is used to allow an implicit result type even though
-                 * {@code call} is marked as public and to suppress some redundant errors.
-                 *
-                 */
+                /** {@inheritDoc} */
                 @Override
                 public boolean isLambdaCall()
                 {
@@ -662,13 +636,7 @@ public class Function extends AbstractLambda
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {

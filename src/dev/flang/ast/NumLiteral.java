@@ -408,13 +408,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -430,13 +424,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * typeForUnion returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForUnion()
   {
@@ -444,12 +432,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * During type inference: Inform this expression that it is
-   * expected to result in the given type.
-   *
-   * @param t the expected type.
-   */
+  /** {@inheritDoc} */
   @Override
   protected void propagateExpectedType(AbstractType t)
   {
@@ -688,9 +671,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * Check that this constant is in the range allowed for its type_.
-   */
+  /** {@inheritDoc} */
   @Override
   void checkRange()
   {
@@ -776,19 +757,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * Perform partial application for a NumLiteral. In particular, this converts
-   * a literal with a sign such as {@code -2} into a lambda of the form {@code x -> x - 2}.
-   *
-   * @see Expr#propagateExpectedTypeForPartial for details.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   */
+  /** {@inheritDoc} */
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
@@ -847,18 +816,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * After propagateExpectedType: if type inference up until now has figured
-   * out that a Lazy feature is expected, but the current expression is not
-   * a Lazy feature, then wrap this expression in a Lazy feature.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the type this expression is assigned to.
-   */
+  /** {@inheritDoc} */
   @Override
   Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {

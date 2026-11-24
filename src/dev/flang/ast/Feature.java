@@ -2412,16 +2412,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * resultTypeIfPresentUrgent returns the result type of this feature using the
-   * formal generic argument.
-   *
-   * @param urgent if true and the result type is inferred and inference would
-   * currently not succeed, then enforce it even if that would produce an error.
-   *
-   * @return this feature's result type, null in case the type is currently
-   * unknown since the type inference is incomplete.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType resultTypeIfPresentUrgent(Resolution res, boolean urgent)
   {
@@ -2518,10 +2509,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * For a type parameter, this gives the ResolvedParametricType instance
-   * corresponding to this type parameter.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType asParametricType()
   {
@@ -2532,13 +2520,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * After type resolution, resultType returns the result type of this
-   * feature using the formal generic argument.
-   *
-   * @return the result type, t_ERROR in case of an error.
-   * Never null.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType resultType()
   {
@@ -2557,12 +2539,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
-   *
-   * @return the constraint.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType constraint()
   {
@@ -2712,9 +2689,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * Is this base-lib's choice-feature?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean isBaseChoice()
   {

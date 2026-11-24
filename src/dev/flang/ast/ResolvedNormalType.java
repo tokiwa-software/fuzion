@@ -225,9 +225,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {
@@ -235,13 +233,7 @@ public class ResolvedNormalType extends ResolvedType
   }
 
 
-  /**
-   * For a resolved normal type, return the underlying feature.
-   *
-   * @return the underlying feature.
-   *
-   * @throws Error if this is not resolved or isParametricType().
-   */
+  /** {@inheritDoc} */
   @Override
   protected AbstractFeature backingFeature()
   {
@@ -265,11 +257,7 @@ public class ResolvedNormalType extends ResolvedType
   }
 
 
-  /**
-   * {@code this} as a value.
-   *
-   * Requires that at isPlainType().
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType asValue()
   {
@@ -285,18 +273,7 @@ public class ResolvedNormalType extends ResolvedType
   }
 
 
-  /**
-   * For a type that is not a type parameter, create a new variant using given
-   * actual generics and outer type.
-   *
-   * @param g2 the new actual generics to be used
-   *
-   * @param o2 the new outer type to be used (which may also differ in its
-   * actual generics).
-   *
-   * @return a new type with same feature(), but using g2/o2 as generics
-   * and outer type.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType replaceGenericsAndOuter0(List<AbstractType> g2, AbstractType o2)
   {
@@ -304,11 +281,7 @@ public class ResolvedNormalType extends ResolvedType
   }
 
 
-  /**
-   * traverse a resolved type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
+  /** {@inheritDoc} */
   @Override
   void usedFeatures(Set<AbstractFeature> s)
   {

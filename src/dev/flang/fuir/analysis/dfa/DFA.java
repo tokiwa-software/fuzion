@@ -118,11 +118,7 @@ public class DFA extends ANY
     }
 
 
-
-    /*
-     * Produce the unit type value.  This is used as a placeholder
-     * for the universe instance as well as for the instance 'unit'.
-     */
+    /** {@inheritDoc} */
     @Override
     public Val unitValue()
     {
@@ -130,10 +126,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Called before each statement is processed. May be used to, e.g., produce
-     * tracing code for debugging or a comment.
-     */
+    /** {@inheritDoc} */
     @Override
     public void expressionHeader(int s)
     {
@@ -144,56 +137,28 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * A comment, adds human readable information
-     */
+    /** {@inheritDoc} */
     @Override
     public void comment(String s)
     {
     }
 
 
-    /**
-     * no operation, like comment, but without giving any comment.
-     */
+    /** {@inheritDoc} */
     @Override
     public void nop()
     {
     }
 
 
-    /**
-     * drop a value, but process its side-effect.
-     *
-     * @param v an expression that calculates a value that is not needed, but
-     * where the calculation might have side-effects (like performing a call) that
-     * we do need.
-     *
-     * For backends that do not perform any side-effects in RESULT, this does
-     * not need to be redefined, the default implementation is nop() which is
-     * fine in this case.
-     *
-     * @param type clazz id for the type of the value
-     *
-     * @return code to perform the side effects of v and ignoring the produced value.
-     */
+    /** {@inheritDoc} */
     @Override
     public void drop(Val v, int type)
     {
     }
 
 
-    /**
-     * Perform an assignment val to field f in instance rt
-     *
-     * @param s site of the expression causing this assignment
-     *
-     * @param f clazz id of the assigned field
-     *
-     * @param tvalue the target instance
-     *
-     * @param val the new value to be assigned to the field.
-     */
+    /** {@inheritDoc} */
     @Override
     public void assignStatic(int s, int f, Val tvalue, Val val)
     {
@@ -201,16 +166,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Perform an assignment of avalue to a field in tvalue. The type of tvalue
-     * might be dynamic (a reference). See FUIR.access*().
-     *
-     * @param s site of assignment
-     *
-     * @param tvalue the target instance
-     *
-     * @param avalue the new value to be assigned to the field.
-     */
+    /** {@inheritDoc} */
     @Override
     public void assign(int s, Val tvalue, Val avalue)
     {
@@ -239,14 +195,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Perform a call of a feature with target instance tvalue with given
-     * arguments.  The type of tvalue might be dynamic (a reference). See
-     * FUIR.access*().
-     *
-     * Result.v0() may be null to indicate that code generation should stop here
-     * (due to an error or tail recursion optimization).
-     */
+    /** {@inheritDoc} */
     @Override
     public Val call(int s, Val tvalue, List<Val> args)
     {
@@ -445,9 +394,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * For a given value v of value type vc create a boxed ref value of type rc.
-     */
+    /** {@inheritDoc} */
     @Override
     public Val box(int s, Val val, int vc, int rc)
     {
@@ -455,9 +402,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Get the current instance
-     */
+    /** {@inheritDoc} */
     @Override
     public Val current(int s)
     {
@@ -465,18 +410,14 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Get the outer instance
-     */
+    /** {@inheritDoc} */
     @Override
     public Val outer(int s)
     {
       return _call.target();
     }
 
-    /**
-     * Get the argument #i
-     */
+    /** {@inheritDoc} */
     @Override
     public Val arg(int s, int i)
     {
@@ -484,9 +425,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Get a constant value of type constCl with given byte data d.
-     */
+    /** {@inheritDoc} */
     @Override
     public Val constData(int s, int constCl, byte[] d)
     {
@@ -614,9 +553,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Perform a match on value subv.
-     */
+    /** {@inheritDoc} */
     @Override
     public Val match(int s, AbstractInterpreter2<Val> ai, Val subv)
     {
@@ -671,9 +608,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Create a tagged value of type newcl from an untagged value.
-     */
+    /** {@inheritDoc} */
     @Override
     public Val tag(int s, Val value, int newcl, int tagNum)
     {
@@ -681,11 +616,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Generate code to terminate the execution immediately.
-     *
-     * @param msg a message explaining the illegal state
-     */
+    /** {@inheritDoc} */
     @Override
     public void reportErrorInCode(String msg)
     {

@@ -97,11 +97,7 @@ class ResolvedParametricType extends ResolvedType
   }
 
 
-  /**
-   * traverse a type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
+  /** {@inheritDoc} */
   @Override
   void usedFeatures(Set<AbstractFeature> s)
   {
@@ -120,9 +116,7 @@ class ResolvedParametricType extends ResolvedType
   }
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {

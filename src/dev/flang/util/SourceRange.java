@@ -75,10 +75,7 @@ public class SourceRange extends SourcePosition
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * End position within _sourceFile.  This is equal to bytePos() for a plain
-   * SourcePosition while it may be larger than bytePos for a SourceRange.
-   */
+  /** {@inheritDoc} */
   @Override public int byteEndPos()
   {
     return _byteEndPos;

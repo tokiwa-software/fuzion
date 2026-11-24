@@ -71,11 +71,7 @@ public class C extends ANY
   {
 
 
-    /**
-     * Join a List of RESULT from subsequent statements into a compound
-     * statement.  For a code generator, this could, e.g., join statements "a :=
-     * 3;" and "b(x);" into a block "{ a := 3; b(x); }".
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt sequence(List<CStmnt> l)
     {
@@ -83,10 +79,7 @@ public class C extends ANY
     }
 
 
-    /*
-     * Produce the unit type value.  This is used as a placeholder
-     * for the universe instance as well as for the instance 'unit'.
-     */
+    /** {@inheritDoc} */
     @Override
     public CExpr unitValue()
     {
@@ -94,10 +87,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Called before each expression is processed. May be used to, e.g., produce
-     * tracing code for debugging or a comment.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt expressionHeader(int s)
     {
@@ -114,9 +104,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * A comment, adds human readable information
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt comment(String s)
     {
@@ -124,9 +112,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * no operation, like comment, but without giving any comment.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt nop()
     {
@@ -134,40 +120,14 @@ public class C extends ANY
     }
 
 
-    /**
-     * drop a value, but process its side-effect.
-     *
-     * @param v an expression that calculates a value that is not needed, but
-     * where the calculation might have side-effects (like performing a call) that
-     * we do need.
-     *
-     * For backends that do not perform any side-effects in RESULT, this does
-     * not need to be redefined, the default implementation is nop() which is
-     * fine in this case.
-     *
-     * @param type clazz id for the type of the value
-     *
-     * @return code to perform the side effects of v and ignoring the produced value.
-     */
+    /** {@inheritDoc} */
     @Override public CStmnt drop(CExpr v, int type)
     {
       return CStmnt.EMPTY;
     }
 
 
-    /**
-     * Create code to assign value to a given field w/o dynamic binding.
-     *
-     * @param s site of the expression causing this assignment
-     *
-     * @param f clazz id of the assigned field
-     *
-     * @param tvalue the target instance
-     *
-     * @param val the new value to be assigned to the field.
-     *
-     * @return statement to perform the given access
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt assignStatic(int s, int f, CExpr tvalue, CExpr val)
     {
@@ -176,16 +136,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Perform an assignment of a value to a field in tvalue. The type of tvalue
-     * might be dynamic (a reference). See FUIR.access*().
-     *
-     * @param s site of the assignment
-     *
-     * @param tvalue the target instance
-     *
-     * @param avalue the new value to be assigned to the field.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt assign(int s, CExpr tvalue, CExpr avalue)
     {
@@ -193,14 +144,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Perform a call of a feature with target instance tvalue with given
-     * arguments.  The type of tvalue might be dynamic (a reference). See
-     * FUIR.access*().
-     *
-     * Result.v0() may be null to indicate that code generation should stop here
-     * (due to an error or tail recursion optimization).
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args)
     {
@@ -209,9 +153,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * For a given value v of value type vc create a boxed ref value of type rc.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> box(int s, CExpr val, int vc, int rc)
     {
@@ -223,9 +165,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Get the current instance
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> current(int s)
     {
@@ -233,9 +173,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Get the outer instance the given clazz is called on.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> outer(int s)
     {
@@ -249,16 +187,12 @@ public class C extends ANY
     }
 
 
-    /**
-     * Get the argument #i
-     */
+    /** {@inheritDoc} */
     @Override
     public CExpr arg(int s, int i) { return CIdent.arg(i); }
 
 
-    /**
-     * Get a constant value of type constCl with given byte data d.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> constData(int s, int constCl, byte[] d)
     {
@@ -439,9 +373,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Perform a match on value subv.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt match(int s, AbstractInterpreter<CExpr, CStmnt> ai, CExpr sub)
     {
@@ -519,9 +451,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Create a tagged value of type newcl from an untagged value for type valuecl.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> tag(int s, CExpr value, int newcl, int tagNum)
     {
@@ -552,11 +482,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Generate code to terminate the execution immediately.
-     *
-     * @param msg a message explaining the illegal state
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt reportErrorInCode(String msg)
     {

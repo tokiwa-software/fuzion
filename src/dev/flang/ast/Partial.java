@@ -73,11 +73,7 @@ public class Partial extends AbstractLambda
       return null;
     }
 
-    /**
-     * The source text produced by Expr.sourceText would be the original call,
-     * i.e., {@code +}, which is very confusing, so we create a verbose text with the
-     * actual argument name here.
-     */
+    /** {@inheritDoc} */
     @Override
     public String sourceText()
     {
@@ -183,26 +179,7 @@ public class Partial extends AbstractLambda
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * During type inference: Inform this expression that it is used in an
-   * environment that expects the given type.  In particular, if this
-   * expression's result is assigned to a field, this will be called with the
-   * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   *
-   * @param from for error output: if non-null, produces a String describing
-   * where the expected type came from.
-   *
-   * @return either this or a new Expr that replaces thiz and produces the
-   * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the expression that reads the field.
-   */
+  /** {@inheritDoc} */
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
@@ -217,27 +194,7 @@ public class Partial extends AbstractLambda
   }
 
 
-  /**
-   * Special version of propagateExpectedType(res, outer, t) tries to infer the
-   * result type of a lambda.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   *
-   * @param inferResultType true if the result type of this lambda should be
-   * inferred.
-   *
-   * @param from for error output: if non-null, produces a String describing
-   * where the expected type came from.
-   *
-   * @return if inferResultType, the result type inferred from this lambda or
-   * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
-   * case of error, return Types.t_ERROR.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
@@ -287,13 +244,7 @@ public class Partial extends AbstractLambda
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -304,13 +255,7 @@ public class Partial extends AbstractLambda
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {

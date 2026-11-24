@@ -71,11 +71,7 @@ public class i32Value extends Value
   }
 
 
-  /**
-   * For a value of type i32, return the value.
-   *
-   * @return the i32 value
-   */
+  /** {@inheritDoc} */
   @Override
   public int i32Value()
   {
@@ -83,13 +79,7 @@ public class i32Value extends Value
   }
 
 
-  /**
-   * Store this value in a field
-   *
-   * @param slot the slot that addresses the field this should be stored in.
-   *
-   * @param size the size of the data to be stored
-   */
+  /** {@inheritDoc} */
   @Override
   void storeNonRef(LValue slot, int size)
   {

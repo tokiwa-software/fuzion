@@ -546,14 +546,7 @@ public class LibraryFuir extends FUIR {
     return s != NO_SITE && _sites[s - SITE_BASE].codeAt() != null;
   }
 
-   /**
-   * From a given site, determine the site of the start of the code block that
-   * contains the given site.
-   *
-   * @param site any site
-   *
-   * @return the site of the first Expr in the code block containing {@code site}
-   */
+   /** {@inheritDoc} */
   @Override
   public int codeBlockStart(int site)
   {
@@ -567,14 +560,7 @@ public class LibraryFuir extends FUIR {
   }
 
 
-  /**
-   * From a given site, determine the site of the last Expr in the code block
-   * that contains the given site.
-   *
-   * @param site any site
-   *
-   * @return the site of the last Expr in the code block containing {@code site}
-   */
+  /** {@inheritDoc} */
   @Override
   public int codeBlockEnd(int site)
   {

@@ -273,9 +273,7 @@ class ValueSet extends Value
   }
 
 
-  /**
-   * Is this ValueSet a superset of other?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean contains(Value other)
   {

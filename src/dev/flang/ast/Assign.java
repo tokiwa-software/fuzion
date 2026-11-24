@@ -133,13 +133,7 @@ public class Assign extends AbstractAssign
   }
 
 
-  /**
-   * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this Call is used
-   */
+  /** {@inheritDoc} */
   @Override
   void resolveTypes(Resolution res, Context context)
   {

@@ -93,17 +93,7 @@ public abstract class Constant extends Expr
   }
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this or an alternative Expr if the action performed during the
-   * visit replaces this by the alternative.
-   */
+  /** {@inheritDoc} */
   @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
@@ -121,9 +111,7 @@ public abstract class Constant extends Expr
   }
 
 
-  /**
-   * This expression as a compile time constant.
-   */
+  /** {@inheritDoc} */
   @Override
   public Constant asCompileTimeConstant()
   {

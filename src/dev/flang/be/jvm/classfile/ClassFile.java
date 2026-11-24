@@ -354,9 +354,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     }
 
 
-    /**
-     * Add exception table that was found in the code.
-     */
+    /** {@inheritDoc} */
     @Override
     void addExceptionTable(Expr.TryCatch et)
     {
@@ -1193,11 +1191,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       locals.add(new Pair<>(0, initialLocals));
     }
 
-    /**
-     * The data of this attribute:
-     * - u2 number_of_entries;
-     * - stack_map_frame entries[number_of_entries];
-     */
+    /** {@inheritDoc} */
     @Override
     byte[] data()
     {

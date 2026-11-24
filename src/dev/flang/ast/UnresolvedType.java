@@ -81,10 +81,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   public SourcePosition pos() { return _pos.pos(); }
 
 
-  /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
+  /** {@inheritDoc} */
   @Override
   public SourcePosition declarationPos() { return _pos.pos(); }
 
@@ -416,15 +413,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
 
-  /**
-   * resolve this type, i.e., find or create the corresponding instance of
-   * ResolvedType of this and all outer types and type parameters this depends on.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this assignment is used
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType resolve(Resolution res, Context context)
   {
@@ -787,13 +776,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
 
-  /**
-   * Is this the type of a type feature, e.g., the type of {@code (list i32).type}. Will return false for an instance of Type for which this is
-   * still unknown since Type.resolve() was not called yet.
-   *
-   * This is redefined here since {@code feature} might still be null while this type
-   * was not resolved yet.
-   */
+  /** {@inheritDoc} */
   @Override
   boolean isCotypeType()
   {
@@ -900,11 +883,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
 
-  /**
-   * traverse a type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
+  /** {@inheritDoc} */
   @Override
   void usedFeatures(Set<AbstractFeature> s)
   {
@@ -930,9 +909,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {

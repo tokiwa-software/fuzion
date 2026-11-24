@@ -64,9 +64,7 @@ class ThisType extends ResolvedType {
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * The feature backing the type.
-   */
+  /** {@inheritDoc} */
   @Override
   protected AbstractFeature backingFeature()
   {
@@ -74,11 +72,7 @@ class ThisType extends ResolvedType {
   }
 
 
-  /**
-   * For a normal type, this is the list of actual type parameters given to the type.
-   *
-   * Requires that this is resolved and isPlainType().
-   */
+  /** {@inheritDoc} */
   @Override
   public List<AbstractType> generics()
   {
@@ -86,11 +80,7 @@ class ThisType extends ResolvedType {
   }
 
 
-  /**
-   * The outer of this type. May be null.
-   *
-   * Requires that this is resolved and isPlainType().
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType outer()
   {
@@ -98,9 +88,7 @@ class ThisType extends ResolvedType {
   }
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {
@@ -108,11 +96,7 @@ class ThisType extends ResolvedType {
   }
 
 
-  /**
-   * traverse a resolved type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
+  /** {@inheritDoc} */
   @Override
   protected void usedFeatures(Set<AbstractFeature> s)
   {
