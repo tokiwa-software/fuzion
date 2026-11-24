@@ -177,7 +177,7 @@ public class Html extends ANY
       {
         var parents = af.inherits()
           .stream()
-          .filter(c -> isVisible(c.calledFeature()))
+          .filter(c -> canReference(c.calledFeature()))
           .<String>map(c -> {
             var f = c.calledFeature();
             return fillTemplate("<a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
@@ -352,10 +352,10 @@ public class Html extends ANY
    */
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
+    // This annotation links to the declaring type, not to the inherited member.
     if (isDeclared(af, outer)
-        || nonPublicInheritanceChain(af) // don't show annotation if feature was inherited from feature with non public outer
-        || af.outer().isUniverse()) // features can not inherit from universe,
-                                    // this avoid false annotation in the applicable universe features section
+        || af.outer().isUniverse() // applicable universe features are not inherited
+        || !canReference(af.outer()))
       {
         return ""; // not inherited, nothing to display
       }
@@ -400,10 +400,8 @@ public class Html extends ANY
 
     var redefs = new TreeSet<>(af.redefines());
 
-    // don't annotate redefinitions from non-public owners or internal implementations
-    // Don't annotate redefinition targets that are internal, non-public,
-    // or declared inside a type with non-public visibility.
-    redefs.removeIf(f -> nonPublicInheritanceChain(f) || Util.isInternalFeature(f));
+    // Public targets can be referenced even when their declaring type is private.
+    redefs.removeIf(f -> !canReference(f));
 
     AbstractFeature relativeTo = outer != null ? outer : af;
     return redefs.isEmpty()
@@ -422,14 +420,16 @@ public class Html extends ANY
       "name", htmlEncodedQualifiedName(f)));
   }
 
-
   /**
-   * Does this feature or an enclosing feature have non-public type visibility?
-   * This preserves the existing annotation policy, not member accessibility.
+   * May this target be referenced in the selected documentation mode?
+   * Check the target's own visibility, not its ordinary private enclosing
+   * scopes. Internal implementations remain excluded in every mode.
    */
-  private boolean nonPublicInheritanceChain(AbstractFeature f)
+  private boolean canReference(AbstractFeature f)
   {
-    return !f.isUniverse() && (f.visibility().typeVisibility() != Visi.PUB || nonPublicInheritanceChain(f.outer()));
+    var target = f.isCotype() ? f.cotypeOrigin() : f;
+    return !Util.isInternalFeature(target)
+      && (config.ignoreVisibility() || Util.isVisible(target));
   }
 
 
@@ -543,7 +543,7 @@ public class Html extends ANY
     return af
       .redefines()
       .stream()
-      .filter(f -> !Util.isInternalFeature(f))
+      .filter(this::canReference)
       .map(f -> "<li>" + relativeAnchor(f, relativeTo) + "</li>"
         + redefines0(f, relativeTo))
       .collect(Collectors.joining());
