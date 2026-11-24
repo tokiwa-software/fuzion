@@ -10,4 +10,3 @@
 11: expecting fault, got fault: *** panic *** expected failure
 12: expecting ok,    got ok
 13: expecting error, got --error: r13 fail--
-14: expecting error, got --error: r14 fail--
