@@ -80,6 +80,19 @@ test_fallible =>
   say "12: expecting ok,    got $r12"
   say "13: expecting error, got $r13"
 
+  # success and failure using `or_outcome` with an explicit mapping `ERROR -> error`:
+
+  r14 := flow.exception a .try String (()->"ok")                                            .or_outcome (e -> error "mapped: $(e.msg)")
+  r15 := flow.exception a .try String (()->(flow.exception a).env.cause (error "r15 fail")) .or_outcome (e -> error "mapped: $(e.msg)")
+  r16 := panic.try String (()->"ok")                                                        .or_outcome (s -> error "panic: $s")
+  r17 := panic.try String (()->panic "r17 fail")                                            .or_outcome (s -> error "panic: $s")
+  r18 := fuzion.runtime.fault.try String (()->panic "r18 fail")                             .or_outcome (t -> error "fault: $(t.0) $(t.1)")
+  say "14: expecting ok,    got $r14"
+  say "15: expecting error, got $r15"
+  say "16: expecting ok,    got $r16"
+  say "17: expecting error, got $r17"
+  say "18: expecting error, got $r18"
+
 
 # run the tests:
 test_fallible

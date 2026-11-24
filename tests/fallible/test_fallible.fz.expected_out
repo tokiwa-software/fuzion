@@ -10,3 +10,8 @@
 11: expecting fault, got fault: *** panic *** expected failure
 12: expecting ok,    got ok
 13: expecting error, got --error: r13 fail--
+14: expecting ok,    got ok
+15: expecting error, got --error: mapped: r15 fail--
+16: expecting ok,    got ok
+17: expecting error, got --error: panic: r17 fail--
+18: expecting error, got --error: fault: *** panic *** r18 fail--
