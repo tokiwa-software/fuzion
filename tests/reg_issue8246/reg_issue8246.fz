@@ -28,7 +28,7 @@ reg_issue8246 =>
 
   # code from #8246 with `f` split up in `f_ok` that works and `f_bad` that crashes
 
-  test(A type, B type : Sequence A, v B) is
+  test(A : Any, B : Sequence A, v B) is
     say "$A $B $v"
     f_ok  => say (test A   B v).g
     f_bad => say (test i32 B v).g  # should flag an error: `B` not compatible with `Sequence A`
