@@ -85,8 +85,7 @@ public type.try(T : Any, code_try ()->T) is
   public or_outcome outcome T =>
     fallible.this.try (outcome T) (()->code_try())
       .catch e->
-        if ERROR : error then error e.msg e.error_code
-        else                  error e.as_string
+        ERROR : error ? error e.msg e.error_code : error e.as_string
 
 
   # infix alias for catch

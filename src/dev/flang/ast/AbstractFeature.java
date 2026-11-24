@@ -2186,13 +2186,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    var result = this;
     var o = outer();
-    if (!isRelayTypeParameter() && o.isCotype())
-      {
-        result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
-      }
-    return result;
+    return !isRelayTypeParameter() && o.isCotype()
+      ? o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1)
+      : this;
   }
 
 
@@ -2208,13 +2205,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    var result = this;
     var o = outer();
-    if (!o.isCotype() && o.hasCotype())
-      {
-        result = o.cotype().typeArguments().get(typeParameterIndex()+1);
-      }
-    return result;
+    return !o.isCotype() && o.hasCotype()
+      ? o.cotype().typeArguments().get(typeParameterIndex()+1)
+      : this;
   }
 
 

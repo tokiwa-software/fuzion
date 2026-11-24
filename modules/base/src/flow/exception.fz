@@ -76,13 +76,3 @@ is
   public type.on(R : Any, f ()->R) outcome R =>
     exception.this.try (outcome R) f()
                   .catch id
-
-
-# convenience routine to create a new instance of 'exception T' and run 'f' in
-# it. Return the result of 'f' directly or panic in case 'f' calls
-# '(exception T).env.raise'.
-#
-public exception_or_panic(T : flow.exception_tag,
-                          R : Any,
-                          f ()->R) R =>
-  exception T .on f .or_panic ($)

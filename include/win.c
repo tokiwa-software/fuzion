@@ -771,6 +771,32 @@ int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
 }
 
 
+/*
+ * Convert a FILETIME, which counts 100 nano second units, to nano seconds.
+ */
+static uint64_t fzE_filetime_to_ns(FILETIME ft)
+{
+  ULARGE_INTEGER u;
+  u.LowPart  = ft.dwLowDateTime;
+  u.HighPart = ft.dwHighDateTime;
+  return u.QuadPart * 100;
+}
+
+
+/*
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd)
+{
+  FILETIME creation_time, exit_time, kernel_time, user_time;
+  if (!GetThreadTimes((HANDLE)thrd, &creation_time, &exit_time, &kernel_time, &user_time))
+    {
+      return -1;
+    }
+  return (int64_t)(fzE_filetime_to_ns(kernel_time) + fzE_filetime_to_ns(user_time));
+}
+
+
 /**
  * Global lock
  */

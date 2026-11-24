@@ -1069,15 +1069,14 @@ public class Html extends ANY
 
   /**
    * get full html with doctype, head and body
-   * @param qualifiedNameHuman()
+   * @param qualifiedName the human-readable qualified name
    * @param bareHtml
+   * @param directoryDepth the output directory depth below the documentation root
    * @return
    */
-  private static String fullHtml(String qualifiedName, String bareHtml)
+  private static String fullHtml(String qualifiedName, String bareHtml, int directoryDepth)
   {
-    int upDirCorrection = qualifiedName.equals("Modules") || qualifiedName.endsWith(".universe") ? 0 : 1;
-
-    var root = upDirs((int) qualifiedName.chars().filter(c -> c == '.').count() + upDirCorrection);
+    var root = upDirs(directoryDepth);
     return fillTemplate("""
       <!DOCTYPE html>
       <html lang="en">
@@ -1405,9 +1404,10 @@ public class Html extends ANY
 
   /**
    * the full content
+   * @param directoryDepth the output directory depth below the documentation root
    * @return
    */
-  String content(AbstractFeature af)
+  String content(AbstractFeature af, int directoryDepth)
   {
     var main = mainSection(mapOfDeclaredFeatures.get(af), af);
     var toggleFeatureDetails = main.isEmpty() ? "" : """
@@ -1467,7 +1467,7 @@ public class Html extends ANY
 
     return config.bare()
       ? bareHtml
-      : fullHtml(lm.name() + "." + af.qualifiedNameHuman(), bareHtml);
+      : fullHtml(lm.name() + "." + af.qualifiedNameHuman(), bareHtml, directoryDepth);
   }
 
   /**
@@ -1527,7 +1527,7 @@ public class Html extends ANY
       </div>
       """);
 
-    return config.bare() ? modPage.toString(): fullHtml("Modules", modPage.toString());
+    return config.bare() ? modPage.toString(): fullHtml("Modules", modPage.toString(), 0);
   }
 
 
