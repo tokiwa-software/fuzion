@@ -1247,7 +1247,11 @@ public class ClassFile extends ANY implements ClassFileConstants
       locals.add(new Pair<>(0, initialLocals));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * The data of this attribute:
+     * - u2 number_of_entries;
+     * - stack_map_frame entries[number_of_entries];
+     */
     @Override
     byte[] data()
     {

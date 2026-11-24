@@ -1401,7 +1401,16 @@ public class GeneratingFUIR extends FUIR
   /*------------------------  inheritance  -----------------------*/
 
 
-  /** {@inheritDoc} */
+  /**
+   * Get all _real_ heirs of given clazz that are instantiated.
+   * For value clazzes an empty array is returned.
+   *
+   * @param cl a clazz id
+   *
+   * @return an empty array if cl is not a ref.
+   *         An array of the clazz id's of all heirs for cl that are
+   *         instantiated, provided that cl is instantiated.
+   */
   @Override
   public int[] clazzInstantiatedHeirs(int cl)
   {
@@ -2215,7 +2224,11 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * Once DFA is done, this will return false for all code that was not accessed by DFA.
+  */
   @Override
   public boolean withinCode(int s)
   {

@@ -427,7 +427,23 @@ public class ParsedCall extends Call
   }
 
 
-  /** {@inheritDoc} */
+  /**
+   * Perform partial application for a Call. In particular, this can make the
+   * following changes:
+   *
+   *   f x y      ==>  a,b,c -> f x y a b c
+   *   ++ x       ==>  a -> a ++ x
+   *   x ++       ==>  a -> x ++ a
+   *
+   * @see Expr#propagateExpectedTypeForPartial for details.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Expr is used
+   *
+   * @param expectedType the expected type.
+   */
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
