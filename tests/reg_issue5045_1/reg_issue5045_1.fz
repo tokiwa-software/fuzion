@@ -33,7 +33,7 @@ S ref is
       c Cs => c.tail.red
 
 l : choice nil Cs, S is
-  redef al => l.this
+  fixed redef al => l.this
 
 l1 l :=
   id l (_ : Cs is

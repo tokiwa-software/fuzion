@@ -56,12 +56,14 @@ interface Context
       return null;
     }
 
+    @Override
     public String showWhy(StringBuilder sb)
     {
       sb.append("program entry point")
         .append("\n");
       return "  ";
     }
+    @Override
     public String toString(boolean forEnv)
     {
       return forEnv ? "effect environment " + Errors.effe(Env.envAsString(null)) + " at program entry"

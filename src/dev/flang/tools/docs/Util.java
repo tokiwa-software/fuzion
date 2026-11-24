@@ -45,7 +45,15 @@ public class Util extends ANY
      feature.outer()
       .arguments()
       .stream()
-      .anyMatch(f -> f.equals(feature));
+       .anyMatch(f -> f.equals(feature));
+  }
+
+  /**
+   * Is this a value argument of a constructor, accessible like a field?
+   */
+  static boolean isConstructorArgument(AbstractFeature feature)
+  {
+    return isArgument(feature) && feature.isField() && feature.outer().isConstructor();
   }
 
 

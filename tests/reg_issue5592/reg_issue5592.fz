@@ -23,8 +23,6 @@
 
 reg_issue5592 =>
   f is
-    g(U : f.this) =>
-      say U
 
     h(U : Any)
       pre U : f.this
@@ -53,11 +51,8 @@ reg_issue5592 =>
       else
         say "constraint not satisfied"
 
-  f.g f
   f.h f
   f.i f
-  # NYI: UNDER DEVELOPMENT: type inference does not work, do we even want this to work?
-  # f.j f
   f.j (option f)
   f.k (Sequence f)->f
   f.l (f, array f)
@@ -65,14 +60,11 @@ reg_issue5592 =>
 
   ff : f is
 
-  ff.g ff
   ff.h ff
   # does not satisfy the constraint
   ff.i f
   # while this does
   ff.i ff
-  # NYI: UNDER DEVELOPMENT: type inference does not work, do we even want this to work?
-  # ff.j f
   ff.j (option ff)
   ff.k (Sequence ff)->ff
   # does not satisfy the constraint

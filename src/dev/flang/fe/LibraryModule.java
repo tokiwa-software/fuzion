@@ -327,6 +327,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param outer the declaring feature
    */
+  @Override
   public SortedMap<FeatureName, AbstractFeature> declaredFeatures(AbstractFeature outer)
   {
     var result = declaredFeaturesShallow(outer);
@@ -637,6 +638,7 @@ Module File
   {
     return startPos();
   }
+  @Override
   public String name()
   {
     return name(namePos());
@@ -2481,6 +2483,7 @@ SourceFile
   /**
    * Create String representation for debugging.
    */
+  @Override
   public String toString()
   {
     return "LibraryModule for '" + name() + "'";

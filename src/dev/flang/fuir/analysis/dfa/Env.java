@@ -338,6 +338,7 @@ class Env extends ANY implements Comparable<Env>
   /**
    * Compare this env to another Env.
    */
+  @Override
   public int compareTo(Env other)
   {
     // The _types are ordered
@@ -369,6 +370,7 @@ class Env extends ANY implements Comparable<Env>
   /**
    * Create human-readable string from this Env.
    */
+  @Override
   public String toString()
   {
     var sb = new StringBuilder();

@@ -5,13 +5,13 @@ overloading_negative.fz:45:8: error 1: Ambiguous type
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
 Possible features that match this type:
-'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
+in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
     a is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
     a(i i32) is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
@@ -24,13 +24,13 @@ overloading_negative.fz:46:8: error 2: Ambiguous type
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
 Possible features that match this type:
-'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
+in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
     a is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
     a(i i32) is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 
@@ -43,13 +43,13 @@ overloading_negative.fz:47:8: error 3: Ambiguous type
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
 Possible features that match this type:
-'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
+in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:37:5
     a is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:38:5
     a(i i32) is
 ----^
-and 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
+and in 'overloading_negative.test1' found 'overloading_negative.test1.a' defined at overloading_negative.fz:39:5
     a(i, j i32) is
 ----^
 

@@ -197,6 +197,7 @@ public class Function extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
+  @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(res, context), false, from);
@@ -291,6 +292,7 @@ public class Function extends AbstractLambda
       {
         var cl = res._module.findLambdaTarget(t.feature());
         var argTypes = t.lambdaTargetArgumentTypes(res);
+        var tps_as_actuals = new List<AbstractType>();
         if (_names.size() != cl.typeArguments().size() + argTypes.size())
           {
             AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t, cl.typeArguments().size(), argTypes.size());
@@ -316,25 +318,14 @@ public class Function extends AbstractLambda
              *         --Fun<id>--()
              * [..]
              */
-            args = new List<AbstractFeature>();
-            var tps_as_actuals = new List<AbstractType>();
+
+            // we run two passes, first to find only the raw result or constraint types needed for
+            // correct type parameters, second to then actually create the args:
+            var raw_args = new List<Feature>();
             for (var i = 0; t != Types.t_ERROR && i < _names.size(); i++)
               {
-                var at = i < cl.typeArguments().size()
-                  ? new BuiltInType(FuzionConstants.ANY_NAME) /* constraint */
-                  : argTypes.get(i - cl.typeArguments().size())
-                      // if we redef
-                      //
-                      //    x(A type, v option A)
-                      //
-                      // by
-                      //
-                      //    x(B type, w option B)
-                      //
-                      // we must replace `option A` by `option B`, i.e.,
-                      // replace original's type parameters by redefinition's:
-                      //
-                      .applyTypePars(cl, tps_as_actuals);
+                var at = i < cl.typeArguments().size() ? cl.typeArguments().get(i).constraint()
+                                                       : argTypes.get(i - cl.typeArguments().size());
                 if (at == Types.t_UNDEFINED)
                   {
                     t = Types.t_ERROR;
@@ -353,13 +344,34 @@ public class Function extends AbstractLambda
                       {
                         tps_as_actuals.add(arg.asParametricType());
                       }
-                    args.add(arg);
+                    raw_args.add(arg);
                   }
               }
+            raw_args.forEach(a ->
+              {
+                // if we redef
+                //
+                //    x(A type, v option A)
+                //
+                // by
+                //
+                //    x(B type, w option B)
+                //
+                // we must replace `option A` by `option B`, i.e.,
+                // replace original's type parameters by redefinition's:
+                //
+                // It is a little ugly to patch the feature result type here, but the easiest
+                // solution since the dependencies between these types can be complex.
+                var at = a.returnType().functionReturnType(false);
+                a._returnType = new FunctionReturnType(at.applyTypePars(cl, tps_as_actuals));
+              });
+            args = new List<AbstractFeature>();
+            args.addAll(raw_args);
           }
         if (t != Types.t_ERROR)
           {
-            var rt0 = t.lambdaTargetResultType(res);
+            var rt0 = t.lambdaTargetResultType(res)
+                       .applyTypePars(cl, tps_as_actuals.map2(tp -> tp.resolve(res, context)));
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
             var feature = new Feature(pos(), Visi.PUB, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, AbstractCall.NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
@@ -545,6 +557,7 @@ public class Function extends AbstractLambda
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (this._call != null)
@@ -627,6 +640,7 @@ public class Function extends AbstractLambda
    *
    * @return this Expr's type or t_ERROR in case it is not known yet.
    */
+  @Override
   public AbstractType type()
   {
     if (CHECKS) check
@@ -694,6 +708,7 @@ public class Function extends AbstractLambda
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _names + " -> " + _originalExpr;

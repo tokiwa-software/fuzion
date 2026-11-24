@@ -78,16 +78,3 @@ choice_constraints =>
   match c String (option String) [(id (option String) nil)]
     str String => say str
     n nil => say n
-
-
-  switch.test(X : switch.this, x X) X => x
-  say <| (id (option String) nil).test (option String) nil
-
-
-  switch.test2(X : switch.this, x X) =>
-    match x
-      a A => say a
-      b B => say b
-
-  (id (option String) nil).test2 (option String) nil
-

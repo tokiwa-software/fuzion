@@ -205,6 +205,7 @@ public class Pretty extends ANY
    */
   class TerminalStyler extends Styler
   {
+    @Override
     Style plain()
     {
       return new Style()
@@ -213,6 +214,7 @@ public class Pretty extends ANY
           String end() { return ""; }
         };
     }
+    @Override
     Style keyword()
     {
       return new Style()
@@ -221,6 +223,7 @@ public class Pretty extends ANY
           String end() { return Terminal.RESET; }
         };
     }
+    @Override
     Style comment()
     {
       return new Style()
@@ -229,6 +232,7 @@ public class Pretty extends ANY
           String end() { return Terminal.RESET; }
         };
     }
+    @Override
     Style ident()
     {
       return new Style()
@@ -237,6 +241,7 @@ public class Pretty extends ANY
           String end() { return Terminal.RESET; }
         };
     }
+    @Override
     Style integer()
     {
       return new Style()
@@ -245,6 +250,7 @@ public class Pretty extends ANY
           String end() { return Terminal.RESET; }
         };
     }
+    @Override
     Style op()
     {
       return new Style()
@@ -253,6 +259,7 @@ public class Pretty extends ANY
           String end() { return Terminal.RESET; }
         };
     }
+    @Override
     Style string()
     {
       return new Style()

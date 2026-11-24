@@ -1,0 +1,21 @@
+
+reg_issue8344.fz:25:7: error 1: Incompatible types when passing argument in a call
+  say v
+------^
+Actual type for argument #1 's' does not match expected type.
+In call to          : 'say'
+expected formal type: 'Any'
+actual type found   : 'B'
+assignable to       : 'B'
+for value assigned  : 'v'
+To solve this, you could change the type of the target 's' to 'B' or convert the type of the assigned value to 'Any'.
+
+
+reg_issue8344.fz:24:18: error 2: Constraint for type parameter must not be a type parameter
+apply(C : Any, v B : C) =>
+-----------------^
+Affected type parameter: 'apply.B'
+constraint: 'C'
+To solve this, change the type provided, e.g. to the unconstrained 'type'.
+
+2 errors.

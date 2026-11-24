@@ -100,6 +100,7 @@ class CIdent extends CExpr
    *
    * @param sb will be used to append the code to
    */
+  @Override
   void code(CString sb) { sb.append(_name); }
 
 
@@ -108,6 +109,7 @@ class CIdent extends CExpr
    *
    * @return 0
    */
+  @Override
   int precedence() { return 0; }
 
 
