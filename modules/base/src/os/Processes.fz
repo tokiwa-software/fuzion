@@ -24,7 +24,7 @@
 
 # effect for starting process
 #
-public Process ref : effect is
+public Processes ref : effect is
 
 
   # start a process with name, arguments and environment variables
@@ -48,15 +48,15 @@ public Process ref : effect is
 
 
 
-  # default implementation of os.Process
+  # default implementation of os.Processes
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option os.Process =>
+  public redef fixed type.default_value option os.Processes =>
 
     # this needs to be a ref since it contains an atomic field
     #
-    universe.P_ref ref : os.Process is
+    universe.P_ref ref : os.Processes is
 
       processes := concur.atomic (container.Set os.process) .new (container.ps_set os.process).empty
 
