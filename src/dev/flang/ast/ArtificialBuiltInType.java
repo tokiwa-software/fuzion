@@ -90,7 +90,9 @@ class ArtificialBuiltInType extends ResolvedNormalType
   }
 
 
-  /** {@inheritDoc} */
+  /**
+   * outer feature, null.
+   */
   @Override
   public AbstractType outer()
   {
