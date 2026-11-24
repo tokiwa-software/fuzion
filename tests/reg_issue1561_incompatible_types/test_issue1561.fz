@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 test_issue1561 =>
-  read_line_exception is
+  read_line_exception : flow.exception_tag is
 
   read_line option String =>
 

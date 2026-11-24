@@ -40,7 +40,7 @@ public read_response(
 =>
   # type used only to identify the exception used by `read_response`
   #
-  read_response_exception is
+  read_response_exception : flow.exception_tag is
   flow.exception read_response_exception .on _ ()->
 
     cause(s String) void =>

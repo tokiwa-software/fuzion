@@ -52,7 +52,7 @@ module crlf => "\r\n"
 # https://datatracker.ietf.org/doc/html/rfc9110#section-2.5-6
 #
 module parse_http_version(# the type of the `flow.exception` to cause in case of a broken version
-                          E : Any,
+                          E : flow.exception_tag,
                           ver String)
 =>
   err(_ error) => error "broken format of HTTP version '$(ver)'"
