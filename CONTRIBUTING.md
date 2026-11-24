@@ -179,7 +179,7 @@ Here is an example for a work-in-progress marker:
 
 ### Fuzion APIs
 
-Guidelines on Fuzion's API are collected in the [Fuzion API Gidelines](modules/Fuzion_API_Guidelines.md) document.
+Guidelines on Fuzion's API are collected in the [Fuzion API Guidelines](modules/Fuzion_API_Guidelines.md) document.
 
 
 ### Commit Messages
