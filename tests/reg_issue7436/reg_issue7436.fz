@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-buffered_ (LM type : mutate) is
+buffered_ (LM : mutate) is
   Writer_ ref : effect is
     buffer := container.Ring_Buffer u8 LM 10
     a =>
@@ -29,9 +29,9 @@ buffered_ (LM type : mutate) is
 
 lm : mutate is
 
-std_in_writer(LM type : mutate) : (buffered_ LM).Writer_ is
+std_in_writer(LM : mutate) : (buffered_ LM).Writer_ is
 
-b (LM type : mutate) =>
+b (LM : mutate) =>
 
   (buffered_ LM).Writer_.instate _ (std_in_writer LM) ()->
     (buffered_ LM).Writer_.env.a

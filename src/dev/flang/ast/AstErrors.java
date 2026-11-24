@@ -691,7 +691,7 @@ public class AstErrors extends ANY
           """
           A call to a feature of the form
 
-              f(T,U type, A type..., x T, y U, a A...) =>
+              f(T,U : Any, A... : Any, x T, y U, a A...) =>
 
           must either provide only actual arguments and infer types
 
@@ -1032,6 +1032,29 @@ public class AstErrors extends ANY
           "To solve this, you could add a redefinition of " + sbnf(f1) + " to " + s(heir) + ".");
   }
 
+
+  public static void illegalInheritanceCallTarget(Expr target)
+  {
+    if (!any() || target != Call.ERROR)
+      {
+        var lines = target.pos().lines();
+        var nspaces = 0;
+        while (nspaces < lines.length() && lines.charAt(nspaces) == ' ')
+          {
+            nspaces++;
+          }
+        var spaces = lines.substring(0, nspaces);
+        error(target.pos(),
+              "Illegal inheritance call target",
+              "Target in inheritance call: " + expr(target.pos().sourceTextPrefix("")) + "\n" +
+              "To solve this, you could wrap the target into a new feature and use a call to this feature instead:\n" +
+              code(spaces + "target => " + ("\n" + target.pos().sourceTextPrefix(spaces+"  ")) + "\n" +
+                   target.pos().lines().replace(target.sourceText(),"target"))
+             );
+      }
+  }
+
+
   public static void duplicateFeatureDeclaration(AbstractFeature a, AbstractFeature b)
   {
     // suppress error message if errors were reported already and any feature
@@ -1274,7 +1297,7 @@ public class AstErrors extends ANY
         outerLevels.add(o);
         qualifiedCalls
           .append(qualifiedCalls.length() > 0 ? " or " : "")
-          .append(code(o.qualifiedNameHuman() + (o.isUniverse() ? "." : ".this.") + fn.baseNameHuman()));
+          .append(code(o.qualifiedNameHuman() + (o.isUniverse() || o.isCotype() ? "." : ".this.") + fn.baseNameHuman()));
       }
     error(pos,
           "Ambiguous targets found for " + operation + " to " + sbn(fn.baseNameHuman()),
@@ -1457,16 +1480,31 @@ public class AstErrors extends ANY
 
   public static void ambiguousType(SourcePosition pos,
                                    String t,
-                                   List<AbstractFeature> possibilities)
+                                   List<FeatureAndOuter> possibilities)
   {
+    if (PRECONDITIONS) require
+      (possibilities.size() > 1);
+
+    var features = new TreeSet<AbstractFeature>();
+    var suggestions = new List<String>();
+    for (var fo : possibilities)
+      {
+        features.add(fo._feature);
+        suggestions.add(fo._outer.qualifiedNameHuman() + ".this." + fo._feature.featureName().baseNameHuman());
+      }
     error(pos,
           "Ambiguous type",
           "For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.\n" +
           "Type that is ambiguous: " + st(t) + "\n" +
-          "Possible features that match this type:\n" +
-          featureList(possibilities) + "\n" +
-          "To solve this, rename these features such that each one has a unique name.");
+          (features.size() == possibilities.size()
+           ? "Possible features that match this type:\n"
+           : "The same feature was found at different levels of outer features, resulting in different types:\n") +
+          featuresAndOuterList(possibilities) + "\n" +
+          (suggestions.stream().distinct().count() == suggestions.size()
+           ? "To solve this, qualify the type using " + suggestions.stream().map(x -> st(x)).collect(Collectors.joining(" or ")) + "."
+           : "To solve this, rename these features such that each one has a unique name."));
   }
+
 
   public static void typeNotFound(SourcePosition pos,
                                   String t,
@@ -1967,7 +2005,7 @@ public class AstErrors extends ANY
     if (!any() || !errorOrUndefinedFound)
       {
         error(pos,
-              "Incompatible type parameter",
+              "Incompatible type parameter "+s(g)+" for "+sc(f),
               "formal type parameter " + sc(f)
                 + (f.constraint().compareTo(constraint)==0 ? "" : " with constraint " + s(constraint))
                 + "\n" +

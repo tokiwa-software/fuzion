@@ -139,6 +139,7 @@ public class ParsedType extends UnresolvedType
    * @param originalOuterFeature the original feature, which is not a type
    * feature.
    */
+  @Override
   UnresolvedType clone(AbstractFeature originalOuterFeature)
   {
     return
@@ -158,6 +159,7 @@ public class ParsedType extends UnresolvedType
    * qualified by an outer type {@code outer.XYZ} and that do not have actual type
    * parameters {@code XYZ T1 T2} and that are not boxed.
    */
+  @Override
   public boolean mayBeFreeType()
   {
     return
@@ -174,6 +176,7 @@ public class ParsedType extends UnresolvedType
    * @return the name of the free type, which becomes the name of the type
    * parameter created for it.
    */
+  @Override
   public String freeTypeName()
   {
     return name();

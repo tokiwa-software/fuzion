@@ -26,11 +26,11 @@
 L_Node(
   # mutate effect to be used manipulate pointers and stored element
   #
-  LM type : mutate,
+  LM : mutate,
 
   # type of the element stored in the node
   #
-  T type
+  T : Any
 ) ref is
 
   # the previous list node
@@ -64,11 +64,11 @@ L_Node(
 #
 V_Node(# mutate effect to be used manipulate pointers and stored element
        #
-       LM type: mutate,
+       LM : mutate,
 
        # type of the element stored in the node
        #
-       T type,
+       T : Any,
 
        # the element stored in this list node
        #
@@ -98,11 +98,11 @@ is
 private:public Doubly_Linked_List(
   # mutate effect to be used to create mutable variables
   #
-  LM type : mutate,
+  LM : mutate,
 
   # type the elements the list
   #
-  T type
+  T : Any
 
 ) ref ! LM is
 

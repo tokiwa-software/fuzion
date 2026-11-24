@@ -42,11 +42,11 @@ is
 
   # alternative for has using []
   #
-  public index[] (I type : integer, bit I) bool => has bit.as_u64
+  public index[] (I : integer, bit I) bool => has bit.as_u64
 
 
   # set the given bit
-  public put (bit u64) bitset =>
+  public fixed put (bit u64) bitset =>
     if has bit
       bitset.this
     else
@@ -61,13 +61,13 @@ is
 
   # union of two bitsets
   #
-  public infix ∪ (other bitset) bitset =>
+  public fixed infix ∪ (other bitset) bitset =>
     match bitset.this
       nil     => other
       x u64   => other.put x
       a array =>
         match other
-          nil     => bitset.this
+          nil     => a
           x u64   => bitset.this.put x
           b array =>
             array bool _ (max a.length b.length) (i -> (has i.as_u64) || (other.has i.as_u64))

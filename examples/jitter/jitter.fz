@@ -72,15 +72,15 @@ jitter =>
   # run jitter test using C.clock.run_periodic
   #
   test_jitter(# the clock used to schedule the releases
-              C type : time.Clock,
+              C : time.Clock,
 
               # the clock used to measure the times
-              TIMER type : time.Clock)
+              TIMER : time.Clock)
   =>
 
     # type used to identify flow.exception to stop in case jitter is too high
     #
-    jitter_too_high is
+    jitter_too_high : flow.exception_tag is
 
     # test payload, just some dummy code requiring a moderate amount of calculation
     #

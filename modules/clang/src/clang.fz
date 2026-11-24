@@ -41,7 +41,7 @@ clang_parseTranslationUnit(
   options u32
 ) Native_Ref => native
 clang_getTranslationUnitCursor(translation_unit Native_Ref) CXCursor => native
-clang_visitChildren(CX_CURSOR_VISITOR type : Function i32 CXCursor Native_Ref Native_Ref,
+clang_visitChildren(CX_CURSOR_VISITOR : Function i32 CXCursor Native_Ref Native_Ref,
                     cursor CXCursor,
                     visitor CX_CURSOR_VISITOR,
                     client_data Native_Ref) u32 => native

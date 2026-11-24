@@ -74,6 +74,7 @@ public class FreeType extends UnresolvedType
    * qualified by an outer type {@code outer.XYZ} and that do not have actual type
    * parameters {@code XYZ T1 T2} and that are not boxed.
    */
+  @Override
   public boolean mayBeFreeType()
   {
     return true;
@@ -83,6 +84,7 @@ public class FreeType extends UnresolvedType
   /**
    * Is this type a free type?
    */
+  @Override
   public boolean isFreeType()
   {
     return true;
@@ -93,6 +95,7 @@ public class FreeType extends UnresolvedType
    * For an unresolved type with mayBeFreeType() == true, this gives the
    * constraint to be used with that free type.
    */
+  @Override
   UnresolvedType freeTypeConstraint()
   {
     return _constraint;

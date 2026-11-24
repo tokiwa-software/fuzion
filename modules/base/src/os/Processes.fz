@@ -24,7 +24,7 @@
 
 # effect for starting process
 #
-public Process ref : effect is
+public Processes ref : effect is
 
 
   # start a process with name, arguments and environment variables
@@ -48,17 +48,17 @@ public Process ref : effect is
 
 
 
-  # default implementation of os.Process
+  # default implementation of os.Processes
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option os.Process =>
+  public redef fixed type.default_value option os.Processes =>
 
     # this needs to be a ref since it contains an atomic field
     #
-    universe.P_ref ref : os.Process is
+    universe.P_ref ref : os.Processes is
 
-      processes := concur.atomic (container.Set os.process) .new (container.ps_set os.process).empty
+      started := concur.atomic (container.Set os.process) .new (container.ps_set os.process).empty
 
       # start process with option to pass environment variables
       #
@@ -86,8 +86,8 @@ public Process ref : effect is
         if (fzE_process_create arg_data.internal_array.data arg_data.count.as_i32 env_data.internal_array.data env_data.count.as_i32 res_data.data) = -1
           error "creating process $n" fzE_last_error
         else
-          res := os.process res_data[0] res_data[1] res_data[2] res_data[3] n args
-          _ := processes.update (container.Set os.process)->(container.Set os.process) rp->
+          res := os.process res_data[0] res_data[1] res_data[2] res_data[3] n args os.Process_State
+          _ := started.update (container.Set os.process)->(container.Set os.process) rp->
             rp ∪ ((container.ps_set os.process).new [res])
           res
 
@@ -98,8 +98,8 @@ public Process ref : effect is
       #
       public redef wait(p os.process, timeout time.duration) outcome u32
       =>
-        if !processes.contains p
-          error "process not in set of running processes."
+        if !started.contains p
+          error "process was not started by this os.Processes effect."
         else
           start := time.Nano.env.read
 
@@ -136,21 +136,21 @@ public Process ref : effect is
         fzE_send_signal p.pid sig.as_i64.as_i32 = 0 ? unit : error "sending signal to process $(p.pid)" fzE_last_error
 
 
-      # the processes that were registered
-      # in this effect as a string
+      # the processes that were started
+      # by this effect
       #
       public redef as_string String =>
-        $processes.read
+        $started.read
 
 
       # cleanup effect
       #
       public redef finally unit =>
-        processes.for_each p->
-          # NYI: UNDER DEVELOPMENT: register failures
-          _ := fzE_pipe_close p.std_in
-          _ := fzE_pipe_close p.std_out
-          _ := fzE_pipe_close p.std_err
+        started.for_each p->
+          # close the pipes that were not closed already
+          p.close_in .otherwise Ignored_Failure.env.register_failure
+          p.close_out.otherwise Ignored_Failure.env.register_failure
+          p.close_err.otherwise Ignored_Failure.env.register_failure
           # _ := p.wait # NYI: wait for none detached processes
           if fzE_process_close p.pid != 0
             Ignored_Failure.env.register_failure (error "process could not be closed successfully: $p" fzE_last_error)

@@ -24,13 +24,13 @@
 scenario1 =>
   fs b
 
-  a(T type) is
+  a(T : Any) is
     type.zero T => abstract
 
   b : a bool is
     redef type.zero => true
 
-  fs(F type : a F) =>
+  fs(F : a F) =>
     u := F.zero
     say u
 

@@ -97,7 +97,7 @@ public Clock ref : effect is
   #
   # In case `period.is_infinity`, run `code` once unless `first > last`.
   #
-  public run_periodic(P type : time.period,
+  public run_periodic(P : time.period,
                       first time.instant,
                       p P,
                       last time.instant,

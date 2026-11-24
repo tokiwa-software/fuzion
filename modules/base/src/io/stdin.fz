@@ -52,7 +52,7 @@ public stdin is
 
   # create a reader for stdin using the given local mutate instance
   #
-  public reader (LM type : mutate) : (buffered LM).Reader is
+  public reader (LM : mutate) : (buffered LM).Reader is
     # implementation of read for reading from stdin
     #
     public redef read(max_count i64) choice (Sequence u8) io.end_of_file error =>
@@ -68,23 +68,23 @@ public stdin is
   # read all of stdin in an array of u8 bytes using
   # io.buffered.read_fully.
   #
-  public read_fully Sequence u8 =>
+  public read_fully outcome (Sequence u8) =>
     lm : mutate is
     lm ! ()->
       (buffered lm).Reader.instate (reader lm) ()->
-        (buffered lm).read_fully.or_panic
+        (buffered lm).read_fully
 
   # read all of stdin in an array of String using
   # io.buffered.read_lines.
   #
-  public read_lines array String =>
+  public read_lines outcome (array String) =>
     lm : mutate is
     lm ! ()->
       (buffered lm).Reader.instate (reader lm) ()->
-        (buffered lm).read_lines.or_panic
+        (buffered lm).read_lines
 
   # read all of stdin in a single String using
   # String.from_bytes on the result of read_fully.
   #
-  public read_string String =>
-    String.from_bytes read_fully
+  public read_string outcome String =>
+    read_fully.bind String.from_bytes

@@ -23,7 +23,7 @@
 
 reg_issue2307 =>
 
-  a(T type: void, a T) is
+  a(T : void, a T) is
     say a
 
   _:= a (panic "hello")

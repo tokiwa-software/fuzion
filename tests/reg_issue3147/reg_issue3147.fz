@@ -24,6 +24,6 @@
 t is
   type.doit unit => abstract
 
-test(X type : t) => X.doit
+test(X : t) => X.doit
 
 test t

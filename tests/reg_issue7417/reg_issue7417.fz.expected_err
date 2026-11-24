@@ -1,0 +1,14 @@
+
+reg_issue7417.fz:30:5: error 1: Different count of arguments needed when calling feature
+    f             # 1. should flag an error: a.this.f is dynamic, cannot call `fixed f`
+----^
+Feature not found: 'f' (no arguments)
+Target feature: 'a.and'
+In call: 'f'
+To solve this, you might change the actual number of arguments to match the feature 'f' (no arguments) at reg_issue7417.fz:31:9
+  fixed f =>
+--------^
+To call 'f', you must not provide arguments.
+
+
+one error.

@@ -21,6 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-Sequence.good(A type, B type) Sequence A
+Sequence.good(A : Any, B : Any) Sequence A
 =>
   panic "hallo"

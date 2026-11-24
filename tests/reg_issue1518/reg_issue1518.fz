@@ -25,7 +25,7 @@ reg_issue1518 =>
 
   # this causes errors, but it should NOT cause a syntax error
 
-    c (T type) is
+    c (T : Any) is
       b (f T -> unit) unit => abstract
 
     a : c a is

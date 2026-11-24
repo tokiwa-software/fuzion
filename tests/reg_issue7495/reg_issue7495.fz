@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 reg_issue7495 =>
-  tuple(A type...,
+  tuple(A... : Any,
         values A...) : property.orderable, property.hashable is
 
     public redef as_string String =>

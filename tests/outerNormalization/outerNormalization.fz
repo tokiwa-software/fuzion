@@ -89,7 +89,7 @@ outerNormalization is
   # simpler features j/n
   #
   testNormalize =>
-    n(T type : n T) is
+    n(T : n T) is
       a T => abstract
       b T => a
 

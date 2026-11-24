@@ -24,14 +24,14 @@
 reg_issue7051 =>
 
   outer is
-    a(T type : integer, t T) T
+    a(T : integer, t T) T
       post result < 0
     =>
       say t
       t
 
   outer2 : outer is
-    redef a(T type : integer, t T) T =>
+    redef a(T : integer, t T) T =>
       t
 
   outer2.a 3

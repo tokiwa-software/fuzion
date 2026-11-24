@@ -87,6 +87,18 @@ public class Universe extends ExprWithPos
 
 
   /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    return Types.resolved != null
+      ? type().feature()
+      : super.inheritanceCallTargetFeature(res, context);  // create error, might happen while compiling base.fum
+  }
+
+
+  /**
    * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
@@ -96,6 +108,7 @@ public class Universe extends ExprWithPos
    *
    * @return this.
    */
+  @Override
   protected Universe visit(FeatureVisitor v, AbstractFeature outer)
   {
     return this;
@@ -124,6 +137,7 @@ public class Universe extends ExprWithPos
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return FuzionConstants.UNIVERSE_NAME;

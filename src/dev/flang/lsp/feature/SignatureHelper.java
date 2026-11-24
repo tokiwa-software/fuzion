@@ -64,6 +64,7 @@ public class SignatureHelper extends ANY
       triggerChar = s;
     }
 
+    @Override
     public String toString()
     {
       return this.triggerChar;

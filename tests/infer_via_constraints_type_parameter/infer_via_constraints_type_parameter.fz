@@ -23,8 +23,8 @@
 
 infer_via_constraints_type_parameter =>
 
-  a(T type,
-    S type : array T,
+  a(T : Any,
+    S : array T,
     s S)
   is
 
@@ -35,8 +35,8 @@ infer_via_constraints_type_parameter =>
 
   # -----------------------------
 
-  b(T type,
-    S type : Sequence T,
+  b(T : Any,
+    S : Sequence T,
     v option S)
   =>
     say "b $T $S $v"

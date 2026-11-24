@@ -31,7 +31,7 @@ ex_nested_options is
       say "FAILED: $exp /= $act"
       _ := Exit.env.set_exit_code 1
 
-  test(T type, v option T) =>
+  test(T : Any, v option T) =>
     match v
       x T   => "$(T.name): T $x"
       n nil => "$(T.name): nil $n"

@@ -376,7 +376,7 @@ say uc.x
 #
 test_generic_this_type is
 
-  g(T type) is
+  g(T : Any) is
     f(o g.this) =>
       say g.this
       say o

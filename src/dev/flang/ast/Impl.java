@@ -109,6 +109,7 @@ public class Impl extends ANY
     Intrinsic,    // an intrinsic feature
     Native;       // a native feature
 
+    @Override
     public String toString()
     {
       return switch(this)
@@ -684,6 +685,7 @@ public class Impl extends ANY
            result != Types.t_FORWARD_CYCLIC &&
            result != Types.t_ERROR          &&
            result.isCotypeType()            &&
+           _expr != null                    &&
            /**
             * this allows code like:
             * p := codepoint.type
@@ -714,6 +716,7 @@ public class Impl extends ANY
    *
    * @return
    */
+  @Override
   public String toString()
   {
     String result;
