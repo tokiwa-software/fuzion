@@ -109,6 +109,7 @@ public class Impl extends ANY
     Intrinsic,    // an intrinsic feature
     Native;       // a native feature
 
+    @Override
     public String toString()
     {
       return switch(this)
@@ -715,6 +716,7 @@ public class Impl extends ANY
    *
    * @return
    */
+  @Override
   public String toString()
   {
     String result;

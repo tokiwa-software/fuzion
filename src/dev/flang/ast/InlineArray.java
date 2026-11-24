@@ -278,6 +278,7 @@ public class InlineArray extends ExprWithPos
    *
    * @return this.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var li = _elements.listIterator();
@@ -473,6 +474,7 @@ public class InlineArray extends ExprWithPos
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _elements.toString("[", "; ", "]");

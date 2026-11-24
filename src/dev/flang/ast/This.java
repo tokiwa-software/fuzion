@@ -203,6 +203,7 @@ public class This extends ExprWithPos
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     return v.action(this);
@@ -420,6 +421,7 @@ public class This extends ExprWithPos
    *
    * @return
    */
+  @Override
   public String toString()
   {
     if (_qual != null)

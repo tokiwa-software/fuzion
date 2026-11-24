@@ -181,6 +181,7 @@ public class FormalGenerics extends ANY
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return !isOpen() && _feature.typeArguments().isEmpty()

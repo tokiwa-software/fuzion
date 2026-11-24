@@ -392,7 +392,7 @@ public class Html extends ANY
         return "";
       }
 
-    var redefs = af.redefines();
+    var redefs = new TreeSet<>(af.redefines());
 
     // don't show annotation if redefining a feature from a non public feature
     redefs.removeIf(f->nonPublicInheritanceChain(f));
@@ -409,7 +409,7 @@ public class Html extends ANY
 
   private String relativeAnchor(AbstractFeature f, AbstractFeature relativeTo)
   {
-    return fillTemplate("<a class='' href='##url##'>##name##</a>", Map.of(
+    return fillTemplate("<a href=\"##url##\">##name##</a>", Map.of(
       "url", featureRelativeURL(f, relativeTo),
       "name", htmlEncodedQualifiedName(f)));
   }
@@ -542,13 +542,9 @@ public class Html extends ANY
     return af
       .redefines()
       .stream()
-      .map(f -> fillTemplate("""
-        <li><a href="##url##">##name##</a></li>##redefines##
-      """, Map.of(
-        "url", featureRelativeURL(f, relativeTo),
-        "name", htmlEncodeNbsp(f.qualifiedNameHuman()),
-        "redefines", redefines0(f, relativeTo))))
-      .collect(Collectors.joining(System.lineSeparator()));
+      .map(f -> "<li>" + relativeAnchor(f, relativeTo) + "</li>"
+        + redefines0(f, relativeTo))
+      .collect(Collectors.joining());
   }
 
 
@@ -1073,15 +1069,14 @@ public class Html extends ANY
 
   /**
    * get full html with doctype, head and body
-   * @param qualifiedNameHuman()
+   * @param qualifiedName the human-readable qualified name
    * @param bareHtml
+   * @param directoryDepth the output directory depth below the documentation root
    * @return
    */
-  private static String fullHtml(String qualifiedName, String bareHtml)
+  private static String fullHtml(String qualifiedName, String bareHtml, int directoryDepth)
   {
-    int upDirCorrection = qualifiedName.equals("Modules") || qualifiedName.endsWith(".universe") ? 0 : 1;
-
-    var root = upDirs((int) qualifiedName.chars().filter(c -> c == '.').count() + upDirCorrection);
+    var root = upDirs(directoryDepth);
     return fillTemplate("""
       <!DOCTYPE html>
       <html lang="en">
@@ -1409,9 +1404,10 @@ public class Html extends ANY
 
   /**
    * the full content
+   * @param directoryDepth the output directory depth below the documentation root
    * @return
    */
-  String content(AbstractFeature af)
+  String content(AbstractFeature af, int directoryDepth)
   {
     var main = mainSection(mapOfDeclaredFeatures.get(af), af);
     var toggleFeatureDetails = main.isEmpty() ? "" : """
@@ -1471,7 +1467,7 @@ public class Html extends ANY
 
     return config.bare()
       ? bareHtml
-      : fullHtml(lm.name() + "." + af.qualifiedNameHuman(), bareHtml);
+      : fullHtml(lm.name() + "." + af.qualifiedNameHuman(), bareHtml, directoryDepth);
   }
 
   /**
@@ -1531,7 +1527,7 @@ public class Html extends ANY
       </div>
       """);
 
-    return config.bare() ? modPage.toString(): fullHtml("Modules", modPage.toString());
+    return config.bare() ? modPage.toString(): fullHtml("Modules", modPage.toString(), 0);
   }
 
 

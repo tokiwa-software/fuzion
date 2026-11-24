@@ -38,10 +38,13 @@ public read_response(
   # the request for which this response is generated
   req option (http.request_message)) outcome (http.response_message)
 =>
-  flow.exception unit .on _ ()->
+  # type used only to identify the exception used by `read_response`
+  #
+  read_response_exception : flow.exception_tag is
+  flow.exception read_response_exception .on _ ()->
 
     cause(s String) void =>
-      (flow.exception unit).env.cause (error s)
+      (flow.exception read_response_exception).env.cause (error s)
 
     # status line, e.g.: HTTP/1.1 200 OK
     sl := match next_line LM
@@ -56,13 +59,13 @@ public read_response(
 
     if !sl[0].starts_with "HTTP/" then cause "not a HTTP response, protocol is '$(sl[0])'"
 
-    major, minor := parse_http_version sl[0]
+    major, minor := parse_http_version read_response_exception sl[0]
 
-    code := sl[1].parse_i64.or_cause unit _->(error "invalid status code '$(sl[1])")
+    code := sl[1].parse_i64.or_cause read_response_exception _->(error "invalid status code '$(sl[1])")
 
     reason := sl[2]
 
-    header_fields := (parse_header_fields LM .or_cause unit id).as_map (container.ps_map String String)
+    header_fields := (parse_header_fields LM .or_cause read_response_exception id).as_map (container.ps_map String String)
 
     # NYI: UNDER DEVELOPMENT: make this lazy?
     #
@@ -83,6 +86,6 @@ public read_response(
         cause "NYI: Implementation restriction: CONNECT as in rfc9110 §9.3.6 is unsupported"
 
       else
-        body_helper LM false header_fields .or_cause unit id
+        body_helper LM false header_fields .or_cause read_response_exception id
 
     http.response_message req major minor code reason header_fields body

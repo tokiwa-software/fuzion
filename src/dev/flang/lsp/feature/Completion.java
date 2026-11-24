@@ -66,6 +66,7 @@ public class Completion
       triggerChar = s;
     }
 
+    @Override
     public String toString()
     {
       return this.triggerChar;

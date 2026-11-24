@@ -414,7 +414,8 @@ public class Docs extends ANY
             var file = new File(path.toFile(), "index.html");
             try (FileWriter writer = new FileWriter(file))
               {
-                var output = htmlTool.content(af);
+                var directoryDepth = config.destination().relativize(path).getNameCount();
+                var output = htmlTool.content(af, directoryDepth);
                 writer.write(output);
               }
             catch (IOException e)

@@ -101,6 +101,7 @@ public class ParsedName extends ANY implements HasSourcePosition
   /**
    * The sourcecode position of this name.
    */
+  @Override
   public SourcePosition pos()
   {
     return _pos;
@@ -112,6 +113,7 @@ public class ParsedName extends ANY implements HasSourcePosition
    *
    * @return just the name.
    */
+  @Override
   public String toString()
   {
     return _name;
