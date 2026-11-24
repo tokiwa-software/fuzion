@@ -186,6 +186,7 @@ class NumericValue extends Value
   /**
    * Get set of values of given field within this instance.
    */
+  @Override
   Value readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     /* for a numeric value, this can only read the 'val' field, e.g., 'i32.val',
@@ -235,6 +236,7 @@ class NumericValue extends Value
   /**
    * Add v to the set of values of given field within this instance.
    */
+  @Override
   public void setField(DFA dfa, int field, Value v)
   {
     if (_dfa._fuir.clazzOuterClazz(field) == _clazz)
@@ -251,6 +253,7 @@ class NumericValue extends Value
   /**
    * Create human-readable string from this instance.
    */
+  @Override
   public String toString()
   {
     return _dfa._fuir.clazzName(_clazz) + ":" +

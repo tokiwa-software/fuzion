@@ -174,6 +174,7 @@ public class Errors extends ANY
      * Compare two errors. Compares first by the source code position, such that
      * we can easily print them in order if we wish to.
      */
+    @Override
     public int compareTo(Error o)
     {
       int result = ((pos == o.pos)

@@ -1969,6 +1969,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return the index of the requested {@code mutate.var.mutable_value} field's clazz.
    */
+  @Override
   public int lookupMutableValue(int cl)
   {
     if (PRECONDITIONS) require
@@ -2211,6 +2212,17 @@ public class GeneratingFUIR extends FUIR
       }
     return res;
 
+  }
+
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean withinCode(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE);
+
+    return super.withinCode(s) && (!_lookupDone || _accessedSites.get(s - SITE_BASE));
   }
 
 

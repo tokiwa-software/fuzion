@@ -81,6 +81,7 @@ public class Lexer extends SourceFile
       _detail = d;
     }
 
+    @Override
     public String toString()
     {
       return
@@ -297,6 +298,7 @@ public class Lexer extends SourceFile
     /**
      * String representation for debugging.
      */
+    @Override
     public String toString()
     {
       String result;

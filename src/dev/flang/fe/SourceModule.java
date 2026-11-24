@@ -395,6 +395,7 @@ Fuzion source files may have an arbitrary file name ending with the file name ex
    * During resolution, load all inner classes of this that are
    * defined in separate files.
    */
+  @Override
   void loadInnerFeatures(AbstractFeature f)
   {
     if (!f._loadedInner)  /* NYI: restrict this to f.isVisibleFrom(this) or similar */
@@ -455,6 +456,7 @@ part of the (((inner features))) declarations of the corresponding
    *
    * @param f a feature.
    */
+  @Override
   void resolveDeclarations(AbstractFeature f)
   {
     _res.resolveDeclarations(f);
@@ -475,6 +477,7 @@ part of the (((inner features))) declarations of the corresponding
    * all found feature declarations, the outer feature will be set to
    * this value.
    */
+  @Override
   public void findDeclarations(Feature inner, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
@@ -719,6 +722,7 @@ part of the (((inner features))) declarations of the corresponding
    *
    * @param cotype the new type feature declared within outerType.
    */
+  @Override
   public void addCotype(AbstractFeature outerType,
                              Feature cotype)
   {
@@ -732,6 +736,7 @@ part of the (((inner features))) declarations of the corresponding
    * During type resolution, add a type parameter created for a free type like
    * {@code T} in {@code f(x T) is ...}.
    */
+  @Override
   public void addTypeParameter(AbstractFeature outer,
                                Feature typeParameter)
   {
@@ -785,6 +790,7 @@ part of the (((inner features))) declarations of the corresponding
    *
    * @param outer the declaring feature
    */
+  @Override
   public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
   {
     var d = data(outer);
@@ -825,6 +831,7 @@ part of the (((inner features))) declarations of the corresponding
    *
    * @param outer the declaring feature
    */
+  @Override
   public void findDeclaredOrInheritedFeatures(Feature outer)
   {
     if (PRECONDITIONS) require
@@ -1090,6 +1097,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * @return the unique feature that was found, null if none or several were
    * found.
    */
+  @Override
   public AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use)
   {
     if (outer != Types.f_ERROR && !_res.state(outer).atLeast(State.RESOLVING_DECLARATIONS))
@@ -1161,6 +1169,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
+  @Override
   public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden, Predicate<AbstractFeature> isFixedFor)
   {
     if (PRECONDITIONS) require
@@ -1503,6 +1512,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * FeatureAndOuter.ERROR in case of an error, null in case no type was found
    * and ignoreNotFound is true.
    */
+  @Override
   public FeatureAndOuter lookupType(SourcePosition pos,
                                     AbstractFeature outer,
                                     String name,
@@ -1704,6 +1714,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * NYI: Better perform the check the other way around: check that f matches
    * the types of all features that f redefines.
    */
+  @Override
   public void checkTypes(Feature f)
   {
     f.impl().checkTypes(f);
@@ -2166,6 +2177,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   /**
    * Create String representation for debugging.
    */
+  @Override
   public String toString()
   {
     var r = new StringBuilder();

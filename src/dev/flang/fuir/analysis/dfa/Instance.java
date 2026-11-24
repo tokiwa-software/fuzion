@@ -155,6 +155,7 @@ class Instance extends Value
   /**
    * Add v to the set of values of given field within this instance.
    */
+  @Override
   public void setField(DFA dfa, int field, Value v)
   {
     var cl0 = v._clazz;
@@ -186,6 +187,7 @@ class Instance extends Value
   /**
    * Get set of values of given field within this instance.
    */
+  @Override
   Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     if (PRECONDITIONS) require
@@ -217,6 +219,7 @@ class Instance extends Value
   /**
    * Create human-readable string from this instance.
    */
+  @Override
   public String toString()
   {
     return _dfa._fuir.clazzName(_clazz) + "@" + _dfa._fuir.sitePos(_site);

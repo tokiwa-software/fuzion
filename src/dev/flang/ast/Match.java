@@ -74,6 +74,7 @@ public class Match extends AbstractMatch
    * The subject under investigation here.
    */
   Expr _subject;
+  @Override
   public Expr subject() { return _subject; }
 
 
@@ -81,6 +82,7 @@ public class Match extends AbstractMatch
    * The list of cases in this match expression
    */
   final List<AbstractCase> _cases;
+  @Override
   public List<AbstractCase> cases() { return _cases; }
 
 
@@ -127,6 +129,7 @@ public class Match extends AbstractMatch
    *
    * @return this.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var os = _subject;
@@ -487,6 +490,7 @@ public class Match extends AbstractMatch
    *
    * @return
    */
+  @Override
   public String toString()
   {
     var sb = new StringBuilder((kind() == Kind.Plain ? "match " : "if ") + subject() + "\n");

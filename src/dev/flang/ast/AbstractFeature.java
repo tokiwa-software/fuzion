@@ -266,6 +266,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * only compare features of different comparisonId()s, i.e., of different
    * sub-classes.
    */
+  @Override
   public int compareTo(AbstractFeature other)
   {
     var result = Integer.compare(comparisonId(), other.comparisonId());
@@ -1997,6 +1998,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * this feature as a human readable string
    */
+  @Override
   public String toString()
   {
     return (visibility() + " " +

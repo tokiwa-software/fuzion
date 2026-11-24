@@ -87,6 +87,7 @@ public abstract class Constant extends Expr
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _pos;

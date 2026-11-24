@@ -96,6 +96,7 @@ class TaggedValue extends Value implements Comparable<TaggedValue>
   /**
    * Compare this to another TaggedValue.
    */
+  @Override
   public int compareTo(TaggedValue other)
   {
     return
@@ -156,6 +157,7 @@ class TaggedValue extends Value implements Comparable<TaggedValue>
   /**
    * Create human-readable string from this value.
    */
+  @Override
   public String toString()
   {
     return _dfa._fuir.clazzName(_clazz) + "[tag:" + _tag + ",val:" + _original + "]";

@@ -380,6 +380,7 @@ public class Instance extends ValueWithClazz
    *
    * @return
    */
+  @Override
   public String toString()
   {
     var result = "instance[" + fuir().clazzName(_clazz) + "]" + this.hashCode() +

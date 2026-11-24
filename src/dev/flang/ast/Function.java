@@ -197,6 +197,7 @@ public class Function extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
+  @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(res, context), false, from);
@@ -530,6 +531,7 @@ public class Function extends AbstractLambda
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (this._call != null)
@@ -612,6 +614,7 @@ public class Function extends AbstractLambda
    *
    * @return this Expr's type or t_ERROR in case it is not known yet.
    */
+  @Override
   public AbstractType type()
   {
     if (CHECKS) check
@@ -673,6 +676,7 @@ public class Function extends AbstractLambda
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _names + " -> " + _originalExpr;

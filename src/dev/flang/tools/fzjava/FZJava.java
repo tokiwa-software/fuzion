@@ -150,6 +150,7 @@ public class FZJava extends Tool
    *
    * @param xtra include extra options
    */
+  @Override
   protected String USAGE(boolean xtra)
   {
     return "Usage: " + _cmd + " [-h|--help|-version] " + STANDARD_OPTIONS(xtra) + "[-to=<dir>] {module}+\n";
@@ -164,6 +165,7 @@ public class FZJava extends Tool
    *
    * @return a Runnable to run the selected tool.
    */
+  @Override
   public Runnable parseArgs(String[] args)
   {
     for (var a : args)

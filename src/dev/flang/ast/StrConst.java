@@ -90,6 +90,7 @@ public class StrConst extends Constant
   /**
    * Serialized form of the data of this constant.
    */
+  @Override
   public byte[] data()
   {
     byte[] result;
@@ -127,6 +128,7 @@ public class StrConst extends Constant
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "\"" + _str + "\"";

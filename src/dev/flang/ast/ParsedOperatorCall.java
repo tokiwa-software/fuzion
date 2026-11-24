@@ -155,6 +155,7 @@ public class ParsedOperatorCall extends ParsedCall
    * @param parenthesesAllowed true if an operator call in parentheses is still
    * ok.  {@code (+x)}.
    */
+  @Override
   boolean isOperatorCall(boolean parenthesesAllowed)
   {
     return parenthesesAllowed || !_inParentheses;

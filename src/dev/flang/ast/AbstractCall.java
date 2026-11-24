@@ -160,6 +160,7 @@ public abstract class AbstractCall extends Expr
   /**
    * This call serialized as a constant.
    */
+  @Override
   public Constant asCompileTimeConstant()
   {
     var result = new Constant(AbstractCall.this.pos()) {
@@ -589,6 +590,7 @@ public abstract class AbstractCall extends Expr
   /**
    * This call as a human readable string
    */
+  @Override
   public String toString()
   {
     return ((target() instanceof Universe) ||

@@ -78,6 +78,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * The sourcecode position of the use of this parsed type, used for error
    * messages.
    */
+  @Override
   public SourcePosition pos() { return _pos.pos(); }
 
 
@@ -111,6 +112,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    */
   List<AbstractType> _generics;
+  @Override
   public final List<AbstractType> generics() { return _generics; }
 
 
@@ -789,6 +791,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * until Types.resolved.universe.selfType(), while the _outer field ends with
    * the outermost type explicitly written in the source code.
    */
+  @Override
   public AbstractType outer()
   {
     return _outer;

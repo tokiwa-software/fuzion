@@ -237,6 +237,7 @@ public class Partial extends AbstractLambda
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     return _function == null ? this
@@ -275,6 +276,7 @@ public class Partial extends AbstractLambda
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "(" + _op + ")";

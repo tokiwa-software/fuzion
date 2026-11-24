@@ -507,61 +507,73 @@ public interface ClassFileConstants
       _stackSlots = stackSlots;
     }
 
+    @Override
     public int stackSlots()
     {
       return _stackSlots;
     }
 
+    @Override
     public String descriptor()
     {
       return _descriptor;
     }
 
+    @Override
     public String refDescriptor()
     {
       throw new Error("JavaType.refDescriptor only defined for ref type, not for " + this);
     }
 
+    @Override
     public Expr load(int index)
     {
       throw new Error("load for type " + this);
     }
 
+    @Override
     public Expr store(int index)
     {
       throw new Error("store for type " + this);
     }
 
+    @Override
     public Expr return0()
     {
       throw new Error("return for type " + this);
     }
 
+    @Override
     public Expr newArray()
     {
       throw new Error("newArray for type " + this);
     }
 
+    @Override
     public Expr xaload()
     {
       throw new Error("array load for type " + this);
     }
 
+    @Override
     public Expr xastore()
     {
       throw new Error("array load for type " + this);
     }
 
+    @Override
     public Expr pop()
     {
       throw new Error("pop for type " + this);
     }
 
+    @Override
     public String className()
     {
       throw new Error("className for type " + this);
     }
 
+    @Override
     public JavaType array()
     {
       return new ArrayType(this);
@@ -577,66 +589,79 @@ public interface ClassFileConstants
       _descriptor = descriptor;
     }
 
+    @Override
     public int stackSlots()
     {
       return 1;
     }
 
+    @Override
     public String descriptor()
     {
       return _descriptor;
     }
 
+    @Override
     public String refDescriptor()
     {
       return descriptor();
     }
 
+    @Override
     public Expr load(int index)
     {
       return Expr.aload(index, this, vti());
     }
 
+    @Override
     public Expr store(int index)
     {
       return Expr.astore(index, vti());
     }
 
+    @Override
     public Expr return0()
     {
       return Expr.ARETURN;
     }
 
+    @Override
     public Expr newArray()
     {
       return Expr.anewarray(this);
     }
 
+    @Override
     public Expr xaload()
     {
       return Expr.aaload(this);
     }
 
+    @Override
     public Expr xastore()
     {
       return Expr.AASTORE;
     }
 
+    @Override
     public Expr pop()
     {
       return Expr.POP;
     }
 
+    @Override
     public AType array()
     {
       return new ArrayType(this);
     }
 
+    @Override
     public String toString()
     {
       return "ClassType('" + _descriptor + "')";
     }
 
+    @Override
     public VerificationType vti()
     {
       return new VerificationType(className(), (cf)->cf.cpClass(this).index());
@@ -657,11 +682,13 @@ public interface ClassFileConstants
       _className = className;
     }
 
+    @Override
     public String className()
     {
       return _className;
     }
 
+    @Override
     public String refDescriptor()
     {
       return className();
@@ -694,6 +721,7 @@ public interface ClassFileConstants
       _elementType = elementType;
     }
 
+    @Override
     public String className()
     {
       return _elementType.className() + "[]";

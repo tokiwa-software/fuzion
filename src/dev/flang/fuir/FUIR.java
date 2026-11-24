@@ -940,6 +940,7 @@ public abstract class FUIR extends IR
    *
    * @param s site
    */
+  @Override
   public abstract ExprKind codeAt(int s);
 
 
@@ -1206,6 +1207,7 @@ public abstract class FUIR extends IR
    *
    * @return the source code position or null if not available.
    */
+  @Override
   public abstract SourcePosition sitePos(int s);
 
 
