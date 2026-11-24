@@ -72,24 +72,6 @@ public class Docs extends ANY
 
 
   /**
-   * recursive breadth first traversal
-   * @param c
-   * @param queue
-   */
-  private static void breadthFirstTraverse0(Module feModule, Consumer<AbstractFeature> c, Queue<AbstractFeature> queue)
-  {
-    if (queue.isEmpty())
-      {
-        return;
-      }
-    var head = queue.remove();
-    c.accept(head);
-    queue.addAll(declaredFeatures(feModule, head));
-    breadthFirstTraverse0(feModule, c, queue);
-  }
-
-
-  /**
    * Get the declared features of f as collection
    * @param f the feature for which the declared features are to be returned
    * @return a collection of the declared features of f
@@ -103,9 +85,9 @@ public class Docs extends ANY
 
 
   /**
-   * Get all features that can be called on f (declared and inherited) as stream
-   * @param f the feature for which the callable features are to be returned
-   * @return a stream of the callable (declared and inherited) features of f
+   * Get declared and inherited features from the frontend.
+   * @param f the feature whose declared and inherited members are requested
+   * @return the members before documentation visibility filtering
    */
   private static Stream<AbstractFeature> allInnerAndInheritedFeatures(Module feModule, AbstractFeature f)
   {
@@ -117,16 +99,28 @@ public class Docs extends ANY
 
 
   /**
-   * do a breath first traversal of declared features,
-   * passing found features to consumer c.
+   * Do a breadth first traversal of declared features, passing found features
+   * to consumer c. Exclude internal and anonymous implementation subtrees, but
+   * continue through ordinary private scopes to discover their public members.
    * @param c
    * @param start
    */
   private static void breadthFirstTraverse(Module feModule, Consumer<AbstractFeature> c, AbstractFeature start)
   {
-    var queue = new LinkedList<AbstractFeature>();
+    // NYI: UNDER DEVELOPMENT: currently pages for private features inside public ones are included, see #8425
+
+    Queue<AbstractFeature> queue = new LinkedList<>();
     queue.add(start);
-    breadthFirstTraverse0(feModule, c, queue);
+    while (!queue.isEmpty())
+      {
+        var head = queue.remove();
+        if (Util.isInternalFeature(head))
+          {
+            continue;
+          }
+        c.accept(head);
+        queue.addAll(declaredFeatures(feModule, head));
+      }
   }
 
 
@@ -244,11 +238,10 @@ public class Docs extends ANY
         return false;
       }
 
-    return af.featureName().isInternal()
-      || af.featureName().isNameless()
+    return Util.isInternalFeature(af)
       || !(ignoreVisibility || Util.isVisible(af))
       || af.isCotype()
-      || Util.isArgument(af)
+      || (Util.isArgument(af) && !Util.isConstructorArgument(af))
       || af.baseName().equals(FuzionConstants.RESULT_NAME);
   }
 
@@ -367,8 +360,9 @@ public class Docs extends ANY
               .filter(m->!m.name().equals(FuzionConstants.MAIN_MODULE_NAME)) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
               .collect(Collectors.toCollection(List::new));
 
-    // collect all features for all modules
-    var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<AbstractFeature.Kind, TreeSet<AbstractFeature>>>();
+    // Collect features selected for documentation pages across all modules,
+    // with their declared and inherited members grouped by kind.
+    var documentedFeatures = new HashMap<AbstractFeature, Map<AbstractFeature.Kind, TreeSet<AbstractFeature>>>();
 
     breadthFirstTraverse(feModule, feature -> {
       if (ignoreFeature(feature, config.ignoreVisibility()))
@@ -386,22 +380,19 @@ public class Docs extends ANY
             .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
         }
 
-      mapOfDeclaredFeatures.put(
-        feature,
-        Stream
-          .concat(s, st)
-          .collect(Collectors.groupingBy(x -> x.kind(), Collectors.toCollection(TreeSet::new)))
-      );
-
+      var members = Stream
+        .concat(s, st)
+        .collect(Collectors.groupingBy(x -> x.kind(), Collectors.toCollection(TreeSet::new)));
+      documentedFeatures.put(feature, members);
     }, universe);
 
 
     // generate documentation per module
     for (var module : all_modules)
       {
-        var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, module, all_modules);
+        var htmlTool = new Html(config, documentedFeatures, universe, module, all_modules);
 
-        mapOfDeclaredFeatures
+        documentedFeatures
           .keySet()
           .stream()
           .filter(af -> af.isUniverse() || lf(af).showInMod(module))
@@ -414,7 +405,8 @@ public class Docs extends ANY
             var file = new File(path.toFile(), "index.html");
             try (FileWriter writer = new FileWriter(file))
               {
-                var output = htmlTool.content(af);
+                var directoryDepth = config.destination().relativize(path).getNameCount();
+                var output = htmlTool.content(af, directoryDepth);
                 writer.write(output);
               }
             catch (IOException e)
@@ -427,7 +419,7 @@ public class Docs extends ANY
     // generate overview page of modules
     var path = config.destination();
     path.toFile().mkdirs();
-    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
+    var htmlTool = new Html(config, documentedFeatures, universe, all_modules.getFirst(), all_modules);
 
     var file = new File(path.toFile(), "index.html");
     try (FileWriter writer = new FileWriter(file))

@@ -26,25 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.FeatureName;
-
 
 /**
- * Interface for looking up features that is used by middle end.
+ * Interface for looking up redefinition of a feature.
  */
-public interface FeatureLookup {
-
-
-  /**
-   * Find feature with given name in outer.
-   *
-   * @param outer the declaring or inheriting feature
-   *
-   * @param name the feature name that we are searching for
-   */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
+public interface RedefinitionLookup {
 
 
   /**

@@ -24,7 +24,7 @@
 #
 # The syntax
 #
-#   ex (M type : mutate) ! M : some_feat is
+#   ex (M : mutate) ! M : some_feat is
 #
 # must be parsed as a constructor `ex` with a formal type argument `M` bounded
 # by `mutate`, an effect annotation `! M` and an inheritance declaration
@@ -35,7 +35,7 @@ reg_issue7510 =>
 
   parent7510 is
 
-  ex7510 (M type : mutate) ! M : parent7510 is
+  ex7510 (M : mutate) ! M : parent7510 is
 
     public tag i32 => 42
 

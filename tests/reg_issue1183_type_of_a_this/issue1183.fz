@@ -27,7 +27,7 @@ issue1183 is
 
   # our own implementation of type_of for this test:
   #
-  my_type_of(T type, _ T) => T
+  my_type_of(T : Any, _ T) => T
 
   # the original example from #1183
   a is
@@ -43,7 +43,7 @@ issue1183 is
   say (my_type_of b.o)
 
   # next level: doing the same thing via a type parameter
-  q(T type : a, v T) =>
+  q(T : a, v T) =>
     say (type_of    v.o)
     say (my_type_of v.o)
 

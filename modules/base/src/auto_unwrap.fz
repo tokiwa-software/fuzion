@@ -31,7 +31,7 @@
 #     a <- 4 + a   # no need to write a.get, compiler does this automatically.
 #
 #
-public auto_unwrap(T type, E type... : effect) is
+public auto_unwrap(T : Any, E... : effect) is
 
   # the feature that is called to
   # unwrap the value

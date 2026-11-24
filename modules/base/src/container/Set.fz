@@ -25,8 +25,8 @@
 
 # Set -- an abstract set of values
 #
-public Set(E type : property.equatable) ref : Sequence E,
-                                              property.equatable
+public Set(E : property.equatable) ref : Sequence E,
+                                         property.equatable
 is
 
 

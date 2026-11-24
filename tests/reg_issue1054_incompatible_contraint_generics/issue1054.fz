@@ -22,9 +22,9 @@
 # -----------------------------------------------------------------------
 
 issue1054 =>
-  floaty(T type : float) is
+  floaty(T : float) is
 
-  c(T type : floaty f64) is
+  c(T : floaty f64) is
 
   _ := c (floaty f64) # good
   _ := c (floaty f32) # bad

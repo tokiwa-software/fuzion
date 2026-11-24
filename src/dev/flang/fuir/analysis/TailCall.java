@@ -212,7 +212,7 @@ public class TailCall extends ANY
    */
   private boolean isTailCall(int cls, int s, int mustAssignTo)
   {
-    var isTC = _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
+    return _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
       {
       case Call ->
         {
@@ -234,11 +234,6 @@ public class TailCall extends ANY
       case Assign ->
         {
           var cc = _fuir.accessedClazz(cls);
-          if (cc != NO_CLAZZ &&
-              _fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)))
-            {
-              cc = NO_CLAZZ;
-            }
           yield
             // if this is an assignment to 'Current.mustAssignTo' with, recursively check if
             // the value assigned is the call s.
@@ -273,8 +268,6 @@ public class TailCall extends ANY
       // any other code results in failure to detect a tail call:
       default -> false;
       };
-
-    return isTC;
   }
 
 

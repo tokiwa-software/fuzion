@@ -1,7 +1,7 @@
 
-reg_issue5714_2.fz:34:3: error 1: Incompatible type parameter
+reg_issue5714_2.fz:34:7: error 1: Incompatible type parameter 'o.i' for 'A : p.this.i'
 p.f o.i
---^
+------^
 formal type parameter 'A : p.this.i' with constraint 'p.i'
 actual type parameter 'o.i'
 assignable to constraint: 'Any',

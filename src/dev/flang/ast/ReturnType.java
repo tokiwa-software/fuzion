@@ -103,20 +103,6 @@ public abstract class ReturnType extends ANY
 
 
   /**
-   * For a function, the source code position of the return type.
-   *
-   * @return the function return type source position.
-   */
-  public SourcePosition functionReturnTypePos()
-  {
-    if (PRECONDITIONS) require
-      (!isConstructorType());
-
-    throw new Error(); // this is redefined for FunctionReturnType
-  }
-
-
-  /**
    * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on

@@ -45,7 +45,15 @@ public class Util extends ANY
      feature.outer()
       .arguments()
       .stream()
-      .anyMatch(f -> f.equals(feature));
+       .anyMatch(f -> f.equals(feature));
+  }
+
+  /**
+   * Is this a value argument of a constructor, accessible like a field?
+   */
+  static boolean isConstructorArgument(AbstractFeature feature)
+  {
+    return isArgument(feature) && feature.isField() && feature.outer().isConstructor();
   }
 
 
@@ -59,6 +67,30 @@ public class Util extends ANY
     return af.visibility() == Visi.PRIVPUB
         || af.visibility() == Visi.MODPUB
         || af.visibility() == Visi.PUB;
+  }
+
+
+  /**
+   * Is this declaration part of an internal or anonymous implementation?
+   * Public members inside such scopes are internal too. Ordinary private
+   * scopes do not affect this check. Cotypes represent their original feature's
+   * type namespace and are checked through that origin.
+   */
+  static boolean isInternalFeature(AbstractFeature af)
+  {
+    for (var f = af; f != null && !f.isUniverse(); f = f.outer())
+      {
+        if (f.isCotype())
+          {
+            f = f.cotypeOrigin();
+          }
+        if (f.featureName().isInternal()
+            || f.featureName().isNameless())
+          {
+            return true;
+          }
+      }
+    return false;
   }
 
 }

@@ -29,10 +29,10 @@ reg_issues4992_5000 =>
   #
   case1 =>
     x is
-      type.i(U type : tuple unit x.this) =>
+      type.i(U : tuple unit x.this) =>
         say "case1 $U"
 
-    y(X type : x) =>
+    y(X : x) =>
       X.i (tuple unit X)
 
     z : x is
@@ -45,10 +45,10 @@ reg_issues4992_5000 =>
   case2 =>
 
     x is
-      type.i(U type : tuple x.this) =>
+      type.i(U : tuple x.this) =>
         say "case2 $U"
 
-    y(X type : x) =>
+    y(X : x) =>
       X.i (tuple X)
 
     z : x is
@@ -61,9 +61,9 @@ reg_issues4992_5000 =>
   #
   case3 =>
     x is
-      type.i(U type : x.this) =>  # 1. should flag an error: .this-type not allowed directly
+      type.i(U : x.this) =>  # 1. should flag an error: .this-type not allowed directly
 
-    y(X type : x) =>
+    y(X : x) =>
       X.i X
 
     z : x is
@@ -76,9 +76,9 @@ reg_issues4992_5000 =>
   #
   case4 =>
     x is
-      type.i(U type : tuple i64) =>
+      type.i(U : tuple i64) =>
 
-    y(X type : x) =>
+    y(X : x) =>
       X.i (tuple i64 bool)  # 2. should flag an error: wrong number of type parameters
 
     z : x is
@@ -91,9 +91,9 @@ reg_issues4992_5000 =>
   #
   case5 =>
     x is
-      type.i(U type : tuple unit x.this) =>
+      type.i(U : tuple unit x.this) =>
 
-    y(X type : x) =>
+    y(X : x) =>
       X.i (tuple unit true_) # 3. should flag an error: wrong type parameter `true_` instead of `X`
 
     z : x is
@@ -106,10 +106,10 @@ reg_issues4992_5000 =>
   #
   case1b =>
     x is
-      i(U type : tuple unit x.this) =>
+      i(U : tuple unit x.this) =>
         say "case1b $U"
 
-    y(X type : x, v X) =>
+    y(X : x, v X) =>
       v.i (tuple unit X)
 
     z : x is
@@ -122,10 +122,10 @@ reg_issues4992_5000 =>
   case2b =>
 
     x is
-      i(U type : tuple x.this) =>
+      i(U : tuple x.this) =>
         say "case2b $U"
 
-    y(X type : x, v X) =>
+    y(X : x, v X) =>
       v.i (tuple X)
 
     z : x is
@@ -137,8 +137,8 @@ reg_issues4992_5000 =>
   # original code from #5001
   #
   case6 =>
-    x(A, B, C type) is
-      type.i(U type : tuple A B C, v U) =>
+    x(A, B, C : Any) is
+      type.i(U : tuple A B C, v U) =>
         a A := v.values.0
         b B := v.values.1
         c C := v.values.2
@@ -146,7 +146,7 @@ reg_issues4992_5000 =>
         say b
         say c
 
-    y(X type : x Any unit f32) =>
+    y(X : x Any unit f32) =>
       X.i (tuple i64 i64 i64) (42,43,44)  # 4. should flag an error: wrong type parameter `tuple i64 i64 i64` instead of `tuple Any unit f32`
 
     z : x Any unit f32 is
@@ -156,9 +156,9 @@ reg_issues4992_5000 =>
   # minimalist example for #5001
   #
   case7 =>
-    box(B type) is
-    x(A type) is
-      type.i(U type : box A) =>
+    box(B : Any) is
+    x(A : Any) is
+      type.i(U : box A) =>
     (x f32).i (box i64)  # 5. should flag an error: wrong type parameter `box i64` instead of `box f32`
 
 

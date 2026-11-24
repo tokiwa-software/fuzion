@@ -64,6 +64,7 @@ public class MapComparable2Int<T extends Comparable<T>> extends Map2Int<T>
   /**
    * redefined to indicate that T is Comparable.
    */
+  @Override
   protected boolean isComparable()
   {
     return true;

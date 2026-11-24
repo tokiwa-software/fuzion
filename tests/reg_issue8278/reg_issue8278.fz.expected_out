@@ -1,0 +1,32 @@
+simplfied: expected `a`, got: a
+original expect `a`, got: a
+comprehensive `b` expected a.t1, got: a.t1
+comprehensive `b` expected b.t2, got: b.t2
+comprehensive `b` expected b.t3, got: b.t3
+comprehensive `b` expected a.q1, got: a.q1
+comprehensive `b` expected b.q2, got: b.q2
+comprehensive `b` expected b.q3, got: b.q3
+comprehensive `b` expected a.r1, got: a.r1
+comprehensive `b` expected a.r2, got: a.r2
+comprehensive `c` expected a.t1, got: a.t1
+comprehensive `c` expected a.t2, got: a.t2
+comprehensive `c` expected b.t3, got: b.t3
+comprehensive `c` expected c.t4, got: c.t4
+comprehensive `c` expected a.q1, got: a.q1
+comprehensive `c` expected a.q2, got: a.q2
+comprehensive `c` expected b.q3, got: b.q3
+comprehensive `c` expected c.q4, got: c.q4
+comprehensive `c` expected a.r1, got: a.r1
+comprehensive `c` expected a.r2, got: a.r2
+comprehensive `c` expected c.r3, got: c.r3
+comprehensive `d` expected a.t1, got: a.t1
+comprehensive `d` expected a.t2, got: a.t2
+comprehensive `d` expected d.t3, got: d.t3
+comprehensive `d` expected d.t4, got: d.t4
+comprehensive `d` expected a.q1, got: a.q1
+comprehensive `d` expected a.q2, got: a.q2
+comprehensive `d` expected d.q3, got: d.q3
+comprehensive `d` expected d.q4, got: d.q4
+comprehensive `d` expected a.r1, got: a.r1
+comprehensive `d` expected a.r2, got: a.r2
+comprehensive `d` expected c.r4, got: c.r4

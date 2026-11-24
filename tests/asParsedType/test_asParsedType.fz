@@ -35,12 +35,12 @@ A ref is
 # feature with argument being a type parameter only to test expr.asParsedType
 #  when actual argument to `x` is first parsed as an expression.
 #
-x(T type) => say "GOT: x $T"
+x(T : Any) => say "GOT: x $T"
 
 # feature with arguments being a type parameter and a value of that type to check type
 # inference from an actual value
 #
-y(T type, v T) => say "GOT: y $T"
+y(T : Any, v T) => say "GOT: y $T"
 
 
 # ------  tests using actual type parameters  ------

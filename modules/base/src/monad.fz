@@ -34,7 +34,7 @@
 # applied to generic types.
 #
 #
-public monad (A type) is
+public monad (A : Any) is
 
 
   # monadic operator within the same monad
@@ -42,16 +42,14 @@ public monad (A type) is
   # Apply f to elements of type A and re-wrap them in this monad.
   #
   public infix >>= (f A -> monad.this) monad.this =>
-    # NYI: UNDER DEVELOPMENT: type inference
-    # monad.this >>=~ f
-    monad.this.infix >>=~ A monad.this f
+    monad.this >>=~ f
 
 
   # monadic operator to another monad
   #
   # Apply f to elements of type A and wrap them in MB.
   #
-  public infix >>=~ (B type, MB type : monad B, f A -> MB) MB => abstract
+  public infix >>=~ (B : Any, MB : monad B, f A -> MB) MB => abstract
 
 
   # join operator

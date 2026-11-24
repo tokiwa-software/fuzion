@@ -103,8 +103,8 @@ test4 is
 # `u8` via `T`.
 #
 test5 is
-  s(T type) is
-  l(A type) is
+  s(T : Any) is
+  l(A : Any) is
     as : s A is
 
   say (l u8).as.type
@@ -112,13 +112,13 @@ test5 is
 # more tricky generic args replacement
 #
 test6 is
-  s(T type) is
-  l(A type) is
+  s(T : Any) is
+  l(A : Any) is
     as : s A is
 
   say (l u8).as.type
 
-  h(B type) is
+  h(B : Any) is
     dd : l B is
   i3 : h i3 is
 

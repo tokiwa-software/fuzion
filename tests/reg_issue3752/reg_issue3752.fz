@@ -22,6 +22,6 @@
 # -----------------------------------------------------------------------
 
 scenario1 is
-  fs(F type : (scenario1.fs F).inner) is
+  fs(F : (scenario1.fs F).inner) is
     inner is
 _ := scenario1

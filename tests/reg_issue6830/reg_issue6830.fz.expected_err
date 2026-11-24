@@ -29,9 +29,9 @@ To solve this, change constraint of type parameter to 'reg_issue6830.part2.this.
 ----------------^
 
 
-reg_issue6830.fz:66:9: error 3: Incompatible type parameter
+reg_issue6830.fz:66:11: error 3: Incompatible type parameter 'reg_issue6830.part2.this.storage String' for '_ : reg_issue6830.part2.this.storage String'
       p.w x
---------^
+----------^
 formal type parameter '_ : reg_issue6830.part2.this.storage String' with constraint '_.storage String'
 actual type parameter 'reg_issue6830.part2.this.storage String'
 assignable to constraint: 'Any',

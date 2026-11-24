@@ -23,7 +23,7 @@
 
 reg_issue6071 =>
 
-  f (T type, v T) =>
+  f (T : Any, v T) =>
     if T : bool
       if v
         say "true"
@@ -33,7 +33,7 @@ reg_issue6071 =>
       compile_time_panic
 
 
-  g (T type, v T) =>
+  g (T : Any, v T) =>
     if T : bool
       match v
         true_ => say "true"
@@ -41,7 +41,7 @@ reg_issue6071 =>
     else
       compile_time_panic
 
-  h (T type, v T)
+  h (T : Any, v T)
     pre T : bool
   =>
     match v

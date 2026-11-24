@@ -1,0 +1,36 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature os.Process_State
+#
+# -----------------------------------------------------------------------
+
+# os.Process_State -- internal state of a process, shared by all copies of
+# an `os.process`
+#
+# NYI: once #8369 provides global state for the `Process` effect, this should
+# be stored in a map in that global state instead.
+#
+module Process_State ref is
+
+  # has std_in, std_out or std_err, respectively, been closed already?
+  #
+  module in_closed  := concur.atomic bool .new false
+  module out_closed := concur.atomic bool .new false
+  module err_closed := concur.atomic bool .new false

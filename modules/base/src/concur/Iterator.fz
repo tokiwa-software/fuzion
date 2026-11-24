@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 #
-module Iterator(T type) ref is
+module Iterator(T : Any) ref is
 
   public next option T => abstract
 

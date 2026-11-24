@@ -1,7 +1,7 @@
 
-reg_issue3362.fz:71:8: error 1: Incompatible type parameter
+reg_issue3362.fz:71:14: error 1: Incompatible type parameter 'reg_issue3362.this.c' for 'T : reg_issue3362.this.my_equatable'
   _ := 0 === a   # 2. should flag an error: `choice i32 unit` is not assignable to `my_equatable`
--------^^^^^^^
+-------------^
 formal type parameter 'T : reg_issue3362.this.my_equatable'
 actual type parameter 'reg_issue3362.this.c'
 assignable to constraint: 'Any',
@@ -14,9 +14,9 @@ assignable to constraint: 'Any',
                           'void'
 
 
-reg_issue3362.fz:55:16: error 2: Incompatible type parameter
+reg_issue3362.fz:55:16: error 2: Incompatible type parameter 'reg_issue3362.this.my_c' for 'T : reg_issue3362.this.my_equatable'
             if plain_actual =!= plain_expected     # 1. should flag an error: `choice String (array u8)` is not assignable to `my_equatable`
----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------^^^^^^^^^^^^
 formal type parameter 'T : reg_issue3362.this.my_equatable'
 actual type parameter 'reg_issue3362.this.my_c'
 assignable to constraint: 'Any',

@@ -28,8 +28,8 @@ reg_issue3362 is
   my_equatable is
     type.eq(a, b my_equatable.this) => false
 
-  infix === (T type : my_equatable, v, w T) => T.eq v w
-  infix =!= (T type : my_equatable, v, w T) => !(v === w)
+  infix === (T : my_equatable, v, w T) => T.eq v w
+  infix =!= (T : my_equatable, v, w T) => !(v === w)
 
 
   # original example from issue #3362

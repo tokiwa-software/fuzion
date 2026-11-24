@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-module qwerty(T type) is
+module qwerty(T : Any) is
 
   say "QWERTY"
 
