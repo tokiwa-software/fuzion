@@ -1,0 +1,197 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7707
+#
+# -----------------------------------------------------------------------
+
+# This tests variants of examples from #7158 and #7707 that used fixed features
+# in different outer-outer features, which resulted in crashes
+#
+reg_issue7707 =>
+
+
+  # the original example from isue #7707
+  #
+  # This contains a typo in `a.q`, should have been `say "a.q $v"`:
+  #
+  original
+  =>
+
+    m is
+      n is
+        fixed x =>
+          q n.this
+
+      q(v n) => say "m.q $v"
+
+    b : m is
+      redef q(v n) => say "b.q $v"
+    a : m is
+      redef q(v n) => say "b.q $v"
+
+    m.n.x
+    b.n.x
+    a.n.x
+
+  original
+
+
+  # the second example from isue #7707 using explicit instead of inferred `.this` type arguments for `q`
+  #
+  # This contains a typo in `a.q`, should have been `say "a.q $v"`:
+  #
+  second__  # using `_` padding for nicer output formatting
+  =>
+
+    m is
+      n is
+        fixed x =>
+          q n.this
+
+      q(v m.this.n) => say "m.q $v"
+
+    b : m is
+      redef q(v b.this.n) => say "b.q $v"
+    a : m is
+      redef q(v a.this.n) => say "b.q $v"
+
+    m.n.x
+    b.n.x
+    a.n.x
+
+  second__
+
+  # original with typo fixed and more output:
+  #
+  original_improved  # using `_` padding for nicer output formatting
+  =>
+
+    m is
+      vn is
+        fixed x =>
+          q vn.this
+
+        public redef as_string String => "(vn in $(m.this.type))"
+
+      q(v vn) => say "m.q $v $(type_of v)"
+
+    b : m is
+      redef q(v vn) => say "b.q $v $(type_of v)"
+    a : m is
+      redef q(v vn) => say "a.q $v $(type_of v)"
+
+    yap "expecing m.q (vn in *.m) *.m.vn: "; m.vn.x
+    yap "expecing b.q (vn in *.b) *.b.vn: "; b.vn.x
+    yap "expecing a.q (vn in *.a) *.a.vn: "; a.vn.x
+
+  original_improved
+
+
+  # second with typo fixed and more output:
+  #
+  second___improved  # using `_` padding for nicer output formatting
+  =>
+
+    m is
+      vn is
+        fixed x =>
+          q vn.this
+
+        public redef as_string String => "(vn in $(m.this.type))"
+
+      q(v m.this.vn) => say "m.q $v $(type_of v)"
+
+    b : m is
+      redef q(v b.this.vn) => say "b.q $v $(type_of v)"
+    a : m is
+      redef q(v a.this.vn) => say "a.q $v $(type_of v)"
+
+    yap "expecing m.q (vn in *.m) *.m.vn: "; m.vn.x
+    yap "expecing b.q (vn in *.b) *.b.vn: "; b.vn.x
+    yap "expecing a.q (vn in *.a) *.a.vn: "; a.vn.x
+
+  second___improved
+
+
+  # original using a `ref` outer feature
+  #
+  original_ref_____  # using `_` padding for nicer output formatting
+  =>
+
+    m is
+      Rn ref is
+        fixed x =>
+          q Rn.this
+
+        public redef as_string String => "(Rn in $(m.this.type))"
+
+      q(v Rn) => say "m.q $v $(type_of v)"
+
+    b : m is
+      redef q(v Rn) => say "b.q $v $(type_of v)"
+    a : m is
+      redef q(v Rn) => say "a.q $v $(type_of v)"
+
+    yap "expecing m.q (Rn in *.m) *.m.Rn: "; m.Rn.x
+    yap "expecing b.q (Rn in *.b) *.b.Rn: "; b.Rn.x
+    yap "expecing a.q (Rn in *.a) *.a.Rn: "; a.Rn.x
+
+  original_ref_____
+
+
+  # second using `ref`outer feature
+  #
+  second___ref_____  # using `_` padding for nicer output formatting
+  =>
+
+    m is
+      Rn ref is
+        fixed x =>
+          q Rn.this
+
+        public redef as_string String => "(Rn in $(m.this.type))"
+
+      q(v m.this.Rn) => say "m.q $v $(type_of v)"
+
+    b : m is
+      redef q(v b.this.Rn) => say "b.q $v $(type_of v)"
+    a : m is
+      redef q(v a.this.Rn) => say "a.q $v $(type_of v)"
+
+    yap "expecing m.q (Rn in *.m) *.m.Rn: "; m.Rn.x
+    yap "expecing b.q (Rn in *.b) *.b.Rn: "; b.Rn.x
+    yap "expecing a.q (Rn in *.a) *.a.Rn: "; a.Rn.x
+
+  second___ref_____
+
+
+  # the example from #7158
+  #
+  original_7158 =>
+
+    foo is
+      bar is
+        fixed type.baz i32 => 42
+
+    foo2 : foo is
+
+    say foo2.bar.baz
+
+  original_7158

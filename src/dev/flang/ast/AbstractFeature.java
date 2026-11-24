@@ -1734,7 +1734,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean isFixed()
   {
-    return (modifiers() & FuzionConstants.MODIFIER_FIXED) != 0 || isTypeParameter();
+    return (modifiers() & FuzionConstants.MODIFIER_FIXED) != 0 || isTypeParameter(); // NYI: CLEANUP: #8326: why `true` for type parameter?
   }
 
 
