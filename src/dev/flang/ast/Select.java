@@ -99,7 +99,12 @@ public class Select extends Call {
   }
 
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * @return this or an alternative Expr if the action performed during the
+   * visit replaces this by the alternative.
+   */
   @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {

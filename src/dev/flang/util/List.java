@@ -291,7 +291,11 @@ public class List<T>
   }
 
 
-  /** {@inheritDoc} */
+  /**
+   * add adds given element to the list
+   *
+   * @param e element to add
+   */
   @Override
   public boolean add(T e)
   {

@@ -581,7 +581,9 @@ public abstract class FUIR extends IR
   /**
    * Get the id of the given special clazz.
    *
-   * @param sc the id of clazz sc or -1 if that clazz was not created.
+   * @param sc the special clazz we are looking for
+   *
+   * @return the id of clazz sc or -1 if that clazz was not created.
    */
   public abstract int clazz(SpecialClazzes sc);
 
@@ -832,7 +834,7 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @param gix indec of the generic parameter
+   * @param gix index of the generic parameter
    *
    * @return id of cl's actual generic parameter #gix
    */

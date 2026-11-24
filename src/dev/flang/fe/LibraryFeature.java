@@ -449,7 +449,13 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /** {@inheritDoc} */
+  /**
+   * type of this Expr. Since LibraryFeature is no longer an expression, this
+   * will cause an error.
+   *
+   * NYI: CLEANUP: AbstractFeature should best not inherit from Expr. Instead,
+   * it should be sufficient if dev.flang.ast.Feature does.
+   */
   @Override
   public AbstractType type()
   {

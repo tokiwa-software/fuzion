@@ -73,7 +73,11 @@ public class Partial extends AbstractLambda
       return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * The source text produced by Expr.sourceText would be the original call,
+     * i.e., {@code +}, which is very confusing, so we create a verbose text with the
+     * actual argument name here.
+     */
     @Override
     public String sourceText()
     {

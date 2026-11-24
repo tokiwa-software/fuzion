@@ -1382,7 +1382,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
-  /** {@inheritDoc} */
+  /**
+   * Compare this to other for creating unique clazzes.
+   */
   @Override
   public int compareTo(Clazz other)
   {
