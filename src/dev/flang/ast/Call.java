@@ -3371,14 +3371,16 @@ public class Call extends AbstractCall
               pos(),
               constraint -> adjustType(res, context, constraint, null));
 
-            _generics.forEach(g -> {
-              g.selfOuterAndGenerics(x -> {
-                if (x.isPlainType())
-                  {
-                    AbstractType.checkActualTypePars(Context.NONE, x.feature(), x.generics(), x.originalGenericsPos(), _pos, constraint -> adjustType(res, context, constraint, null));
-                  }
-              });
-            });
+            // NYI: BUG: does not work for #4354
+            //
+            // _generics.forEach(g -> {
+            //   g.selfOuterAndGenerics(x -> {
+            //     if (x.isPlainType())
+            //       {
+            //         AbstractType.checkActualTypePars(context, x.feature(), x.generics(), x.originalGenericsPos(), _pos, constraint -> adjustType(res, context, constraint, null));
+            //       }
+            //   });
+            // });
           }
       }
   }

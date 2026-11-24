@@ -26,6 +26,7 @@ check_type_pars =>
   # in a type parameter constraint
   a(HM: container.hash_map fuzion unit) is
 
+  # NYI: BUG: not shown yet
   # in a choice generic
   b : choice unit (container.hash_map fuzion unit) is
 
@@ -39,6 +40,7 @@ check_type_pars =>
 
   aa(HM: Sequence (container.hash_map fuzion unit)) is
 
+  # NYI: BUG: not shown yet
   bb : choice unit (Sequence (container.hash_map fuzion unit)) is
 
   cc Sequence (container.hash_map fuzion unit) => abstract
