@@ -117,7 +117,7 @@ class ThisType extends ResolvedType {
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    *
-   * Requires that this is resolved and isNormalType().
+   * Requires that this is resolved and isPlainType().
    */
   @Override
   public List<AbstractType> generics()
@@ -129,7 +129,7 @@ class ThisType extends ResolvedType {
   /**
    * The outer of this type. May be null.
    *
-   * Requires that this is resolved and isNormalType().
+   * Requires that this is resolved and isPlainType().
    */
   @Override
   public AbstractType outer()

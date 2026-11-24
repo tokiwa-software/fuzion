@@ -580,7 +580,6 @@ public abstract class Module extends ANY implements FeatureLookup
    *
    * @param outer the declaring or inheriting feature
    */
-  @Override
   public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
   {
     return declaredOrInheritedFeatures(outer, name).getFirstOrNull();

@@ -127,9 +127,9 @@ private:public LRU_Cache(
   #
   public get(key K) option V =>
     LM.env.exclusive ()->
-      map.get key .bind i->(
+      map.get key .bind i->
         move_first i
-        values[i].or_panic)
+        values[i].or_panic
 
 
   # remove value for given key from the cache,
@@ -137,7 +137,7 @@ private:public LRU_Cache(
   #
   public remove(key K) option V =>
     LM.env.exclusive ()->
-      map.get key .bind i->{
+      map.get key .bind i->
         res := values[i].or_panic
 
         # link_first updates mru, so removing it is the only other case where it changes
@@ -153,7 +153,6 @@ private:public LRU_Cache(
           keys[i]   := nil
 
         res
-      }
 
 
   # get a string representation of this cache

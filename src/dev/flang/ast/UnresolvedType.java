@@ -78,6 +78,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * The sourcecode position of the use of this parsed type, used for error
    * messages.
    */
+  @Override
   public SourcePosition pos() { return _pos.pos(); }
 
 
@@ -114,6 +115,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    */
   List<AbstractType> _generics;
+  @Override
   public final List<AbstractType> generics() { return _generics; }
 
 
@@ -369,7 +371,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   @Override
-  public String toString(boolean humanReadable, AbstractFeature context)
+  public String toString(boolean humanReadable)
   {
     return humanReadable && _name.startsWith(FuzionConstants.INTERNAL_NAME_SYMBOL) ? "_" : toString();
   }
@@ -776,7 +778,14 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   @Override
   protected AbstractFeature backingFeature()
   {
-    throw new Error("backingFeature not available for unresolved type");
+    if (Errors.any())
+      {
+        return Types.f_ERROR;
+      }
+    else
+      {
+        throw new Error("backingFeature not available for unresolved type");
+      }
   }
 
 
@@ -799,6 +808,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * until Types.resolved.universe.selfType(), while the _outer field ends with
    * the outermost type explicitly written in the source code.
    */
+  @Override
   public AbstractType outer()
   {
     return _outer;
@@ -836,7 +846,14 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public String freeTypeName()
   {
-    throw new Error("freeTypeName cannot be called on " + getClass());
+    if (Errors.any())
+      {
+        return Errors.ERROR_STRING;
+      }
+    else
+      {
+        throw new Error("freeTypeName cannot be called on " + getClass());
+      }
   }
 
 
@@ -874,6 +891,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         tp.scheduleForResolution(res);
         return g.asParametricType();
       }
+    else if (Errors.any())
+      {
+        return Types.t_ERROR;
+      }
     else
       {
         throw new Error("fz bug: free type added to "+outer.outer().getClass());
@@ -890,7 +911,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   @Override
   void usedFeatures(Set<AbstractFeature> s)
   {
-    throw new Error("must not be called on unresolved types.");
+    if (!Errors.any())
+      {
+        throw new Error("must not be called on unresolved types.");
+      }
   }
 
   /**

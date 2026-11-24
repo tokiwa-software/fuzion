@@ -68,6 +68,7 @@ public class u8Value extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return Integer.toUnsignedString(_val);
@@ -79,6 +80,7 @@ public class u8Value extends Value
    *
    * @return the u8 value
    */
+  @Override
   public int u8Value()
   {
     return _val;
@@ -92,6 +94,7 @@ public class u8Value extends Value
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require

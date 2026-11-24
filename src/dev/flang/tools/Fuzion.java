@@ -772,6 +772,7 @@ public class Fuzion extends Tool
    *
    * @param xtra include extra options such as -Xhelp, -XjavaProf, etc.
    */
+  @Override
   protected String STANDARD_OPTIONS(boolean xtra)
   {
     return super.STANDARD_OPTIONS(xtra) +
@@ -784,6 +785,7 @@ public class Fuzion extends Tool
    *
    * @param xtra include extra options
    */
+  @Override
   protected String USAGE(boolean xtra)
   {
     var std = STANDARD_OPTIONS(xtra);
@@ -832,6 +834,7 @@ public class Fuzion extends Tool
    *
    * @return a Runnable to run the selected tool.
    */
+  @Override
   public Runnable parseArgs(String[] args)
   {
     if (args.length >= 1 && args[0].equals("-pretty"))

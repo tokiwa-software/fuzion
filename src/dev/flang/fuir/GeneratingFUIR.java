@@ -52,7 +52,6 @@ import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.NumLiteral;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.AbstractFeature.Kind;
@@ -62,6 +61,7 @@ import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryFeature;
 
 import dev.flang.ir.Box;
+import dev.flang.ir.MatchCaseIndex;
 import dev.flang.ir.Tag;
 
 import dev.flang.mir.MIR;
@@ -826,12 +826,12 @@ public class GeneratingFUIR extends FUIR
       }
 
     _specialFeatures = new TreeMap<>();
-    for (var s : SpecialClazzes.values())
+    for (var sc : SpecialClazzes.values())
       {
-        var f = s._getFeature.get();
+        var f = sc._getFeature.get();
         if (f != null)
           {
-            _specialFeatures.put(f, s);
+            _specialFeatures.put(f, sc);
           }
       }
 
@@ -1006,14 +1006,14 @@ public class GeneratingFUIR extends FUIR
 
         if (cl.isRef() == cl.feature().isRef())  // not a boxed or explicit value clazz
           {
-            var s = _specialFeatures.get(cl.feature());
-            if (s != null)
+            var sc = _specialFeatures.get(cl.feature());
+            if (sc != null)
               {
                 if (CHECKS) check
-                  (_specialClazzes[s.ordinal()] == null);
+                  (_specialClazzes[sc.ordinal()] == null);
 
-                _specialClazzes[s.ordinal()] = cl;
-                cl._specialClazzId = s;
+                _specialClazzes[sc.ordinal()] = cl;
+                cl._specialClazzId = sc;
               }
           }
 
@@ -1800,7 +1800,7 @@ public class GeneratingFUIR extends FUIR
       {
         for (var p: ff.inherits())
           {
-            var pf = (LibraryFeature) p.calledFeature();
+            var pf = p.calledFeature();
             var of = pf.outerRef();
             Clazz or = (of == null) ? null : c.lookup(of);
             var needsOuterRef = outerRefNeeded(or);
@@ -2027,23 +2027,23 @@ public class GeneratingFUIR extends FUIR
   /**
    * Get the id of the given special clazz.
    *
-   * @param s the special clazz we are looking for
+   * @param sc the special clazz we are looking for
    */
-  Clazz specialClazz(SpecialClazzes s)
+  Clazz specialClazz(SpecialClazzes sc)
   {
     if (PRECONDITIONS) require
-      (s != SpecialClazzes.c_NOT_FOUND);
+      (sc != SpecialClazzes.c_NOT_FOUND);
 
-    var result = _specialClazzes[s.ordinal()];
+    var result = _specialClazzes[sc.ordinal()];
     if (result == null && !_lookupDone)
       {
-        var o = clazz(s._outer);
+        var o = clazz(sc._outer);
         var oc = clazz(o);
-        var f = s._getFeature.get();
+        var f = sc._getFeature.get();
         result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
         if (CHECKS) check
           (f.isRef() == (result.isRef()));
-        _specialClazzes[s.ordinal()] = result;
+        _specialClazzes[sc.ordinal()] = result;
       }
     return result;
   }
@@ -2052,16 +2052,16 @@ public class GeneratingFUIR extends FUIR
   /**
    * Get the id of the given special clazz.
    *
-   * @param s the special clazz we are looking for
+   * @param sc the special clazz we are looking for
    */
   @Override
-  public int clazz(SpecialClazzes s)
+  public int clazz(SpecialClazzes sc)
   {
     if (PRECONDITIONS) require
-      (s != SpecialClazzes.c_NOT_FOUND);
+      (sc != SpecialClazzes.c_NOT_FOUND);
 
-    var sc = specialClazz(s);
-    return sc == null ? NO_CLAZZ : sc._id;
+    var c = specialClazz(sc);
+    return c == null ? NO_CLAZZ : c._id;
   }
 
 
@@ -2177,6 +2177,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return the index of the requested {@code mutate.var.mutable_value} field's clazz.
    */
+  @Override
   public int lookupMutableValue(int cl)
   {
     if (PRECONDITIONS) require
@@ -2474,6 +2475,20 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * {@inheritDoc}
+   *
+   * Once DFA is done, this will return false for all code that was not accessed by DFA.
+   */
+  public boolean withinCode(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE);
+
+    return super.withinCode(s) && (!_lookupDone || _accessedSites.get(s - SITE_BASE));
+  }
+
+
+  /**
    * Get the expr at the given site
    *
    * @param s site
@@ -2523,7 +2538,7 @@ public class GeneratingFUIR extends FUIR
         var outerClazz = clazz(cl);
         var t = (Tag) getExpr(s);
         Clazz vc = clazz(t._value, outerClazz, _inh.get(s - SITE_BASE));
-        var tc = outerClazz.handDown(outerClazz.replaceThisTypeForCotype(t._taggedType), _inh.get(s - SITE_BASE));
+        var tc = outerClazz.handDown(t._taggedType, _inh.get(s - SITE_BASE));
         tc.instantiatedChoice(t);
         res = new Pair<>(vc, tc);
         _siteClazzCache.put(s, res);
@@ -3302,7 +3317,7 @@ public class GeneratingFUIR extends FUIR
 
     var e = getExpr(s + 1 + cix);
 
-    return ((NumLiteral) e).intValue().intValueExact();
+    return ((MatchCaseIndex) e).idx();
   }
 
 

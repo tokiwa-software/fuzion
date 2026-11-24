@@ -627,7 +627,7 @@ public class Resolution extends ANY
                                       Impl.EXPLICIT_TYPE_PARAMETER)
               {
                 @Override
-                public boolean isCoTypesRelayTypeParameter()
+                public boolean isRelayTypeParameter()
                 {
                   return true;
                 }

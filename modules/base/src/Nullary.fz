@@ -26,6 +26,6 @@
 # T is the result type of the function
 #
 public Nullary(T : Any) ref : Function T,
-                                    auto_unwrap T is
+                              auto_unwrap T is
 
   public redef unwrap T => call

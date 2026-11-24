@@ -266,6 +266,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * only compare features of different comparisonId()s, i.e., of different
    * sub-classes.
    */
+  @Override
   public int compareTo(AbstractFeature other)
   {
     var result = Integer.compare(comparisonId(), other.comparisonId());
@@ -316,7 +317,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * The inherits calls of this feature.
    * Almost never empty since almost every feature inherits from {@code Any}.
    */
-  public abstract List<AbstractCall> inherits();
+  public abstract List<? extends AbstractCall> inherits();
 
 
   /**
@@ -981,9 +982,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Is this the 'RELAY_TYPE' type parameter in a cotype?
    */
-  public boolean isCoTypesRelayTypeParameter()
+  boolean isRelayTypeParameter()
   {
-    return outer() != null
+    return state().atLeast(State.RESOLVED)
+      && outer() != null
       && outer().isCotype()
       && outer().typeArguments().get(0) == this;
   }
@@ -1999,6 +2001,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * this feature as a human readable string
    */
+  @Override
   public String toString()
   {
     return (visibility() + " " +
@@ -2063,7 +2066,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   AbstractType constraint(Context context)
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_DECLARATIONS),
+      (Errors.any() || state().atLeast(State.RESOLVED_DECLARATIONS),
        isTypeParameter());
 
     var result = context.constraintFor(this);
@@ -2185,13 +2188,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    var result = this;
     var o = outer();
-    if (!isCoTypesRelayTypeParameter() && o.isCotype())
-      {
-        result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
-      }
-    return result;
+    return !isRelayTypeParameter() && o.isCotype()
+      ? o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1)
+      : this;
   }
 
 
@@ -2207,13 +2207,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    var result = this;
     var o = outer();
-    if (!o.isCotype() && o.hasCotype())
-      {
-        result = o.cotype().typeArguments().get(typeParameterIndex()+1);
-      }
-    return result;
+    return !o.isCotype() && o.hasCotype()
+      ? o.cotype().typeArguments().get(typeParameterIndex()+1)
+      : this;
   }
 
 

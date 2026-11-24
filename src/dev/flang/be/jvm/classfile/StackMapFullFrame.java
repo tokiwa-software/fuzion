@@ -80,6 +80,7 @@ public class StackMapFullFrame extends ANY implements Comparable<StackMapFullFra
   }
 
 
+  @Override
   public int compareTo(StackMapFullFrame o)
   {
     if (PRECONDITIONS) require

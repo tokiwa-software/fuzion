@@ -833,6 +833,7 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
+  @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     // if expected type is choice, examine if there is exactly one numeric
@@ -876,6 +877,7 @@ public class NumLiteral extends Constant
    * @return an array with length findConstantType(type_)._bytes containing the
    * constant as a little-endian unsigned or two's complement value.
    */
+  @Override
   public byte[] data()
   {
     var ct = findConstantType(type());
@@ -956,6 +958,7 @@ public class NumLiteral extends Constant
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _originalString;

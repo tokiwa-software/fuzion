@@ -87,6 +87,7 @@ public class Operator extends ANY
   /**
    * Convert this to String for debugging.
    */
+  @Override
   public String toString()
   {
     return "OP:" + _text;

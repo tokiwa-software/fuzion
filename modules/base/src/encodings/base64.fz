@@ -146,30 +146,19 @@ is
       else                       # case /
         63
 
-    for
-      res := (Sequence u8).empty, res ++ [b0, b1, b2] # contains the decoded data at the end
-      nxt := 0, nxt + 4
-      last_err := false, is_err
-      sxt_last array (outcome u32) := [], sextets
-
-    while nxt.as_i64 < d.length && !last_err
-    do
-      sextets := [check_input nxt, check_input nxt+1, check_input nxt+2, check_input nxt+3]
-      is_err := (sextets ∃ .is_error)
-
-      # convert sextets in 24 bit number, break up in three bytes
-      block := if is_err then 0 else sextets[0].or_panic << 18 | sextets[1].or_panic << 12 | sextets[2].or_panic << 6 | sextets[3].or_panic
-      b0 := (block >> 16).low8bits
-      b1 := (block >> 8).low8bits
-      b2 := block.low8bits
-
-    else
-      if last_err
-        (sxt_last.filter (.is_error)).first.or_panic.err
-      else
-        # remove zero bytes caused by padding
-        outcome (res.take res.count.as_i64-pad_size).as_array
-
+    (0 .. (d.length - 1) : 4)
+      .reduce_or_error (Sequence u8).empty (res,nxt)->
+                                    # convert sextets in 24 bit number, break up in three bytes
+        for block := u32 0, block | sextets.or_panic << (18-(6*i)).as_u32
+            i in 0..3
+        do
+          sextets := check_input nxt+i
+        until sextets.is_error
+          abort (outcome (Sequence u8)) sextets.err
+        else
+          res ++ [(block >> 16).low8bits, (block >> 8).low8bits, block.low8bits] # contains the decoded data at the end
+      # remove zero bytes caused by padding
+      .bind (res -> (res.take res.count.as_i64-pad_size).as_array)
 
 
 # base64 encoding and decoding as defined in RFC 4648

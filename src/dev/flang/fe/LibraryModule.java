@@ -149,7 +149,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Cache for innerFeatures created from given index
    */
-  private final Map<Integer, List<FuirFeature>> _innerFeatures = new TreeMap<>();
+  private final Map<Integer, List<LibraryFeature>> _innerFeatures = new TreeMap<>();
 
 
   /**
@@ -327,6 +327,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param outer the declaring feature
    */
+  @Override
   public SortedMap<FeatureName, AbstractFeature> declaredFeatures(AbstractFeature outer)
   {
     var result = declaredFeaturesShallow(outer);
@@ -420,7 +421,7 @@ public class LibraryModule extends Module implements MirModule
    * @return list of inner features of outer that are declared by this library
    * module.
    */
-  List<FuirFeature> features(AbstractFeature outer)
+  List<LibraryFeature> features(AbstractFeature outer)
   {
     if (outer.isUniverse())
       {
@@ -449,7 +450,7 @@ public class LibraryModule extends Module implements MirModule
    */
   public LibraryFeature libraryUniverse()
   {
-    return (LibraryFeature)innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
+    return innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
   }
 
 
@@ -458,12 +459,12 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param at the index of an InnerFeatures block.
    */
-  List<FuirFeature> innerFeatures(int at)
+  List<LibraryFeature> innerFeatures(int at)
   {
     var result = _innerFeatures.get(at);
     if (result == null)
       {
-        result = new List<FuirFeature>();
+        result = new List<LibraryFeature>();
         var is = innerFeaturesSize(at);
         var ip = innerFeaturesFeaturesPos(at);
         for (var i = ip; i < ip+is; i = featureNextPos(i))
@@ -637,6 +638,7 @@ Module File
   {
     return startPos();
   }
+  @Override
   public String name()
   {
     return name(namePos());
@@ -2461,12 +2463,11 @@ SourceFile
    *
    * @param fs the features to annotate.
    */
-  private void dump(HexDump hd, List<FuirFeature> fs)
+  private void dump(HexDump hd, List<LibraryFeature> fs)
   {
     for (var f: fs)
       {
-        var lf = (LibraryFeature) f;
-        var li = lf._index;
+        var li = f._index;
         hd.mark(li, featureKindEnum(li).toString());
         hd.mark(featureNamePos(li), f.qualifiedNameHuman());
         if (featureIsRoutine(li))
@@ -2481,6 +2482,7 @@ SourceFile
   /**
    * Create String representation for debugging.
    */
+  @Override
   public String toString()
   {
     return "LibraryModule for '" + name() + "'";

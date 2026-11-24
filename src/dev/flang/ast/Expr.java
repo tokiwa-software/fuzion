@@ -774,7 +774,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   private List<AbstractCall> allInherited(AbstractFeature f)
   {
-    return f.inherits().flatMap(x -> new List<>(x, allInherited(x.calledFeature())));
+    return f.inherits().flatMap2(x -> new List<AbstractCall>(x, allInherited(x.calledFeature())));
   }
 
 
@@ -926,12 +926,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
     // Case 1: types are equal, no tagging necessary
     if (frmlT.compareTo(at) == 0)
-      {
-        return;
-      }
-    // Case 1.1: types are equal, no tagging necessary
-    // NYI: BUG: soundness issue?
-    else if (at.isChoice() && frmlT.asThis().compareTo(at.asThis()) == 0)
       {
         return;
       }

@@ -77,6 +77,7 @@ public class Boxed extends ValueWithClazz
    * Create a copy (clone) of this value.  Used for boxing values into
    * ref-types.
    */
+  @Override
   Instance cloneValue(int cl)
   {
     if (PRECONDITIONS) require
@@ -91,6 +92,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the i8 value
    */
+  @Override
   public int i8Value()
   {
     if (PRECONDITIONS) require
@@ -105,6 +107,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the i16 value
    */
+  @Override
   public int i16Value()
   {
     if (PRECONDITIONS) require
@@ -119,6 +122,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the i32 value
    */
+  @Override
   public int i32Value()
   {
     if (PRECONDITIONS) require
@@ -133,6 +137,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the i64 value
    */
+  @Override
   public long i64Value()
   {
     if (PRECONDITIONS) require
@@ -147,6 +152,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the u8 value
    */
+  @Override
   public int u8Value()
   {
     if (PRECONDITIONS) require
@@ -162,6 +168,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the u16 value
    */
+  @Override
   public int u16Value()
   {
     if (PRECONDITIONS) require
@@ -176,6 +183,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the u32 value
    */
+  @Override
   public int u32Value()
   {
     if (PRECONDITIONS) require
@@ -190,6 +198,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the u64 value
    */
+  @Override
   public long u64Value()
   {
     if (PRECONDITIONS) require
@@ -204,6 +213,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the f32 value
    */
+  @Override
   public float f32Value()
   {
     if (PRECONDITIONS) require
@@ -218,6 +228,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the f64 value
    */
+  @Override
   public double f64Value()
   {
     if (PRECONDITIONS) require
@@ -232,6 +243,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the bool value
    */
+  @Override
   public boolean boolValue()
   {
     if (PRECONDITIONS) require
@@ -250,6 +262,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return the LValue to rev
    */
+  @Override
   public LValue at(int c, int off)
   {
     return _contents.at(c, off);
@@ -261,6 +274,7 @@ public class Boxed extends ValueWithClazz
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "boxed[" + fuir().clazzNameHuman(_clazz) + "]" + this.hashCode();

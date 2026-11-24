@@ -87,12 +87,12 @@ class NormalType extends LibraryType
 
     if (PRECONDITIONS) require
       (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType,
-       generics.stream().allMatch(g -> g instanceof ResolvedType));
+       generics.stream().allMatch(g -> g instanceof ResolvedType),
+       feature.outer() == null || outer.isParametricType() || outer.feature().inheritsFrom(feature.outer()));
 
     this._feature = feature;
     this._typeKind = typeKind;
-    this._generics = generics;
-    this._generics.freeze();
+    this._generics = generics.freeze();
     this._outer = outer;
   }
 
@@ -103,7 +103,7 @@ class NormalType extends LibraryType
   /**
    * {@code this} as a value.
    *
-   * Requires that at isNormalType().
+   * Requires that at isPlainType().
    */
   @Override
   public AbstractType asValue()
