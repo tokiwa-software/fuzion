@@ -331,14 +331,17 @@ public class C extends ANY
           if (!_fuir.clazzIsUnitType(fr))
             {
               var bytes = _fuir.deserializeConst(fr, bb);
-              sb.append("." + _names.fieldName(arg).code());
-              sb.append(" = ");
-              var cd = constData(_fuir.clazzResultClazz(arg), bytes);
-              l.add(cd.v1());
-              sb.append(cd.v0().code());
-              if (i + 1 != argCount)
+              if (_types.fieldExists(arg))
                 {
-                  sb.append(",");
+                  sb.append("." + _names.fieldName(arg).code());
+                  sb.append(" = ");
+                  var cd = constData(_fuir.clazzResultClazz(arg), bytes);
+                  l.add(cd.v1());
+                  sb.append(cd.v0().code());
+                  if (i + 1 != argCount)
+                    {
+                      sb.append(",");
+                    }
                 }
             }
         }
