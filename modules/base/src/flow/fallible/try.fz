@@ -89,6 +89,8 @@ public type.try(T : Any, code_try ()->T) is
         else                  error e.as_string
 
 
+  # or_outcome that maps the error to a new error type
+  #
   public or_outcome(m ERROR -> error) outcome T =>
     fallible.this.try (outcome T) (()->code_try())
       .catch (e->m e)
