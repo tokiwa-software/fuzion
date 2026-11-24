@@ -756,7 +756,9 @@ public class Html extends ANY
                               .filter(f -> !Util.isInternalFeature(f))
                               .map(f -> new Tuple(f, contractFeature.apply(f))))
       .filter(t->t.snd != null && startsWithKeyword(keyword, t.snd.sourceText()))
-      .map(t->(t.fst != null ? "<br>Inherited from <span class=fd-fname>" + relativeAnchor(t.fst, af) + "</span><br>" : "")
+      // Keep applicable contracts even when their origins cannot be referenced.
+      .map(t->(t.fst != null && canReference(t.fst)
+                ? "<br>Inherited from <span class=fd-fname>" + relativeAnchor(t.fst, af) + "</span><br>" : "")
                 + "<div class=fz-code><pre>" + contractSrc(t.snd)
                 + "</pre></div>")
       .collect(Collectors.joining());
@@ -848,10 +850,11 @@ public class Html extends ANY
           {
             return af.redefines().stream().flatMap(r ->
               {
+                // Keep inherited content without naming an ineligible origin.
                 var c = commentOf(r);
                 return c.isBlank()
                   ? Stream.empty()
-                  : c.startsWith("<details open>")
+                  : !canReference(r) || c.startsWith("<details open>")
                   ? Stream.of(c)
                   : Stream.of(
                     "<details class=\"cursor-pointer\" open><summary>Comment of <span class=fd-fname>" +
