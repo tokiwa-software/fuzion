@@ -232,6 +232,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   /*-----------------------------  methods  -----------------------------*/
 
 
+  @Override
   public int compareTo(FeatureName o)
   {
     if (PRECONDITIONS) require
@@ -304,6 +305,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   }
 
 
+  @Override
   public String toString()
   {
     return baseNameHuman() + argCountAndIdString();

@@ -130,6 +130,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   /**
    * Create and return the actual source code position held by this instance.
    */
+  @Override
   public SourcePosition pos()
   {
     /* this not only has a position, it _is_ a position! */
@@ -430,12 +431,14 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    * Convert this position to a string of the form
    * {@code <filename>:<line>:<column>:}.
    */
+  @Override
   public String toString()
   {
     return fileNameWithPosition();
   }
 
 
+  @Override
   public int compareTo(SourcePosition o)
   {
     int result = fileName().compareTo(o.fileName());

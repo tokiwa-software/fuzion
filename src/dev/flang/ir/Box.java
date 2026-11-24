@@ -86,6 +86,7 @@ public class Box extends Expr
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _value.pos();
@@ -104,6 +105,7 @@ public class Box extends Expr
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "box(" + _value + ")";

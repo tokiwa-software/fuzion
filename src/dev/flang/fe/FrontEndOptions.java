@@ -269,6 +269,7 @@ public class FrontEndOptions extends FuzionOptions
    *
    * @return true if escape analysis has to be performed.
    */
+  @Override
   public boolean needsEscapeAnalysis()
   {
     return _needsEscapeAnalysis || serializeFuir();

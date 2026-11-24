@@ -219,7 +219,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
         var sites = new SiteRecord[siteCount];
         for (int s = SITE_BASE; s < SITE_BASE+siteCount; s++)
           {
-            if (invalidSite(s))
+            if (!withinCode(s))
               {
                 sites[s-SITE_BASE] = new SiteRecord(
                   clazzAt(s), false, false, null, NO_CLAZZ, null, NO_CLAZZ, null,
@@ -273,18 +273,6 @@ public class OptimizedFUIR extends GeneratingFUIR {
         e.printStackTrace();
       }
     return baos.toByteArray();
-  }
-
-
-  /**
-   * Does {@code s} represent an invalid site?
-   *
-   * This either means {@code s} does not point to any code
-   * or the code was never accessed during the DFA.
-   */
-  private boolean invalidSite(int s)
-  {
-    return !withinCode(s) || !_accessedSites.get(s-SITE_BASE);
   }
 
 

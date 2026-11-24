@@ -59,6 +59,12 @@ module thread is
   module set_affinity0(thread_id Internal_Thread, cores Array u64, cores_len i32) i32 => intrinsic
 
 
+  # intrinsic to get the CPU time consumed by a thread in nano seconds,
+  # negative in case of an error.
+  #
+  module cpu_time0(thread_id Internal_Thread) i64 => intrinsic
+
+
   # pin a thread to the CPUs given in an array
   #
   module set_affinity(thread_id Internal_Thread, cores array u64) i32 =>

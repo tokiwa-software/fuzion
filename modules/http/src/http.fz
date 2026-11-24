@@ -51,10 +51,13 @@ module crlf => "\r\n"
 # to that protocol within elements that require a minor version identifier.
 # https://datatracker.ietf.org/doc/html/rfc9110#section-2.5-6
 #
-module parse_http_version(ver String) =>
+module parse_http_version(# the type of the `flow.exception` to cause in case of a broken version
+                          E : flow.exception_tag,
+                          ver String)
+=>
   err(_ error) => error "broken format of HTTP version '$(ver)'"
   v := ver.substring 5
   match v.find "."
-    nil => (v.parse_i64.or_cause unit err, 0)
+    nil => (v.parse_i64.or_cause E err, 0)
     i i64 =>
-      (v.substring 0 i .parse_i64.or_cause unit err, v.substring i+1 .parse_i64.or_cause unit err)
+      (v.substring 0 i .parse_i64.or_cause E err, v.substring i+1 .parse_i64.or_cause E err)

@@ -102,6 +102,7 @@ public abstract class AbstractMatch extends ExprWithPos
    *
    * @return this.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var ns = subject().visit(v, outer);

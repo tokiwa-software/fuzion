@@ -171,7 +171,7 @@ is
 
   # get A or cause an `exception T`
   #
-  public or_cause(T : Any, e B->error) A ! flow.exception T =>
+  public or_cause(T : flow.exception_tag, e B->error) A ! flow.exception T =>
     match switch.this
       a A => a
       b B => (flow.exception T).env.cause (e b)
