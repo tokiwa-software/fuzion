@@ -69,4 +69,25 @@ public class Util extends ANY
         || af.visibility() == Visi.PUB;
   }
 
+
+  /**
+   * Is this declaration part of an internal or anonymous implementation?
+   * Public members inside such scopes are internal too. Ordinary private
+   * scopes do not affect this check. Cotypes represent their original feature's
+   * type namespace and are checked through that origin.
+   */
+  static boolean isInternalFeature(AbstractFeature af)
+  {
+    boolean result = false;
+    for (var f = af; !result && f != null && !f.isUniverse(); f = f.outer())
+      {
+        if (f.isCotype())
+          {
+            f = f.cotypeOrigin();
+          }
+        result = f.featureName().isInternal() || f.featureName().isNameless();
+      }
+    return result;
+  }
+
 }

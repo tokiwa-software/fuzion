@@ -26,3 +26,10 @@ issue2034 is
   _ := s.u.u
   s is
     u : s is
+
+  say s.u.u
+  say (type_of s.u.u)
+  say s.u.u.u
+  say (type_of s.u.u.u)
+  say s.u.u.u.u
+  say (type_of s.u.u.u.u)
