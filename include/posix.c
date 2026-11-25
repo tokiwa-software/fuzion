@@ -714,8 +714,7 @@ int64_t fzE_thread_cpu_time(void * thrd)
 {
   int64_t res = -1;
 #ifdef __APPLE__
-  // NYI: macOS only provides microsecond resolution for other threads,
-  // the precise mach-time counters (PROC_PIDTHREADCOUNTS) are private SPI.
+  // macOS only supports microsecond precision
   mach_port_t port = pthread_mach_thread_np((pthread_t)thrd);
   thread_basic_info_data_t info;
   mach_msg_type_number_t count = THREAD_BASIC_INFO_COUNT;
