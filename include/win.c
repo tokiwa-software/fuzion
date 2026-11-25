@@ -877,25 +877,20 @@ wchar_t *build_unicode_environment_block(char *env[], size_t envLen) {
 }
 
 
-// start the child process using the given child's ends of the pipes.
-//
-// result
-//    0 : success, *process is the process handle
-//   -1 : error, check GetLastError()
-//
-static int fzE_process_spawn(char *args[], size_t argsLen, char *env[], size_t envLen,
-                             HANDLE hStdinRead, HANDLE hStdoutWrite, HANDLE hStderrWrite,
-                             HANDLE *process)
-{
+static int fzE_process_create0(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+
+  // Programmatically controlling which handles are inherited by new processes in Win32
+  // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
+
+  HANDLE hStdinRead, hStdinWrite;
+  HANDLE hStdoutRead, hStdoutWrite;
+  HANDLE hStderrRead, hStderrWrite;
+
   // we resolve app path manually, because we
   // want to pass empty env where PATH is not set
   // so app would not be found when passing
   // via args
   wchar_t *app = utf8_to_wide_str(args[0]);
-  if (!app) {
-    SetLastError(ERROR_INVALID_NAME);
-    return -1;
-  }
   WCHAR resolvedPath[MAX_PATH];
   DWORD spw = SearchPathW(
     NULL,
@@ -914,13 +909,42 @@ static int fzE_process_spawn(char *args[], size_t argsLen, char *env[], size_t e
   wchar_t *args_w = build_unicode_args(args, argsLen);
   wchar_t *envBlock = build_unicode_environment_block(env, envLen);
 
-  // NOTE: envBlock == NULL would make the child inherit our environment
   if (!args_w || !envBlock) {
     free(args_w);
     free(envBlock);
     SetLastError(ERROR_INVALID_NAME);
     return -1;
   }
+
+  SECURITY_ATTRIBUTES saAttr = {
+      .nLength = sizeof(SECURITY_ATTRIBUTES),
+      .bInheritHandle = TRUE,
+      .lpSecurityDescriptor = NULL
+  };
+
+  BOOL ok = TRUE;
+  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0)) {
+    ok = FALSE;
+  } else if (!CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0)) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    ok = FALSE;
+  } else if (!CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStdoutWrite);
+    ok = FALSE;
+  }
+  if (!ok) {
+    free(args_w);
+    free(envBlock);
+    return -1;
+  }
+
+  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
 
   PROCESS_INFORMATION pi;
   STARTUPINFOW si = {0};
@@ -943,101 +967,28 @@ static int fzE_process_spawn(char *args[], size_t argsLen, char *env[], size_t e
     &pi
   );
 
-  DWORD err = GetLastError();
+  CloseHandle(hStdinRead);
+  CloseHandle(hStdoutWrite);
+  CloseHandle(hStderrWrite);
+
   free(args_w);
   free(envBlock);
 
   if (!success) {
-    SetLastError(err);
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStderrRead);
     return -1;
   }
 
   CloseHandle(pi.hThread);
-  *process = pi.hProcess;
+
+  result[0] = (int64_t)pi.hProcess;
+  result[1] = (int64_t)hStdinWrite;
+  result[2] = (int64_t)hStdoutRead;
+  result[3] = (int64_t)hStderrRead;
+
   return 0;
-}
-
-
-// create a pipe, set both handles to NULL on failure
-//
-static BOOL fzE_create_pipe(HANDLE *read, HANDLE *write, SECURITY_ATTRIBUTES *sa)
-{
-  BOOL ok = CreatePipe(read, write, sa, 0);
-  if (!ok)
-    {
-      *read  = NULL;
-      *write = NULL;
-    }
-  return ok;
-}
-
-
-// close handle *h unless it is NULL, set *h to NULL
-//
-static void fzE_close_handle(HANDLE *h)
-{
-  if (*h != NULL)
-    {
-      CloseHandle(*h);
-      *h = NULL;
-    }
-}
-
-
-static int fzE_process_create0(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
-
-  // Programmatically controlling which handles are inherited by new processes in Win32
-  // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
-
-  HANDLE hStdinRead  = NULL, hStdinWrite  = NULL;
-  HANDLE hStdoutRead = NULL, hStdoutWrite = NULL;
-  HANDLE hStderrRead = NULL, hStderrWrite = NULL;
-  HANDLE hProcess    = NULL;
-
-  SECURITY_ATTRIBUTES saAttr = {
-      .nLength = sizeof(SECURITY_ATTRIBUTES),
-      .bInheritHandle = TRUE,
-      .lpSecurityDescriptor = NULL
-  };
-
-  int res = -1;
-  if (fzE_create_pipe(&hStdinRead,  &hStdinWrite,  &saAttr) &&
-      fzE_create_pipe(&hStdoutRead, &hStdoutWrite, &saAttr) &&
-      fzE_create_pipe(&hStderrRead, &hStderrWrite, &saAttr))
-    {
-      SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
-      SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
-      SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
-
-      res = fzE_process_spawn(args, argsLen, env, envLen,
-                              hStdinRead, hStdoutWrite, hStderrWrite,
-                              &hProcess);
-    }
-
-  // keep the error code, CloseHandle might change it
-  DWORD err = GetLastError();
-
-  // the child's ends are never used by us, close them in any case
-  // such that later children cannot inherit them
-  fzE_close_handle(&hStdinRead);
-  fzE_close_handle(&hStdoutWrite);
-  fzE_close_handle(&hStderrWrite);
-
-  if (res == 0)
-    {
-      result[0] = (int64_t)hProcess;
-      result[1] = (int64_t)hStdinWrite;
-      result[2] = (int64_t)hStdoutRead;
-      result[3] = (int64_t)hStderrRead;
-    }
-  else
-    {
-      fzE_close_handle(&hStdinWrite);
-      fzE_close_handle(&hStdoutRead);
-      fzE_close_handle(&hStderrRead);
-      SetLastError(err);
-    }
-  return res;
 }
 
 
