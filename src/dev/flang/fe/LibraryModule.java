@@ -71,7 +71,7 @@ import dev.flang.util.Version;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LibraryModule extends Module implements MirModule
+public class LibraryModule extends Module implements MirModule, RedefinitionLookup
 {
 
 
@@ -149,7 +149,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Cache for innerFeatures created from given index
    */
-  private final Map<Integer, List<FuirFeature>> _innerFeatures = new TreeMap<>();
+  private final Map<Integer, List<LibraryFeature>> _innerFeatures = new TreeMap<>();
 
 
   /**
@@ -421,7 +421,7 @@ public class LibraryModule extends Module implements MirModule
    * @return list of inner features of outer that are declared by this library
    * module.
    */
-  List<FuirFeature> features(AbstractFeature outer)
+  List<LibraryFeature> features(AbstractFeature outer)
   {
     if (outer.isUniverse())
       {
@@ -450,7 +450,7 @@ public class LibraryModule extends Module implements MirModule
    */
   public LibraryFeature libraryUniverse()
   {
-    return (LibraryFeature)innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
+    return innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
   }
 
 
@@ -459,12 +459,12 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param at the index of an InnerFeatures block.
    */
-  List<FuirFeature> innerFeatures(int at)
+  List<LibraryFeature> innerFeatures(int at)
   {
     var result = _innerFeatures.get(at);
     if (result == null)
       {
-        result = new List<FuirFeature>();
+        result = new List<LibraryFeature>();
         var is = innerFeaturesSize(at);
         var ip = innerFeaturesFeaturesPos(at);
         for (var i = ip; i < ip+is; i = featureNextPos(i))
@@ -2463,12 +2463,11 @@ SourceFile
    *
    * @param fs the features to annotate.
    */
-  private void dump(HexDump hd, List<FuirFeature> fs)
+  private void dump(HexDump hd, List<LibraryFeature> fs)
   {
     for (var f: fs)
       {
-        var lf = (LibraryFeature) f;
-        var li = lf._index;
+        var li = f._index;
         hd.mark(li, featureKindEnum(li).toString());
         hd.mark(featureNamePos(li), f.qualifiedNameHuman());
         if (featureIsRoutine(li))
@@ -2511,6 +2510,58 @@ SourceFile
   public boolean sameOrDependent(LibraryModule lm)
   {
     return lm == this || Arrays.asList(_modules).stream().map(r->r._module).anyMatch(x->x==lm);
+  }
+
+
+  /**
+   * Find the redefinition of feature f within heir.
+   *
+   * For fixed features, this performs a lookup by name since fixed features
+   * are not inherited and a call to a fixed feature must be bound to the
+   * feature with the same name in the actual outer type.
+   *
+   * For all other features, this does not perform a lookup by name, but uses
+   * the redefinition relation, so features in heir that have the same name as
+   * f but do not redefine f are ignored.
+   *
+   * @param heir a feature that inherits from f.outer(), directly or
+   *             indirectly.
+   *
+   * @param f    a feature declared in or inherited by f.outer()
+   *
+   * @return the feature in heir that redefines f, or f itself if f is not
+   *         redefined in heir.
+   */
+  @Override
+  public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
+    // NYI: BUG: #8187 Must not used named lookup, redefinitions should be found in
+    // `d._redefinitions`. If they are not there, we should find out why and fix that.
+    if (f.isFixed() && !f.isTypeParameter())
+      {
+        var sameName = lookupFeature(heir, f.featureName());
+        if (sameName != null && sameName.isFixed())
+          {
+            return (LibraryFeature)sameName;
+          }
+      }
+    var d = data(heir);
+    var m = d._redefinitions;
+    if (m == null)
+      {
+        var res = new TreeMap<AbstractFeature, AbstractFeature>();
+        forEachDeclaredOrInheritedFeature(heir, g ->
+          {
+            for (var o : g.redefinesFull())
+              {
+                var prev = res.put(o, g);
+                if (CHECKS)
+                  check(prev == null || prev == g || Errors.any());
+              }
+          });
+        m = res;
+        d._redefinitions = m;
+      }
+    return m.getOrDefault(f, f);
   }
 
 }

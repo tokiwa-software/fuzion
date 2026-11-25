@@ -28,7 +28,6 @@ package dev.flang.fe;
 
 import java.util.Set;
 
-import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Contract;
@@ -53,7 +52,7 @@ public abstract class FuirFeature extends AbstractFeature
   @Override public Set<AbstractFeature>  redefines()               { return AbstractFeature.EMPTY_SET; }
   @Override public Visi                  visibility()              { return Visi.PRIV; };
   @Override public int                   modifiers()               { return 0;  };
-  @Override public List<AbstractCall>    inherits()                { return AbstractCall.NO_CALLS; }
+  @Override public List<LibraryCall>     inherits()                { return LibraryCall.NO_CALLS; }
   @Override public List<AbstractFeature> arguments()               { return AbstractFeature._NO_FEATURES_; };
   @Override public SourcePosition        resultTypePos()           { return pos(); }
   @Override public FuirFeature           resultField()             { return null; }

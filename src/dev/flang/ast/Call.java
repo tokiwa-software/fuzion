@@ -2559,25 +2559,37 @@ public class Call extends AbstractCall
           }
         else
           {
-            if  (!actualType.isParametricType())
-              {
-                for (var p: actualType.feature().inherits())
-                  {
-                    if (p instanceof Call pc)
-                      {
-                        pc.resolveTypes(res, actualType.feature().context());
-                      }
-                    var pt = p.type();
-                    if (pt != Types.t_ERROR)
-                      {
-                        var apt = actualType.actualType(pt, context);
-                        if (apt.feature().inheritsFrom(formalType.feature()))
-                          {
-                            inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt, actualArgIndex);
-                          }
-                      }
-                  }
-              }
+            switch (actualType.kind())
+            {
+              case ThisType, RefType, ValueType ->
+                {
+                  for (var p: actualType.feature().inherits())
+                    {
+                      if (p instanceof Call pc)
+                        {
+                          pc.resolveTypes(res, actualType.feature().context());
+                        }
+                      var pt = p.type();
+                      if (pt != Types.t_ERROR)
+                        {
+                          var apt = actualType.actualType(pt, context);
+                          if (apt.feature().inheritsFrom(formalType.feature()))
+                            {
+                              inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt, actualArgIndex);
+                            }
+                        }
+                    }
+                }
+              case ParametricType ->
+                {
+                  var constraint = actualType.selfOrConstraint(res, context);
+                  if (constraint.feature().inheritsFrom(fft))
+                    {
+                      inferGeneric(res, context, formalType, formalTypeIsConstraint, constraint,
+                                  pos, conflict, foundAt, actualArgIndex);
+                    }
+                }
+            }
 
             if (formalType.isChoice())
               {

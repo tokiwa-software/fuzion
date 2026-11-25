@@ -52,7 +52,7 @@ import java.util.stream.Stream;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Module extends ANY implements FeatureLookup
+public abstract class Module extends ANY
 {
 
 
@@ -523,42 +523,12 @@ public abstract class Module extends ANY implements FeatureLookup
   }
 
 
-  /** {@inheritDoc} */
-  @Override
-  public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
-    // NYI: BUG: #8187 Must not used named lookup, redefinitions should be found in
-    // `d._redefinitions`. If they are not there, we should find out why and fix that.
-    if (f.isFixed() && !f.isTypeParameter())
-      {
-        var sameName = lookupFeature(heir, f.featureName());
-        if (sameName != null && sameName.isFixed())
-          {
-            return sameName;
-          }
-      }
-    var d = data(heir);
-    var m = d._redefinitions;
-    if (m == null)
-      {
-        var res = new TreeMap<AbstractFeature, AbstractFeature>();
-        forEachDeclaredOrInheritedFeature(heir, g ->
-          {
-            for (var o : g.redefinesFull())
-              {
-                var prev = res.put(o, g);
-                if (CHECKS)
-                  check(prev == null || prev == g || Errors.any());
-              }
-          });
-        m = res;
-        d._redefinitions = m;
-      }
-    return m.getOrDefault(f, f);
-  }
 
-
-  /** {@inheritDoc} */
-  @Override
+  /**
+   * Find feature with given name in outer.
+   *
+   * @param outer the declaring or inheriting feature
+   */
   public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
   {
     return declaredOrInheritedFeatures(outer, name).getFirstOrNull();

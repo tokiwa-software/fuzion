@@ -56,7 +56,7 @@ import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.AbstractFeature.Kind;
 
-import dev.flang.fe.FeatureLookup;
+import dev.flang.fe.RedefinitionLookup;
 import dev.flang.fe.FuirFeature;
 import dev.flang.fe.LibraryFeature;
 
@@ -722,7 +722,7 @@ public class GeneratingFUIR extends FUIR
   final IntMap<int[]> _accessedClazzes;
 
 
-  private final FeatureLookup _featureLookup;
+  private final RedefinitionLookup _redefinitionLookup;
 
 
   private final int _mainClazz;
@@ -797,7 +797,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Create FUIR from given Clazz instance.
    */
-  public GeneratingFUIR(FeatureLookup fl, MIR mir)
+  public GeneratingFUIR(RedefinitionLookup rl, MIR mir)
   {
     _lookupDone = false;
     _clazzesTM = new TreeMap<Clazz, Clazz>();
@@ -805,7 +805,7 @@ public class GeneratingFUIR extends FUIR
     _siteClazzCache = new IntMap<>();
     _accessedClazzes = new IntMap<>();
     _accessedTarget = new IntMap<>();
-    _featureLookup = fl;
+    _redefinitionLookup = rl;
     _clazzes = new List<>();
     if (CACHE_RESULT_CLAZZ)
       {
@@ -867,7 +867,7 @@ public class GeneratingFUIR extends FUIR
     _siteClazzCache = original._siteClazzCache;
     _accessedClazzes = original._accessedClazzes;
     _accessedTarget = original._accessedTarget;
-    _featureLookup = original._featureLookup;
+    _redefinitionLookup = original._redefinitionLookup;
     _mainClazz = original._mainClazz;
     _universe = original._universe;
     _clazzes = original._clazzes;
@@ -1052,7 +1052,21 @@ public class GeneratingFUIR extends FUIR
    *         redefined in heir.
    */
   AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
-    return _featureLookup.findRedefinition(heir, f);
+    if (PRECONDITIONS) require
+      (// type parameters never get redefined, they are effectively fixed.
+       // However, type features get replaced by actual type parameters in the
+       // inheritance call. Instead of searching for the redefinition, the type
+       // should be replaced by the actual type.
+       !f.isTypeParameter()
+       // NYI CLEANUP: this should be possible?: ,!_lookupDone
+      );
+
+    var result = _redefinitionLookup.findRedefinition(heir, f);
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
   }
 
 
@@ -1669,7 +1683,7 @@ public class GeneratingFUIR extends FUIR
       {
         for (var p: ff.inherits())
           {
-            var pf = (LibraryFeature) p.calledFeature();
+            var pf = p.calledFeature();
             var of = pf.outerRef();
             Clazz or = (of == null) ? null : c.lookup(of);
             var needsOuterRef = outerRefNeeded(or);

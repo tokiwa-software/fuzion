@@ -61,18 +61,26 @@ import dev.flang.util.List;
 public class Html extends ANY
 {
   final DocsOptions config;
-  private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
+
+  /**
+   * Features selected for documentation pages, mapped to the declared and
+   * inherited members shown on each page, grouped by feature kind.
+   */
+  private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> documentedFeatures;
+
   private final String navigationBareHTML;
+
   private final LibraryModule lm;
+
   private final List<LibraryModule> libModules;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm, List<LibraryModule> libModules)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> documentedFeatures, AbstractFeature universe, LibraryModule lm, List<LibraryModule> libModules)
   {
     this.config = config;
-    this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
+    this.documentedFeatures = documentedFeatures;
     this.lm = lm;
     this.libModules = libModules;
 
@@ -153,8 +161,7 @@ public class Html extends ANY
    */
   private String inherited(AbstractFeature af, AbstractFeature relativeTo)
   {
-    if (signatureWithArrow(af) // inheritance does not make sense for function features since no instance can be obtained
-        || !af.isTypeParameter() && af.inherits().isEmpty()) // type parameters always have a constraint to show
+    if (signatureWithArrow(af)) // inheritance does not make sense for function features since no instance can be obtained
       {
         return "";
       }
@@ -168,11 +175,9 @@ public class Html extends ANY
       }
     else
       {
-        return "<span class='fd-keyword mx-5'>:</span>" + af.inherits()
+        var parents = af.inherits()
           .stream()
-          // don't show inheritance from features that are not public
-          .filter(c->c.calledFeature().visibility().typeVisibility() == Visi.PUB ||
-                     c.calledFeature().visibility().eraseTypeVisibility() == Visi.PUB)
+          .filter(c -> canReference(c.calledFeature()))
           .<String>map(c -> {
             var f = c.calledFeature();
             return fillTemplate("<a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
@@ -184,6 +189,7 @@ public class Html extends ANY
                           .collect(Collectors.joining(", "))));
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
+        return parents.isEmpty() ? "" : "<span class='fd-keyword mx-5'>:</span>" + parents;
       }
   }
 
@@ -346,10 +352,10 @@ public class Html extends ANY
    */
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
+    // This annotation links to the declaring type, not to the inherited member.
     if (isDeclared(af, outer)
-        || nonPublicInheritanceChain(af) // don't show annotation if feature was inherited from feature with non public outer
-        || af.outer().isUniverse()) // features can not inherit from universe,
-                                    // this avoid false annotation in the applicable universe features section
+        || af.outer().isUniverse() // applicable universe features are not inherited
+        || !canReference(af.outer()))
       {
         return ""; // not inherited, nothing to display
       }
@@ -394,8 +400,8 @@ public class Html extends ANY
 
     var redefs = new TreeSet<>(af.redefines());
 
-    // don't show annotation if redefining a feature from a non public feature
-    redefs.removeIf(f->nonPublicInheritanceChain(f));
+    // Public targets can be referenced even when their declaring type is private.
+    redefs.removeIf(f -> !canReference(f));
 
     AbstractFeature relativeTo = outer != null ? outer : af;
     return redefs.isEmpty()
@@ -414,15 +420,18 @@ public class Html extends ANY
       "name", htmlEncodedQualifiedName(f)));
   }
 
-
   /**
-   * Is this feature or any one of the features it inherits from not public
-   * i.e. has a type visibility other than public
+   * May this target be referenced in the selected documentation mode?
+   * Check the target's own visibility, not its ordinary private enclosing
+   * scopes. Internal implementations remain excluded in every mode.
    */
-  private boolean nonPublicInheritanceChain(AbstractFeature f)
+  private boolean canReference(AbstractFeature f)
   {
-    return !f.isUniverse() && (f.visibility().typeVisibility() != Visi.PUB || nonPublicInheritanceChain(f.outer()));
+    var target = f.isCotype() ? f.cotypeOrigin() : f;
+    return !Util.isInternalFeature(target)
+      && (config.ignoreVisibility() || Util.isVisible(target));
   }
+
 
   /**
    * Returns a html formatted annotation to indicate if a feature is abstract
@@ -461,9 +470,8 @@ public class Html extends ANY
   {
     var allInner = new List<AbstractFeature>();
     lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
-
     return allInner.stream()
-        .filter(f->isVisible(f))
+        .filter(this::isVisible)
         .filter(f->f instanceof LibraryFeature lf && lm.sameOrDependent(lf._libModule))
         .anyMatch(f->f.isAbstract())
              ? "<span class='fd-parent ml-10' title='This feature contains inner or inherited features " +
@@ -487,27 +495,25 @@ public class Html extends ANY
 
   private boolean isVisible(AbstractFeature af)
   {
-    return af.visibility().typeVisibility() == Visi.PUB;
+    return af.visibility().typeVisibility() == Visi.PUB && !Util.isInternalFeature(af);
   }
 
 
   private String anchor(AbstractFeature af, AbstractFeature relativeTo) {
-    return (noFeatureLink(af) ? "<span class='font-weight-600 ml-2'>"
+    return (!hasDocumentationPage(af) ? "<span class='font-weight-600 ml-2'>"
                               : "<a class='fd-feature font-weight-600 ml-2' href='" + featureRelativeURL(af, lm, relativeTo) + "'>")
             + typePrfx(af) + htmlEncodedBasename(af)
-            + (noFeatureLink(af) ? "</span>" : "</a>");
+            + (!hasDocumentationPage(af) ? "</span>" : "</a>");
   }
 
   /**
-   * Should a hyperlink be created for feature af?
-   * Function arguments and type parameters don't have their own page in the docs.
+   * Does this feature have a documentation page?
    * @param af the feature which should be checked
-   * @return true iff there is no doc page for this feature and no hyperlink should be created
+   * @return true iff the feature is selected for page generation
    */
-  private boolean noFeatureLink(AbstractFeature af)
+  private boolean hasDocumentationPage(AbstractFeature af)
   {
-    return af.isTypeParameter() || af.isOpenTypeParameter()
-      || (af.isArgument() && !(Util.isConstructorArgument(af) && (config.ignoreVisibility() || Util.isVisible(af))));
+    return documentedFeatures.containsKey(af);
   }
 
 
@@ -518,14 +524,9 @@ public class Html extends ANY
    */
   private String redefines(AbstractFeature af, AbstractFeature relativeTo)
   {
-    var result = "";
-
-    if (!af.redefines().isEmpty())
-      {
-        result = "<div class='fd-redefines'><br />redefines: <br /><ul>" + redefines0(af, relativeTo) + "</ul><br /></div>";
-      }
-
-    return result;
+    var entries = redefines0(af, relativeTo);
+    return entries.isEmpty() ? ""
+      : "<div class='fd-redefines'><br />redefines: <br /><ul>" + entries + "</ul><br /></div>";
   }
 
 
@@ -542,6 +543,7 @@ public class Html extends ANY
     return af
       .redefines()
       .stream()
+      .filter(this::canReference)
       .map(f -> "<li>" + relativeAnchor(f, relativeTo) + "</li>"
         + redefines0(f, relativeTo))
       .collect(Collectors.joining());
@@ -621,7 +623,7 @@ public class Html extends ANY
 
     if (!signatureWithArrow(outer) && !outer.isUniverse())
       {
-        var allUniverseFeat = mapOfDeclaredFeatures.get(lm.universe());
+        var allUniverseFeat = documentedFeatures.get(lm.universe());
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Function, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
@@ -750,9 +752,13 @@ public class Html extends ANY
 
     // first tuple element is the feature from which the contract was inherited, second is the contract itself
     var res = Stream.concat(Stream.of(new Tuple(null, contractFeature.apply(af))),
-                            af.redefinesFull().stream().map(f->new Tuple(f, contractFeature.apply(f))))
+                            af.redefinesFull().stream()
+                              .filter(f -> !Util.isInternalFeature(f))
+                              .map(f -> new Tuple(f, contractFeature.apply(f))))
       .filter(t->t.snd != null && startsWithKeyword(keyword, t.snd.sourceText()))
-      .map(t->(t.fst != null ? "<br>Inherited from <span class=fd-fname>" + relativeAnchor(t.fst, af) + "</span><br>" : "")
+      // Keep applicable contracts even when their origins cannot be referenced.
+      .map(t->(t.fst != null && canReference(t.fst)
+                ? "<br>Inherited from <span class=fd-fname>" + relativeAnchor(t.fst, af) + "</span><br>" : "")
                 + "<div class=fz-code><pre>" + contractSrc(t.snd)
                 + "</pre></div>")
       .collect(Collectors.joining());
@@ -813,6 +819,12 @@ public class Html extends ANY
    */
   String commentOf(AbstractFeature af)
   {
+    // Redefinition targets come from the frontend and may include internal
+    // implementations, even though those were excluded from page collection.
+    if (Util.isInternalFeature(af))
+      {
+        return "";
+      }
     if (af.isUniverse())
       {
         return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
@@ -838,10 +850,11 @@ public class Html extends ANY
           {
             return af.redefines().stream().flatMap(r ->
               {
+                // Keep inherited content without naming an ineligible origin.
                 var c = commentOf(r);
                 return c.isBlank()
                   ? Stream.empty()
-                  : c.startsWith("<details open>")
+                  : !canReference(r) || c.startsWith("<details open>")
                   ? Stream.of(c)
                   : Stream.of(
                     "<details class=\"cursor-pointer\" open><summary>Comment of <span class=fd-fname>" +
@@ -1333,7 +1346,7 @@ public class Html extends ANY
 
         var innerFeatures = lm.declaredFeaturesShallow(f).values().stream()
                               .filter(ft -> ft.definesType()
-                                            && ft.visibility().typeVisibility() == Visi.PUB)
+                                            && isVisible(ft))
                               .sorted(Comparator.comparing(ft -> ft.baseName(), String.CASE_INSENSITIVE_ORDER))
                               .collect(Collectors.toList());
 
@@ -1409,7 +1422,7 @@ public class Html extends ANY
    */
   String content(AbstractFeature af, int directoryDepth)
   {
-    var main = mainSection(mapOfDeclaredFeatures.get(af), af);
+    var main = mainSection(documentedFeatures.get(af), af);
     var toggleFeatureDetails = main.isEmpty() ? "" : """
       <button type="button" class="toggle-feature-details cursor-pointer" onclick="
         const entries = this.parentElement.querySelectorAll(':scope > details');

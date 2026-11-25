@@ -336,12 +336,20 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     if (_feature.isFixed() &&
         !_feature.isTypeParameter() &&
-        _type.outer().outer().feature() != _feature.outer().outer())
+        _type.outer().outer().feature() != _feature.outer().outer() &&
+        _type.feature().redefines().stream().anyMatch(f -> f == Types.resolved.f_effect_default_value))
       {
-        var x = "IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature:\n" +
-        _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _feature.outer().outer().toString();
-        Errors.fatal(x);
+        Errors.fatal("NYI: BUG: #6759: redefinition of outer feature of effect with default value not supported yet\n" +
+                     "effect type: " + _type + "\n" +
+                     "required outer: " + _type   .outer().outer().feature().qualifiedName() + "\n" +
+                     "actual outer  : " + _feature.outer().outer()          .qualifiedName());
       }
+
+    // double check the semantics of fixed types to avoid runtime crashes in case of bugs like
+    // #7158, #7707 or #6759.
+    if (CHECKS) check
+      (_feature.isTypeParameter() ||
+       !_feature.isFixed() || _type.outer().feature() == _feature.outer());
 
     // needed in DFA-Phase to meet FUIR invariant that
     // stack must be empty at the end of a basic block
@@ -912,19 +920,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   private AbstractFeature findRedefinition(AbstractFeature f)
   {
-    if (PRECONDITIONS) require
-      (// type parameters never get redefined, they are effectively fixed.
-       // However, type features get replaced by actual type parameters in the
-       // inheritance call. Instead of searching for the redefinition, the type
-       // should be replaced by the actual type.
-       !f.isTypeParameter());
-
-    var result = _fuir.findRedefinition(feature(), f);
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
+    return _fuir.findRedefinition(feature(), f);
   }
 
 
@@ -1066,7 +1062,8 @@ class Clazz extends ANY implements Comparable<Clazz>
               (Errors.any() || af != null);
             if (af != null)
               {
-                t = af.selfType().applyTypePars(af, fa._tp);
+                t = af.thisType(true /* fixed since we specialize for `Clazz.this`, but not for outer() */)
+                      .applyTypePars(af, fa._tp);
               }
           }
         if (t == null)
@@ -1211,11 +1208,11 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         var o = _outer;
         String outer = o != null && !o.feature().isUniverse() ? StringHelpers.wrapInParentheses(o.toString(humanReadable)) + "." : "";
-        var f = feature();
+        AbstractFeature f = feature();
         var cotypeType = f.isCotype();
         if (cotypeType)
           {
-            f = (LibraryFeature) f.cotypeOrigin();
+            f = f.cotypeOrigin();
           }
         var fn = f.featureName();
         // for a feature that does not define a type itself, the name is not
@@ -1801,13 +1798,13 @@ class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         var res2 = this;
-        var i = feature();
+        AbstractFeature i = feature();
         while (i != null && i != of)
           {
             res2 = i.hasOuterRef()
-              ? res2.lookup(i.outerRef()).resultClazz()
+              ? res2.lookup((FuirFeature) i.outerRef()).resultClazz()
               : res2._outer;
-            i = (LibraryFeature) i.outer();
+            i = i.outer();
           }
         return res2._type;
       }
