@@ -680,11 +680,25 @@ typedef void* (*posix_thread_func)(void*);
 typedef struct {
   posix_thread_func func;
   void* arg;
+  HANDLE handle;   // handle of the new thread, set before it is resumed
 } thread_trampoline_t;
+
+
+/*
+ * Real handle of the current thread, NULL if not known yet.
+ *
+ * For threads started by fzE_thread_create, this is the handle returned by
+ * fzE_thread_create.  Otherwise, it is created lazily by fzE_thread_current.
+ *
+ * Only this variable is thread local; the handle itself is valid in all
+ * threads of the process until it is closed by fzE_thread_join.
+ */
+static _Thread_local HANDLE fzE_current_thread_handle = NULL;
 
 
 unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
   thread_trampoline_t* trampoline = (thread_trampoline_t*)raw_arg;
+  fzE_current_thread_handle = trampoline->handle;
   trampoline->func(trampoline->arg);
   // NYI: free: trampoline
   return 0;
@@ -696,7 +710,22 @@ unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
  */
 void * fzE_thread_current()
 {
-  return GetCurrentThread();
+  if (fzE_current_thread_handle == NULL)
+    {
+      // GetCurrentThread() returns a pseudo handle that always refers to the
+      // thread that uses it, so it cannot be used by other threads.  Create
+      // a real handle instead.  This happens only for threads that were not
+      // started by fzE_thread_create, i.e., the main thread.  The handle is
+      // never closed.
+      HANDLE p = GetCurrentProcess();
+      if (!DuplicateHandle(p, GetCurrentThread(), p, &fzE_current_thread_handle,
+                           0, FALSE, DUPLICATE_SAME_ACCESS))
+        {
+          fprintf(stderr, "*** DuplicateHandle failed with error %lu\n", GetLastError());
+          exit(EXIT_FAILURE);
+        }
+    }
+  return fzE_current_thread_handle;
 }
 
 
@@ -714,11 +743,18 @@ void * fzE_thread_create(void *(*code)(void *),
     0,                   // stack size
     trampoline_wrapper,  // thread function
     trampoline,          // argument to thread function
-    0,                   // creation flags
+    CREATE_SUSPENDED,    // creation flags: resumed once trampoline->handle is set
     NULL                 // thread ID (optional, can be NULL)
   );
 
   assert(handle != NULL);
+
+  trampoline->handle = handle;
+  if (ResumeThread(handle) == (DWORD)-1)
+    {
+      fprintf(stderr, "*** ResumeThread failed with error %lu\n", GetLastError());
+      exit(EXIT_FAILURE);
+    }
 
   return handle;
 }
