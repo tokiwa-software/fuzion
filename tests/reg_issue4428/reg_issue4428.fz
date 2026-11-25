@@ -39,7 +39,6 @@
 # the original code from the issue:
 
 
->>>>>>> fix_4428_using_final
 f(x ()->T) =>
 f ()->
   a is
