@@ -196,6 +196,7 @@ public class Call extends AbstractCall
    * of an open generic type, this is the chosen variant.
    */
   private final int _select;
+  @Override
   public int select() { return _select; }
 
 
@@ -215,6 +216,7 @@ public class Call extends AbstractCall
    * actual generic arguments, set by parser
    */
   /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
+  @Override
   public List<AbstractType> actualTypeParameters()
   {
     var res = _generics;
@@ -248,6 +250,7 @@ public class Call extends AbstractCall
    * Actual arguments, set by parser
    */
   List<Expr> _actuals;
+  @Override
   public List<Expr> actuals()
   {
     if (POSTCONDITIONS) ensure
@@ -285,6 +288,7 @@ public class Call extends AbstractCall
    * the target of the call, null for "this". Set by parser
    */
   protected Expr _target;
+  @Override
   public Expr target()
   {
     if (_target == null)
@@ -345,6 +349,7 @@ public class Call extends AbstractCall
    * call.
    */
   boolean _isInheritanceCall = false;
+  @Override
   public boolean isInheritanceCall() { return _isInheritanceCall; }
 
 
@@ -541,6 +546,7 @@ public class Call extends AbstractCall
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _pos;
@@ -706,6 +712,7 @@ public class Call extends AbstractCall
    * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
    * feature of f.
    */
+  @Override
   void loadCalledFeature(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
@@ -1261,6 +1268,7 @@ public class Call extends AbstractCall
    * After resolveTypes or if calledFeatureKnown(), this can be called to obtain
    * the feature that is called.
    */
+  @Override
   public AbstractFeature calledFeature()
   {
     if (PRECONDITIONS) require
@@ -1368,6 +1376,7 @@ public class Call extends AbstractCall
    *
    * @return this.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this);
@@ -2547,25 +2556,37 @@ public class Call extends AbstractCall
           }
         else
           {
-            if  (!actualType.isParametricType())
-              {
-                for (var p: actualType.feature().inherits())
-                  {
-                    if (p instanceof Call pc)
-                      {
-                        pc.resolveTypes(res, actualType.feature().context());
-                      }
-                    var pt = p.type();
-                    if (pt != Types.t_ERROR)
-                      {
-                        var apt = actualType.actualType(pt, context);
-                        if (apt.feature().inheritsFrom(formalType.feature()))
-                          {
-                            inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt, actualArgIndex);
-                          }
-                      }
-                  }
-              }
+            switch (actualType.kind())
+            {
+              case ThisType, RefType, ValueType ->
+                {
+                  for (var p: actualType.feature().inherits())
+                    {
+                      if (p instanceof Call pc)
+                        {
+                          pc.resolveTypes(res, actualType.feature().context());
+                        }
+                      var pt = p.type();
+                      if (pt != Types.t_ERROR)
+                        {
+                          var apt = actualType.actualType(pt, context);
+                          if (apt.feature().inheritsFrom(formalType.feature()))
+                            {
+                              inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt, actualArgIndex);
+                            }
+                        }
+                    }
+                }
+              case ParametricType ->
+                {
+                  var constraint = actualType.selfOrConstraint(res, context);
+                  if (constraint.feature().inheritsFrom(fft))
+                    {
+                      inferGeneric(res, context, formalType, formalTypeIsConstraint, constraint,
+                                  pos, conflict, foundAt, actualArgIndex);
+                    }
+                }
+            }
 
             if (formalType.isChoice())
               {

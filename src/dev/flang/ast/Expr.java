@@ -774,7 +774,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   private List<AbstractCall> allInherited(AbstractFeature f)
   {
-    return f.inherits().flatMap(x -> new List<>(x, allInherited(x.calledFeature())));
+    return f.inherits().flatMap2(x -> new List<AbstractCall>(x, allInherited(x.calledFeature())));
   }
 
 

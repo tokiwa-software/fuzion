@@ -93,12 +93,14 @@ public class Label extends Expr
    *
    * @param cf the class file we are generating, used for cpool indices.
    */
+  @Override
   public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
   {
     ba.setLabel(this);
   }
 
 
+  @Override
   public JavaType type()
   {
     return ClassFileConstants.PrimitiveType.type_void;
@@ -108,6 +110,7 @@ public class Label extends Expr
   /**
    * String representation of this label:
    */
+  @Override
   public String toString() { return "label:" + (_posFinal == -1 ? "" : "@"+_posFinal); }
 
 

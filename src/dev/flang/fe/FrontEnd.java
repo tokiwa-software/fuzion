@@ -84,11 +84,13 @@ public class FrontEnd extends ANY
     private final FeatureName _fn = FeatureName.get(FuzionConstants.UNIVERSE_NAME, 0);
 
     { setState(State.LOADING); }
+    @Override
     public boolean isUniverse()
     {
       return true;
     }
 
+    @Override
     public FeatureName featureName()
     {
       return _fn;

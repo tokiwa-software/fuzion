@@ -79,6 +79,7 @@ public class FunctionReturnType extends ReturnType
    *
    * @return true for a constructor return type, false for a function.
    */
+  @Override
   boolean isConstructorType()
   {
     return false;
@@ -140,6 +141,7 @@ public class FunctionReturnType extends ReturnType
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _type.toString(true);

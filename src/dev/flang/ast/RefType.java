@@ -65,6 +65,7 @@ public class RefType extends ReturnType
    *
    * @return true for a constructor return type.
    */
+  @Override
   boolean isConstructorType()
   {
     return true;
@@ -76,6 +77,7 @@ public class RefType extends ReturnType
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "";

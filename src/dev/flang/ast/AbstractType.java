@@ -1610,6 +1610,7 @@ there is no common super type of the two types (Types.t_ERROR)
   /**
    * Compare this to other for creating unique types.
    */
+  @Override
   public int compareTo(AbstractType other)
   {
     return compareTo(other, false);
@@ -2352,6 +2353,7 @@ there is no common super type of the two types (Types.t_ERROR)
   /**
    * Get a String representation of this Type.
    */
+  @Override
   public String toString()
   {
     return toString(false);

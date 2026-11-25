@@ -65,6 +65,7 @@ public class NoType extends ReturnType
    *
    * @return true for a constructor return type.
    */
+  @Override
   boolean isConstructorType()
   {
     return false;
@@ -76,6 +77,7 @@ public class NoType extends ReturnType
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "";
