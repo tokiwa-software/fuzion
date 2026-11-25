@@ -192,14 +192,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (!(this instanceof UnresolvedType),
        !isParametricType());
 
-    return switch (kind()) {
+    return switch (kind())
+      {
       case ParametricType -> throw new Error("asThis not legal for ParametricType");
-      case ThisType -> this;
-      case RefType, ValueType ->
-        feature().isUniverse()
-          ? this
-          : new ThisType(feature());
-    };
+      case ThisType       -> this;
+      case RefType,
+           ValueType      -> feature().thisType();
+      };
   }
 
 

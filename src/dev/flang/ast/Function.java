@@ -413,7 +413,22 @@ public class Function extends AbstractLambda
                                        AbstractFeature._NO_FEATURES_,
                                        new List<>(_inheritsCall),
                                        Contract.EMPTY_CONTRACT,
-                                       new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
+                                       new Impl(pos(), new Block(expressions), Impl.Kind.Routine))
+                  {
+                    /**
+                     * This is an internal feature that is known never to be redefined.
+                     *
+                     * This information is important since it permits type inference from
+                     * `lambda.this` where the exact type is known, see #4428.
+                     *
+                     * @return true
+                     */
+                    @Override
+                    public boolean isFinal()
+                    {
+                      return true;
+                    }
+                  };
                 res._module.findDeclarations(_wrapper, context.outerFeature());
                 res.resolveDeclarations(_wrapper);
                 res.resolveTypes(_feature);
