@@ -28,6 +28,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #ifdef __linux__
 #define _GNU_SOURCE
 #endif
+#ifdef __APPLE__
+#define _DARWIN_C_SOURCE  // pthread_mach_thread_np
+#endif
 
 #ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
@@ -60,6 +63,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <dirent.h>
 #include <pthread.h>
+#ifdef __APPLE__
+#include <mach/mach.h>  // thread_info, THREAD_BASIC_INFO
+#endif
 #ifdef __linux__
 #include <sched.h>    // CPU_SET
 #if defined(__has_include)
@@ -706,18 +712,29 @@ int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
  */
 int64_t fzE_thread_cpu_time(void * thrd)
 {
-#if defined(_POSIX_THREAD_CPUTIME) && _POSIX_THREAD_CPUTIME >= 0
+  int64_t res = -1;
+#ifdef __APPLE__
+  // macOS only supports microsecond precision
+  mach_port_t port = pthread_mach_thread_np((pthread_t)thrd);
+  thread_basic_info_data_t info;
+  mach_msg_type_number_t count = THREAD_BASIC_INFO_COUNT;
+
+  if (port != MACH_PORT_NULL ||
+      thread_info(port, THREAD_BASIC_INFO, (thread_info_t)&info, &count) == KERN_SUCCESS)
+    {
+      res = ((int64_t)info.user_time.seconds      + info.system_time.seconds     ) * 1000000000LL
+          + ((int64_t)info.user_time.microseconds + info.system_time.microseconds) * 1000LL;
+    }
+#elif defined(_POSIX_THREAD_CPUTIME) && _POSIX_THREAD_CPUTIME >= 0
   clockid_t clk;
   struct timespec ts;
-  if (pthread_getcpuclockid((pthread_t)thrd, &clk) != 0 ||
-      clock_gettime(clk, &ts) != 0)
+  if (pthread_getcpuclockid((pthread_t)thrd, &clk) == 0 ||
+      clock_gettime(clk, &ts) == 0)
     {
-      return -1;
+      res = (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
     }
-  return (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
-#else
-  return -1;
 #endif
+  return res;
 }
 
 
