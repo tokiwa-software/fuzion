@@ -936,22 +936,23 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public AbstractType thisType(boolean innerFixed)
   {
-    var isFinal = innerFixed || isFinal();
-    var result = isFinal ? _thisTypeFinal : _thisType;
+    var isFinal =  isFinal() || innerFixed || isUniverse();
+    AbstractType result = isFinal ? _thisTypeFinal : _thisType;
+
     if (result == null)
       {
-        if (isFinal)
+        if (!isFinal)
+          {
+            result = new ThisType(this);
+            _thisType = result;
+          }
+        else
           {
             var of = outer();
             result = of == null || of.isUniverse()
               ? selfType()
               : ResolvedNormalType.newType(selfType(), of.thisType(isFixed()));
             _thisTypeFinal = result;
-          }
-        else
-          {
-            result = new ThisType(this);
-            _thisType = result;
           }
       }
     return result;
@@ -1737,14 +1738,30 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * True if it is known that this feature is never redefined.
+   * True if it is known that this feature is never inherited from.
    *
    * @return true if this is not a constructor or if this is an internal feature created to hold a
    * lambda target {@link dev.flang.ast.Function}.
    */
   public boolean isFinal()
   {
-    return !isConstructor();
+    return switch (kind())
+      {
+      case
+        Constructor,
+        RefConstructor,
+        Choice                 -> false;
+      case
+        Field,
+        ExplicitTypeParameter,
+        FreeTypeParameter,
+        OpenTypeParameter,
+        Intrinsic,
+        Abstract,
+        Native                 -> true;
+      case
+        Function               -> false;  // NYI: UNDER DEVELOPMENT: This should be true, but does not work yet.
+      };
   }
 
 

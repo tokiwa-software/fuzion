@@ -388,6 +388,20 @@ public class Function extends AbstractLambda
                 {
                   return true;
                 }
+
+                /**
+                 * This is an internal feature that is known never to be redefined.
+                 *
+                 * This information is important since it permits type inference from
+                 * `lambda.this` where the exact type is known, see #4428.
+                 *
+                 * @return true
+                 */
+                @Override
+                public boolean isFinal()
+                {
+                  return true;
+                }
               };
             _feature = feature;
             feature._sourceCodeContext = context;

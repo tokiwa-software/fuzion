@@ -56,7 +56,7 @@ public abstract class AbstractCurrent extends Expr
   public AbstractCurrent(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t.isThisType() || t.feature().isUniverse());
+      (t.isThisType() || t.feature().isFinal() || t.feature().isUniverse());
 
     this._type = t;
   }
