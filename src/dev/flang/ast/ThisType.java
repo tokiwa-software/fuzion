@@ -29,6 +29,7 @@ package dev.flang.ast;
 
 import java.util.Set;
 
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 
 /**
@@ -62,6 +63,45 @@ class ThisType extends ResolvedType {
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Create a `.this`-type and check it for validity in the given context.
+   *
+   * @param context the context this type is used in
+   *
+   * @param at source position for error reporting
+   *
+   * @param f the feature the this type refers to.
+   *
+   * @param tolerant behavior in case of error, do not report but return null.
+   *
+   * @return the `ThisType` instance if `f` is an outer feature or cotype origin in `context`,
+   * otherwise `null` (if `tolerant`) or `Types.t_ERROR` (otherwise).
+   */
+  public static AbstractType create(Context context,
+                                    HasSourcePosition at,
+                                    AbstractFeature f,
+                                    boolean tolerant)
+  {
+    var n = context.outerFeature();
+    AbstractFeature o;
+    var ok = false;
+    do
+      {
+        o = n.isCotype() ? n.cotypeOrigin() : n;
+        n = o.outer();
+        ok = o == f;
+      }
+    while (!ok && n != null);
+    if (!ok && !tolerant)
+      {
+        AstErrors.illegalThisType(at.pos(), new ThisType(f));
+      }
+    return ok       ? new ThisType(f) :
+           tolerant ? null
+                    : Types.t_ERROR;
+  }
 
 
   /**
