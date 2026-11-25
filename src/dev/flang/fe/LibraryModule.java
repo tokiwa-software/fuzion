@@ -2538,7 +2538,7 @@ SourceFile
     // `d._redefinitions`. If they are not there, we should find out why and fix that.
     if (f.isFixed() && !f.isTypeParameter())
       {
-        var sameName = lookupFeature(heir, f.featureName());
+        var sameName = declaredOrInheritedFeatures(heir, f.featureName()).getFirstOrNull();
         if (sameName != null && sameName.isFixed())
           {
             return (LibraryFeature)sameName;
