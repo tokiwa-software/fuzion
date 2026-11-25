@@ -942,12 +942,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         if (isFinal)
           {
-            result = selfType();
             var of = outer();
-            if (!isUniverse() && of != null && !of.isUniverse())
-              {
-                result = ResolvedNormalType.newType(result, of.thisType(isFixed()));
-              }
+            result = of == null || of.isUniverse()
+              ? selfType()
+              : ResolvedNormalType.newType(selfType(), of.thisType(isFixed()));
             _thisTypeFinal = result;
           }
         else
