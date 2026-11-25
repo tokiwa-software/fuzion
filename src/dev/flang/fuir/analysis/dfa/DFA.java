@@ -2892,6 +2892,9 @@ public class DFA extends ANY
   }
 
 
+  /**
+   * Are all fields of `cl` never read or do not contain data?
+   */
   private boolean allFieldsNoDataOrNeverRead(int cl)
   {
     for (int fi = 0; fi < _fuir.clazzFieldCount(cl); fi++)
