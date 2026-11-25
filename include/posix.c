@@ -28,6 +28,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #ifdef __linux__
 #define _GNU_SOURCE
 #endif
+#ifdef __APPLE__
+#define _DARWIN_C_SOURCE  // pthread_mach_thread_np
+#endif
 
 #ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
