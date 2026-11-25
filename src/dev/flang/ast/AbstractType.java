@@ -1837,6 +1837,7 @@ there is no common super type of the two types (Types.t_ERROR)
                   case ThisType -> false;
                 };
               // we replace RELAY#TYPES by the target_type
+              // NYI: CLEANUP: #8389 case ParametricType -> false;
               case ParametricType -> t.isRelayType() && target_type.isParametricType();
               case ValueType, RefType -> false;
             },
