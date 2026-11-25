@@ -27,11 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.shared;
 
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import dev.flang.ast.Expr;
 import dev.flang.util.ANY;
@@ -53,47 +49,6 @@ public class ExprTool extends ANY
         : new SourcePosition(expr.sourceRange()._sourceFile, expr.sourceRange().byteEndPos());
   }
 
-
-  /**
-   * Does this expression belong to lambda call?
-   * @param expr
-   * @return
-   */
-  public static boolean isLambdaCall(Expr expr)
-  {
-    return LexerTool.tokensAt(expr.pos()).right().text().equals("->");
-  }
-
-
-  // NYI: UNDER DEVELOPMENT: parser should give us this info
-  static Optional<SourcePosition> lambdaOpeningBracePosition(Expr expr)
-  {
-    if (PRECONDITIONS)
-      require(isLambdaCall(expr));
-
-    var tokens = LexerTool.tokensFrom(SourcePositionTool.byLine(expr.pos()._sourceFile, expr.pos().line()))
-      .takeWhile(x -> x.start().compareTo(expr.pos()) <= 0)
-      .collect(Collectors.toList());
-
-    var count = new AtomicInteger(1);
-    Collections.reverse(tokens);
-    return tokens
-      .stream()
-      .dropWhile(x -> {
-        if (x.isLeftBracket())
-          {
-            count.decrementAndGet();
-          }
-        if (x.isRightBracket())
-          {
-            count.incrementAndGet();
-          }
-
-        return count.get() != 0;
-      })
-      .findFirst()
-      .map(x -> x.start());
-  }
 
   /**
    * Compare expressions by evaluating their end positions and comparing those.
