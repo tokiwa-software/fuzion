@@ -859,6 +859,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public AbstractType needsBoxing(AbstractType frmlT)
   {
     var t = type();
+    frmlT = frmlT.relayTypeAsThisType();
     if (t.isRef())
       {
         return null;
@@ -873,15 +874,14 @@ public abstract class Expr extends ANY implements HasSourcePosition
       }
     else
       {
-        var choiceT = frmlT.relayTypeAsThisType();
         t = t.relayTypeAsThisType();
 
-        if (choiceT.isChoice() &&
-            choiceT.isAssignableFromWithoutBoxing(t).no() &&
-            choiceT.isAssignableFrom(t).yes())
+        if (frmlT.isChoice() &&
+            frmlT.isAssignableFromWithoutBoxing(t).no() &&
+            frmlT.isAssignableFrom(t).yes())
           {
             // we do both, box and then tag:
-            return findAssignableChoiceGeneric(choiceT, t);
+            return findAssignableChoiceGeneric(frmlT, t);
           }
         else
           {

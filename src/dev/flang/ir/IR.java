@@ -415,7 +415,7 @@ public abstract class IR extends ANY
 
     if (!t.isVoid() && frmlT.isAssignableFrom(t).yes())
       {
-        var rt = expr.needsBoxing(frmlT.relayTypeAsThisType());
+        var rt = expr.needsBoxing(frmlT);
         if (rt != null)
           {
             result = new Box(result, rt);
@@ -481,7 +481,7 @@ public abstract class IR extends ANY
     if (PRECONDITIONS) require
       (frmlT.isChoice());
 
-    var actual = expr.type().relayTypeAsThisType();
+    var actual = expr.type();
 
     // Case 1: types are equal, no tagging necessary
     if (frmlT.compareTo(actual) == 0)
