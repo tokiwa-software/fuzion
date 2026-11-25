@@ -712,7 +712,7 @@ int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
  */
 int64_t fzE_thread_cpu_time(void * thrd)
 {
-#if defined(__APPLE__)
+#ifdef __APPLE__
   // NYI: macOS only provides microsecond resolution for other threads,
   // the precise mach-time counters (PROC_PIDTHREADCOUNTS) are private SPI.
   mach_port_t port = pthread_mach_thread_np((pthread_t)thrd);
