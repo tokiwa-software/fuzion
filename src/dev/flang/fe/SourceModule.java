@@ -1580,6 +1580,19 @@ A post-condition of a feature that does not redefine an inherited feature must s
   }
 
 
+
+  /**
+   * Find feature with given name in outer.
+   *
+   * @param outer the declaring or inheriting feature
+   */
+  @Override
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
+  {
+    return declaredOrInheritedFeatures(outer, name).getFirstOrNull();
+  }
+
+
   /*--------------------------  type checking  --------------------------*/
 
 
