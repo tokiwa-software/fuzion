@@ -2330,7 +2330,8 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Illegal use of the " + code("native") + " keyword.",
-          "This keyword may not be used in restricted mode of code execution.");
+          "This keyword may not be used in restricted mode of code execution." + "\n" +
+          "To solve this, enable declaration of native features using " + code("-XenableNativeKeyword") + ".");
   }
 
   public static void freeTypeMustNotMaskExistingType(UnresolvedType t, AbstractFeature f)
