@@ -451,8 +451,7 @@ public class DFA extends ANY
     @Override
     public Val box(int s, Val val, int vc, int rc)
     {
-      var boxed = val.value().box(DFA.this, vc, rc, _call);
-      return boxed;
+      return val.value().box(DFA.this, vc, rc, _call);
     }
 
 
@@ -678,8 +677,7 @@ public class DFA extends ANY
     @Override
     public Val tag(int s, Val value, int newcl, int tagNum)
     {
-      Val res = value.value().tag(_call._dfa, newcl, tagNum);
-      return res;
+      return value.value().tag(_call._dfa, newcl, tagNum);
     }
 
 
@@ -2151,6 +2149,7 @@ public class DFA extends ANY
     put("fuzion.sys.thread.join0"        , cl -> genericNumResult(cl));
     put("fuzion.sys.thread.set_policy"   , cl -> genericNumResult(cl));
     put("fuzion.sys.thread.set_affinity0", cl -> genericNumResult(cl));
+    put("fuzion.sys.thread.cpu_time0"    , cl -> genericNumResult(cl));
 
     put("effect.type.set0"               , cl ->
         {
@@ -3008,13 +3007,15 @@ public class DFA extends ANY
         Long k = vi < wi ? (long) vi << 32 | wi & 0x7FFFFFFF
                          : (long) wi << 32 | vi & 0x7FFFFFFF;
         res = _joined.get(k);
-        if (res == null)
+        if (res == null || res._clazz != clazz)
           {
             if      (v.contains(w)) { res = v; }
             else if (w.contains(v)) { res = w; }
             else
               {
-                res = new ValueSet(this, v, w, clazz);
+                res = res != null
+                  ? new ValueSet((ValueSet) res, clazz)
+                  : new ValueSet(this, v, w, clazz);
                 res = cache(res);
               }
             _joined.put(k, res);

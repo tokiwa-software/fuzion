@@ -65,6 +65,7 @@ public class f64Value extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return Double.toString(_val);
@@ -76,6 +77,7 @@ public class f64Value extends Value
    *
    * @return the f64 value
    */
+  @Override
   public double f64Value()
   {
     return _val;
@@ -89,6 +91,7 @@ public class f64Value extends Value
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require

@@ -23,6 +23,6 @@
 
 e is
   e.type.r e.this
-  type.r(E type : e, v E) =>
+  type.r(E : e, v E) =>
 f : e is
 _ := f

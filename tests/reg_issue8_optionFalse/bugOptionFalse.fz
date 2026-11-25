@@ -29,7 +29,7 @@
 #
 bugOptionFalse is
 
-  x(V type)
+  x(V : Any)
   is
     b(l i32) option V =>
       if l > 0

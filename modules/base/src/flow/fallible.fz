@@ -26,7 +26,7 @@
 # Any effect that may signal a fault should inherit from fallible to permit
 # its use within type parameteric features such as `flow.try`
 #
-public fallible(ERROR type, h ERROR->void) : effect is
+public fallible(ERROR : Any, h ERROR->void) : effect is
 
 
   # redefine abortable to return true

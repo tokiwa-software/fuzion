@@ -28,7 +28,7 @@ o is
   x => "o$b"
 
 p : o is
-  f(A type : i, iv A) =>
+  f(A : i, iv A) =>
     _ := iv.get_o
 
 p.f o.i

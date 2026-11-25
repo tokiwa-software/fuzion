@@ -40,7 +40,7 @@ lru_cache_test =>
 
 
   # run the cache operation and return the result, additionally shows some debug output
-  test(M type : mutate, K type : property.hashable, c container.LRU_Cache M K V, op operation, k K, ov option V) option V =>
+  test(M : mutate, K : property.hashable, c container.LRU_Cache M K V, op operation, k K, ov option V) option V =>
 
     res := match op
       put =>  c.put k ov.or_panic

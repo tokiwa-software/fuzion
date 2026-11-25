@@ -99,7 +99,7 @@ test_covariance is
 
 run_test_covariance =>
 
-  test(N type : test_covariance.num0, x, y N) =>
+  test(N : test_covariance.num0, x, y N) =>
     say x
     say y
     say (x.plus y)

@@ -262,7 +262,7 @@ public class C extends ANY
     @Override
     public Pair<CExpr, CStmnt> constData(int s, int constCl, byte[] d)
     {
-      return constData(constCl, d, true);
+      return constData(constCl, d);
     }
 
 
@@ -280,7 +280,7 @@ public class C extends ANY
      *               it was created in.
      * @return
      */
-    private Pair<CExpr, CStmnt> constData(int constCl, byte[] d, boolean onHeap /* NYI: UNDER DEVELOPMENT: init "(larger)" constants only once, globally. */)
+    private Pair<CExpr, CStmnt> constData(int constCl, byte[] d)
     {
       return switch (_fuir.getSpecialClazz(constCl))
         {
@@ -303,13 +303,7 @@ public class C extends ANY
               ? constArray(constCl, d)
               : constValue(constCl, d);
 
-            // NYI: UNDER DEVELOPMENT: without this heap clone tests ternary and unary are failing.
-            yield onHeap
-              ? new Pair<>(heapClone(result)
-                              .castTo(_types.clazz(constCl) + " *")
-                              .deref(),
-                             CStmnt.EMPTY)
-              : new Pair<>(result, CStmnt.EMPTY);
+            yield new Pair<>(result, CStmnt.EMPTY);
           }
         };
     }
@@ -339,7 +333,7 @@ public class C extends ANY
               var bytes = _fuir.deserializeConst(fr, bb);
               sb.append("." + _names.fieldName(arg).code());
               sb.append(" = ");
-              var cd = constData(_fuir.clazzResultClazz(arg), bytes, false);
+              var cd = constData(_fuir.clazzResultClazz(arg), bytes);
               l.add(cd.v1());
               sb.append(cd.v0().code());
               if (i + 1 != argCount)
@@ -428,7 +422,7 @@ public class C extends ANY
             {
               var b = _fuir.deserializeConst(elementType, bb);
 
-              constData(elementType, b, false)
+              constData(elementType, b)
                 .v0()
                 .code(sb);
 
@@ -1278,10 +1272,7 @@ public class C extends ANY
   {
     var msg2 = "*** %s:%d: " + msg + "\n";
     var args2 = new List<CExpr>(CIdent.FILE, CIdent.LINE);
-    for (var a : args)
-      {
-        args2.add(a);
-      }
+    args2.addAll(args);
     return CStmnt.seq(CExpr.fprintfstderr(msg2, args2.toArray(new CExpr[args2.size()])),
                       CExpr.exit(1));
   }

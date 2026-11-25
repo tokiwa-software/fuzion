@@ -81,6 +81,7 @@ class PreallocatedConstant extends ANY implements Comparable<PreallocatedConstan
   /**
    * Compare operation.
    */
+  @Override
   public int compareTo(PreallocatedConstant other)
   {
     int result =

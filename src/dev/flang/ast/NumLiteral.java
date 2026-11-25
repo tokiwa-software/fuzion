@@ -833,6 +833,7 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
+  @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     // if expected type is choice, examine if there is exactly one numeric
@@ -876,6 +877,7 @@ public class NumLiteral extends Constant
    * @return an array with length findConstantType(type_)._bytes containing the
    * constant as a little-endian unsigned or two's complement value.
    */
+  @Override
   public byte[] data()
   {
     var ct = findConstantType(type());
@@ -912,55 +914,42 @@ public class NumLiteral extends Constant
   @Override
   protected Expr resolveSyntacticSugar2(Resolution res, Context _context)
   {
+    Expr result = this;
     if (_propagatedType != null && _propagatedType.isParametricType())
       {
-        Call result;
-
-        if (_originalString.equals("0"))
+        var typePar = _propagatedType.typeParameter();
+        var target = new ParsedCall(new ParsedName(pos(),
+                                                   // NYI: BUG: #8138: Replace String by Types.resolved.f_*
+                                                   typePar.baseName()));
+        var from_u32_name = switch (_originalString)
           {
-            result = new ParsedCall(
-                          new ParsedCall(new ParsedName(pos(), _propagatedType.typeParameter().baseName())),
-                          new ParsedName(pos(), "zero"))
-                  .resolveTypes(res, _context);
-          }
-        else if (_originalString.equals("1"))
+          case "0" -> "zero";
+          case "1" -> "one";
+          default  -> "from_u32";
+          };
+        var from_u32_args = switch (_originalString)
           {
-            result = new ParsedCall(
-                          new ParsedCall(new ParsedName(pos(), _propagatedType.typeParameter().baseName())),
-                          new ParsedName(pos(), "one"))
-                  .resolveTypes(res, _context);
+          case "0", "1" -> new List<Expr>();
+          default       -> new List<Expr>(this);
+          };
+        var from_u32 = new ParsedCall(target,
+                                      new ParsedName(pos(),
+                                                     // NYI: BUG: #8138: Replace String by Types.resolved.f_*
+                                                     from_u32_name),
+                                      from_u32_args)
+                             .resolveTypes(res, _context);
+        if (from_u32._pendingError == null)
+          {
+            _propagatedType = Types.resolved.t_u32;
+            result = from_u32;
           }
         else
           {
-            result = new ParsedCall(
-                      new ParsedCall(new ParsedName(pos(), _propagatedType.typeParameter().baseName())),
-                      new ParsedName(pos(), "from_u32"),
-                      new List<>(this))
-              {
-                @Override
-                Call resolveTypes(Resolution res, Context context)
-                {
-                  var result = super.resolveTypes(res, context);
-                  if (_calledFeature == null)
-                    {
-                      _pendingError = ()->
-                        {
-                          AstErrors.illegalNumLiteral(this);
-                        };
-                    }
-                  return result;
-                }
-              }
-                  .resolveTypes(res, _context);
+            AstErrors.illegalNumLiteral(this, typePar);
+            result = Call.ERROR;
           }
-
-        _propagatedType = Types.resolved.t_u32;
-        return result;
       }
-    else
-      {
-        return this;
-      }
+    return result;
   }
 
 
@@ -969,6 +958,7 @@ public class NumLiteral extends Constant
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _originalString;

@@ -27,7 +27,7 @@
 reg_issue5503 =>
 
   a is
-    f(X type) =>
+    f(X : Any) =>
 
   # the original example from #5503
   #
@@ -37,27 +37,27 @@ reg_issue5503 =>
   # cross-check with a correct redefinition:
   #
   c : a is
-    redef f(Y type) =>  # ok
+    redef f(Y : Any) =>  # ok
 
   # a more complex example with 3 type parameters and 2 value arguments
   #
   d is
-    f(X, Y, Z type, v, w i32) =>
+    f(X, Y, Z : Any, v, w i32) =>
 
   e : d is
     redef f(                    x, y, z Any, v, w i32) =>  # 2. should flag an error: no type parameters, expecting 3
 
   f : d is
-    redef f(X             type, y, z    Any, v, w i32) =>  # 3. should flag an error: 1 type parameter, expecting 3
+    redef f(X             : Any, y, z    Any, v, w i32) =>  # 3. should flag an error: 1 type parameter, expecting 3
 
   g : d is
-    redef f(X, Y          type, z       Any, v, w i32) =>  # 4. should flag an error: 2 type parameters, expecting 3
+    redef f(X, Y          : Any, z       Any, v, w i32) =>  # 4. should flag an error: 2 type parameters, expecting 3
 
   h : d is
-    redef f(X, Y, Z       type,              v, w i32) =>  # ok
+    redef f(X, Y, Z       : Any,              v, w i32) =>  # ok
 
   i : d is
-    redef f(X, Y, Z, V    type,                 w i32) =>  # 5. should flag an error: 4 type parameters, expecting 3
+    redef f(X, Y, Z, V    : Any,                 w i32) =>  # 5. should flag an error: 4 type parameters, expecting 3
 
   j : d is
-    redef f(X, Y, Z, V, W type                       ) =>  # 6. should flag an error: 5 type parameters, expecting 3
+    redef f(X, Y, Z, V, W : Any                       ) =>  # 6. should flag an error: 5 type parameters, expecting 3

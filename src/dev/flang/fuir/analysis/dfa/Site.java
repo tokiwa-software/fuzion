@@ -94,6 +94,7 @@ class Site extends ANY implements Comparable<Site>
   /**
    * Define total order over two call sites.
    */
+  @Override
   public int compareTo(Site cs)
   {
     return Integer.compare(_s, cs._s);

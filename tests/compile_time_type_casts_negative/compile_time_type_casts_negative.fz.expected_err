@@ -35,27 +35,27 @@ for value assigned  : 'ab'
 To solve this, you could change the type of the target 'v' to 'compile_time_type_casts_negative.this.ab' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.C'.
 
 
-compile_time_type_casts_negative.fz:107:3: error 4: Incompatible type parameter
+compile_time_type_casts_negative.fz:107:6: error 4: Incompatible type parameter 'compile_time_type_casts_negative.this.B' for 'T : compile_time_type_casts_negative.this.A'
   y1 B    # 12. should flag an error -- B is not of type A
---^^
+-----^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
 actual type parameter 'compile_time_type_casts_negative.this.B'
 assignable to constraint: 'Any',
                           'compile_time_type_casts_negative.this.B'
 
 
-compile_time_type_casts_negative.fz:108:3: error 5: Incompatible type parameter
+compile_time_type_casts_negative.fz:108:6: error 5: Incompatible type parameter 'compile_time_type_casts_negative.this.C' for 'T : compile_time_type_casts_negative.this.A'
   y1 C    # 13. should flag an error -- C is not of type A
---^^
+-----^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
 actual type parameter 'compile_time_type_casts_negative.this.C'
 assignable to constraint: 'Any',
                           'compile_time_type_casts_negative.this.C'
 
 
-compile_time_type_casts_negative.fz:109:3: error 6: Incompatible type parameter
+compile_time_type_casts_negative.fz:109:6: error 6: Incompatible type parameter 'compile_time_type_casts_negative.this.bc' for 'T : compile_time_type_casts_negative.this.A'
   y1 bc   # 14. should flag an error -- bc is not of type A
---^^
+-----^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
 actual type parameter 'compile_time_type_casts_negative.this.bc'
 assignable to constraint: 'Any',
@@ -160,9 +160,9 @@ for value assigned  : 'v'
 To solve this, you could change the type of the target 'v' to 'T' or convert the type of the assigned value to 'compile_time_type_casts_negative.this.B'.
 
 
-compile_time_type_casts_negative.fz:111:19: error 15: Incompatible type parameter
+compile_time_type_casts_negative.fz:111:22: error 15: Incompatible type parameter 'U' for 'T : compile_time_type_casts_negative.this.A'
   call_y1(v U) => y1 v   # 15. should flag an error -- v is not of type A
-------------------^^
+---------------------^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
 actual type parameter 'U'
 assignable to constraint: 'Any',

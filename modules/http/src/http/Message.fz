@@ -139,16 +139,19 @@ public Message ref is
 # a recipient MAY recognize a single LF as a line terminator and ignore any preceding CR.
 # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-3
 #
-module next_line(LM type : mutate) => (io.buffered LM).read_delimiter encodings.ascii.lf true
+module next_line(LM : mutate) => (io.buffered LM).read_delimiter encodings.ascii.lf true
 
 
 
-module parse_header_fields(LM type : mutate) outcome (container.Mutable_Tree_Map LM String String) =>
+module parse_header_fields(LM : mutate) outcome (container.Mutable_Tree_Map LM String String) =>
+  # type used only to identify the exception used by `parse_header_fields`
+  #
+  parse_header_fields_exception : flow.exception_tag is
 
-  flow.exception unit _ ()->
+  flow.exception parse_header_fields_exception .on _ ()->
 
     cause(s String) void =>
-      (flow.exception unit).env.cause (error s)
+      (flow.exception parse_header_fields_exception).env.cause (error s)
 
     fields := (container.Mutable_Tree_Map LM String String) .empty
 
@@ -170,11 +173,15 @@ module parse_header_fields(LM type : mutate) outcome (container.Mutable_Tree_Map
     fields
 
 
-module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome (i64 -> choice (Sequence u8) io.end_of_file error) =>
-  flow.exception unit (i64 -> choice (Sequence u8) io.end_of_file error) ()->
+module body_helper(LM : mutate, is_req bool, header_fields container.Map String String) outcome (i64 -> choice (Sequence u8) io.end_of_file error) =>
+  # type used only to identify the exception used by `body_helper`
+  #
+  body_helper_exception : flow.exception_tag is
+
+  flow.exception body_helper_exception .on (i64 -> choice (Sequence u8) io.end_of_file error) ()->
 
     cause(s String) void =>
-      (flow.exception unit).env.cause (error s)
+      (flow.exception body_helper_exception).env.cause (error s)
 
     # If a message is received with both a Transfer-Encoding and a Content-Length header field, the Transfer-Encoding overrides the Content-Length.
     # Such a message might indicate an attempt to perform request smuggling (Section 11.2) or response splitting (Section 11.1) and ought to be handled as an error.

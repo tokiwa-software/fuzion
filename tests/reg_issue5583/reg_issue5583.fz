@@ -36,7 +36,7 @@ v := q.b.type.me
 say (type_of v)
 say v
 
-test(T type : has_me) =>
+test(T : has_me) =>
   w := T.me
   say (type_of w)
   say w

@@ -21,13 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
-f(A type ...) is
-  c(T type, v T, a A...) unit => abstract
+f(A... : Any) is
+  c(T : Any, v T, a A...) unit => abstract
 
 q(a F : f) =>
   a.c unit unit
 
 r : f is
-  redef c(T type, v T) unit => say "hi"
+  redef c(T : Any, v T) unit => say "hi"
 
 q r

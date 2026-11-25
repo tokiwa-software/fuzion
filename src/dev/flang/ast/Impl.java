@@ -109,6 +109,7 @@ public class Impl extends ANY
     Intrinsic,    // an intrinsic feature
     Native;       // a native feature
 
+    @Override
     public String toString()
     {
       return switch(this)
@@ -134,13 +135,6 @@ public class Impl extends ANY
    *
    */
   public final Kind _kind;
-
-
-  /**
-   * Flag to detect infinite recursion when resolving types of initial
-   * values. Used by @see initialValueFromCall.
-   */
-  private boolean _infiniteRecursionInResolveTypes = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -490,9 +484,8 @@ public class Impl extends ANY
             var actl = aargs.next();
             if (frml instanceof Feature f && f.impl() == this)
               {
-                if (res != null && !_infiniteRecursionInResolveTypes)
+                if (res != null)
                   {
-                    _infiniteRecursionInResolveTypes = true;
                     try
                       {
                         actl.visit(new FeatureVisitor()
@@ -515,8 +508,8 @@ public class Impl extends ANY
                       {
                         // ignore this actual argument, see #7836 for an example
                       }
-                    _infiniteRecursionInResolveTypes = false;
                   }
+
                 if (CHECKS) check
                   (result == Call.ERROR);
                 result = actl;
@@ -692,6 +685,7 @@ public class Impl extends ANY
            result != Types.t_FORWARD_CYCLIC &&
            result != Types.t_ERROR          &&
            result.isCotypeType()            &&
+           _expr != null                    &&
            /**
             * this allows code like:
             * p := codepoint.type
@@ -722,6 +716,7 @@ public class Impl extends ANY
    *
    * @return
    */
+  @Override
   public String toString()
   {
     String result;

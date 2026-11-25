@@ -29,7 +29,7 @@ dot_type_call_on_type_parameter is
   B : A is
     redef type.abstr i32 => 7
 
-  a(T type: A) =>
+  a(T : A) =>
     say T.abstr
 
   a B

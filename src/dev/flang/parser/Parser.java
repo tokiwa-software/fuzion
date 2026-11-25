@@ -844,8 +844,10 @@ argument    : visibility
               argNames
               argType
             ;
-argType     : typeType
-            | typeType COLON type
+argType     : COLON type
+            | "..." COLON type
+            | type
+            | type "..."
             |
             ;
    */
@@ -865,18 +867,25 @@ argType     : typeType
                                     var n = argNames();
                                     AbstractType t;
                                     Impl i;
-                                    var isTypePar = current() == Token.t_type;
-                                    if (isTypePar)
+                                    var isTypePar = false;
+                                    if (skipColon())
                                       {
-                                        i = typeType();
-                                        t = skipColon() ? type()
-                                                        : new BuiltInType(FuzionConstants.ANY_NAME);
+                                        isTypePar = true;
+                                        i = Impl.EXPLICIT_TYPE_PARAMETER;
+                                        t = type();
+                                      }
+                                    else if (splitSkip("..."))
+                                      {
+                                        isTypePar = true;
+                                        i = Impl.TYPE_PARAMETER_OPEN;
+                                        matchOperator(":", "argType");
+                                        t = type();
                                       }
                                     else if (isTypePrefix())
                                       {
                                         i = Impl.FIELD;
                                         var ut = type();
-                                        if (skip("..."))
+                                        if (splitSkip("..."))
                                           {
                                             ut.setFollowedByDots();
                                           }
@@ -914,21 +923,6 @@ argType     : typeType
 
 
   /**
-   * Parse type parameter type suffix
-   *
-typeType    : "type"
-            | "type" "..."
-            ;
-   */
-  Impl typeType()
-  {
-    match(Token.t_type, "argType");
-    return splitSkip("...") ? Impl.TYPE_PARAMETER_OPEN
-                            : Impl.EXPLICIT_TYPE_PARAMETER;
-  }
-
-
-  /**
    * Check if the current position is a formArgs and skip it if this is the
    * case.
    *
@@ -945,22 +939,12 @@ typeType    : "type"
               {
                 visibility();
                 modifiers();
-                result = skipArgNames();
-                if (result)
-                  {
-                    if (skip(Token.t_type))
-                      {
-                        splitSkip("...");
-                        if (skipColon())
-                          {
-                            result = skipType();
-                          }
-                      }
-                    else
-                      {
-                        result = skipType();
-                      }
-                  }
+                result =
+                  skipArgNames() &&
+                    skipColon()      ? skipType()                // type par
+                  : splitSkip("...") ? skipColon() && skipType() // open type par
+                  : skipType()       ? splitSkip("...") || true  // value argument, maybe with open type
+                  :                    true;                     // value argument with inferred type
               }
             while (result && skipComma());
           }
@@ -1005,9 +989,13 @@ typeType    : "type"
                     skipName();
                   }
                 while (skipComma());
-                if (skip(Token.t_type))
+                if (skipColon())
                   {
-                    splitSkip("...");
+                    skipType();
+                    result[0] = FormalOrActual.both;
+                  }
+                else if (splitSkip("..."))
+                  {
                     if (skipColon())
                       {
                         skipType();
@@ -1017,15 +1005,7 @@ typeType    : "type"
                 // tolerate missing type here
                 else if ((skipType() || true) && skipDot())
                   {
-                    if (!skip(Token.t_type))
-                      {
-                        result[0] = FormalOrActual.actual;
-                        return false;
-                      }
-                    else
-                      {
-                        splitSkip("...");
-                      }
+                    splitSkip("...");
                   }
               }
             while (skipComma());
@@ -1434,6 +1414,7 @@ dotCall     : dot call   callTail
       }
     else if (skip(Token.t_type))
       {
+        target.setSourceRange(sourceRange(target.sourceRange()));
         AbstractType t = target.asParsedType();
         if (t == null)
           {
@@ -2037,6 +2018,7 @@ lambda      : "->" block
   Expr lambda(List<Expr> n)
   {
     var pos = tokenPos();
+    splitOperator("->");
     matchOperator("->", "lambda");
     var startPos = n.isEmpty() ? pos : n.getFirst().pos().bytePos();
     var b = block();
@@ -2052,7 +2034,7 @@ lambda      : "->" block
    */
   boolean isLambdaPrefix()
   {
-    return isOperator("->");
+    return splitOperator("->");
   }
 
 
@@ -3689,7 +3671,7 @@ typeOpt     : type
     if (current() == Token.t_lparen)
       {
         var a = bracketTermWithNLs(PARENS, "pTypeList", () -> current() != Token.t_rparen ? typeList() : UnresolvedType.NONE);
-        if (skip("->"))
+        if (splitSkip("->"))
           {
             result = UnresolvedType.funType(pos, type(), a);
           }
@@ -3705,7 +3687,7 @@ typeOpt     : type
     else
       {
         result = simpletype(null);
-        if (skip("->"))
+        if (splitSkip("->"))
           {
             result = UnresolvedType.funType(pos, type(), new List<>(result));
           }
@@ -3737,7 +3719,7 @@ typeOpt     : type
         result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList());
         var p = tokenPos();
         var l = line();
-        if (skip("->"))
+        if (splitSkip("->"))
           {
             result = (!isFunctionReturnType || l == line()) && skipType();
           }
@@ -3751,7 +3733,7 @@ typeOpt     : type
       {
         result = skipSimpletype();
         var l = line();
-        if (result && skip("->"))
+        if (result && splitSkip("->"))
           {
             result =
               (!isFunctionReturnType || l == line()) &&
@@ -3826,7 +3808,7 @@ typeTail    : dot simpletype
               }
             else
               {
-                result = typeTail(new QualThisType(qn));
+                result = typeTail(new QualThisType(sourceRange(lhs.pos()), qn));
               }
           }
         else
@@ -3899,9 +3881,8 @@ typeInParens: "(" typeInParens ")"
                                    () -> typeList(),
                                    () -> new List<AbstractType>());
         var eas = endAtSpaceOrSemi(tokenPos());
-        if (!ignoredTokenBefore() && isOperator("->"))
+        if (!ignoredTokenBefore() && splitSkip("->"))
           {
-            matchOperator("->", "onetype");
             result = UnresolvedType.funType(sourcePos(pos), type(), l);
           }
         else if (l.size() == 1)

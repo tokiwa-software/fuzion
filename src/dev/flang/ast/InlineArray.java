@@ -208,7 +208,7 @@ public class InlineArray extends ExprWithPos
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    var arrayType = t.isNormalType() && Types.resolved.f_array.inheritsFrom(t.feature()) && t.feature().typeArguments().size()==1
+    var arrayType = t.isPlainType() && Types.resolved.f_array.inheritsFrom(t.feature()) && t.feature().typeArguments().size()==1
       ? t.feature()
       : Types.resolved.f_array;
     // if expected type is choice, examine if there is exactly one
@@ -278,6 +278,7 @@ public class InlineArray extends ExprWithPos
    *
    * @return this.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var li = _elements.listIterator();
@@ -473,6 +474,7 @@ public class InlineArray extends ExprWithPos
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _elements.toString("[", "; ", "]");

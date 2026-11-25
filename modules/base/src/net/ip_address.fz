@@ -92,16 +92,16 @@ public ip_address (val u128) : property.orderable is
 
   # parse an IPv4 address from a String
   #
-  type.from_string_v4 (s Sequence String) outcome net.ip_address =>
-    fuzion.runtime.fault
-      .try (outcome net.ip_address) ()->
-        x := s
-          .map (.parse_i32)
-          .map (.or_panic.as_u8)
-
-        from_sequence x
-      .catch m->
-        error "Unable to parse provided string as an IP address: $(m)"
+  type.from_string_v4 (s Sequence String) outcome net.ip_address
+    pre debug: s.count = 4
+  =>
+    s.reduce_or_error (Sequence u8 .empty) r,t->
+       t.parse_i32
+        .as_option
+        .bind (Sequence u8 | (abort (outcome (Sequence u8)))) n->
+          if n.fits_in_u8 then r ++ [n.as_u8] else nil
+        .or_else (abort (outcome (Sequence u8)) (error "$t is not valid in an IPv4 address"))
+     .bind from_sequence
 
 
   # parse an IPv6 address from a String
@@ -110,19 +110,20 @@ public ip_address (val u128) : property.orderable is
   #
   # NYI: ENHANCEMENT: parse zone identifiers
   #
-  type.from_string_v6 (s Sequence String) outcome net.ip_address =>
-    fuzion.runtime.fault
-      .try (outcome net.ip_address) ()->
-        x := s
-          .map (.pad_left "0" 4)
-          .flat_map (.chunk 2)
-          .map (.parse_i32_hex)
-          .map (.or_panic.as_u8)
-          .as_array_backed
-
-        from_sequence x
-      .catch m->
-        error "Unable to parse provided string as an IP address: $(m)"
+  type.from_string_v6 (s Sequence String) outcome net.ip_address
+    pre debug: s.count = 8
+  =>
+    s
+     .map (.pad_left "0" 4)
+     .flat_map (.chunk 2)
+     .reduce_or_error (Sequence u8 .empty) r,t->
+        t.parse_i32_hex
+         .as_option
+         .bind (Sequence u8 | (abort (outcome (Sequence u8)))) n->
+           if n.fits_in_u8 then r ++ [n.as_u8] else nil
+         .or_else
+           (abort (outcome (Sequence u8)) (error "$t is not valid in an IPv6 address"))
+     .bind from_sequence
 
 
   # classify string if it may contain ipv4 or ipv6 address

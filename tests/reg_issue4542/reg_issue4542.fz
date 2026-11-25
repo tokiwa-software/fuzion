@@ -23,5 +23,5 @@
 
 ignore (memo 42)
 
-memo(XXX type, U type, f U) U =>
+memo(XXX : Any, U : Any, f U) U =>
   panic $XXX

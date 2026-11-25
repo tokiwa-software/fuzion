@@ -680,11 +680,25 @@ typedef void* (*posix_thread_func)(void*);
 typedef struct {
   posix_thread_func func;
   void* arg;
+  HANDLE handle;   // handle of the new thread, set before it is resumed
 } thread_trampoline_t;
+
+
+/*
+ * Real handle of the current thread, NULL if not known yet.
+ *
+ * For threads started by fzE_thread_create, this is the handle returned by
+ * fzE_thread_create.  Otherwise, it is created lazily by fzE_thread_current.
+ *
+ * Only this variable is thread local; the handle itself is valid in all
+ * threads of the process until it is closed by fzE_thread_join.
+ */
+static _Thread_local HANDLE fzE_current_thread_handle = NULL;
 
 
 unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
   thread_trampoline_t* trampoline = (thread_trampoline_t*)raw_arg;
+  fzE_current_thread_handle = trampoline->handle;
   trampoline->func(trampoline->arg);
   // NYI: free: trampoline
   return 0;
@@ -696,7 +710,22 @@ unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
  */
 void * fzE_thread_current()
 {
-  return GetCurrentThread();
+  if (fzE_current_thread_handle == NULL)
+    {
+      // GetCurrentThread() returns a pseudo handle that always refers to the
+      // thread that uses it, so it cannot be used by other threads.  Create
+      // a real handle instead.  This happens only for threads that were not
+      // started by fzE_thread_create, i.e., the main thread.  The handle is
+      // never closed.
+      HANDLE p = GetCurrentProcess();
+      if (!DuplicateHandle(p, GetCurrentThread(), p, &fzE_current_thread_handle,
+                           0, FALSE, DUPLICATE_SAME_ACCESS))
+        {
+          fprintf(stderr, "*** DuplicateHandle failed with error %lu\n", GetLastError());
+          exit(EXIT_FAILURE);
+        }
+    }
+  return fzE_current_thread_handle;
 }
 
 
@@ -714,11 +743,18 @@ void * fzE_thread_create(void *(*code)(void *),
     0,                   // stack size
     trampoline_wrapper,  // thread function
     trampoline,          // argument to thread function
-    0,                   // creation flags
+    CREATE_SUSPENDED,    // creation flags: resumed once trampoline->handle is set
     NULL                 // thread ID (optional, can be NULL)
   );
 
   assert(handle != NULL);
+
+  trampoline->handle = handle;
+  if (ResumeThread(handle) == (DWORD)-1)
+    {
+      fprintf(stderr, "*** ResumeThread failed with error %lu\n", GetLastError());
+      exit(EXIT_FAILURE);
+    }
 
   return handle;
 }
@@ -768,6 +804,32 @@ int fzE_thread_setschedparam(void * thrd, int policy, int priority)
 int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
 {
   return 38;
+}
+
+
+/*
+ * Convert a FILETIME, which counts 100 nano second units, to nano seconds.
+ */
+static uint64_t fzE_filetime_to_ns(FILETIME ft)
+{
+  ULARGE_INTEGER u;
+  u.LowPart  = ft.dwLowDateTime;
+  u.HighPart = ft.dwHighDateTime;
+  return u.QuadPart * 100;
+}
+
+
+/*
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd)
+{
+  FILETIME creation_time, exit_time, kernel_time, user_time;
+  if (!GetThreadTimes((HANDLE)thrd, &creation_time, &exit_time, &kernel_time, &user_time))
+    {
+      return -1;
+    }
+  return (int64_t)(fzE_filetime_to_ns(kernel_time) + fzE_filetime_to_ns(user_time));
 }
 
 
@@ -851,7 +913,7 @@ wchar_t *build_unicode_environment_block(char *env[], size_t envLen) {
 }
 
 
-int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+static int fzE_process_create0(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
 
   // Programmatically controlling which handles are inherited by new processes in Win32
   // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
@@ -944,6 +1006,15 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   result[3] = (int64_t)hStderrRead;
 
   return 0;
+}
+
+
+int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+  // make sure no files are opened while we start child process
+  fzE_lock();
+  int res = fzE_process_create0(args, argsLen, env, envLen, result);
+  fzE_unlock();
+  return res;
 }
 
 

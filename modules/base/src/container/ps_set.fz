@@ -35,7 +35,7 @@
 # O(m*n log² n) for adding an element m times.
 #
 private:public ps_set
-  (K type : property.orderable,
+  (K : property.orderable,
    psm container.ps_map K unit,
    dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
   )

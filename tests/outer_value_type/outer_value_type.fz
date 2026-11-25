@@ -17,43 +17,46 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test inheritance_negative
+#  Source code of Fuzion test outer_value_type
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-inheritance_negative is
+# This tests deeply nested value types.  This used to be forbidden,
+# but there is actually no reason for this.
+#
+outer_value_type is
 
   # this is forbidden since the second u in strm2.u.u is a value type with the same value type as outer type
   strm2.u.print
   strm2.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm2 ref is
 
-    u : strm2 is # 1. should flag an error, inheritance of outer feature not permitted for value type
+    u : strm2 is
 
     print unit =>
-      say "strm2.print"
+      say "strm2.print $(type_of print.this)"
 
   # this should not work since it uses value types
   strm3.u.print
   strm3.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm3 is
 
-    u : strm3 is # 2. should flag an error, inheritance of outer feature not permitted for value type
+    u : strm3 is
 
     print unit =>
-      say "strm3.print"
+      say "strm3.print $(type_of print.this)"
 
   # this should not work since it uses value types
   strm4.u.print
   strm4.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm4 ref is
 
-    u : strm4Z is # 3. should flag an error, inheritance of outer feature not permitted for value type
+    u : strm4Z is
 
     print unit =>
-      say "strm4.print"
+      say "strm4.print $(type_of print.this)"
 
   strm4X ref : strm4  is
   strm4Y ref : strm4X is

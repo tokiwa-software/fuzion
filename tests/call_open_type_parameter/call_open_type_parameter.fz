@@ -28,7 +28,7 @@ call_open_type_parameter =>
   # first case from #5738
   #
   case1 =>
-    x(O type ...) =>
+    x(O... : Any) =>
       say O
       say (type_of O)
 
@@ -42,7 +42,7 @@ call_open_type_parameter =>
   # first case from #5738, but using intermediate variable
   #
   case2 =>
-    x(O type ...) =>
+    x(O... : Any) =>
       o := O
       say o
       say (type_of o)
@@ -57,7 +57,7 @@ call_open_type_parameter =>
   # second case from #5738
   #
   case3 =>
-    x(A type) =>
+    x(A : Any) =>
       say A
       say (type_of A)
 
@@ -72,9 +72,9 @@ call_open_type_parameter =>
   # let's work with the types:
   #
   case4 =>
-    x(O type...) =>
+    x(O... : Any) =>
       count_numeric : container.type_applicator (i64,i64) is
-        public redef apply(T type, e (i64,i64)) (i64,i64) =>
+        public redef apply(T : Any, e (i64,i64)) (i64,i64) =>
           if      T : numeric then (e.0+1, e.1)
           else if T : String  then (e.0  , e.1+1)
           else                     e
@@ -94,7 +94,7 @@ call_open_type_parameter =>
   # feature and from inner feature:
   #
   case5 =>
-    a(A type, B type...) =>
+    a(A : Any, B... : Any) =>
       say "A: $A"
       say (type_of A)
       say B
@@ -123,7 +123,7 @@ call_open_type_parameter =>
   #
   case6 =>
 
-    a(B type...) is
+    a(B... : Any) is
       r is
         s is
           t is

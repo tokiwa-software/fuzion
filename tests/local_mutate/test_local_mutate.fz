@@ -121,7 +121,7 @@ test_local_mutate is
   #
   test_quicksort =>
 
-    quicksort(T type: property.orderable, data Sequence T) array T =>
+    quicksort(T : property.orderable, data Sequence T) array T =>
       c := data.count
       if c = 0
         []
@@ -177,7 +177,7 @@ test_local_mutate is
   #
   test_ring1 =>
 
-    Cell(T type, LM type : mutate, data T) ref is
+    Cell(T : Any, LM : mutate, data T) ref is
       n := LM.env.var (Cell T LM) Cell.this
       p := LM.env.var (Cell T LM) Cell.this
       link(ne, pr Cell T LM) =>
@@ -187,7 +187,7 @@ test_local_mutate is
       next => n.get
       prev => p.get
 
-    ring(T type, from0 Sequence T)
+    ring(T : Any, from0 Sequence T)
     pre
       !from0.is_empty
     =>
@@ -240,7 +240,7 @@ test_local_mutate is
 
     # abstract type for 'ring'
     #
-    Ring(T type) ref is
+    Ring(T : Any) ref is
       next Ring T => abstract
       prev Ring T => abstract
       data T => abstract
@@ -262,10 +262,10 @@ test_local_mutate is
     # add single cells, or `merge` to merge two rings into one larger ring.
     #
     Mut_Ring(# mutate effect to be used to create mutable variables
-             LM type : mutate,
+             LM : mutate,
 
              # type of data stored in ring cells
-             T type,
+             T : Any,
 
              # the data stored in this cell.
              redef data T) ref : Ring T is
@@ -344,7 +344,7 @@ test_local_mutate is
 
     # create a ring from the elements of a sequence
     #
-    create_ring(T type, from0 Sequence T)
+    create_ring(T : Any, from0 Sequence T)
     pre
       !from0.is_empty
     =>

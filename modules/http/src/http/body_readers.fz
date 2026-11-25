@@ -24,7 +24,7 @@
 
 # version of body reader that reads until connection closes
 #
-module body_reader(LM type : mutate) i64 -> choice (Sequence u8) io.end_of_file error =>
+module body_reader(LM : mutate) i64 -> choice (Sequence u8) io.end_of_file error =>
   _ ->
     # NYI: CLEANUP: ugly that this match is necessary
     match (io.buffered LM).Reader.env.read
@@ -39,7 +39,7 @@ module body_reader(LM type : mutate) i64 -> choice (Sequence u8) io.end_of_file 
 
 # version of body reader that reads up to reader_size
 #
-module body_reader(LM type : mutate, reader_size i64, _ unit) i64 -> choice (Sequence u8) io.end_of_file error =>
+module body_reader(LM : mutate, reader_size i64, _ unit) i64 -> choice (Sequence u8) io.end_of_file error =>
 
 
   remaining := LM.env.var reader_size
@@ -107,7 +107,7 @@ chunk_enum : choice
 # https://datatracker.ietf.org/doc/html/rfc7230#section-4.1
 # https://datatracker.ietf.org/doc/html/rfc9112#section-7.1
 #
-module body_reader_chunked(LM type : mutate) i64 -> choice (Sequence u8) io.end_of_file error =>
+module body_reader_chunked(LM : mutate) i64 -> choice (Sequence u8) io.end_of_file error =>
 
   extension_limit := (u64 1024) * 64 # arbitrary value, see below
 
@@ -303,7 +303,7 @@ module body_reader_chunked(LM type : mutate) i64 -> choice (Sequence u8) io.end_
 #
 module body_reader(
   # mutate effect from which to read
-  LM type : mutate,
+  LM : mutate,
   # size that should be read if known, nil to read until connection closes
   reader_size option u64)
 =>

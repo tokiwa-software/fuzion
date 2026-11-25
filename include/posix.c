@@ -28,6 +28,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #ifdef __linux__
 #define _GNU_SOURCE
 #endif
+#ifdef __APPLE__
+#define _DARWIN_C_SOURCE  // pthread_mach_thread_np
+#endif
 
 #ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
@@ -60,6 +63,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <dirent.h>
 #include <pthread.h>
+#ifdef __APPLE__
+#include <mach/mach.h>  // thread_info, THREAD_BASIC_INFO
+#endif
 #ifdef __linux__
 #include <sched.h>    // CPU_SET
 #if defined(__has_include)
@@ -86,7 +92,7 @@ static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(EWOULDBLOCK == EAGAIN, "EWOULDBLOCK != EAGAIN, failed assumption of fzE_file_read implementation");
-static_assert(NAME_MAX < 1024, "Expected max filename component length to be less than 1024");
+static_assert(NAME_MAX < PATH_MAX, "Expected max filename component length to be less than PATH_MAX, used in fzE_dir_read");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
 
@@ -185,7 +191,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
   }
   else {
     size_t len = strlen(entry->d_name);
-    if (len >= 1024) {
+    if (len >= PATH_MAX) {  // NYI: CLEANUP: io.dir.Read uses os.max_path, should maybe be NAME_MAX
       return -1;
     }
     fzE_memcpy(result, entry->d_name, len + 1);
@@ -698,6 +704,37 @@ int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
 #else
   return 38;
 #endif
+}
+
+
+/*
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd)
+{
+  int64_t res = -1;
+#ifdef __APPLE__
+  // macOS only supports microsecond precision
+  mach_port_t port = pthread_mach_thread_np((pthread_t)thrd);
+  thread_basic_info_data_t info;
+  mach_msg_type_number_t count = THREAD_BASIC_INFO_COUNT;
+
+  if (port != MACH_PORT_NULL ||
+      thread_info(port, THREAD_BASIC_INFO, (thread_info_t)&info, &count) == KERN_SUCCESS)
+    {
+      res = ((int64_t)info.user_time.seconds      + info.system_time.seconds     ) * 1000000000LL
+          + ((int64_t)info.user_time.microseconds + info.system_time.microseconds) * 1000LL;
+    }
+#elif defined(_POSIX_THREAD_CPUTIME) && _POSIX_THREAD_CPUTIME >= 0
+  clockid_t clk;
+  struct timespec ts;
+  if (pthread_getcpuclockid((pthread_t)thrd, &clk) == 0 ||
+      clock_gettime(clk, &ts) == 0)
+    {
+      res = (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+    }
+#endif
+  return res;
 }
 
 

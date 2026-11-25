@@ -77,7 +77,7 @@ class ThisType extends ResolvedType {
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    *
-   * Requires that this is resolved and isNormalType().
+   * Requires that this is resolved and isPlainType().
    */
   @Override
   public List<AbstractType> generics()
@@ -89,7 +89,7 @@ class ThisType extends ResolvedType {
   /**
    * The outer of this type. May be null.
    *
-   * Requires that this is resolved and isNormalType().
+   * Requires that this is resolved and isPlainType().
    */
   @Override
   public AbstractType outer()
@@ -118,5 +118,30 @@ class ThisType extends ResolvedType {
   {
     s.add(_feature);
   }
+
+
+  /**
+   * A `ThisType` is fixed, i.e., equivalent to `_feature.thisType(true)` if used in the context of
+   * `f` and in the chain of `f`, `f.outer()`, `f.outer().outer()`, ... there is a feature `g` such
+   * that `g.isFixed()` and `g.outer()==_feature`.
+   *
+   * If so, `this` is equivalent to `_feature.thisType(true)`.
+   *
+   * @param context the context this is used in
+   */
+  boolean isFixedFor(Context context)
+  {
+    var result = _feature.kind() == Feature.Kind.Function;  // a function can not have children, so all is fixed
+    var cf = context.outerFeature();
+    var cfo = cf.outer();
+    while (cfo != null && !result)
+      {
+        result = cf.isFixed() && cfo == _feature;  // context is fixed and outer of context is _feature
+        cf = cfo;
+        cfo = cf.outer();
+      }
+    return result;
+  }
+
 
 }

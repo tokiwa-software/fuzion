@@ -28,26 +28,28 @@
 #
 # This feature allows Java-like try-catch syntax for fallible
 #
-#     res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE ()->
+#     res := FALLIBLE_TYPE.try RESULT_TYPE ()->
 #               code
 #            .catch s->
 #               handle failure condition `s`
 #
 # or even
 #
-#     res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE code || (s->handle post condition failure `s`)
+#     res := FALLIBLE_TYPE.try RESULT_TYPE code || (s->handle post condition failure `s`)
 #
-public type.try(T type, code_try ()->T) is
+public type.try(T : Any, code_try ()->T) is
+
 
   # a local mutate used for storing an error
   # when throwing an exception
   #
-  universe.try_lm : mutate is
+  universe.try_lm(F : Any) : mutate is
+
 
   # define code to execute in case of fault and run code
   #
   public catch(code_catch ERROR->T) T =>
-    try_lm ! ()->
+    (try_lm fallible.this) ! ()->
       catch0 code_catch
 
 
@@ -56,8 +58,8 @@ public type.try(T type, code_try ()->T) is
   # this is necessary e.g. for `or_try` to avoid
   # an `invalid mutate` error.
   #
-  catch0(code_catch ERROR->T) T ! try_lm =>
-    m := try_lm.env.var (option ERROR nil)
+  catch0(code_catch ERROR->T) T ! (try_lm fallible.this) =>
+    m := (try_lm fallible.this).env.var (option ERROR nil)
     v := fallible.this.new e->
               m <- e
               fallible.this.abort

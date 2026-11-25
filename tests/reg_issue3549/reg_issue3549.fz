@@ -21,8 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
-test(T, U type, t T, u U) is
-  constraint(Q type)
+test(T, U : Any, t T, u U) is
+  constraint(Q : Any)
     pre
       T : String
       U : Sequence Q

@@ -30,7 +30,6 @@ import static dev.flang.util.FuzionConstants.NO_SELECT;
 
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Function;
 
 import java.util.regex.Pattern;
 
@@ -267,6 +266,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * only compare features of different comparisonId()s, i.e., of different
    * sub-classes.
    */
+  @Override
   public int compareTo(AbstractFeature other)
   {
     var result = Integer.compare(comparisonId(), other.comparisonId());
@@ -317,7 +317,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * The inherits calls of this feature.
    * Almost never empty since almost every feature inherits from {@code Any}.
    */
-  public abstract List<AbstractCall> inherits();
+  public abstract List<? extends AbstractCall> inherits();
 
 
   /**
@@ -617,13 +617,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   String qualifiedName(AbstractFeature context, boolean human)
   {
-    var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isCotype() ? outer().cotypeOrigin() : null;
-    return
-      isCoTypesRelayTypeParameter()
-        /* special type parameter used for this.type in type features */
-        ? (tfo != null ? tfo.qualifiedName(context, human) : "null")
-          + ".this.type"
-        : isCotype() && cotypeOrigin() != null
+    return isCotype() && cotypeOrigin() != null
           /* cotype: use original name and add ".type": */
           ? cotypeOrigin().qualifiedName(context, human) + ".type"
           /* a normal feature name */
@@ -981,16 +975,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isTypeFeature()
   {
     // NYI: BUG: wrongly returns false for features that a cotype inherits from Type but which are implemented in Any i.e. its outer feature is Any, see #3913
-    return outer() != null && (outer().isCotype() || Types.resolved != null && outer().compareTo(Types.resolved.f_Type) == 0);
+    return outer() != null && (outer().isCotype() || Types.resolved != null && outer() == Types.resolved.f_Type);
   }
 
 
   /**
    * Is this the 'RELAY_TYPE' type parameter in a cotype?
    */
-  public boolean isCoTypesRelayTypeParameter()
+  boolean isRelayTypeParameter()
   {
-    return outer() != null
+    return state().atLeast(State.RESOLVED)
+      && outer() != null
       && outer().isCotype()
       && outer().typeArguments().get(0) == this;
   }
@@ -1496,63 +1491,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
                                       // empty, this will result in
                                       // Types.t_ERROR!
-  }
-
-
-  /**
-   * Convenience wrapper around {@code handDownAndApply(List, AbstractType, Function)}
-   * for a single type that is not open generic.
-   *
-   * @param t a type that must not be open generic (unless {@code Errors.any()})
-   *
-   * @param heirType the type we are inherting to.
-   *
-   * @param adjust a function that is applied to the type after it was handed
-   * down and before the heir type's type parameters are applied.
-   *
-   * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
-   * in case of previous errors.
-   */
-  public AbstractType handDownAndApply(AbstractType t,
-                                       AbstractType heirType,
-                                       Function<AbstractType, AbstractType> adjust)
-  {
-    if (PRECONDITIONS) require
-      (Errors.any() || !t.isOpenGeneric());
-
-    return handDownAndApply(new List<>(t), heirType, adjust)
-      .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
-                                      // empty, this will result in
-                                      // Types.t_ERROR!
-  }
-
-
-  /**
-   * Convenience combination of handDownListToType, applying {@code adjust} and
-   * applyTypeParsMaybeOpen.
-   *
-   * @param l a list of types to be handed down
-   *
-   * @param heirType the type we are inherting to.
-   *
-   * @param adjust a function that is applied to the types after they were
-   * handed down and before the heir type's type parameters are applied.
-   *
-   * @return the types from the argument l as seen this by heirType.
-   */
-  public List<AbstractType> handDownAndApply(List<AbstractType> l,
-                                             AbstractType heirType,
-                                             Function<AbstractType, AbstractType> adjust)
-  {
-    return handDownListToType(l, heirType)
-      .flatMap(x ->
-        {
-          var adjusted = adjust.apply(x);
-          return
-            adjusted == Types.t_ERROR      ? new List<>(Types.t_ERROR) :
-            adjusted.isOpenGeneric()       ? adjusted.applyTypeParsMaybeOpen(heirType)
-                                           : new List<>(adjusted.applyTypePars(heirType));
-        });
   }
 
 
@@ -2063,6 +2001,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * this feature as a human readable string
    */
+  @Override
   public String toString()
   {
     return (visibility() + " " +
@@ -2127,7 +2066,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   AbstractType constraint(Context context)
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_DECLARATIONS),
+      (Errors.any() || state().atLeast(State.RESOLVED_DECLARATIONS),
        isTypeParameter());
 
     var result = context.constraintFor(this);
@@ -2249,13 +2188,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    var result = this;
     var o = outer();
-    if (!isCoTypesRelayTypeParameter() && o.isCotype())
-      {
-        result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
-      }
-    return result;
+    return !isRelayTypeParameter() && o.isCotype()
+      ? o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1)
+      : this;
   }
 
 
@@ -2271,13 +2207,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    var result = this;
     var o = outer();
-    if (!o.isCotype() && o.hasCotype())
-      {
-        result = o.cotype().typeArguments().get(typeParameterIndex()+1);
-      }
-    return result;
+    return !o.isCotype() && o.hasCotype()
+      ? o.cotype().typeArguments().get(typeParameterIndex()+1)
+      : this;
   }
 
 

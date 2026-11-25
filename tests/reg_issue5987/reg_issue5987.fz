@@ -25,7 +25,7 @@
 #
 reg_issue5987 =>
 
-  test(F type : i32->i32, f F) =>
+  test(F : i32->i32, f F) =>
     say "$F $(f.call 42)"
 
   test i32->i32 x->x+1
@@ -39,6 +39,6 @@ reg_issue5987 =>
   # include this example here just because this code is related and easy to break when
   # changing the code for the lambda type propagation:
   #
-  a(T type, S type : array T, s S) is
+  a(T : Any, S : array T, s S) is
     say "$T $S $s"
   _ := a [32]

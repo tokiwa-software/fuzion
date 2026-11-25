@@ -66,16 +66,19 @@ public abstract class Expr extends ByteCode
       this.from = from;
     }
 
+    @Override
     public String toString()
     {
       return "goto " + to;
     }
 
+    @Override
     public JavaType type()
     {
       return ClassFileConstants.PrimitiveType.type_void;
     }
 
+    @Override
     public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
     {
       if (CHECKS) check
@@ -171,6 +174,7 @@ public abstract class Expr extends ByteCode
     /**
      * String for debugging
      */
+    @Override
     public String toString()
     {
       return "try " + super.toString()+ " .. " + _end + " catch " + _handler + " for " + _type;
@@ -210,8 +214,11 @@ public abstract class Expr extends ByteCode
    */
   static class Unit extends Expr
   {
+    @Override
     public String toString() { return "UNIT"; }
+    @Override
     public JavaType type() { return PrimitiveType.type_void; }
+    @Override
     public void code(ClassFile.ByteCodeWriter ba, ClassFile cf) { ba.write(BC_EMPTY); }
   }
 
@@ -223,6 +230,7 @@ public abstract class Expr extends ByteCode
   static abstract class LoadConst extends Expr
   {
     abstract ClassFile.CPEntry cpEntry(ClassFile cf);
+    @Override
     public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
     {
       code(ba, O_ldc, cpEntry(cf));
@@ -252,8 +260,11 @@ public abstract class Expr extends ByteCode
       this._type = type;
       this._bc = bc;
     }
+    @Override
     public String   toString()             { return _str;  }
+    @Override
     public JavaType type()                 { return _type; }
+    @Override
     public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
     {
       ba.write(_bc);
@@ -432,6 +443,7 @@ public abstract class Expr extends ByteCode
    */
   static abstract class Load extends Expr
   {
+    @Override
     public Expr drop()
     {
       return UNIT;
@@ -443,6 +455,7 @@ public abstract class Expr extends ByteCode
    */
   static abstract class Store extends Expr
   {
+    @Override
     public JavaType type()
     {
       return PrimitiveType.type_void;
@@ -623,14 +636,9 @@ public abstract class Expr extends ByteCode
    */
   public static Expr comment(String msg)
   {
-    if (ENABLE_COMMENTS)
-      {
-        return commentAlways(msg);
-      }
-    else
-      {
-        return UNIT;
-      }
+    return ENABLE_COMMENTS
+      ? commentAlways(msg)
+      : UNIT;
   }
 
 

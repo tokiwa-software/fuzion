@@ -24,7 +24,7 @@
 t is
   e is
 
-v(E type : t.e) =>
+v(E : t.e) =>
   unit
 
 

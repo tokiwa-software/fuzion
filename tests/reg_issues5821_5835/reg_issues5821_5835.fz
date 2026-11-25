@@ -29,7 +29,7 @@ reg_issues5821_5835 =>
   #
   say "original test:"
 
-  a(B type...) is
+  a(B... : Any) is
   b : a is
   ignore b.dynamic_type
 
@@ -40,7 +40,7 @@ reg_issues5821_5835 =>
   #
   say "tests using 0, 1 and 2 actual types passed to open type:"
 
-  a1(B type...) is
+  a1(B... : Any) is
     postfix $ => $B
   b11 : a1          is {}; ignore b11.dynamic_type; say b11$
   b12 : a1 unit     is {}; ignore b12.dynamic_type; say b12$
@@ -54,7 +54,7 @@ reg_issues5821_5835 =>
   #
   say "tests using one plain type parameter and 0, 1 and 2 actual types passed to open type:"
 
-  a2(A type, B type...) is
+  a2(A : Any, B... : Any) is
     postfix $ => "$A $B"
   b21 : a2 String        is {}; ignore b21.dynamic_type; say b11$
   b22 : a2 bool unit     is {}; ignore b22.dynamic_type; say b22$
@@ -68,7 +68,7 @@ reg_issues5821_5835 =>
   #
   say "tests using argument of open type and 0, 1 and 2 actual types passed to open type:"
 
-  a3(B type..., vb B...) is
+  a3(B... : Any, vb B...) is
     postfix $ => "$B $vb"
   /* NYI: BUG: #5835: this does not work yet
   b31 : a3         is {}; ignore b31.dynamic_type; say b31$
@@ -85,7 +85,7 @@ reg_issues5821_5835 =>
   #
   say "tests using one plain type parameter and value argument and 0, 1 and 2 actual types passed to open type and corresponding value argument:"
 
-  a4(A type, B type..., va A, vb B...) is
+  a4(A : Any, B... : Any, va A, vb B...) is
     postfix $ => "$A $B $va $vb"
   /* NYI: BUG: #5835: this does not work yet
   b41 : a4 3.14                        is {}; ignore b41.dynamic_type; say b41$

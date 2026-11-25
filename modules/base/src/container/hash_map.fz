@@ -26,8 +26,8 @@
 # hash_map -- an immutable hash map from keys HK to values V
 #
 private:public hash_map(
-        HK type : property.hashable,
-        V  type,
+        HK : property.hashable,
+        V  : Any,
         ks Sequence HK,
         vs Sequence V) : container.Map HK V
   pre
