@@ -1376,7 +1376,7 @@ NYI: UNDER DEVELOPMENT:
    *
    * @return true iff this type may be the target of a lambda expression.
    */
-  public boolean isLambdaTarget(Resolution res)
+  boolean isLambdaTarget(Resolution res)
   {
     return res._module
       .findLambdaTarget(selfOrConstraint(res, Context.NONE).feature()) != null;
@@ -1388,12 +1388,13 @@ NYI: UNDER DEVELOPMENT:
    *
    * @return true if this is a type created for a lambda expression.
    */
-  public boolean isLambda()
+  boolean isLambda()
   {
-    return
-      isPlainType() &&
-      // NYI: UNDER DEVELOPMENT: Replace String comparison by a flag or similar
-      feature().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
+    return switch (kind())
+      {
+        case RefType, ValueType       -> feature().inheritsFrom(Types.resolved.f_Function);
+        case ThisType, ParametricType -> false;
+      };
   }
 
 
