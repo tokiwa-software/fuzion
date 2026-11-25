@@ -689,6 +689,9 @@ typedef struct {
  *
  * For threads started by fzE_thread_create, this is the handle returned by
  * fzE_thread_create.  Otherwise, it is created lazily by fzE_thread_current.
+ *
+ * Only this variable is thread local; the handle itself is valid in all
+ * threads of the process until it is closed by fzE_thread_join.
  */
 static _Thread_local HANDLE fzE_current_thread_handle = NULL;
 
