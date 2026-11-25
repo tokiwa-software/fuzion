@@ -114,12 +114,11 @@ public class Docs extends ANY
     while (!queue.isEmpty())
       {
         var head = queue.remove();
-        if (Util.isInternalFeature(head))
+        if (!Util.isInternalFeature(head))
           {
-            continue;
+            c.accept(head);
+            queue.addAll(declaredFeatures(feModule, head));
           }
-        c.accept(head);
-        queue.addAll(declaredFeatures(feModule, head));
       }
   }
 
