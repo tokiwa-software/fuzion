@@ -2246,7 +2246,29 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       code().isEmpty() &&
       // unit inheriting e.g. property.orderable is fine
       (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitTypeWithoutSideEffect()) &&
-      inherits().stream().allMatch(c -> c.calledFeature().isUnitTypeWithoutSideEffect(true));
+      inherits().stream().allMatch(c -> inheritsUnitType(c));
+  }
+
+
+  /**
+   * Helper for {@link isUnitTypeWithoutSideEffect} to check if inheritance via the given call makes
+   * the child feature a non-unit-type.
+   *
+   * @param inheritsCall the call via which the checked feature is inheriting from a parent
+   *
+   * @param true if this inheritance is known to not cause the child to become a non-unit
+   * value. False if this causes the value to be a non-unit type or if it is unknown if it is.
+   */
+  private boolean inheritsUnitType(AbstractCall inheritsCall)
+  {
+    var cf = inheritsCall.calledFeature();
+    return
+      // NYI: UNDER DEVELOPMENT: This is a shortcut to detect `unit : tuple, ...` to be a unit type.
+      // To do this properly, we would need to apply the actual type parameters (none) to see that there
+      // are effectively no valueArguments().
+      cf == Types.resolved.f_tuple && inheritsCall.actualTypeParameters().isEmpty()
+      ||
+      cf.isUnitTypeWithoutSideEffect(true);
   }
 
 
