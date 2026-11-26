@@ -29,7 +29,7 @@
 # seconds or adjustments towards the future and the past.
 #
 #
-public Wallclock ref : posix_clock is
+module:public Wallclock ref : posix_clock is
 
 
   # This clock corresponds to POSIX 1003.1's CLOCK_REALTIME
