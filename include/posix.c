@@ -849,12 +849,9 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
     if(s != 0)
     {
-      close(stdIn[0]);
       close(stdIn[1]);
       close(stdOut[0]);
-      close(stdOut[1]);
       close(stdErr[0]);
-      close(stdErr[1]);
       ret = -1;
     }
     else
