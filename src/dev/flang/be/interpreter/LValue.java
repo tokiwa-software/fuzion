@@ -35,7 +35,7 @@ import dev.flang.fuir.SpecialClazzes;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LValue extends ValueWithClazz
+class LValue extends ValueWithClazz
 {
 
 

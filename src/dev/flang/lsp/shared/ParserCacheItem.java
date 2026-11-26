@@ -38,7 +38,7 @@ import dev.flang.util.Errors;
 /**
  * holds all artifacts of parsing that we later need
  */
-public class ParserCacheItem
+class ParserCacheItem
 {
 
   private final URI uri;

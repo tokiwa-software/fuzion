@@ -44,7 +44,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FuirErrors extends AstErrors
+class FuirErrors extends AstErrors
 {
 
   /*--------------------------  static fields  --------------------------*/

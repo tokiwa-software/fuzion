@@ -34,7 +34,7 @@ import java.util.Arrays;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class BoolArray extends ANY
+class BoolArray extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/

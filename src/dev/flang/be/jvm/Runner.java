@@ -48,7 +48,7 @@ import java.lang.reflect.Method;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Runner extends ClassLoader
+class Runner extends ClassLoader
 {
 
 
