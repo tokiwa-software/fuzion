@@ -169,36 +169,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         ? ResolvedNormalType.create(
             feature().genericsAsActuals(),
             HasSourcePosition.NONE,
-            feature().outer().selfType().asThis(),
+            feature().outer().thisType(),
             feature(),
             TypeKind.RefType)
         : Types.t_ERROR;
       case RefType -> this;
       case ValueType ->
         ResolvedNormalType.create(generics(), originalGenericsPos(), outer(), feature(), TypeKind.RefType);
-    };
-  }
-
-
-  /**
-   * Return this type as a this-type, a type denoting the
-   * instance of this type in the current context.
-   *
-   * Requires that this is resolved and !isParametricType().
-   */
-  public AbstractType asThis()
-  {
-    if (PRECONDITIONS) require
-      (!(this instanceof UnresolvedType),
-       !isParametricType());
-
-    return switch (kind()) {
-      case ParametricType -> throw new Error("asThis not legal for ParametricType");
-      case ThisType -> this;
-      case RefType, ValueType ->
-        feature().isUniverse()
-          ? this
-          : new ThisType(feature());
     };
   }
 
@@ -2322,7 +2299,7 @@ there is no common super type of the two types (Types.t_ERROR)
           {
             var tp = typeParameter();
             yield tp.isRelayTypeParameter() && tp.state().atLeast(State.RESOLVED_DECLARATIONS)
-              ? tp.constraint().asThis().toString(humanReadable)
+              ? tp.constraint().feature().thisType().toString(humanReadable)
               : (humanReadable ? tp.baseNameHuman() : tp.baseName());
           }
         case ThisType:
