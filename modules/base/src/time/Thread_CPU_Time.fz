@@ -34,11 +34,7 @@
 # The resolution depends on the platform, e.g., on macOS it is one
 # microsecond, while Linux provides nano seconds.
 #
-# NYI: UNDER DEVELOPMENT: #8417: This clock must not have a public constructor but
-# a default effect instance such that you cannot instate it in a way that DFA will
-# fail to report the use of this effect.
-#
-public Thread_CPU_Time(thread concur.Thread) ref : time.Clock is
+module:public Thread_CPU_Time(thread concur.Thread) ref : time.Clock is
 
 
   # read the CPU time consumed by `thread` so far
@@ -56,3 +52,7 @@ public Thread_CPU_Time(thread concur.Thread) ref : time.Clock is
   public redef sleep(d time.duration) unit
   =>
     panic "time.Thread_CPU_Time cannot be used to sleep"
+
+
+  # create an instance of time.Thread_CPU_Time
+  public fixed type.new(thread concur.Thread) time.Thread_CPU_Time => time.Thread_CPU_Time thread
