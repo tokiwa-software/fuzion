@@ -44,7 +44,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActuals>
+class FeatureAndActuals extends ANY implements Comparable<FeatureAndActuals>
 {
 
 

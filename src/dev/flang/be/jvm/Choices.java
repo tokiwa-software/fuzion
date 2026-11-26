@@ -49,7 +49,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Choices extends ANY implements ClassFileConstants
+class Choices extends ANY implements ClassFileConstants
 {
 
 

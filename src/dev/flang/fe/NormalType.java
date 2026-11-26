@@ -100,11 +100,7 @@ class NormalType extends LibraryType
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * {@code this} as a value.
-   *
-   * Requires that at isPlainType().
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType asValue()
   {
@@ -161,9 +157,7 @@ class NormalType extends LibraryType
   }
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {

@@ -44,7 +44,7 @@ import dev.flang.util.StringHelpers;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FeErrors extends AstErrors
+class FeErrors extends AstErrors
 {
 
   /*-----------------------------  methods  -----------------------------*/

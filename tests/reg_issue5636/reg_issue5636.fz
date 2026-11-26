@@ -22,7 +22,9 @@
 # -----------------------------------------------------------------------
 
 test : flow.exception_tag is
-match flow.exception test .on ()->
-    (flow.exception test).env.cause (error "bla")
+match flow.exception test
+        .try ()->
+          (flow.exception test).env.cause (error "bla")
+        .or_outcome
   e error => say $e
   void    => # will not happen

@@ -99,7 +99,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * cached result of innerFeatures()
    */
-  List<FuirFeature> _innerFeatures;
+  List<LibraryFeature> _innerFeatures;
 
 
   /**
@@ -232,7 +232,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * The inner features declared within this feature's module file.
    */
-  List<FuirFeature> innerFeatures()
+  List<LibraryFeature> innerFeatures()
   {
     var result = _innerFeatures;
     if (result == null)
@@ -248,7 +248,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * The features declared within this feature.
    */
-  List<FuirFeature> declaredFeatures()
+  List<LibraryFeature> declaredFeatures()
   {
     return innerFeatures();
   }
@@ -298,11 +298,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * The outer ref field field in case hasOuterRef().
-   *
-   * @return the outer ref or null if this does not have an outer ref.
-   */
+  /** {@inheritDoc} */
   @Override public FuirFeature outerRef()
   {
     var result = _outerRef;
@@ -321,11 +317,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * Check if a cotype exists already, either because this feature was
-   * loaded from a library .fum file that includes a cotype, or because one
-   * was created explicitly using cotype(res).
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean hasCotype()
   {
@@ -333,9 +325,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * Return existing cotype.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractFeature cotype()
   {
@@ -442,12 +432,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * createSelfType returns a new instance of the type of this feature's frame
-   * object.
-   *
-   * @return this feature's frame object
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType createSelfType()
   {
@@ -501,12 +486,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
-   *
-   * @return the constraint.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType constraint()
   {
@@ -572,9 +552,9 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  List<AbstractCall> _inherits = null;
+  List<LibraryCall> _inherits = null;
   @Override
-  public List<AbstractCall> inherits()
+  public List<LibraryCall> inherits()
   {
     if (_inherits == null)
       {
@@ -583,8 +563,8 @@ public class LibraryFeature extends FuirFeature
         var ip = _libModule.featureInheritsPos(_index);
         for (var i = 0; i < n; i++)
           {
-            var p = (AbstractCall) code1(ip);
-            ((LibraryCall) p)._isInheritanceCall = true;
+            var p = (LibraryCall) code1(ip);
+            p._isInheritanceCall = true;
             _inherits.add(p);
             ip = _libModule.codeNextPos(ip);
           }
@@ -704,7 +684,7 @@ public class LibraryFeature extends FuirFeature
             }
           case Current:
             {
-              x = new AbstractCurrent(selfType().asThis())
+              x = new AbstractCurrent(new ThisType(_libModule, iat, this))
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }

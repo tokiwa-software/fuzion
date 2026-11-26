@@ -37,7 +37,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Latex extends ANY
+class Latex extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/

@@ -52,7 +52,7 @@ import java.util.stream.Stream;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Module extends ANY implements FeatureLookup
+public abstract class Module extends ANY
 {
 
 
@@ -523,68 +523,6 @@ public abstract class Module extends ANY implements FeatureLookup
   }
 
 
-  /**
-   * Find the redefinition of feature f within heir.
-   *
-   * For fixed features, this performs a lookup by name since fixed features
-   * are not inherited and a call to a fixed feature must be bound to the
-   * feature with the same name in the actual outer type.
-   *
-   * For all other features, this does not perform a lookup by name, but uses
-   * the redefinition relation, so features in heir that have the same name as
-   * f but do not redefine f are ignored.
-   *
-   * @param heir a feature that inherits from f.outer(), directly or
-   *             indirectly.
-   *
-   * @param f    a feature declared in or inherited by f.outer()
-   *
-   * @return the feature in heir that redefines f, or f itself if f is not
-   *         redefined in heir.
-   */
-  @Override
-  public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
-    // NYI: BUG: #8187 Must not used named lookup, redefinitions should be found in
-    // `d._redefinitions`. If they are not there, we should find out why and fix that.
-    if (f.isFixed() && !f.isTypeParameter())
-      {
-        var sameName = lookupFeature(heir, f.featureName());
-        if (sameName != null && sameName.isFixed())
-          {
-            return sameName;
-          }
-      }
-    var d = data(heir);
-    var m = d._redefinitions;
-    if (m == null)
-      {
-        var res = new TreeMap<AbstractFeature, AbstractFeature>();
-        forEachDeclaredOrInheritedFeature(heir, g ->
-          {
-            for (var o : g.redefinesFull())
-              {
-                var prev = res.put(o, g);
-                if (CHECKS)
-                  check(prev == null || prev == g || Errors.any());
-              }
-          });
-        m = res;
-        d._redefinitions = m;
-      }
-    return m.getOrDefault(f, f);
-  }
-
-
-  /**
-   * Find feature with given name in outer.
-   *
-   * @param outer the declaring or inheriting feature
-   */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
-  {
-    return declaredOrInheritedFeatures(outer, name).getFirstOrNull();
-  }
-
 
   /**
    * Find the effective main feature from the given main feature name. In case
@@ -601,7 +539,7 @@ public abstract class Module extends ANY implements FeatureLookup
   {
     var result = universe == null || main == null
       ? universe
-      : lookupFeature(universe, FeatureName.get(main, 0));
+      : declaredOrInheritedFeatures(universe, FeatureName.get(main, 0)).getFirstOrNull();
     if (result != null)
       {
         var pac = result.preAndCallFeature();

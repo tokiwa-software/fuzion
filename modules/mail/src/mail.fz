@@ -175,19 +175,21 @@ public mail is
         .client family net.protocol.tcp host port
         .bind c->
           c.with _ net_lm ()->
-            flow.exception send_exception .on _ ()->
+            flow.exception send_exception
+              .try _ ()->
 
-              # do we need to initiate STARTTLS
-              #
-              if port = 587
-                write_or_cause net_lm init
-                _ := io.buffered net_lm .read_line_while (s -> s != "250 STARTTLS")
-                write_or_cause net_lm "STARTTLS\r\n"
-                match io.buffered net_lm .read_line
-                  s String =>
-                    if s != "220 OK"
-                      flow.exception send_exception .env.cause (error "Expected 220 OK, got $s")
-                  io.end_of_file =>
-                    flow.exception send_exception .env.cause (error "Expected 220 OK, got end-of-file")
+                # do we need to initiate STARTTLS
+                #
+                if port = 587
+                  write_or_cause net_lm init
+                  _ := io.buffered net_lm .read_line_while (s -> s != "250 STARTTLS")
+                  write_or_cause net_lm "STARTTLS\r\n"
+                  match io.buffered net_lm .read_line
+                    s String =>
+                      if s != "220 OK"
+                        flow.exception send_exception .env.cause (error "Expected 220 OK, got $s")
+                    io.end_of_file =>
+                      flow.exception send_exception .env.cause (error "Expected 220 OK, got end-of-file")
 
-              wolfssl _ net_lm host write_request
+                wolfssl _ net_lm host write_request
+              .or_outcome

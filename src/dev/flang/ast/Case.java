@@ -190,14 +190,7 @@ public class Case extends AbstractCase
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
+  /** {@inheritDoc} */
   @Override
   public void visit(FeatureVisitor v, AbstractMatch m, AbstractFeature outer)
   {

@@ -1308,13 +1308,7 @@ public class Call extends AbstractCall
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -1343,13 +1337,7 @@ public class Call extends AbstractCall
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {
@@ -2571,25 +2559,37 @@ public class Call extends AbstractCall
           }
         else
           {
-            if  (!actualType.isParametricType())
-              {
-                for (var p: actualType.feature().inherits())
-                  {
-                    if (p instanceof Call pc)
-                      {
-                        pc.resolveTypes(res, actualType.feature().context());
-                      }
-                    var pt = p.type();
-                    if (pt != Types.t_ERROR)
-                      {
-                        var apt = actualType.actualType(pt, context);
-                        if (apt.feature().inheritsFrom(formalType.feature()))
-                          {
-                            inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt, actualArgIndex);
-                          }
-                      }
-                  }
-              }
+            switch (actualType.kind())
+            {
+              case ThisType, RefType, ValueType ->
+                {
+                  for (var p: actualType.feature().inherits())
+                    {
+                      if (p instanceof Call pc)
+                        {
+                          pc.resolveTypes(res, actualType.feature().context());
+                        }
+                      var pt = p.type();
+                      if (pt != Types.t_ERROR)
+                        {
+                          var apt = actualType.actualType(pt, context);
+                          if (apt.feature().inheritsFrom(formalType.feature()))
+                            {
+                              inferGeneric(res, context, formalType, formalTypeIsConstraint, apt, pos, conflict, foundAt, actualArgIndex);
+                            }
+                        }
+                    }
+                }
+              case ParametricType ->
+                {
+                  var constraint = actualType.selfOrConstraint(res, context);
+                  if (constraint.feature().inheritsFrom(fft))
+                    {
+                      inferGeneric(res, context, formalType, formalTypeIsConstraint, constraint,
+                                  pos, conflict, foundAt, actualArgIndex);
+                    }
+                }
+            }
 
             if (formalType.isChoice())
               {

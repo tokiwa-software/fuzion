@@ -21,8 +21,60 @@
 #
 # -----------------------------------------------------------------------
 
+# This used to crash with an `illegal this type` since `a.x` was changed to
+# `void.this.x` or similar.
+#
+# For this simple case, I see no reason why this should not compile, but not in
+# more complex cases, see #8262 for details.
+#
+# The problem here is that a lambda is abused to expose the `.this` type of
+# the code generated for the lambda target implementation will become visible to
+# the outside via type inference.
+#
+# This originally resulted in illegal uses of `.this` types outside of their
+# features.
+#
+
+
+# the original code from the issue:
+
+
 f(x ()->T) =>
 f ()->
   a is
     x => a
   a.x
+
+
+# code added to test lambda used with nested, redefined outer features
+
+case2 =>
+
+  x is
+    y is
+      z is
+        test(f ()->T) =>
+          v := f.call
+          say "$T $v"
+
+  a is
+    b is
+      c is
+        x.y.z.test ()->
+          q is
+            x => q
+          q.x
+
+
+  _ := a.b.c
+
+  aa : a is
+    bb : b is
+      cc : c is
+
+  _ := aa.b.c
+  _ := aa.bb.c
+  _ := aa.bb.cc
+
+
+case2

@@ -32,7 +32,7 @@ package dev.flang.be.interpreter;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class i8Value extends Value
+class i8Value extends Value
 {
 
 
@@ -75,11 +75,7 @@ public class i8Value extends Value
   }
 
 
-  /**
-   * For a value of type i8, return the value.
-   *
-   * @return the i8 value
-   */
+  /** {@inheritDoc} */
   @Override
   public int i8Value()
   {
@@ -87,13 +83,7 @@ public class i8Value extends Value
   }
 
 
-  /**
-   * Store this value in a field
-   *
-   * @param slot the slot that addresses the field this should be stored in.
-   *
-   * @param size the size of the data to be stored
-   */
+  /** {@inheritDoc} */
   @Override
   void storeNonRef(LValue slot, int size)
   {

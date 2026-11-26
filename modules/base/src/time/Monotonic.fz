@@ -26,7 +26,7 @@
 # time.monotonic -- effect providing access to system's monotonic clock
 #
 #
-public Monotonic ref : posix_clock is
+module:public Monotonic ref : posix_clock is
 
 
   # This clock corresponds to POSIX 1003.1's CLOCK_MONOONIC

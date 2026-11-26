@@ -135,9 +135,11 @@ javaHello : Java is
       util_map := fuzion.jvm.env.cast Java.java.util.Map tm
 
       tm2 := Java.java.util.TreeMap.new
-      _ := flow.exception casting_exception .on unit ()->
-        tm2.putAll util_map.or_panic
-        say tm2.toString
+      _ := flow.exception casting_exception
+        .try unit ()->
+          tm2.putAll util_map.or_panic
+          say tm2.toString
+        .or_outcome
 
     test_casting
 
@@ -152,9 +154,11 @@ javaHello : Java is
       util_map := fuzion.jvm.env.cast Java.java.util.Map jstr
 
       tm2 := Java.java.util.TreeMap.new
-      _ := flow.exception casting_exception .on unit ()->
-        tm2.putAll util_map.or_panic
-        say tm2.toString
+      _ := flow.exception casting_exception
+        .try unit ()->
+          tm2.putAll util_map.or_panic
+          say tm2.toString
+        .or_outcome
 
     catch_panics ()->
       test_casting_fail

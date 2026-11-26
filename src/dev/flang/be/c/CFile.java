@@ -42,7 +42,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class CFile extends ANY
+class CFile extends ANY
 {
 
 

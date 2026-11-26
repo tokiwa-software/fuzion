@@ -82,10 +82,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   public SourcePosition pos() { return _pos.pos(); }
 
 
-  /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
+  /** {@inheritDoc} */
   @Override
   public SourcePosition declarationPos() { return _pos.pos(); }
 
@@ -691,8 +688,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       }
 
     return
-      f == Types.f_ERROR                  ? (tolerant ? null : Types.t_ERROR) :
-      typeKind == TypeKind.ThisType       ? new ThisType(f)                   :
+      f == Types.f_ERROR                  ? (tolerant ? null : Types.t_ERROR)          :
+      typeKind == TypeKind.ThisType       ? ThisType.create(context, pos, f, tolerant) :
       !f.generics().sizeMatches(generics) ? new IncompleteType(f, typeKind)     // this can only happen if ignoreActualTypePars, see `if` above
                                           : ResolvedNormalType.create(generics,
                                                                       originalGenericsPos,
@@ -933,9 +930,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {

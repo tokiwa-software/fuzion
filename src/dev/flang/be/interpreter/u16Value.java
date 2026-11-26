@@ -32,7 +32,7 @@ package dev.flang.be.interpreter;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class u16Value extends Value
+class u16Value extends Value
 {
 
 

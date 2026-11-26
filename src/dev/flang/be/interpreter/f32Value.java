@@ -32,7 +32,7 @@ package dev.flang.be.interpreter;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class f32Value extends Value
+class f32Value extends Value
 {
 
 

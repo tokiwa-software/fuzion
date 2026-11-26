@@ -47,9 +47,7 @@ interface Context
    */
   static class MainEntryPoint extends ANY implements Context
   {
-    /**
-     * Effect-environment in this context, null if none.
-     */
+    /** {@inheritDoc} */
     @Override
     public Env env()
     {

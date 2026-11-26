@@ -169,36 +169,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         ? ResolvedNormalType.create(
             feature().genericsAsActuals(),
             HasSourcePosition.NONE,
-            feature().outer().selfType().asThis(),
+            feature().outer().thisType(),
             feature(),
             TypeKind.RefType)
         : Types.t_ERROR;
       case RefType -> this;
       case ValueType ->
         ResolvedNormalType.create(generics(), originalGenericsPos(), outer(), feature(), TypeKind.RefType);
-    };
-  }
-
-
-  /**
-   * Return this type as a this-type, a type denoting the
-   * instance of this type in the current context.
-   *
-   * Requires that this is resolved and !isParametricType().
-   */
-  public AbstractType asThis()
-  {
-    if (PRECONDITIONS) require
-      (!(this instanceof UnresolvedType),
-       !isParametricType());
-
-    return switch (kind()) {
-      case ParametricType -> throw new Error("asThis not legal for ParametricType");
-      case ThisType -> this;
-      case RefType, ValueType ->
-        feature().isUniverse()
-          ? this
-          : new ThisType(feature());
     };
   }
 
@@ -637,7 +614,19 @@ NYI: UNDER DEVELOPMENT:
     // case 4: tagging is allowed and actual is one of the - potentially nested - choices
     if (!result)
       {
-        result = allowTagging && isChoice() && isChoiceMatch(actual, context);
+        /* Check if tagging would make this assignment possible as in
+         *
+         *     x option i64 := nil
+         *
+         * or, using a type feature with relay type as result
+         *
+         *     trit : choice true_ false_ nil is
+         *
+         *       type.yes trit.this => true_
+         *
+         */
+        var tt = relayTypeAsThisType();
+        result = allowTagging && tt.isChoice() && tt.isChoiceMatch(actual, context);
       }
     if (!result)
       {
@@ -1376,7 +1365,7 @@ NYI: UNDER DEVELOPMENT:
    *
    * @return true iff this type may be the target of a lambda expression.
    */
-  public boolean isLambdaTarget(Resolution res)
+  boolean isLambdaTarget(Resolution res)
   {
     return res._module
       .findLambdaTarget(selfOrConstraint(res, Context.NONE).feature()) != null;
@@ -1384,28 +1373,15 @@ NYI: UNDER DEVELOPMENT:
 
 
   /**
-   * Check if this a type created for a lambda expression.
-   *
-   * @return true if this is a type created for a lambda expression.
+   * @return true if this is a type that is based on a feature that is or inherits from {@code Function}.
    */
-  public boolean isLambda()
+  public boolean isFunctionLikeType()
   {
-    return
-      isPlainType() &&
-      // NYI: UNDER DEVELOPMENT: Replace String comparison by a flag or similar
-      feature().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
-  }
-
-
-  /**
-   * Check if this any function type, i.e., inherits directly or indirectly from
-   * {@code Function}.
-   *
-   * @return true if this is a type based on a feature that is or inherits from {@code Function}.
-   */
-  public boolean isFunctionType(Resolution res)
-  {
-    return isLambdaTarget(res) || isLambda();
+    return switch (kind())
+      {
+        case RefType, ValueType, ThisType -> feature().inheritsFrom(Types.resolved.f_Function);
+        case ParametricType -> typeParameter().constraint().isFunctionLikeType();
+      };
   }
 
 
@@ -1420,7 +1396,7 @@ NYI: UNDER DEVELOPMENT:
    */
   AbstractType functionTypeFromChoice(Resolution res, Context context)
   {
-    return findInChoice(cg -> cg.isFunctionType(res), context);
+    return findInChoice(cg -> cg.isFunctionLikeType(), context);
   }
 
 
@@ -2245,6 +2221,25 @@ there is no common super type of the two types (Types.t_ERROR)
   }
 
 
+
+  /**
+   * if {@code isRelayType()}, return the corresponding {@code thisType}. E.g., for
+   *
+   *     a : choice bool i64 is
+   *       type.answer a.this => 42
+   *
+   * the result type of {@code a.type.answer} is a relay type, the corrsponding {@code thisType} is
+   * `a.this`.
+   *
+   * @return the corresponding {@code thisType} iff {@code isRelayType()}, otherwise {@code this}.
+   */
+  public AbstractType relayTypeAsThisType()
+  {
+    return isRelayType() ? typeParameter().outer().cotypeOrigin().thisType()
+                         : this;
+  }
+
+
   /**
    * Check if for this or any type parameters of this, isThisType is true.  This
    * must not be the case for any clazzes in FUIR since clazzes require concrete
@@ -2322,7 +2317,7 @@ there is no common super type of the two types (Types.t_ERROR)
           {
             var tp = typeParameter();
             yield tp.isRelayTypeParameter() && tp.state().atLeast(State.RESOLVED_DECLARATIONS)
-              ? tp.constraint().asThis().toString(humanReadable)
+              ? tp.constraint().feature().thisType().toString(humanReadable)
               : (humanReadable ? tp.baseNameHuman() : tp.baseName());
           }
         case ThisType:
@@ -2498,7 +2493,6 @@ there is no common super type of the two types (Types.t_ERROR)
        constraint != null);
 
     var result = true;
-    checkLegalThisType(pos, context);
     if (!isArtificialType() &&
         !constraint.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
@@ -2512,47 +2506,6 @@ there is no common super type of the two types (Types.t_ERROR)
         result = false;
       }
     return result;
-  }
-
-
-  /**
-   * If the type contains a this-type, check if it is legal.
-   */
-  public void checkLegalThisType(SourcePosition pos, AbstractFeature outer)
-  {
-    checkLegalThisType(pos, outer.context());
-  }
-
-
-  /**
-   * If the type contains a this-type, check if it is legal.
-   */
-  private void checkLegalThisType(SourcePosition pos, Context context)
-  {
-    if (isThisType() && !isCotypeType())
-      {
-        var subject = feature();
-        var found = false;
-        AbstractFeature o = context.outerFeature();
-        while (o != null)
-          {
-            o = o.isCotype() ? o.cotypeOrigin() : o;
-            if (subject == o)
-              {
-                found = true;
-                break;
-              }
-            o = o.outer();
-          }
-        if (!found)
-          {
-            AstErrors.illegalThisType(pos, this);
-          }
-      }
-    applyToGenericsAndOuter(t -> {
-      t.checkLegalThisType(pos, context);
-      return t;
-    });
   }
 
 

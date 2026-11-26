@@ -26,14 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-
 import dev.flang.ast.AbstractFeature;
 
-
 /**
- * Interface for looking up features that is used by middle end.
+ * Interface for looking up redefinition of a feature.
  */
-public interface FeatureLookup {
+public interface RedefinitionLookup {
 
 
   /**

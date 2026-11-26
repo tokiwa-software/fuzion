@@ -100,9 +100,7 @@ class ArtificialBuiltInType extends ResolvedNormalType
   }
 
 
-  /**
-   * Id to differentiate artificial types.
-   */
+  /** {@inheritDoc} */
   @Override
   public int artificialBuiltInID()
   {
