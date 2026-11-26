@@ -2233,42 +2233,26 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Is this feature a unit type without any side effects?
    *
-   * @param isInheritedFeature true if we are checking an inherited feature
-   * @return
+   * @param isInheritedFeature true if we are checking an inherited feature. If true, formal
+   * argument types will be ignored, the caller has to check the actual argument types.
+   *
+   * @return true if this is known to be a unit type, false if not or if we are not sure.
    */
   public boolean isUnitTypeWithoutSideEffect(boolean isInheritedFeature)
   {
     return
       isConstructor() &&
       contract().isEmpty() &&
-      valueArguments().stream().allMatch(va -> va.isUnitTypeWithoutSideEffect()) &&
-      (isInheritedFeature || !isRef()) &&
+      (isInheritedFeature || valueArguments().stream().allMatch(va -> va.isUnitTypeWithoutSideEffect()) && !isRef()) &&
       code().isEmpty() &&
       // unit inheriting e.g. property.orderable is fine
       (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitTypeWithoutSideEffect()) &&
-      inherits().stream().allMatch(c -> inheritsUnitType(c));
-  }
-
-
-  /**
-   * Helper for {@link isUnitTypeWithoutSideEffect} to check if inheritance via the given call makes
-   * the child feature a non-unit-type.
-   *
-   * @param inheritsCall the call via which the checked feature is inheriting from a parent
-   *
-   * @param true if this inheritance is known to not cause the child to become a non-unit
-   * value. False if this causes the value to be a non-unit type or if it is unknown if it is.
-   */
-  private boolean inheritsUnitType(AbstractCall inheritsCall)
-  {
-    var cf = inheritsCall.calledFeature();
-    return
-      // NYI: UNDER DEVELOPMENT: This is a shortcut to detect `unit : tuple, ...` to be a unit type.
-      // To do this properly, we would need to apply the actual type parameters (none) to see that there
-      // are effectively no valueArguments().
-      cf == Types.resolved.f_tuple && inheritsCall.actualTypeParameters().isEmpty()
-      ||
-      cf.isUnitTypeWithoutSideEffect(true);
+      inherits().stream().allMatch(c -> c.actuals()
+                                         .stream()
+                                         .map(a -> a.type())
+                                         .allMatch(t -> !t.isParametricType() &&
+                                                        t.feature().isUnitTypeWithoutSideEffect()) &&
+                                        c.calledFeature().isUnitTypeWithoutSideEffect(true));
   }
 
 
