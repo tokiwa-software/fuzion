@@ -116,7 +116,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return the generics of this type.
    * In case this is a this-type return the features generics.
    */
-  public List<AbstractType> actualGenerics()
+  List<AbstractType> actualGenerics()
   {
     return isThisType()
       ? feature().genericsAsActuals()
@@ -318,7 +318,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isPlainType()
   {
     return
-      this != Types.t_ERROR &&
+      !isArtificialType() &&
       switch (kind())
       {
         case RefType, ValueType        -> true;
@@ -344,7 +344,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       ? AbstractCall.NO_GENERICS
       : isThisType()
       ? g
-      : replaceGenerics(g).map(t -> t.replace_this_type_by_actual_outer(outer(), context));
+      : replaceGenerics(g).map(t -> t.isParametricType() ? t : outer().actualType(t, context));
   }
 
 
@@ -672,7 +672,7 @@ NYI: UNDER DEVELOPMENT:
    */
   public boolean isArtificialType()
   {
-    return false;
+    return artificialBuiltInID() != 0;
   }
 
 
@@ -843,7 +843,7 @@ NYI: UNDER DEVELOPMENT:
    * might be of any length, including empty, otherwise the list will have
    * exactly one element.
    */
-  public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
+  List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
                                                    List<AbstractType> actualTypes,
                                                    int select)
   {
@@ -864,7 +864,7 @@ NYI: UNDER DEVELOPMENT:
    * be of any length, including empty, otherwise the list will have exactly one
    * element.
    */
-  public List<AbstractType> applyTypeParsMaybeOpen(AbstractType t)
+  List<AbstractType> applyTypeParsMaybeOpen(AbstractType t)
   {
     return t.isPlainType() ? applyTypeParsMaybeOpen(t.feature(), t.generics(), NO_SELECT)
                            : new List<>(t);
@@ -967,7 +967,7 @@ NYI: UNDER DEVELOPMENT:
    * @return this with all generic arguments from target.feature._generics
    * replaced by target._generics.
    */
-  public AbstractType applyTypePars(AbstractType target)
+  AbstractType applyTypePars(AbstractType target)
   {
     if (PRECONDITIONS) require
       (target != null,
@@ -1188,8 +1188,7 @@ NYI: UNDER DEVELOPMENT:
                 var this_type = g2.get(0);
                 g3 = g2.map(x -> x == this_type                ||        // leave first type parameter unchanged
                                  this_type.isParametricType()    ? x    // no actuals to apply in a generic arg
-                                                                  : x.applyTypePars(this_type)
-                                                                     .replace_this_type_by_actual_outer(this_type, Context.NONE));
+                                                                 : this_type.actualType(x));
               }
 
             var o1 = outer();
@@ -1287,7 +1286,7 @@ NYI: UNDER DEVELOPMENT:
        !t.isOpenGeneric());
 
     return t.applyTypePars(this)
-      .replace_this_type_by_actual_outer(this, context);
+      .replace_this_type_by_actual_outer(this, null, context);
   }
 
 
@@ -1731,7 +1730,7 @@ there is no common super type of the two types (Types.t_ERROR)
   /**
    * Id to differentiate artificial types.
    */
-  public int artificialBuiltInID()
+  int artificialBuiltInID()
   {
     return 0;
   }
@@ -1824,21 +1823,6 @@ there is no common super type of the two types (Types.t_ERROR)
       }
     while (tt != null);
     return result;
-  }
-
-
-  /**
-   * Convenience version of replace_this_type_by_actual_outer with {@code null} as
-   * argument to {@code foundRef}.
-   *
-   * @param tt the type feature we are calling ({@code equatable.type} in the example)
-   * above).
-   *
-   * @param context the source code context where this Type is used
-   */
-  AbstractType replace_this_type_by_actual_outer(AbstractType tt, Context context)
-  {
-    return replace_this_type_by_actual_outer(tt, null, context);
   }
 
 
