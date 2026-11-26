@@ -581,7 +581,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     return t.isLambdaTargetButNotLazy(res)                       &&
         !(this instanceof Call c && c._wasImplicitImmediateCall) &&
         typeForInferencing() != Types.t_ERROR                    &&
-        (typeForInferencing() == null || !typeForInferencing().isFunctionType(res));
+        (typeForInferencing() == null || !typeForInferencing().isFunctionLikeType());
   }
 
 
@@ -610,7 +610,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
-    return expectedType.isLambdaTarget(res) && expectedType.arity(res) == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType(res)
+    return expectedType.isLambdaTarget(res) && expectedType.arity(res) == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionLikeType()
       ? new Function(pos(), NO_EXPRS, reset())
       : this;
   }

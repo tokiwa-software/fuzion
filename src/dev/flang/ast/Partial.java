@@ -242,7 +242,7 @@ public class Partial extends AbstractLambda
   AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
-    if (_function == null && t.isFunctionType(res) && (t.arity(res) == 1 || t.arity(res) == 2))
+    if (_function == null && t.isFunctionLikeType() && (t.arity(res) == 1 || t.arity(res) == 2))
       {
         var a = argName(pos());
         List<Expr> args = new List<>(a);

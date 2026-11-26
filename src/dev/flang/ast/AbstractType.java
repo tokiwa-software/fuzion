@@ -1384,29 +1384,15 @@ NYI: UNDER DEVELOPMENT:
 
 
   /**
-   * Check if this a type created for a lambda expression.
-   *
-   * @return true if this is a type created for a lambda expression.
+   * @return true if this is a type that is based on a feature that is or inherits from {@code Function}.
    */
-  boolean isLambda()
+  public boolean isFunctionLikeType()
   {
     return switch (kind())
       {
-        case RefType, ValueType       -> feature().inheritsFrom(Types.resolved.f_Function);
-        case ThisType, ParametricType -> false;
+        case RefType, ValueType, ThisType -> feature().inheritsFrom(Types.resolved.f_Function);
+        case ParametricType -> typeParameter().constraint().isFunctionLikeType();
       };
-  }
-
-
-  /**
-   * Check if this any function type, i.e., inherits directly or indirectly from
-   * {@code Function}.
-   *
-   * @return true if this is a type based on a feature that is or inherits from {@code Function}.
-   */
-  public boolean isFunctionType(Resolution res)
-  {
-    return isLambdaTarget(res) || isLambda();
   }
 
 
@@ -1421,7 +1407,7 @@ NYI: UNDER DEVELOPMENT:
    */
   AbstractType functionTypeFromChoice(Resolution res, Context context)
   {
-    return findInChoice(cg -> cg.isFunctionType(res), context);
+    return findInChoice(cg -> cg.isFunctionLikeType(), context);
   }
 
 
