@@ -2077,7 +2077,7 @@ A ((Choice)) declaration must not contain a result type.
 
     if (!isRelayTypeParameter())
       {
-        returnType().checkActualTypePars(context());
+        returnType().checkType(context());
       }
 
     choiceTypeCheckAndInternalFields(res);

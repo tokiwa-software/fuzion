@@ -107,7 +107,7 @@ public abstract class ReturnType extends ANY
    *
    * @param context the source code context where this return type is used
    */
-  void checkActualTypePars(Context context) { }
+  void checkType(Context context) { }
 
 
   /**

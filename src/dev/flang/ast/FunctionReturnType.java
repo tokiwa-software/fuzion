@@ -122,16 +122,17 @@ public class FunctionReturnType extends ReturnType
   }
 
   /**
-   * @see dev.flang.ast.ReturnType#checkActualTypePars(dev.flang.ast.Context)
+   * @see dev.flang.ast.ReturnType#checkType(dev.flang.ast.Context)
    */
   @Override
-  void checkActualTypePars(Context context)
+  void checkType(Context context)
   {
     _type.selfOuterAndGenerics(t -> {
-      if (t.isPlainType())
-        {
-          AbstractType.checkActualTypePars(context, t.feature(), t.generics(), t.originalGenericsPos(), _pos, x->x);
-        }
+      switch (t.kind()) {
+        case RefType, ValueType -> AbstractType.checkActualTypePars(context, t.feature(), t.generics(), t.originalGenericsPos(), _pos, x->x);
+        case ThisType -> t.checkLegalThisType(_pos, context);
+        case ParametricType -> {}
+      }
     });
   }
 
