@@ -52,14 +52,14 @@ GOT: x choice (Unary i32 (choice a.b i32 String)) A
 GOT: x choice (Unary i32 (choice a.b i32 String)) A
 
 EXP: x tuple
-GOT: x tuple
-GOT: x tuple
-GOT: x tuple
-GOT: x tuple
-GOT: x tuple
-GOT: x tuple
-GOT: x tuple
-GOT: x tuple
+GOT: x unit
+GOT: x unit
+GOT: x unit
+GOT: x unit
+GOT: x unit
+GOT: x unit
+GOT: x unit
+GOT: x unit
 
 EXP: y Function String (Sequence u64) a.b
 GOT: y Function String (Sequence u64) a.b
