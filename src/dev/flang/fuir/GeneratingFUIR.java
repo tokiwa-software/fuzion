@@ -2109,7 +2109,7 @@ public class GeneratingFUIR extends FUIR
                     @Override public SourcePosition     pos()                  { return call.pos(); }
                     @Override public Expr               target()               { return ft; }
                     @Override public AbstractFeature    calledFeature()        { return op; }
-                    @Override public AbstractType       type()                 { return fcur.replaceThisType(op.resultType(), new List<>()); }
+                    @Override public AbstractType       type()                 { return fcur.replaceThisType(op.resultType()); }
                   };
                 stack.push(() -> toStack(stack, l, replacement, dumpResult));
                 stack.push(() -> toStack(stack, l, t, true));   // we must evaluate `t` since strange code structure like #5816 could have side-effects

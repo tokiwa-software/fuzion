@@ -608,7 +608,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     //       a => say "a"
     //   b : o.a is
     //   ignore b
-    return replaceThisType(t0, inh);
+    return replaceThisType(t0);
   }
 
 
@@ -643,13 +643,13 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @param t a type
    * @param inh
    */
-  AbstractType replaceThisType(AbstractType t, List<AbstractCall> inh)
+  AbstractType replaceThisType(AbstractType t)
   {
     return switch (t.kind())
       {
         case ParametricType -> t;
-        case ThisType -> replaceThisType0(t, inh);
-        case RefType, ValueType -> t.applyToGenericsAndOuter(g -> replaceThisType(g, inh));
+        case ThisType -> replaceThisType0(t);
+        case RefType, ValueType -> t.applyToGenericsAndOuter(g -> replaceThisType(g));
       };
   }
 
@@ -670,7 +670,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var result = this._type.replaceGenerics(new_generics);
 
     // Replace any {@code a.this.type} actual generics by the actual outer clazz:
-    result = result.map(t->replaceThisType(t, inh));
+    result = result.map(t -> handDownAndReplaceThisType(t, NO_SELECT, null, inh));
 
     if (_outer != null)
       {
@@ -1764,21 +1764,19 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Find outer clazz of this corresponding to this-type {@code o}.
    *
-   * @param o the this-type whose clazz we are searching for.
-   * @param inh
+   * @param thisType the this-type whose clazz we are searching for.
    *
    * @return the outer clazz of this corresponding this-type {@code o}.
    */
-  // NYI: UNDER DEVELOPMENT: logic too complicated and likely subtly wrong.
-  private AbstractType replaceThisType0(AbstractType o, List<AbstractCall> inh)
+  private AbstractType replaceThisType0(AbstractType thisType)
   {
     if (PRECONDITIONS) require
-      (o.isThisType());
+      (thisType.isThisType());
 
     /* starting with feature(), follow outer references
      * until we find o.
      */
-    var of = handDown(o, NO_SELECT, (_,_)->{}, inh).feature();
+    var of = thisType.feature();
     var res = _type;
     while (res != null && res.feature() != of && !res.feature().isCotype())
       {
@@ -1789,7 +1787,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         // we arrived at a cotype, we use its relay type
         // to determine the actual type.
         return res.feature().isCotype()
-          ? res.generics().get(0).actualType(o)
+          ? res.generics().get(0).actualType(thisType)
           : res;
       }
 
