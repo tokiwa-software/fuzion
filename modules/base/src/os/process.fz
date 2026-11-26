@@ -216,7 +216,7 @@ module:public process(public pid i64,
 
   # used in error messages
   #
-  description =>
+  module description =>
     "$name $(String.join args " ") (PID: $pid)"
 
 
