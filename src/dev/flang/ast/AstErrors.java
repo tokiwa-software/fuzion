@@ -394,7 +394,7 @@ public class AstErrors extends ANY
           {
             assignableToSB
               .append("assignable to       : ")
-              .append(st(actlT.asRef(true).toString(true)));
+              .append(st(actlT.feature().thisType(true).toString(true)));
             if (!frmlT.isAssignableFromWithoutBoxing(actlT, context).no())
               {
                 remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
@@ -414,9 +414,9 @@ public class AstErrors extends ANY
                   .append(st(ts.toString(true)));
               }
           }
-        if (remedy == null && !frmlT.isParametricType() && frmlT.asRef(true).isAssignableFromWithoutBoxing(actlT, context).yes())
+        if (remedy == null && frmlT.isPlainType() && frmlT.asRef().isAssignableFromWithoutBoxing(actlT, context).yes())
           {
-            remedy = "To solve this, you could change the type of " + target + " to a " + st("ref")+ " type like " + s(frmlT.asRef(true)) + ".\n";
+            remedy = "To solve this, you could change the type of " + target + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
           }
         else if (integerType(frmlT) && integerType(actlT))
           {

@@ -141,38 +141,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * This type as a reference.
    *
-   * Requires that this is resolved, !isParametricType().
+   * Requires that this is resolved, isPlainType().
    */
   public AbstractType asRef()
   {
-    return asRef(false);
-  }
-
-
-  /**
-   * This type as a reference.
-   *
-   * @param allowForThisType allow this-types to be turned in to a ref-type
-   *
-   * Requires that this is resolved, !isParametricType().
-   */
-  public AbstractType asRef(boolean allowForThisType)
-  {
     if (PRECONDITIONS) require
       (!(this instanceof UnresolvedType),
-       !isParametricType(),
-       allowForThisType || !isThisType());
+       isPlainType());
 
     return switch (kind()) {
-      case ParametricType -> throw new Error("asValue not legal for ParametricType");
-      case ThisType -> allowForThisType
-        ? ResolvedNormalType.create(
-            feature().genericsAsActuals(),
-            HasSourcePosition.NONE,
-            feature().outer().thisType(),
-            feature(),
-            TypeKind.RefType)
-        : Types.t_ERROR;
+      case ParametricType, ThisType -> throw new Error("asRef not legal for kind: " +  kind());
       case RefType -> this;
       case ValueType ->
         ResolvedNormalType.create(generics(), originalGenericsPos(), outer(), feature(), TypeKind.RefType);
@@ -641,7 +619,7 @@ NYI: UNDER DEVELOPMENT:
     //      this   : choice (Sequence u8) String
     //      actual : String.this
     //
-              case ThisType -> assignable(actual.asRef(true), context, false, allowTagging, assignableTo);
+              case ThisType -> assignable(actual.feature().thisType(true).asRef(), context, false, allowTagging, assignableTo);
     // case 8: boxing is allowed, actual is a value type and the boxed value is assignable (potentially via tagging)
     //
     //     example where we need to box (to Finger_Tree) then tag (to option):
