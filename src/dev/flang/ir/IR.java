@@ -488,14 +488,6 @@ public abstract class IR extends ANY
       {
         return expr;
       }
-    /************** <<<<<<<<<<<<<<<<<<<
-    // Case 1.1: types are equal, no tagging necessary
-    // NYI: BUG: soundness issue? see also isAssignableFrom
-    else if (actual.isChoice() && (frmlT.isThisType() || actual.isThisType()) && frmlT.asThis().compareTo(actual.asThis()) == 0)
-      {
-        return expr;
-      }
->>>>>>>>>>>>>    ********/
     // Case 2.1: ambiguous assignment via subtype
     //
     // example:
