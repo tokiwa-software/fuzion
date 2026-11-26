@@ -1798,21 +1798,26 @@ there is no common super type of the two types (Types.t_ERROR)
         var target_type = tt;
         result = result.replaceType
           (t ->
-              // we have a type parameter TT.THIS#TYPE, which is equal to TT
-              t.isRelayType() && target_type.isParametricType()
-              ||
-              // we have abc.this.type with tt inheriting from abc, so use tt
-              t.isThisType() && (!target_type.isParametricType() && target_type.feature().inheritsFrom(t.feature())
-                              ||
-                              // we have a,b,c.this.type and tt is type parameter with constraint x.y.z: So replace it if
-                              // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
-                              // parameter will be replaced, we will find that actual outer type that fits here.
-                              //
-                              // NYI: CLEANUP: instead of returning `tt` here, we might create a new type that refers to the n`th outer type
-                              // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
-                              // case `a` inherits from this.
-                              target_type.isParametricType() && target_type.typeParameter().constraint(context).whichOuterInheritsFrom(t.feature()) >= 0
-                              ),
+            switch (t.kind())
+            {
+              case ThisType ->
+                switch (target_type.kind())
+                {
+                  // NYI: BUG: this is not fully implemented, see reg_issue5569
+                  // we have a,b,c.this.type and tt is type parameter with constraint x.y.z: So replace it if
+                  // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
+                  // parameter will be replaced, we will find that actual outer type that fits here.
+                  case ParametricType ->
+                    target_type.selfOrConstraint(context).feature().inheritsFrom(t.feature());
+                  // we have abc.this.type with tt inheriting from abc, so use tt
+                  case ValueType, RefType -> target_type.feature().inheritsFrom(t.feature());
+                  case ThisType -> false;
+                };
+              // we replace RELAY#TYPES by the target_type
+              // NYI: CLEANUP: #8389 case ParametricType -> false;
+              case ParametricType -> t.isRelayType() && target_type.isParametricType();
+              case ValueType, RefType -> false;
+            },
            t ->
            {
              if (foundRef != null && target_type.isRef())
@@ -1840,41 +1845,6 @@ there is no common super type of the two types (Types.t_ERROR)
   AbstractType replace_this_type_by_actual_outer(AbstractType tt, Context context)
   {
     return replace_this_type_by_actual_outer(tt, null, context);
-  }
-
-
-  /**
-   * For checking if a type constraint or any of the outer types of the
-   * constraint corresponds to a {@code this} type.
-   *
-   * This is used in a call {@code E.x} were {@code E} has a constraint {@code E : a.b.c} and {@code x}
-   * has a result type {@code a.b.c.this.p},  {@code a.b.this.q}, or {@code a.this.r} to replace the
-   * {@code this} type by the type parameter {@code E.p}, outer type {@code E.outer(1).q}, or the outer
-   * outer type {@code E.outer(2).r}, etc., respectively.
-   *
-   * @param f the feature this might be inheriting from (or from f.outer()...).
-   *
-   * @return the outer level that inherits from f, i.e.,
-   *         <ul>
-   *           <li>-1 if no inheritance from {@code f} was found,</li>
-   *           <li> 0 if this type's feature inherits from f,</li>
-   *           <li> 1 if the next outer feature inherits from {@code f}, etc.</li>
-   *         </ul>
-   */
-  int whichOuterInheritsFrom(AbstractFeature f)
-  {
-    if (PRECONDITIONS) require
-      (!isParametricType());
-
-    var result = 0;
-    var tf = feature();
-    while (tf != null && !tf.inheritsFrom(f))
-      {
-        tf = tf.outer();
-        result++;
-      }
-
-    return tf != null ? result : -1;
   }
 
 

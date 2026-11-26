@@ -1,0 +1,80 @@
+
+reg_issue5569.fz:40:17: error 1: Illegal '.this' type: 'reg_issue5569.t.this'
+  u(E : t.e) => _ := E.this.env.r
+----------------^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue5569.fz:45:16: error 2: Illegal '.this' type: 'reg_issue5569.t.this'
+    E.this.env.r |> type_of |> say
+---------------^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+<built-in>: error 3: Illegal '.this' type: 'reg_issue5569.t.this'
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue5569.fz:45:21: error 4: Illegal '.this' type: 'reg_issue5569.t.this'
+    E.this.env.r |> type_of |> say
+--------------------^^^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue5569.fz:69:20: error 5: Illegal '.this' type: 'reg_issue5569.t.this'
+    say "$(type_of x) $(type_of y)"
+-------------------^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue5569.fz:67:5: error 6: Illegal '.this' type: 'reg_issue5569.t.this'
+    x := E.this.env.r
+----^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue5569.fz:80:20: error 7: Illegal '.this' type: 'reg_issue5569.t.this'
+  t.e.r2() option (array i) => option [i]
+-------------------^^^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue5569.fz:86:20: error 8: Illegal '.this' type: 'reg_issue5569.t.this'
+    say "$(type_of x) $(type_of y)"
+-------------------^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+reg_issue5569.fz:84:5: error 9: Illegal '.this' type: 'reg_issue5569.t.this'
+    x := E.this.env.r2
+----^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+9 errors.
