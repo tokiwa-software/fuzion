@@ -589,7 +589,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Wrapper around {@link SrcModule.lookupType}, may be redefined if feature is statically known
+   * Wrapper around {@link SrcModule#lookupType}, may be redefined if feature is statically known
    * (as in {@link ParsedTupleType}).
    *
    * @param res this is called during type resolution, res gives the resolution

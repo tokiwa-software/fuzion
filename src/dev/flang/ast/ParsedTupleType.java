@@ -33,7 +33,7 @@ import dev.flang.util.List;
 
 /**
  * A ParsedTupleType is a type created by the parser for parsing `pTypeList` or via a call to {@link
- * ParsedTuple.asParsedType}.  During resolution, this will be replaced by ResolvedParametricType or
+ * ParsedTuple#asParsedType}.  During resolution, this will be replaced by ResolvedParametricType or
  * NormalType.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
