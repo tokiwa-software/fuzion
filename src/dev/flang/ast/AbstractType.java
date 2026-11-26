@@ -614,7 +614,19 @@ NYI: UNDER DEVELOPMENT:
     // case 4: tagging is allowed and actual is one of the - potentially nested - choices
     if (!result)
       {
-        result = allowTagging && isChoice() && isChoiceMatch(actual, context);
+        /* Check if tagging would make this assignment possible as in
+         *
+         *     x option i64 := nil
+         *
+         * or, using a type feature with relay type as result
+         *
+         *     trit : choice true_ false_ nil is
+         *
+         *       type.yes trit.this => true_
+         *
+         */
+        var tt = relayTypeAsThisType();
+        result = allowTagging && tt.isChoice() && tt.isChoiceMatch(actual, context);
       }
     if (!result)
       {
@@ -2206,6 +2218,25 @@ there is no common super type of the two types (Types.t_ERROR)
       && typeParameter().state().atLeast(State.FINDING_DECLARATIONS)
       && typeParameter().outer().isCotype()
       && typeParameter().typeParameterIndex() == 0;
+  }
+
+
+
+  /**
+   * if {@code isRelayType()}, return the corresponding {@code thisType}. E.g., for
+   *
+   *     a : choice bool i64 is
+   *       type.answer a.this => 42
+   *
+   * the result type of {@code a.type.answer} is a relay type, the corrsponding {@code thisType} is
+   * `a.this`.
+   *
+   * @return the corresponding {@code thisType} iff {@code isRelayType()}, otherwise {@code this}.
+   */
+  public AbstractType relayTypeAsThisType()
+  {
+    return isRelayType() ? typeParameter().outer().cotypeOrigin().thisType()
+                         : this;
   }
 
 
