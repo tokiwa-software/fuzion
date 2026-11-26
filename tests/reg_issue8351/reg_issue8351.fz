@@ -30,12 +30,13 @@ reg_issue8351 =>
 
   print_trice(x Any) =>
     flow.exception print_limit
-      .on ()->
+      .try ()->
         if printed >= 3 then
           (flow.exception print_limit).env.cause (error "printed 3 times")
         else
           say x.as_string
           printed <- printed+1
+      .or_outcome
       .or_else ()->
           say "printed 3 times already"
 
@@ -45,8 +46,9 @@ reg_issue8351 =>
 
   print(v x) =>
     flow.exception unprintable
-      .on ()->
+      .try ()->
         print_trice v
+      .or_outcome
       .or_else ()->
         say "unprintable"
 
