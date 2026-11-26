@@ -1,0 +1,58 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8458
+#
+# -----------------------------------------------------------------------
+
+
+# this tests if we can fool `fz` to take a different version of `tuple` or `unit` for its tuple
+# syntax sugar:
+
+# the original example from #8458
+
+tuple             is say "hi!"
+tuple(a,b,c void) is say "hi!"
+
+yap "expecting (1,2,3): "; say (1,2,3)
+yap "expecting unit: "; say ()
+
+f(tuple_arg (unit, i32)) => say tuple_arg
+g(tuple_arg ())          => say tuple_arg
+
+yap "expecting (unit, 42): "; f (unit, i32 42)
+yap "expecting unit: "; g unit
+yap "expecting unit: "; g ()
+
+# More tests for `unit`:
+
+test_unit =>
+
+  unit is say "*** error ***"
+
+  yap "expecting unit: "; say ()
+  yap "expecting unit: "; say (id ())
+  yap "expecting unit: "; say (id () ())
+  yap "expecting unit: "; say (type_as_value ())
+  yap "expecting unit: "; say (type_of ())
+  yap "expecting unit: "; say (type_of (id ()))
+  yap "expecting unit: "; say (type_of (id () ()))
+  yap "expecting Type: "; say (type_of (type_as_value ()))
+
+test_unit

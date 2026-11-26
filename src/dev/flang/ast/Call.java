@@ -382,6 +382,14 @@ public class Call extends AbstractCall
   Call _targetOf_forErrorSolutions = null;
 
 
+  /**
+   * Is the target of this call known to result in void.  This is set by loadCalledfeature().
+   *
+   * This could be unknown (i.e, false) while we compile base.fum and `Types.resolved` is not set yet.
+   */
+  boolean _targetVoid = false;
+
+
   /*-------------------------- constructors ---------------------------*/
 
 
@@ -637,7 +645,6 @@ public class Call extends AbstractCall
       }
     else if (_target != null)
       {
-        _target.loadCalledFeature(res, context);
         _target = res.resolveType(_target, context);
         var tt = targetFeatureType(res, context);
         var ct = tt == null ? cotypeIfOnlyTypeFeatureNamed(res, context) : null;
@@ -717,27 +724,7 @@ public class Call extends AbstractCall
   {
     if (PRECONDITIONS) require
       (context != null);
-    var ignore = loadCalledFeatureUnlessTargetVoid(res, context);
-  }
 
-
-  /**
-   * Load all features that are called by this expression.  This is called
-   * during state RESOLVING_INHERITANCE for calls in the inherits clauses and
-   * during state RESOLVING_TYPES for all other calls.
-   *
-   * @param res the resolution instance.
-   * instance.
-   *
-   * @param context the source code context where this Call is used. For a call
-   * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
-   * feature of f.
-   *
-   * @return true if everything is fine, false in case the target results in
-   * void and we hence can replace the call by _target.
-   */
-  private boolean loadCalledFeatureUnlessTargetVoid(Resolution res, Context context)
-  {
     var outer = context.outerFeature();
     if (PRECONDITIONS) require
       (res.state(outer) == State.RESOLVING_INHERITANCE
@@ -753,8 +740,9 @@ public class Call extends AbstractCall
           (Errors.any() || targetFeature != Types.f_ERROR);
       }
 
-    var targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != outer;
-    if (targetVoid || targetFeature == Types.f_ERROR)
+    _targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && context.outerFeature() != Types.resolved.f_void;
+
+    if (_targetVoid || targetFeature == Types.f_ERROR)
       {
         setDefunct();
       }
@@ -774,7 +762,7 @@ public class Call extends AbstractCall
     if (_calledFeature == null && mayUnwrapTarget())
       {
         _target = new ParsedCall(_target, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context);
-        var ignore = loadCalledFeatureUnlessTargetVoid(res, context);
+        loadCalledFeature(res, context);
       }
 
     if (_calledFeature == null)
@@ -791,12 +779,10 @@ public class Call extends AbstractCall
     addPendingError(res, targetFeature);
 
     if (POSTCONDITIONS) ensure
-      (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
+      (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || _targetVoid,
        Errors.any() || _target        != Call.ERROR,
        Errors.any() || _calledFeature != null || hasPendingError() || targetErroneous(res, context),
        Errors.any() || _target        != null || hasPendingError());
-
-    return !targetVoid;
   }
 
 
@@ -1063,9 +1049,8 @@ public class Call extends AbstractCall
 
     FeatureAndOuter result = null;
 
-    // if loadCalledFeatureUnlessTargetVoid has found a suitable called
-    // feature in an outer feature, it will have replaced a null _target, so
-    // we check _originalTarget here to not check all outer features:
+    // if loadCalledFeature has found a suitable called feature in an outer feature, it will have
+    // replaced a null _target, so we check _originalTarget here to not check all outer features:
     var traverseOuter = _originalTarget == null;
     var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(res, context);
     var a = expectedType.arity(res);
@@ -3036,13 +3021,14 @@ public class Call extends AbstractCall
       }
     _resolvedFor = context;
 
-    return loadCalledFeatureUnlessTargetVoid(res, context)
-      ? resolveTypes0(res, context)
-      // target of this call results in `void`, so we replace this call by the
-      // target. However, we have to return a `Call` and `_target` is
-      // `Expr`. Solution: we wrap `_target` into a call `universe.id void
-      // _target`.
-      : idVoidCall(res, context);
+    loadCalledFeature(res, context);
+    return
+      _targetVoid ? idVoidCall(res, context)  // target of this call results in `void`, so we
+                                              // replace this call by the target. However, we have
+                                              // to return a `Call` and `_target` is
+                                              // `Expr`. Solution: we wrap `_target` into a call
+                                              // `universe.id void _target`.
+                  : resolveTypes0(res, context);
   }
 
 

@@ -105,8 +105,16 @@ public class FuzionConstants extends ANY
   /**
    * Name of unit feature. The feature is used throughout the base library
    * to indicate that no result is returned.
+   *
+   * Also, this is used for parser rule `tuple` with an empty list of expressions.
    */
   public static final String UNIT_NAME   = "unit";
+
+
+  /**
+   * Name of tuple feature, used for parser rule `tuple`.
+   */
+  public static final String TUPLE_NAME   = "tuple";
 
 
   /**

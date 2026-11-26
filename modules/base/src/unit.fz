@@ -81,14 +81,11 @@
 # type, so these are very efficient as well.
 #
 #
-public unit : property.orderable, property.hashable is
-
-# NYI: possible alternative definitions based on tuple types
-#
-# unit : tuple is
-#
-# unit (contents tuple) is
-#
+public unit
+ : tuple,              # an empty tuple is a unit
+   property.orderable,
+   property.hashable
+is
 
   # human readable string.
   #
