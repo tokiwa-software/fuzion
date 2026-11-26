@@ -42,7 +42,7 @@ import dev.flang.util.Terminal;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Pretty extends ANY
+class Pretty extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/

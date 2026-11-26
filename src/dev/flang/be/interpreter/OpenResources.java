@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * This acts as container for open/active resources like files, sockets, threads etc.
  */
-public abstract class OpenResources<T>
+abstract class OpenResources<T>
 {
   private ConcurrentHashMap<Long, T> data = new ConcurrentHashMap<Long, T>();
 
