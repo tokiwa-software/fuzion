@@ -31,13 +31,17 @@ test_unwrap =>
   outer_exception : flow.exception_tag is
   inner_exception : flow.exception_tag is
 
-  (flow.exception outer_exception).on ()->
-    (flow.exception inner_exception).on ()->
-      say a
-      say b
+  (flow.exception outer_exception)
+    .try ()->
+      (flow.exception inner_exception)
+        .try ()->
+          say a
+          say b
 
-      say2 a
-      say2 b
+          say2 a
+          say2 b
 
-      e := a+b
-      say2 e
+          e := a+b
+          say2 e
+        .or_outcome
+    .or_outcome
