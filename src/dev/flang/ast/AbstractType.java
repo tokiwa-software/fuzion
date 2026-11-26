@@ -616,8 +616,13 @@ NYI: UNDER DEVELOPMENT:
     // case 7: boxing is allowed, actual is a this type
     //
     //      example where we consider the this type to be a ref and then tag
-    //      this   : choice (Sequence u8) String
-    //      actual : String.this
+    //      this   : choice (Sequence T) String
+    //      actual : Sequence.this
+    //
+    //      or even with boxing
+    //      this   : choice (Sequence T) String
+    //      actual : container.abstract_array.this
+    //
     //
               case ThisType -> assignable(actual.feature().thisType(true).asRef(), context, false, allowTagging, assignableTo);
     // case 8: boxing is allowed, actual is a value type and the boxed value is assignable (potentially via tagging)
