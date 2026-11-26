@@ -1236,17 +1236,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return !isUniverse()
       && outer() != null
       && outer().isUniverse()
-      && (   FuzionConstants.I8_NAME  .equals(baseName())
-          || FuzionConstants.I16_NAME .equals(baseName())
-          || FuzionConstants.I32_NAME .equals(baseName())
-          || FuzionConstants.I64_NAME .equals(baseName())
-          || FuzionConstants.U8_NAME  .equals(baseName())
-          || FuzionConstants.U16_NAME .equals(baseName())
-          || FuzionConstants.U32_NAME .equals(baseName())
-          || FuzionConstants.U64_NAME .equals(baseName())
-          || FuzionConstants.F32_NAME .equals(baseName())
-          || FuzionConstants.F64_NAME .equals(baseName())
-          || "bool".equals(baseName()));
+      && (   FeatureName.get(FuzionConstants.I8_NAME , 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.I16_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.I32_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.I64_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.U8_NAME , 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.U16_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.U32_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.U64_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.F32_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.F64_NAME, 1) .equals(featureName())
+          || FeatureName.get("bool"                  , 0) .equals(featureName()));
   }
 
 
