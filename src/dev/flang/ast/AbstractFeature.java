@@ -936,11 +936,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public AbstractType thisType(boolean innerFixed)
   {
-    AbstractType result = innerFixed ? _thisTypeFixed : _thisType;
+    var isFinal = innerFixed || isUniverse();
+    AbstractType result = isFinal ? _thisTypeFixed : _thisType;
 
     if (result == null)
       {
-        if (!innerFixed && !isUniverse())
+        if (!isFinal)
           {
             result = new ThisType(this);
             _thisType = result;
