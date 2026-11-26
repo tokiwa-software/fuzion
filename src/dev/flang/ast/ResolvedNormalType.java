@@ -227,9 +227,7 @@ class ResolvedNormalType extends ResolvedType
 
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {
@@ -268,11 +266,7 @@ class ResolvedNormalType extends ResolvedType
   }
 
 
-  /**
-   * {@code this} as a value.
-   *
-   * Requires that at isPlainType().
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType asValue()
   {
@@ -307,11 +301,7 @@ class ResolvedNormalType extends ResolvedType
   }
 
 
-  /**
-   * traverse a resolved type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
+  /** {@inheritDoc} */
   @Override
   void usedFeatures(Set<AbstractFeature> s)
   {

@@ -75,11 +75,7 @@ class i16Value extends Value
   }
 
 
-  /**
-   * For a value of type i16, return the value.
-   *
-   * @return the i16 value
-   */
+  /** {@inheritDoc} */
   @Override
   public int i16Value()
   {
@@ -87,13 +83,7 @@ class i16Value extends Value
   }
 
 
-  /**
-   * Store this value in a field
-   *
-   * @param slot the slot that addresses the field this should be stored in.
-   *
-   * @param size the size of the data to be stored
-   */
+  /** {@inheritDoc} */
   @Override
   void storeNonRef(LValue slot, int size)
   {

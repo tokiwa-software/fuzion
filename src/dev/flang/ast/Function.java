@@ -385,13 +385,7 @@ public class Function extends AbstractLambda
                                       Contract.EMPTY_CONTRACT,
                                       new Impl(_expr.pos(), _expr, im))
               {
-                /**
-                 * Is this the {@code call} implementation of a lambda?
-                 *
-                 * This is used to allow an implicit result type even though
-                 * {@code call} is marked as public and to suppress some redundant errors.
-                 *
-                 */
+                /** {@inheritDoc} */
                 @Override
                 public boolean isLambdaCall()
                 {
@@ -703,13 +697,7 @@ public class Function extends AbstractLambda
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
