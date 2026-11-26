@@ -100,11 +100,7 @@ public class FunctionReturnType extends ReturnType
   }
 
 
-  /**
-   * If this has a source code position, return it
-   *
-   * @return the source position or null if there is none (e.g. for NoType).
-   */
+  /** {@inheritDoc} */
   @Override
   public SourcePosition posOrNull()
   {

@@ -63,19 +63,7 @@ public class QualThisType extends UnresolvedType
 
 
 
-  /**
-   * resolve this type, i.e., find or create the corresponding instance of
-   * ResolvedType of this and all outer types and type parameters this depends on.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param context the outer feature this type is declared in. Lookup of
-   * unqualified types will happen in this feature.
-   *
-   * @param tolerant behavior if resolution is not possible
-   *                 if true return null, if false flag error
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType resolve(Resolution res, Context context, boolean tolerant)
   {
