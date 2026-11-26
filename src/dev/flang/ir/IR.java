@@ -488,12 +488,14 @@ public abstract class IR extends ANY
       {
         return expr;
       }
+    /************** <<<<<<<<<<<<<<<<<<<
     // Case 1.1: types are equal, no tagging necessary
     // NYI: BUG: soundness issue? see also isAssignableFrom
     else if (actual.isChoice() && (frmlT.isThisType() || actual.isThisType()) && frmlT.asThis().compareTo(actual.asThis()) == 0)
       {
         return expr;
       }
+>>>>>>>>>>>>>    ********/
     // Case 2.1: ambiguous assignment via subtype
     //
     // example:
@@ -535,13 +537,11 @@ public abstract class IR extends ANY
           .filter(cg -> cg.relayTypeAsThisType().isChoice() && cg.relayTypeAsThisType().isAssignableFromWithoutBoxing(actual).yes())
           .collect(Collectors.toList());
 
-        if (cgs.size() > 1)
+        if (cgs.size() != 1)
           {
-            Errors.fatal("Ambiguous assignment to choice, should have been caught in frontend.");
+            Errors.fatal("Ambiguous or incompatible assignment to choice, should have been caught in frontend.");
+            return Expr.NO_VALUE;
           }
-
-        if (CHECKS) check
-          (Errors.any() || cgs.size() == 1);
 
         return tag(tag(expr, cgs.get(0)), frmlT);
       }

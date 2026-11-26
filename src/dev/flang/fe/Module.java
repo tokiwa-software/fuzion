@@ -525,17 +525,6 @@ public abstract class Module extends ANY
 
 
   /**
-   * Find feature with given name in outer.
-   *
-   * @param outer the declaring or inheriting feature
-   */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
-  {
-    return declaredOrInheritedFeatures(outer, name).getFirstOrNull();
-  }
-
-
-  /**
    * Find the effective main feature from the given main feature name. In case
    * main is null, this is the universe.  Otherwise, it is a feature with given
    * name {@code main} or, if exits, its {@code preAndCallFeature}.
@@ -550,7 +539,7 @@ public abstract class Module extends ANY
   {
     var result = universe == null || main == null
       ? universe
-      : lookupFeature(universe, FeatureName.get(main, 0));
+      : declaredOrInheritedFeatures(universe, FeatureName.get(main, 0)).getFirstOrNull();
     if (result != null)
       {
         var pac = result.preAndCallFeature();

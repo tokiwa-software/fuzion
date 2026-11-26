@@ -134,11 +134,13 @@ jitter_threaded =>
               err := error "*** overrun: run started at $(actual_release-expected_rel)  and took $(actual_finish-actual_release), which is larger than period $period"
               (flow.exception jitter_too_high).env.cause err
 
-      match flow.exception jitter_too_high .on ()->
+      match flow.exception jitter_too_high
+              .try ()->
 
-           for p := period_default, p.scale 0.5
-           while p.as_duration >= time.duration.ms 1 do
-             run_for_period p
+                for p := period_default, p.scale 0.5
+                while p.as_duration >= time.duration.ms 1 do
+                  run_for_period p
+              .or_outcome
 
         e error => say "jitter test stopped: $e"
         unit    => unit

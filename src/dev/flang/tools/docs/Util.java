@@ -78,19 +78,16 @@ public class Util extends ANY
    */
   static boolean isInternalFeature(AbstractFeature af)
   {
-    for (var f = af; f != null && !f.isUniverse(); f = f.outer())
+    boolean result = false;
+    for (var f = af; !result && f != null && !f.isUniverse(); f = f.outer())
       {
         if (f.isCotype())
           {
             f = f.cotypeOrigin();
           }
-        if (f.featureName().isInternal()
-            || f.featureName().isNameless())
-          {
-            return true;
-          }
+        result = f.featureName().isInternal() || f.featureName().isNameless();
       }
-    return false;
+    return result;
   }
 
 }

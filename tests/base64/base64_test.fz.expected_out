@@ -19,4 +19,6 @@ Zm9=vYg==: --error: padding character '=' not allowed within the input data, onl
 Zm9🌏️Yg==: --error: invalid base64 input at byte position 3, decoding to unicode character '🌏'--
 Zm9v Yg==: --error: invalid base64 input at byte position 4, decoding to unicode character ' '--
 Zm9v;Yg==: --error: invalid base64 input at byte position 4, decoding to unicode character ';'--
+Z
+!A: --error: line breaks are not allowed within encoded data, as required by RFC4648, found LF at position 1--
 
