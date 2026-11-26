@@ -153,6 +153,6 @@ public Processes ref : effect is
           p.close_err.otherwise Ignored_Failure.env.register_failure
           # _ := p.wait # NYI: wait for none detached processes
           if fzE_process_close p.pid != 0
-            Ignored_Failure.env.register_failure (error "process could not be closed successfully: $(p.description)" fzE_last_error)
+            Ignored_Failure.env.register_failure (error "process could not be closed successfully: $p" fzE_last_error)
 
     universe.P_ref
