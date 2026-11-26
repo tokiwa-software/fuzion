@@ -34,7 +34,7 @@ import dev.flang.util.List;
  * An incomplete type is a type whose generics are missing.
  * I.e. a type from a case field where it is allowed to omit the generics.
  */
-public class IncompleteType extends ResolvedType {
+class IncompleteType extends ResolvedType {
   private final AbstractFeature _feature;
   private final TypeKind _typeKind;
   public IncompleteType(AbstractFeature f, TypeKind typeKind)

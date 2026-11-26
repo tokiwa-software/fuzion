@@ -37,7 +37,7 @@ import java.util.stream.Stream;
  * This class generates a mode for text editor ace.
  * A mode provides syntax highlighting, code folding, etc.
  */
-public class AceMode extends ANY
+class AceMode extends ANY
 {
 
   private final String AceModeTemplate = """

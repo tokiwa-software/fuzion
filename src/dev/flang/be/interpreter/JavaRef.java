@@ -32,7 +32,7 @@ package dev.flang.be.interpreter;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class JavaRef extends Value
+class JavaRef extends Value
 {
 
   /*----------------------------  variables  ----------------------------*/

@@ -40,7 +40,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ArrayData extends Value
+class ArrayData extends Value
 {
 
   /*----------------------------  constants  ----------------------------*/

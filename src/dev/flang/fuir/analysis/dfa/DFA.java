@@ -118,7 +118,10 @@ public class DFA extends ANY
     }
 
 
-    /** {@inheritDoc} */
+    /*
+     * Produce the unit type value.  This is used as a placeholder
+     * for the universe instance as well as for the instance 'unit'.
+     */
     @Override
     public Val unitValue()
     {

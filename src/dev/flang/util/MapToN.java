@@ -36,7 +36,7 @@ import java.util.TreeSet;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class MapToN<A, B>
+class MapToN<A, B>
 {
 
 

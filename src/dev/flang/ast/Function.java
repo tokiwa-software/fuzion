@@ -354,11 +354,34 @@ public class Function extends AbstractLambda
                        .applyTypePars(cl, tps_as_actuals.map2(tp -> tp.resolve(res, context)));
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PUB, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, AbstractCall.NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(),
+                                      Visi.PUB,
+                                      FuzionConstants.MODIFIER_REDEFINE |
+                                      FuzionConstants.MODIFIER_FIXED,   // required to keep inner types used in result from containing `call.this`, see #4428 #8262
+                                      rt,
+                                      new List<String>(cl.baseName()),
+                                      args,
+                                      AbstractCall.NO_CALLS,
+                                      Contract.EMPTY_CONTRACT,
+                                      new Impl(_expr.pos(), _expr, im))
               {
                 /** {@inheritDoc} */
                 @Override
                 public boolean isLambdaCall()
+                {
+                  return true;
+                }
+
+                /**
+                 * This is an internal feature that is known never to be redefined.
+                 *
+                 * This information is important since it permits type inference from
+                 * `lambda.this` where the exact type is known, see #4428.
+                 *
+                 * @return true
+                 */
+                @Override
+                public boolean isFinal()
                 {
                   return true;
                 }
@@ -387,7 +410,22 @@ public class Function extends AbstractLambda
                                        AbstractFeature._NO_FEATURES_,
                                        new List<>(_inheritsCall),
                                        Contract.EMPTY_CONTRACT,
-                                       new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
+                                       new Impl(pos(), new Block(expressions), Impl.Kind.Routine))
+                  {
+                    /**
+                     * This is an internal feature that is known never to be redefined.
+                     *
+                     * This information is important since it permits type inference from
+                     * `lambda.this` where the exact type is known, see #4428.
+                     *
+                     * @return true
+                     */
+                    @Override
+                    public boolean isFinal()
+                    {
+                      return true;
+                    }
+                  };
                 res._module.findDeclarations(_wrapper, context.outerFeature());
                 res.resolveDeclarations(_wrapper);
                 res.resolveTypes(_feature);

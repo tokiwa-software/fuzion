@@ -681,7 +681,7 @@ public class LibraryFeature extends FuirFeature
             }
           case Current:
             {
-              x = new AbstractCurrent(selfType().asThis())
+              x = new AbstractCurrent(new ThisType(_libModule, iat, this))
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }

@@ -546,7 +546,7 @@ public class LibraryFuir extends FUIR {
     return s != NO_SITE && _sites[s - SITE_BASE].codeAt() != null;
   }
 
-   /** {@inheritDoc} */
+  /** {@inheritDoc} */
   @Override
   public int codeBlockStart(int site)
   {

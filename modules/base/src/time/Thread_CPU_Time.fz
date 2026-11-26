@@ -31,6 +31,9 @@
 # This clock advances only while `thread` is running, so it cannot be used
 # to sleep. It cannot be read any longer once `thread` was joined.
 #
+# The resolution depends on the platform, e.g., on macOS it is one
+# microsecond, while Linux provides nano seconds.
+#
 # NYI: UNDER DEVELOPMENT: #8417: This clock must not have a public constructor but
 # a default effect instance such that you cannot instate it in a way that DFA will
 # fail to report the use of this effect.

@@ -57,7 +57,7 @@ import dev.flang.util.StringHelpers;
  * The class Executor implements ProcessExpression of the AbstractInterpreter.
  * It does the actual execution of the code.
  */
-public class Executor extends ProcessExpression<Value, Object>
+class Executor extends ProcessExpression<Value, Object>
 {
 
 

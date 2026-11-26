@@ -1580,6 +1580,19 @@ A post-condition of a feature that does not redefine an inherited feature must s
   }
 
 
+
+  /**
+   * Find feature with given name in outer.
+   *
+   * @param outer the declaring or inheriting feature
+   */
+  @Override
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
+  {
+    return declaredOrInheritedFeatures(outer, name).getFirstOrNull();
+  }
+
+
   /*--------------------------  type checking  --------------------------*/
 
 
@@ -1860,7 +1873,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
     checkDuplicateFeatures(f);
-    checkLegalQualThisType(f);
     checkLegalDefinesType(f);
     checkIllegalIntrinsic(f);
 
@@ -1918,19 +1930,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   private boolean inTypeFeature(AbstractFeature f)
   {
     return f.isTypeFeature() || (f.outer() != null && inTypeFeature(f.outer()));
-  }
-
-
-  /**
-   * check that all {@code .this} are legal,
-   * i.e. that f or any outer of f are
-   * what is supposed to be qualified
-   *
-   * @param f
-   */
-  private void checkLegalQualThisType(Feature f)
-  {
-    f.resultType().checkLegalThisType(f.resultTypePos(), f);
   }
 
 

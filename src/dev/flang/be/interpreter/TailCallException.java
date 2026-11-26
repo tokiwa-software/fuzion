@@ -28,7 +28,7 @@ package dev.flang.be.interpreter;
 
 import dev.flang.util.List;
 
-public class TailCallException extends RuntimeException {
+class TailCallException extends RuntimeException {
 
   public final Value tvalue;
   public final List<Value> args;

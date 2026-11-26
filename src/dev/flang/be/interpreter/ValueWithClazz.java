@@ -36,7 +36,7 @@ package dev.flang.be.interpreter;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class ValueWithClazz extends Value
+abstract class ValueWithClazz extends Value
 {
 
   /*----------------------------  constants  ----------------------------*/

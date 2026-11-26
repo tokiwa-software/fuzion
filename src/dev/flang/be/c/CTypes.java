@@ -40,7 +40,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class CTypes extends ANY
+class CTypes extends ANY
 {
 
 

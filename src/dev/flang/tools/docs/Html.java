@@ -58,7 +58,7 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
-public class Html extends ANY
+class Html extends ANY
 {
   final DocsOptions config;
 

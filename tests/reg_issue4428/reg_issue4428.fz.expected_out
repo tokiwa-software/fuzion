@@ -1,0 +1,4 @@
+case2.a.b.c.(λ()-> q is x => q q.x).call.q instance[case2.a.b.c.(λ()-> q is x => q q.x).call.q]
+case2.aa.b.c.(λ()-> q is x => q q.x).call.q instance[case2.aa.b.c.(λ()-> q is x => q q.x).call.q]
+case2.aa.bb.c.(λ()-> q is x => q q.x).call.q instance[case2.aa.bb.c.(λ()-> q is x => q q.x).call.q]
+case2.aa.bb.cc.(λ()-> q is x => q q.x).call.q instance[case2.aa.bb.cc.(λ()-> q is x => q q.x).call.q]
