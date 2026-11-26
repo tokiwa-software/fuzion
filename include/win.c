@@ -922,22 +922,6 @@ static int fzE_process_create0(char *args[], size_t argsLen, char *env[], size_t
   HANDLE hStdoutRead, hStdoutWrite;
   HANDLE hStderrRead, hStderrWrite;
 
-  SECURITY_ATTRIBUTES saAttr = {
-      .nLength = sizeof(SECURITY_ATTRIBUTES),
-      .bInheritHandle = TRUE,
-      .lpSecurityDescriptor = NULL
-  };
-
-  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0) ||
-      !CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0) ||
-      !CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
-      return -1;
-  }
-
-  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
-
   // we resolve app path manually, because we
   // want to pass empty env where PATH is not set
   // so app would not be found when passing
@@ -961,10 +945,42 @@ static int fzE_process_create0(char *args[], size_t argsLen, char *env[], size_t
   wchar_t *args_w = build_unicode_args(args, argsLen);
   wchar_t *envBlock = build_unicode_environment_block(env, envLen);
 
-  if (!args_w) {
+  if (!args_w || !envBlock) {
+    free(args_w);
+    free(envBlock);
     SetLastError(ERROR_INVALID_NAME);
     return -1;
   }
+
+  SECURITY_ATTRIBUTES saAttr = {
+      .nLength = sizeof(SECURITY_ATTRIBUTES),
+      .bInheritHandle = TRUE,
+      .lpSecurityDescriptor = NULL
+  };
+
+  BOOL ok = TRUE;
+  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0)) {
+    ok = FALSE;
+  } else if (!CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0)) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    ok = FALSE;
+  } else if (!CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStdoutWrite);
+    ok = FALSE;
+  }
+  if (!ok) {
+    free(args_w);
+    free(envBlock);
+    return -1;
+  }
+
+  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
 
   PROCESS_INFORMATION pi;
   STARTUPINFOW si = {0};
@@ -995,6 +1011,9 @@ static int fzE_process_create0(char *args[], size_t argsLen, char *env[], size_t
   free(envBlock);
 
   if (!success) {
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStderrRead);
     return -1;
   }
 
