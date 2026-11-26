@@ -41,7 +41,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class CNames extends ANY
+class CNames extends ANY
 {
 
 

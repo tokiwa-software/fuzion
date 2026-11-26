@@ -152,8 +152,8 @@ base64_test is
                  "Zm9=vYg==",  # pad char within encoding
                  "Zm9🌏️Yg==",  # non alphabet multi byte unicode character
                  "Zm9v Yg==",  # space
-                 "Zm9v;Yg=="]  # non alphabet ascii character
-
+                 "Zm9v;Yg==",  # non alphabet ascii character
+                 "Z\n!A"]      # several errors in one block, first one must be reported
   for t in broken_enc do
     yap "$t: "
     say (match encodings.base64.decode_str t

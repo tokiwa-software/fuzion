@@ -332,7 +332,7 @@ public class Completion
    */
   private static String argPlaceholder(AbstractType arg, int x, int offset)
   {
-    if (arg.isFunctionType(null))
+    if (arg.isFunctionLikeType())
       {
         return getFunArgument(offset * 100, arg.generics());
       }

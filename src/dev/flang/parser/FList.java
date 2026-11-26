@@ -41,7 +41,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FList extends Expr
+class FList extends Expr
 {
 
 

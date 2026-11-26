@@ -35,7 +35,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ModuleRef extends ANY
+class ModuleRef extends ANY
 {
 
 

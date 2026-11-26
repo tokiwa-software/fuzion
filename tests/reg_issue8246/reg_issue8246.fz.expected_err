@@ -1,7 +1,7 @@
 
-reg_issue8246.fz:26:22: error 1: Incompatible type parameter 'B' for 'B : Sequence A'
-  f => say (test i32 B v).g
----------------------^
+reg_issue8246.fz:34:28: error 1: Incompatible type parameter 'B' for 'B : Sequence A'
+    f_bad => say (test i32 B v).g  # should flag an error: `B` not compatible with `Sequence A`
+---------------------------^
 formal type parameter 'B : Sequence A' with constraint 'Sequence i32'
 actual type parameter 'B'
 assignable to constraint: 'Any',

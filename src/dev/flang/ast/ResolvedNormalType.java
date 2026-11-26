@@ -39,7 +39,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ResolvedNormalType extends ResolvedType
+class ResolvedNormalType extends ResolvedType
 {
 
   /*----------------------------  variables  ----------------------------*/

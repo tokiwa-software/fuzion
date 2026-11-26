@@ -33,7 +33,7 @@ package dev.flang.ast;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class ContextVisitor extends FeatureVisitor
+abstract class ContextVisitor extends FeatureVisitor
 {
 
   /*----------------------------  constants  ----------------------------*/

@@ -31,8 +31,6 @@ import java.nio.file.Path;
 import java.util.TreeSet;
 import java.util.Set;
 
-import dev.flang.parser.Parser;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
@@ -274,10 +272,6 @@ public abstract class Tool extends ANY
     else if (a.matches("-verbose(=\\d+|)"))
       {
         _verbose = parseIntArg(a, 1);
-      }
-    else if (a.equals("-XenableSetKeyword"))
-      {
-        Parser.ENABLE_SET_KEYWORD = true;
       }
     else
       {

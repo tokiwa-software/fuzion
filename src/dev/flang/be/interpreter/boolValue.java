@@ -32,7 +32,7 @@ package dev.flang.be.interpreter;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class boolValue extends Value
+class boolValue extends Value
 {
 
 

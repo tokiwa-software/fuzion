@@ -21,9 +21,18 @@
 #
 # -----------------------------------------------------------------------
 
-test(A : Any, B : Sequence A, v B) is
-  say "$A $B $v"
-  f => say (test i32 B v).g
-  g A => v.first!
+# This tests that assigning a type parameter in a call to itself may
+# actually be illegal and require fz to create an error
+#
+reg_issue8246 =>
 
-test String (array String) ["hi"] .f
+  # code from #8246 with `f` split up in `f_ok` that works and `f_bad` that crashes
+
+  test(A : Any, B : Sequence A, v B) is
+    say "$A $B $v"
+    f_ok  => say (test A   B v).g
+    f_bad => say (test i32 B v).g  # should flag an error: `B` not compatible with `Sequence A`
+    g A => v.first!
+
+  test String (array String) ["hi"] .f_ok
+  test String (array String) ["hi"] .f_bad

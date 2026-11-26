@@ -142,10 +142,12 @@ jitter =>
             e := error "*** overrun: run started at $(actual_release-expected_rel) and took $(actual_finish-actual_release), which is larger than period $period"
             (flow.exception jitter_too_high).env.cause e
 
-    match flow.exception jitter_too_high .on ()->
+    match flow.exception jitter_too_high
+            .try ()->
 
-         for p := period_default, p.scale 0.5 do
-           run_for_period p
+              for p := period_default, p.scale 0.5 do
+                run_for_period p
+            .or_outcome
 
       e error => say $e
       void    => # will not happen

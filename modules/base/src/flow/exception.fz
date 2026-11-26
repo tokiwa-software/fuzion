@@ -33,16 +33,18 @@
 #
 # Therefore, `T` must inherit from `flow.exception_tag`, so a common type such as
 # `unit` cannot be used: any unrelated code using the same `T` that is executed
-# within your `on` (e.g., via a call to a redefined feature or a callback) would
+# within your `try` (e.g., via a call to a redefined feature or a callback) would
 # cause an exception that ends up in your handler, and backwards.
 #
 # Instead, declare a dedicated type for each usage:
 #
 #     parse(s String) outcome i32 =>
 #       parse_exception : flow.exception_tag is
-#       flow.exception parse_exception .on ()->
-#         if s.is_empty then (flow.exception parse_exception).env.cause (error "empty string")
-#         s.parse_i32.or_cause parse_exception id
+#       flow.exception parse_exception
+#         .try i32 ()->
+#           if s.is_empty then (flow.exception parse_exception).env.cause (error "empty string")
+#           s.parse_i32.or_cause parse_exception id
+#         .or_outcome
 #
 #     say (parse "42")   # 42
 #     say (parse "")     # --error: empty string--
@@ -66,13 +68,3 @@ is
   #
   public fixed redef type.new(h error->void) flow.exception T =>
     flow.exception T h
-
-
-  # install this effect and execute 'f'. Wrap the result of 'f' into an
-  # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
-  # via a call to 'raise' wrap the 'error' passed to 'raise' into the
-  # resulting 'outcome'.
-  #
-  public type.on(R : Any, f ()->R) outcome R =>
-    exception.this.try (outcome R) f()
-                  .catch id

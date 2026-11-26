@@ -184,9 +184,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * does not permit this to be replaced by an inherited feature, but any outer
    * feature might be.
    *
-   * For a feature a.b.c, _thisTypeFixed is a.this.type.b.this.type.c.
+   * For a feature a.b.c, _thisTypeFinal is a.this.type.b.this.type.c.
    */
-  private AbstractType _thisTypeFixed = null;
+  private AbstractType _thisTypeFinal = null;
 
 
   /**
@@ -932,24 +932,23 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public AbstractType thisType(boolean innerFixed)
   {
-    AbstractType result = innerFixed ? _thisTypeFixed : _thisType;
+    var isFinal =  isFinal() || innerFixed || isUniverse();
+    AbstractType result = isFinal ? _thisTypeFinal : _thisType;
 
     if (result == null)
       {
-        result = selfType();
-        var of = outer();
-        if (!isUniverse() && of != null && !of.isUniverse())
+        if (!isFinal)
           {
-            result = ResolvedNormalType.newType(result, of.thisType(isFixed()));
-          }
-        if (innerFixed)
-          {
-            _thisTypeFixed = result;
+            result = new ThisType(this);
+            _thisType = result;
           }
         else
           {
-            result = result.asThis();
-            _thisType = result;
+            var of = outer();
+            result = of == null || of.isUniverse()
+              ? selfType()
+              : ResolvedNormalType.newType(selfType(), of.thisType(isFixed()));
+            _thisTypeFinal = result;
           }
       }
     return result;
@@ -1731,6 +1730,34 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isFixed()
   {
     return (modifiers() & FuzionConstants.MODIFIER_FIXED) != 0 || isTypeParameter();
+  }
+
+
+  /**
+   * True if it is known that this feature is never inherited from.
+   *
+   * @return true if this is not a constructor or if this is an internal feature created to hold a
+   * lambda target {@link dev.flang.ast.Function}.
+   */
+  public boolean isFinal()
+  {
+    return switch (kind())
+      {
+      case
+        Constructor,
+        RefConstructor,
+        Choice                 -> false;
+      case
+        Field,
+        ExplicitTypeParameter,
+        FreeTypeParameter,
+        OpenTypeParameter,
+        Intrinsic,
+        Abstract,
+        Native                 -> true;
+      case
+        Function               -> false;  // NYI: UNDER DEVELOPMENT: This should be true, but does not work yet.
+      };
   }
 
 

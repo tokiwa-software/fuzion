@@ -130,8 +130,7 @@ public class FunctionReturnType extends ReturnType
     _type.selfOuterAndGenerics(t -> {
       switch (t.kind()) {
         case RefType, ValueType -> AbstractType.checkActualTypePars(context, t.feature(), t.generics(), t.originalGenericsPos(), _pos, x->x);
-        case ThisType -> t.checkLegalThisType(_pos, context);
-        case ParametricType -> {}
+        case ParametricType, ThisType -> {}
       }
     });
   }
