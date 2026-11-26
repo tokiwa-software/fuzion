@@ -21,7 +21,12 @@
 #
 # -----------------------------------------------------------------------
 
-
+# This used to crash with an `illegal this type` since `a.x` was changed to
+# `void.this.x` or similar.
+#
+# For this simple case, I see no reason why this should not compile, but not in
+# more complex cases, see #8262 for details.
+#
 # The problem here is that a lambda is abused to expose the `.this` type of
 # the code generated for the lambda target implementation will become visible to
 # the outside via type inference.
