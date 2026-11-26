@@ -1353,7 +1353,7 @@ NYI: UNDER DEVELOPMENT:
    *
    * @return true iff this type may be the target of a lambda expression.
    */
-  public boolean isLambdaTarget(Resolution res)
+  boolean isLambdaTarget(Resolution res)
   {
     return res._module
       .findLambdaTarget(selfOrConstraint(res, Context.NONE).feature()) != null;
@@ -1361,28 +1361,15 @@ NYI: UNDER DEVELOPMENT:
 
 
   /**
-   * Check if this a type created for a lambda expression.
-   *
-   * @return true if this is a type created for a lambda expression.
+   * @return true if this is a type that is based on a feature that is or inherits from {@code Function}.
    */
-  public boolean isLambda()
+  public boolean isFunctionLikeType()
   {
-    return
-      isPlainType() &&
-      // NYI: UNDER DEVELOPMENT: Replace String comparison by a flag or similar
-      feature().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
-  }
-
-
-  /**
-   * Check if this any function type, i.e., inherits directly or indirectly from
-   * {@code Function}.
-   *
-   * @return true if this is a type based on a feature that is or inherits from {@code Function}.
-   */
-  public boolean isFunctionType(Resolution res)
-  {
-    return isLambdaTarget(res) || isLambda();
+    return switch (kind())
+      {
+        case RefType, ValueType, ThisType -> feature().inheritsFrom(Types.resolved.f_Function);
+        case ParametricType -> typeParameter().constraint().isFunctionLikeType();
+      };
   }
 
 
@@ -1397,7 +1384,7 @@ NYI: UNDER DEVELOPMENT:
    */
   AbstractType functionTypeFromChoice(Resolution res, Context context)
   {
-    return findInChoice(cg -> cg.isFunctionType(res), context);
+    return findInChoice(cg -> cg.isFunctionLikeType(), context);
   }
 
 
