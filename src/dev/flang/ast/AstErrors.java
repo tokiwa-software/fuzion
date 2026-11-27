@@ -2326,6 +2326,14 @@ public class AstErrors extends ANY
           "To solve this, use the " + code("mutate") + " effect instead.");
   }
 
+  public static void illegalUseOfNativeKeyword(SourcePosition pos)
+  {
+    error(pos,
+          "Illegal use of the " + code("native") + " keyword.",
+          "This keyword may not be used in restricted mode of code execution." + "\n" +
+          "To solve this, enable declaration of native features using " + code("-XenableNativeKeyword") + ".");
+  }
+
   public static void freeTypeMustNotMaskExistingType(UnresolvedType t, AbstractFeature f)
   {
     if (!any() || f != Types.f_ERROR)

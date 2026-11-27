@@ -24,6 +24,7 @@
 CREATE_DB := $(shell echo "CREATE TABLE table_name (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE); INSERT INTO table_name (name, email) VALUES ('Mario', 'admin@example.com');" | sqlite3 test.db > /dev/null 2> /dev/null || true)
 
 override NAME = native_outerref_pass_through
+FUZION_OPTIONS = -XenableNativeKeyword
 override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=sqlite3
 override FUZION_C_BACKEND_OPTIONS = -CLink=sqlite3|-CInclude=sqlite3.h
 include ../simple.mk

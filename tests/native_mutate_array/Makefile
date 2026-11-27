@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = native_mutate_array
+FUZION_OPTIONS = -XenableNativeKeyword
 include ../simple.mk

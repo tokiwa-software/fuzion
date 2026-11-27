@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = reg_issue2452_abstract_constructor
+FUZION_OPTIONS = -XenableNativeKeyword
 include ../simple.mk

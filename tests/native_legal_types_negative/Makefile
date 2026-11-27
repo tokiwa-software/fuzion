@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = native_legal_types_negative
+FUZION_OPTIONS = -XenableNativeKeyword
 include ../simple.mk

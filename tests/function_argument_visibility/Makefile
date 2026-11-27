@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = function_argument_visibility
+FUZION_OPTIONS = -XenableNativeKeyword
 include ../simple_and_negative.mk
