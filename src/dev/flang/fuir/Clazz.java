@@ -1941,9 +1941,18 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (Errors.any() || ft.isOpenGeneric());
 
-    List<AbstractType> types;
-    var inh = _outer == null ? null : _outer.feature().tryFindInheritanceChain(fouter.outer());
     var declaredIn = ft.typeParameter().outer();
+    List<AbstractType> types;
+    {
+      var inh = feature().tryFindInheritanceChain(fouter);
+      if (inh != null &&
+          inh.stream().anyMatch(c -> c.calledFeature() == declaredIn))
+        {
+          types = fouter.handDown(new List<>(ft), feature());
+          return types;
+        }
+    }
+    var inh = _outer == null ? null : _outer.feature().tryFindInheritanceChain(fouter.outer());
     if (inh != null &&
         inh.stream().anyMatch(c -> c.calledFeature() == declaredIn))
       {
@@ -1955,7 +1964,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (_outer != null)
       {
-        types = _outer.replaceOpen(ft, fouter);
+        types = _outer.replaceOpen(ft, fouter.outer());
       }
     else
       {

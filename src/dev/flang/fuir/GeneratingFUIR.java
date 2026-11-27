@@ -159,10 +159,18 @@ public class GeneratingFUIR extends FUIR
     // argumentFields() is stable, while fields() cannot be called while
     // the number of detected clazzes and fields are still growing (this
     // will result in caching too small a set of fields).
-    var args = currentClazz._outer._outer.argumentFields();
-    var fields = Stream.of(args).filter(c -> c.feature().isOpenGenericField() &&
-                                             c.feature().baseName().equals(baseName))
-                                .toList();
+
+    var valuesOfOT = currentClazz._outer;  // Values_Of_Open_Type instance, e.g., `tuple.values.#'
+    var outer      = valuesOfOT._outer;    // Outer clazz of Values_Of_Open_Type instance, e.g., `tuple i32 unit` or a child like `unit`
+    var openGenericField = valuesOfOT.feature().outer().valueArguments().stream()
+                                     .filter(c -> c.isOpenGenericField() &&
+                                                  c.baseName().equals(baseName))
+                                     .reduce((a,b) -> { throw new Error("too many open type fields found: "+a.qualifiedName()+" and "+b.qualifiedName()); })
+                                     .get();
+    var fields = outer._inner.stream()
+                      .filter(cf -> cf.feature() == openGenericField)
+                      .toList();
+
     if (CHECKS) check
       (// we expect that `fields` come in the order of their `_select`
        IntStream.range(0, fields.size()).allMatch(i -> i == fields.get(i)._select));
@@ -842,11 +850,11 @@ public class GeneratingFUIR extends FUIR
     _specialClazzes = new Clazz[SpecialClazzes.values().length];
     _specialClazzes[SpecialClazzes.c_NOT_FOUND.ordinal()] = null;
     _specialClazzes[SpecialClazzes.c_universe .ordinal()] = universe;
+    _inh = new List<>();
+    _clazzesForTypes = new TreeMap<>();
 
     _mainClazz = newClazz(mir.main().selfType())._id;
     doesNeedCode(_mainClazz);
-    _inh = new List<>();
-    _clazzesForTypes = new TreeMap<>();
   }
 
 
@@ -1825,32 +1833,29 @@ public class GeneratingFUIR extends FUIR
                 code.add(or);  // field clazz means assignment to field
               }
             if (CHECKS) check
-              (p.actuals().size() == p.calledFeature().valueArguments().size());
+              (p.actuals().size() == p.calledFeature().valueArguments().flatMap2(a -> pf.handDownAndApply(new List<>(a.resultType()), ff.selfType())).size());
 
             AbstractFeature cf = pf;
-            var n = p.actuals().size();
-            var argFields = new Clazz[n];
-            for (var i = 0; i < n; i++)
-              {
-                if (i >= cf.valueArguments().size())
-                  {
-                    if (CHECKS) check
-                      (Errors.any());
-                  }
-                else
-                  {
-                    var cfa = (FuirFeature) cf.valueArguments().get(i);
-                    argFields[i] = c.lookupNeeded(cfa);
-                  }
-              }
+            var actuals = p.actuals();
+            var argFieldFeatures = cf.valueArguments();
             var fat = p.formalArgumentTypes();
-            for (var i = 0; i < p.actuals().size(); i++)
+            for (int i = 0, ai = 0; i < actuals.size(); i++)
               {
-                var a = p.actuals().get(i);
-                toStack(code, boxAndTag(a, fat[i]));
-                code.add(ExprKind.Current);
-                // Field clazz means assign value to that field
-                code.add(argFields[i]);
+                if (CHECKS) check
+                  (Errors.any() || ai < argFieldFeatures.size());
+                if (ai < argFieldFeatures.size())
+                  {
+                    var cfa = (FuirFeature) argFieldFeatures.get(ai);
+                    var select = cfa.resultType().isOpenGeneric() ? i-ai : FuzionConstants.NO_SELECT;
+                    ai = ai +   (cfa.resultType().isOpenGeneric() ? 0    : 1);
+                    var argFieldClazz = c.lookup(new FeatureAndActuals(cfa), select, false);
+                    argFieldClazz.doesNeedCode();
+
+                    toStack(code, boxAndTag(actuals.get(i), fat[i]));
+                    code.add(ExprKind.Current);
+                    // Field clazz means assign value to that field
+                    code.add(argFieldClazz);
+                  }
               }
 
             while (inhe.size() < code.size()) { inhe.add(inh); }
