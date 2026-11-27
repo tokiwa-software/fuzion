@@ -32,7 +32,7 @@ package dev.flang.be.interpreter;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class u32Value extends Value
+class u32Value extends Value
 {
 
 
@@ -65,6 +65,7 @@ public class u32Value extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return Integer.toUnsignedString(_val);
@@ -76,6 +77,7 @@ public class u32Value extends Value
    *
    * @return the u32 value
    */
+  @Override
   public int u32Value()
   {
     return _val;
@@ -89,6 +91,7 @@ public class u32Value extends Value
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require

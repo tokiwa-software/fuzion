@@ -179,7 +179,7 @@ pre debug: n >= 0
                                            .take n-codepoints.count
                                            .map (.or_panic)
                                            .as_array
-    # how many bytes of next_bytes where used in this loop iteration
+    # how many bytes of next_bytes were used in this loop iteration
     used_bytes_count              := next_codepoints.map (.byte_count) .sum
     # are we not making progress because the next bytes will always be a broken codepoint?
     is_stuck                      := next_codepoints.is_empty && next_bytes.count > 3

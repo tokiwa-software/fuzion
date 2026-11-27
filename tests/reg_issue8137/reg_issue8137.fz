@@ -35,7 +35,7 @@ reg_issue8137 =>
   # original test case resulted from a typo `Any o` instead of `o Any`
   #
   case1 =>
-    test(MM type : container.Mutable_Map String (lock_free.Node String i32)) =>
+    test(MM : container.Mutable_Map String (lock_free.Node String i32)) =>
       s (id Any (lock_free.Sieve_Cache String i32 MM 3))
       s(Any o) =>
         say "case1: Any is $(s.this.Any) $(s.this.Any.dynamic_type)"
@@ -79,7 +79,7 @@ reg_issue8137 =>
   case4
 
 
-  # declaring a new `utf8_data` (which is internally used for const_string but should never be ambgiuous):
+  # declaring a new `utf8_data` (which is internally used for const_string but should never be ambiguous):
   #
   case5 =>
     utf8_data => "bla".utf8

@@ -25,6 +25,6 @@ outer is
   F ref is
     c(a i32) i32 : fuzion.lambda_target => abstract
 
-  d(O type : outer) is
+  d(O : outer) is
 
     _ O.F:= x->x+1   # can not work

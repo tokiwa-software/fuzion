@@ -346,8 +346,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   JavaType javaType(int cl)
   {
-    var id = _fuir.getSpecialClazz(cl);
-    return switch (id)
+    return switch (_fuir.getSpecialClazz(cl))
       {
       case c_bool    -> PrimitiveType.type_boolean;
       case c_i8      -> PrimitiveType.type_byte;
@@ -407,14 +406,9 @@ public class Types extends ANY implements ClassFileConstants
    */
   JavaType resultType(int cl)
   {
-    if (hasRealHeirs(cl))
-      {
-        return interfaceFile(cl).classType();
-      }
-    else
-      {
-        return javaType(cl);
-      }
+    return hasRealHeirs(cl)
+      ? interfaceFile(cl).classType()
+      : javaType(cl);
   }
 
 

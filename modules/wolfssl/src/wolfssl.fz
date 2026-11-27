@@ -55,11 +55,11 @@ public wolfssl(
 
     # the result type of the code run when using wolfssl
     #
-    T type,
+    T : Any,
 
     # the mutate to use for reading/writing the raw network connection
     #
-    NET_LM type : mutate,
+    NET_LM : mutate,
 
     # the host we are connected to, used for verification
     #
@@ -85,16 +85,16 @@ public wolfssl(
 
     # the result type of the code run when using wolfssl
     #
-    T type,
+    T : Any,
 
     # the mutate to use for reading/writing the raw network connection
     #
-    NET_LM type : mutate,
+    NET_LM : mutate,
 
 
     # the mutate to use for reading/writing to SSL encrypted connection from within `code`
     #
-    SSL_LM type : mutate,
+    SSL_LM : mutate,
 
 
     # the host we are connected to, used for verification

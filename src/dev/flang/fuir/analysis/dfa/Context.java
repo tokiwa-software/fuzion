@@ -47,21 +47,21 @@ interface Context
    */
   static class MainEntryPoint extends ANY implements Context
   {
-    /**
-     * Effect-environment in this context, null if none.
-     */
+    /** {@inheritDoc} */
     @Override
     public Env env()
     {
       return null;
     }
 
+    @Override
     public String showWhy(StringBuilder sb)
     {
       sb.append("program entry point")
         .append("\n");
       return "  ";
     }
+    @Override
     public String toString(boolean forEnv)
     {
       return forEnv ? "effect environment " + Errors.effe(Env.envAsString(null)) + " at program entry"

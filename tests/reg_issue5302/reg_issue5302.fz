@@ -23,7 +23,7 @@
 
 reg_issue5302 =>
 
-  a(LM type: mutate) is
+  a(LM : mutate) is
     x := LM.env.var 2
     say x
 

@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-apply(F type : Function i32 i32, f F) => f 42
+apply(F : Function i32 i32, f F) => f 42
 
 _ := apply *2
 say (apply *2)

@@ -30,12 +30,12 @@ import dev.flang.fuir.SpecialClazzes;
 
 
 /**
- * LValue represents an address of a modifyable value type, which is the result
+ * LValue represents an address of a modifiable value type, which is the result
  * of reading a value field.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LValue extends ValueWithClazz
+class LValue extends ValueWithClazz
 {
 
 
@@ -82,6 +82,7 @@ public class LValue extends ValueWithClazz
    * Create a copy (clone) of this value.  Used for boxing values into
    * ref-types.
    */
+  @Override
   Instance cloneValue(int cl)
   {
     if (PRECONDITIONS) require
@@ -97,6 +98,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the integer value
    */
+  @Override
   public int i8Value()
   {
     return container.nonrefs[offset];
@@ -108,6 +110,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the integer value
    */
+  @Override
   public int i16Value()
   {
     return container.nonrefs[offset];
@@ -119,6 +122,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the integer value
    */
+  @Override
   public int i32Value()
   {
     return container.nonrefs[offset];
@@ -130,6 +134,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the i64 value
    */
+  @Override
   public long i64Value()
   {
     return
@@ -143,6 +148,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the integer value
    */
+  @Override
   public int u8Value()
   {
     return container.nonrefs[offset];
@@ -154,6 +160,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the integer value
    */
+  @Override
   public int u16Value()
   {
     return container.nonrefs[offset];
@@ -165,6 +172,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the integer value
    */
+  @Override
   public int u32Value()
   {
     return container.nonrefs[offset];
@@ -176,6 +184,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the u64 value
    */
+  @Override
   public long u64Value()
   {
     return
@@ -189,6 +198,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the f32 value
    */
+  @Override
   public float f32Value()
   {
     return Float.intBitsToFloat(container.nonrefs[offset]);
@@ -200,6 +210,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the f64 value
    */
+  @Override
   public double f64Value()
   {
     return Double.longBitsToDouble(  container.nonrefs[offset    ] & 0xFFFFffffL |
@@ -212,6 +223,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the bool value
    */
+  @Override
   public boolean boolValue()
   {
     return container.nonrefs[offset] != 0;
@@ -227,6 +239,7 @@ public class LValue extends ValueWithClazz
    *
    * @return the LValue to rev
    */
+  @Override
   public LValue at(int c, int off)
   {
     return new LValue(c,
@@ -242,6 +255,7 @@ public class LValue extends ValueWithClazz
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require
@@ -260,6 +274,7 @@ public class LValue extends ValueWithClazz
    *
    * @param size the size of the data to be compared.
    */
+  @Override
   boolean equalsBitWise(LValue slot, int size)
   {
     return container.equalsBitWise(slot, size, offset);
@@ -270,6 +285,7 @@ public class LValue extends ValueWithClazz
    * Return the instance this value contains.  If this is an Instance, return
    * this, if this is an LValue containing an instance, get that instance.
    */
+  @Override
   Instance instance()
   {
     if (PRECONDITIONS) require
@@ -283,6 +299,7 @@ public class LValue extends ValueWithClazz
    * Return the ArrayData this value contains.  If this is an ArrayData, return
    * this, if this is an LValue containing an ArrayData, get that ArrayData.
    */
+  @Override
   ArrayData arrayData()
   {
     return (ArrayData) container.refs[offset];
@@ -292,6 +309,7 @@ public class LValue extends ValueWithClazz
   /**
    * Return the tag of this choice.
    */
+  @Override
   public int tag()
   {
     if (PRECONDITIONS) require
@@ -310,6 +328,7 @@ public class LValue extends ValueWithClazz
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "lvalue[" + container + "@" + offset + "(" + fuir().clazzName(_clazz) + ")]" +

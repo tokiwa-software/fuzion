@@ -127,15 +127,19 @@ javaHello : Java is
     test_casting =>
       jstr => java.lang.__jString.new "my jstr"
 
+      casting_exception : flow.exception_tag is
+
       tm := Java.java.util.TreeMap.new
       _ := tm.put jstr jstr
 
       util_map := fuzion.jvm.env.cast Java.java.util.Map tm
 
       tm2 := Java.java.util.TreeMap.new
-      _ := flow.exception (outcome Java.java.util.Map) unit ()->
-        tm2.putAll util_map.or_panic
-        say tm2.toString
+      _ := flow.exception casting_exception
+        .try unit ()->
+          tm2.putAll util_map.or_panic
+          say tm2.toString
+        .or_outcome
 
     test_casting
 
@@ -145,12 +149,16 @@ javaHello : Java is
     test_casting_fail =>
       jstr => java.lang.__jString.new "my jstr"
 
+      casting_exception : flow.exception_tag is
+
       util_map := fuzion.jvm.env.cast Java.java.util.Map jstr
 
       tm2 := Java.java.util.TreeMap.new
-      _ := flow.exception (outcome Java.java.util.Map) unit ()->
-        tm2.putAll util_map.or_panic
-        say tm2.toString
+      _ := flow.exception casting_exception
+        .try unit ()->
+          tm2.putAll util_map.or_panic
+          say tm2.toString
+        .or_outcome
 
     catch_panics ()->
       test_casting_fail

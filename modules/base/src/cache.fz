@@ -65,13 +65,13 @@
 #
 # The cache implemented works on a global level.
 #
-public cache(T type, f () -> T) T =>
+public cache(T : Any, f () -> T) T =>
 
   cached_item T .env.get f
 
 # state effect to cache a value of type T
 #
-cached_item(T type, val option T) : effect is
+cached_item(T : Any, val option T) : effect is
 
   # default implementation of `cached_item` with `val` set to `nil`.
   #

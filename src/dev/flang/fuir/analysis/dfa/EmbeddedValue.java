@@ -110,6 +110,7 @@ class EmbeddedValue extends Val
    *
    * @param f function to apply to unwrapped value.
    */
+  @Override
   public Val rewrap(DFA dfa, Function<Value,Val> f)
   {
     var res = f.apply(value());
@@ -128,6 +129,7 @@ class EmbeddedValue extends Val
    * information unrelated to the actual value (e.g. EmbeddedValue), get the
    * actual value.
    */
+  @Override
   Value value()
   {
     return _value;
@@ -137,6 +139,7 @@ class EmbeddedValue extends Val
   /**
    * Create human-readable string from this instance.
    */
+  @Override
   public String toString()
   {
     return

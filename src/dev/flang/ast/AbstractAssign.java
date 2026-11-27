@@ -118,6 +118,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @return this
    */
+  @Override
   protected AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
@@ -263,16 +264,14 @@ public abstract class AbstractAssign extends Expr
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
+  @Override
   public boolean containsOnlyDeclarations()
   {
     return false;
   }
 
 
-  /**
-   * Some Expressions do not produce a result, e.g., a Block
-   * whose last expression is not an expression that produces a result.
-   */
+  /** {@inheritDoc} */
   @Override public boolean producesResult()
   {
     return false;
@@ -284,6 +283,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return toString(_assignedField.baseNameHuman());

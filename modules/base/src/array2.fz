@@ -31,7 +31,7 @@
 # two index parameters.
 #
 private:public array2(
-      T type,
+      T : Any,
       public length0, length1 i64,
 
       # the underlying one dimensional array
@@ -133,7 +133,7 @@ is
       indices1.map j->(i,j)
 
 
-  public index [ ] (I type : integer, i1, i2 I) T
+  public index [ ] (I : integer, i1, i2 I) T
     pre
       safety: 0 ≤ i1.as_i64 < length0
       safety: 0 ≤ i2.as_i64 < length1
@@ -197,7 +197,7 @@ is
   # one-dimensional immutable arrays with an additional access function with
   # two index parameters.
   #
-  public type.new(I type : integer,
+  public type.new(I : integer,
                   length0, length1 I,
                   init (I, I) -> T
                  ) array2 T
@@ -221,8 +221,8 @@ is
 # one-dimensional immutable arrays with an additional access function with
 # two index parameters.
 #
-public array2(T type,
-              I type : integer,
+public array2(T : Any,
+              I : integer,
               length0, length1 I,
               init (I, I) -> T) array2 T
   pre

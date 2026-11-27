@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 ex_nested_lazy is
-  lazy_evaluator(T type, lv Lazy T) T => lv
+  lazy_evaluator(T : Any, lv Lazy T) T => lv
 
   fun Function bool i32 := x -> x = 0
 

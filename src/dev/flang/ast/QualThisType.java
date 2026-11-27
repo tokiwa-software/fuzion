@@ -53,29 +53,17 @@ public class QualThisType extends UnresolvedType
    *
    * @param qual the qualifier
    */
-  public QualThisType(List<ParsedName> qual)
+  public QualThisType(SourcePosition pos, List<ParsedName> qual)
   {
     _qual = qual;
-    super(SourcePosition.range(qual),
+    super(pos,
           qual.getLast()._name,
           Call.NO_GENERICS, null, Optional.of(TypeKind.ThisType));
   }
 
 
 
-  /**
-   * resolve this type, i.e., find or create the corresponding instance of
-   * ResolvedType of this and all outer types and type parameters this depends on.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param context the outer feature this type is declared in. Lookup of
-   * unqualified types will happen in this feature.
-   *
-   * @param tolerant behavior if resolution is not possible
-   *                 if true return null, if false flag error
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType resolve(Resolution res, Context context, boolean tolerant)
   {
@@ -99,8 +87,9 @@ public class QualThisType extends UnresolvedType
                 fo._feature
                   .qualifiedName()
                   .endsWith(_qual.stream().filter(x -> !x._name.equals(FuzionConstants.UNIVERSE_NAME))
-                  .map(x -> x._name)
-                  .collect(Collectors.joining("."))))
+                                          .map(x -> x._name)
+                                          .collect(Collectors.joining("."))) &&
+                                          found.stream().noneMatch(x -> x._feature == fo._feature))
               {
                 found.add(fo);
               }
@@ -114,7 +103,7 @@ public class QualThisType extends UnresolvedType
           }
         else if (!found.isEmpty() && !tolerant)
           {
-            AstErrors.ambiguousType(pos(), _name, found.map2(x -> x._feature));
+            AstErrors.ambiguousType(pos(), _name, found);
             _resolved = Types.t_ERROR;
           }
       }

@@ -87,6 +87,7 @@ public abstract class Constant extends Expr
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _pos;
@@ -121,9 +122,7 @@ public abstract class Constant extends Expr
   }
 
 
-  /**
-   * This expression as a compile time constant.
-   */
+  /** {@inheritDoc} */
   @Override
   public Constant asCompileTimeConstant()
   {

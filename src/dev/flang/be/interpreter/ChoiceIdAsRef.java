@@ -38,7 +38,7 @@ import dev.flang.fuir.SpecialClazzes;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ChoiceIdAsRef extends Value
+class ChoiceIdAsRef extends Value
 {
 
 
@@ -192,6 +192,7 @@ public class ChoiceIdAsRef extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "choiceIdAsRef["+_id+"]";

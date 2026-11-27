@@ -161,12 +161,12 @@ path_test =>
   # expect failure to create a path
   #
   fail_create(s String) =>
-    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated path '$(io.path.of s)' from '$s'") .catch (x->say x)
+    fuzion.runtime.contract_fault.try ()->(say "FAILED: create path '$(io.path.of s)' from '$s'") .catch (x->say x)
 
   # expect failure to create a path
   #
   fail_create(seg Sequence String, is_abs bool) =>
-    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated $(is_abs ? "absolute" : "relative") path '$(io.path.of seg is_abs)' from '$seg'") .catch (x->say x)
+    fuzion.runtime.contract_fault.try ()->(say "FAILED: create $(is_abs ? "absolute" : "relative") path '$(io.path.of seg is_abs)' from '$seg'") .catch (x->say x)
 
   # uproot a path
   fail_create "/.."                         # 1. should flag an error: path uprooted

@@ -33,6 +33,7 @@ import java.util.function.BiConsumer;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.StringHelpers;
 import dev.flang.util.YesNo;
@@ -159,17 +160,12 @@ public abstract class AbstractCall extends Expr
   /**
    * This call serialized as a constant.
    */
+  @Override
   public Constant asCompileTimeConstant()
   {
     var result = new Constant(AbstractCall.this.pos()) {
 
-      /**
-       * actuals are serialized in order. example
-       * {@code tuple (u8 5) (codepoint u32 72)} results in
-       * the following data:
-       *        b b b b b
-       * u8 ----^ ^^^^^^^--- codepoint u32 (both little endian)
-       */
+      /** {@inheritDoc} */
       @Override
       public byte[] data()
       {
@@ -240,13 +236,22 @@ public abstract class AbstractCall extends Expr
         typeParameters.addAll(actualTypeParameters());
       }
 
-    return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, target());
+    var result = calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, target());
+
+    // Make sure checking of generics will use the same _originalGenerics to avoid duplicate errors
+    // (e.g. in reg_issue5003):
+    if (result instanceof Call resultc &&
+        this   instanceof Call thisc   &&
+        !thisc._originalGenerics.isEmpty())
+      {
+        resultc._originalGenerics = new List<HasSourcePosition>(pos()); // relay type
+        resultc._originalGenerics.addAll(thisc._originalGenerics);
+      }
+    return result;
   }
 
 
-  /**
-   * Is this expression a call to {@code type_as_value}?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean isTypeAsValueCall()
   {
@@ -304,18 +309,16 @@ public abstract class AbstractCall extends Expr
                                              AbstractType t,
                                              BiConsumer<AbstractType, AbstractType> foundRef)
   {
-    return calledFeature() == Types.f_ERROR || t == Types.t_ERROR
-      ? Types.t_ERROR
-      : calledFeature().outer().handDownAndApply
-        (t,
-         target().type().selfOrConstraint(context),
-         x -> x == Types.t_ERROR
-           ? Types.t_ERROR
-           : adjustThisTypeForTarget(context,
-                                     replace_type_parameter_used_for_relay_type_in_cotype(x, target()),
-                                     calledFeature(),
-                                     target().type(),
-                                     foundRef));
+    var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : t;
+    var t1 = t0 == Types.t_ERROR              ? Types.t_ERROR : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));
+    var t2 = t1 == Types.t_ERROR              ? Types.t_ERROR : replace_type_parameter_used_for_relay_type_in_cotype(t1, target());
+    var t3 = t2 == Types.t_ERROR              ? Types.t_ERROR : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
+    var t4 = t3 == Types.t_ERROR              ? Types.t_ERROR : t3.applyTypePars(target().type());
+
+    if (POSTCONDITIONS) ensure
+      (t4 != null);
+
+    return t4;
   }
 
 
@@ -362,7 +365,7 @@ public abstract class AbstractCall extends Expr
    *
    *     type.equality(a, b equatable.this.type) bool is abstract
    *
-   *   equals(T type : equatable, x, y T) => T.equality x y
+   *   equals(T : equatable, x, y T) => T.equality x y
    *
    * For the call {@code T.equality x y}, we must replace the formal argument type
    * for {@code a} (and {@code b}) by {@code T}.
@@ -419,10 +422,7 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  /**
-   * If this expression is a Call to a type parameter,
-   * return the type parameters type, otherwise null.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType asTypeParameterType()
   {
@@ -570,9 +570,7 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  /**
-   * Is this Expr a call to an outer ref?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean isCallToOuterRef()
   {
@@ -580,7 +578,7 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  // need to overrid this here since this is not visible for LibraryCall
+  // need to override this here since this is not visible for LibraryCall
   // and we want LibraryCall.typeForInferencing to not return null...
   @Override
   AbstractType typeForInferencing()
@@ -592,6 +590,7 @@ public abstract class AbstractCall extends Expr
   /**
    * This call as a human readable string
    */
+  @Override
   public String toString()
   {
     return ((target() instanceof Universe) ||

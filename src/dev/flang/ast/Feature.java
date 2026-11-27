@@ -90,12 +90,6 @@ public class Feature extends AbstractFeature
   private final SourcePosition _pos;
 
 
-  /**
-   * The sourcecode position of this feature's return type, if given explicitly.
-   */
-  private final SourcePosition _posOfReturnType;
-
-
   Context _sourceCodeContext = Context.NONE;
 
 
@@ -103,6 +97,7 @@ public class Feature extends AbstractFeature
    * The visibility of this feature
    */
   private final Visi _visibility;
+  @Override
   public Visi visibility()
   {
     return _visibility == Visi.UNSPECIFIED
@@ -123,6 +118,7 @@ public class Feature extends AbstractFeature
    * the modifiers of this feature
    */
   public final int _modifiers;
+  @Override
   public int modifiers() { return _modifiers; }
 
 
@@ -166,6 +162,7 @@ public class Feature extends AbstractFeature
    * The formal arguments of this feature
    */
   private List<AbstractFeature> _arguments;
+  @Override
   public List<AbstractFeature> arguments()
   {
     return _arguments;
@@ -176,6 +173,7 @@ public class Feature extends AbstractFeature
    * The parents of this feature
    */
   private final List<AbstractCall> _inherits;
+  @Override
   public final List<AbstractCall> inherits() { return _inherits; }
 
 
@@ -183,6 +181,7 @@ public class Feature extends AbstractFeature
    * The contract of this feature
    */
   private final Contract _contract;
+  @Override
   public Contract contract() { return _contract; }
 
 
@@ -345,6 +344,7 @@ public class Feature extends AbstractFeature
    * LibraryFeature, this will be loaded from the library module file.
    */
   private Set<AbstractFeature> _redefines = null;
+  @Override
   public Set<AbstractFeature> redefines()
   {
     if (_redefines == null)
@@ -793,7 +793,6 @@ public class Feature extends AbstractFeature
     this._visibility = v;
     this._modifiers  = m;
     this._returnType = r;
-    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnTypePos();
     String n = qname.getLast();
     if (n.equals("_"))
       {
@@ -844,6 +843,7 @@ public class Feature extends AbstractFeature
   /**
    * Return the state of this feature.
    */
+  @Override
   public State state()
   {
     return _state;
@@ -865,6 +865,7 @@ public class Feature extends AbstractFeature
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _pos;
@@ -875,6 +876,7 @@ public class Feature extends AbstractFeature
    * The sourcecode position of this feature declaration's result type,
    * the features source position if not available
    */
+  @Override
   public SourcePosition resultTypePos()
   {
     return _returnType.posOrNull() == null
@@ -904,6 +906,7 @@ public class Feature extends AbstractFeature
    * the find declarations phase is done (i.e. we are in State.LOADED), or
    * before _outer was during the finding declarations phase.
    */
+  @Override
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
@@ -945,6 +948,7 @@ public class Feature extends AbstractFeature
    *
    * @return Routine, Field, Intrinsic, Abstract or Choice.
    */
+  @Override
   public Kind kind()
   {
     var result = _kind;
@@ -999,6 +1003,7 @@ public class Feature extends AbstractFeature
   /**
    * get the code of this feature.
    */
+  @Override
   public Expr code()
   {
     if (PRECONDITIONS) require
@@ -1462,6 +1467,7 @@ public class Feature extends AbstractFeature
    *
    * @param r the action
    */
+  @Override
   public void whenResolvedDeclarations(Runnable r)
   {
     if (_state.atLeast(State.RESOLVED_DECLARATIONS))
@@ -1577,18 +1583,18 @@ public class Feature extends AbstractFeature
         visit(res.resolveTypesFully(this));
 
         if (_effects != null)
-        {
-          _effects = _effects.map(e -> {
-            var t = e.resolve(res, context());
+          {
+            _effects = _effects.map(e -> {
+              var t = e.resolve(res, context());
 
-            if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
-                                          .feature().inheritsFrom(Types.resolved.f_effect)))
-              {
-                AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
-              }
-            return t;
-          });
-        }
+              if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
+                                            .feature().inheritsFrom(Types.resolved.f_effect)))
+                {
+                  AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
+                }
+              return t;
+            });
+          }
 
         _state = State.RESOLVED_TYPES;
         while (!whenResolvedTypes.isEmpty())
@@ -1615,6 +1621,7 @@ public class Feature extends AbstractFeature
    *
    * @param r the action
    */
+  @Override
   void whenResolvedTypes(Runnable r)
   {
     if (_state.atLeast(State.RESOLVED_TYPES))
@@ -1677,7 +1684,7 @@ public class Feature extends AbstractFeature
   private boolean needsCotypeInFumFile(Resolution res)
   {
     // If we are compiling a module
-    // we can omit creating coptypes that are unused
+    // we can omit creating cotypes that are unused
     // and can not be used from outside the module
     return res._module.name() == FuzionConstants.MAIN_MODULE_NAME
       ? !isUniverse()
@@ -1735,6 +1742,7 @@ public class Feature extends AbstractFeature
    * @param errorPos the position this error should be reported at, this should
    * be the definition of the choice type.
    */
+  @Override
   void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
   {
     var closureAccesses = closureAccesses(res);
@@ -1754,6 +1762,7 @@ public class Feature extends AbstractFeature
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
+  @Override
   public boolean containsOnlyDeclarations()
   {
     return switch (_impl._kind)
@@ -1972,7 +1981,7 @@ A ((Choice)) declaration must not contain a result type.
   void typeInference(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED_TYPES));
+      (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
     if (_state == State.RESOLVED_SUGAR1)
       {
@@ -2043,7 +2052,7 @@ A ((Choice)) declaration must not contain a result type.
       }
 
     if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.TYPES_INFERENCED));
+      (Errors.any() || _state.atLeast(State.TYPES_INFERENCED));
   }
 
 
@@ -2244,6 +2253,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    * @return the result or null if this does not have a result field.
    */
+  @Override
   public Feature resultField()
   {
     if (PRECONDITIONS) require
@@ -2315,6 +2325,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    * @return this.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     // impl.initialValue is code executed by outer, not by this. So we visit it
@@ -2419,16 +2430,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * resultTypeIfPresentUrgent returns the result type of this feature using the
-   * formal generic argument.
-   *
-   * @param urgent if true and the result type is inferred and inference would
-   * currently not succeed, then enforce it even if that would produce an error.
-   *
-   * @return this feature's result type, null in case the type is currently
-   * unknown since the type inference is incomplete.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType resultTypeIfPresentUrgent(Resolution res, boolean urgent)
   {
@@ -2564,17 +2566,12 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
-   *
-   * @return the constraint.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType constraint()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_DECLARATIONS),
+      (Errors.any() || state().atLeast(State.RESOLVED_DECLARATIONS),
        isTypeParameter());
 
     var result = _returnType.functionReturnType();
@@ -2586,6 +2583,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
+  @Override
   public FeatureName featureName()
   {
     if (CHECKS) check
@@ -2659,6 +2657,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    * @return the outer ref if it exists, null otherwise.
    */
+  @Override
   public AbstractFeature outerRef()
   {
     if (PRECONDITIONS) require
@@ -2676,6 +2675,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   /**
    * Check if this is an outer ref field.
    */
+  @Override
   public boolean isOuterRef()
   {
     var o = outer();
@@ -2698,6 +2698,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   /**
    * Compare this to other for sorting Feature
    */
+  @Override
   public int compareTo(AbstractFeature other)
   {
     return (other instanceof Feature of)
@@ -2719,23 +2720,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * Is this the 'RELAY_TYPE' type parameter in a type feature?
-   *
-   * Overriding since AbstractFeature.isCoTypesThisType needs outer to be
-   * in state of at least FINDING_DECLARATIONS which is not always the case
-   * when isCoTypesThisType is called.
-   */
-  @Override
-  public boolean isCoTypesRelayTypeParameter()
-  {
-    return false;
-  }
-
-
-  /**
-   * Is this base-lib's choice-feature?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean isBaseChoice()
   {

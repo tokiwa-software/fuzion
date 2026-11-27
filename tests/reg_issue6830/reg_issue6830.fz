@@ -25,7 +25,7 @@ reg_issue6830 =>
 
 
   part1 =>
-    storage(T type, v0 T) is
+    storage(T : Any, v0 T) is
       m0 := mut v0
       store(v T) =>
         m0 <- v
@@ -48,7 +48,7 @@ reg_issue6830 =>
 
 
   part2 =>
-    storage(T type, v0 T) is
+    storage(T : Any, v0 T) is
       m0 := mut v0
       store(v T) =>
         m0 <- v

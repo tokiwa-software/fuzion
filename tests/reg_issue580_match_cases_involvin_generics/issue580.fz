@@ -25,9 +25,9 @@
 
 
 issue580 is
-  abort0(T type, a T) is
+  abort0(T : Any, a T) is
 
-  a(T type, b T | abort0 T) =>
+  a(T : Any, b T | abort0 T) =>
     match b
       T => say "t"
       abort0 => say "i"

@@ -139,86 +139,97 @@ public Message ref is
 # a recipient MAY recognize a single LF as a line terminator and ignore any preceding CR.
 # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-3
 #
-module next_line(LM type : mutate) => (io.buffered LM).read_delimiter encodings.ascii.lf true
+module next_line(LM : mutate) => (io.buffered LM).read_delimiter encodings.ascii.lf true
 
 
 
-module parse_header_fields(LM type : mutate) outcome (container.Mutable_Tree_Map LM String String) =>
+module parse_header_fields(LM : mutate) outcome (container.Mutable_Tree_Map LM String String) =>
+  # type used only to identify the exception used by `parse_header_fields`
+  #
+  parse_header_fields_exception : flow.exception_tag is
 
-  flow.exception unit _ ()->
+  flow.exception parse_header_fields_exception
+    .try _ ()->
 
-    cause(s String) void =>
-      (flow.exception unit).env.cause (error s)
+      cause(s String) void =>
+        (flow.exception parse_header_fields_exception).env.cause (error s)
 
-    fields := (container.Mutable_Tree_Map LM String String) .empty
+      fields := (container.Mutable_Tree_Map LM String String) .empty
 
-    for cur := match next_line LM
-                  io.end_of_file => cause "unexpected end of input"
-                  s String => s
-    while cur != ""
-    do
+      for cur := match next_line LM
+                    io.end_of_file => cause "unexpected end of input"
+                    s String => s
+      while cur != ""
+      do
 
-      # A recipient that receives whitespace between the start-line and the first header field MUST either reject the message as invalid or consume each whitespace-preceded line without further processing of it
-      # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-8
-      if cur.starts_with " " then cause "whitespace between start line and header field"
+        # A recipient that receives whitespace between the start-line and the first header field MUST either reject the message as invalid or consume each whitespace-preceded line without further processing of it
+        # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-8
+        if cur.starts_with " " then cause "whitespace between start line and header field"
 
-      parts := cur.split_n ":" 1
-      if parts.count != 2 then cause "broken header field '$cur'"
-      # NYI: UNDER DEVELOPMENT: must duplicate header fields cause an error?
-      fields.put parts[0].lower_case parts[1].trim
+        parts := cur.split_n ":" 1
+        if parts.count != 2 then cause "broken header field '$cur'"
+        # NYI: UNDER DEVELOPMENT: must duplicate header fields cause an error?
+        fields.put parts[0].lower_case parts[1].trim
 
-    fields
+      fields
+    .or_outcome
 
 
-module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome (i64 -> choice (Sequence u8) io.end_of_file error) =>
-  flow.exception unit (i64 -> choice (Sequence u8) io.end_of_file error) ()->
+module body_helper(LM : mutate, is_req bool, header_fields container.Map String String) outcome (i64 -> choice (Sequence u8) io.end_of_file error) =>
+  # type used only to identify the exception used by `body_helper`
+  #
+  body_helper_exception : flow.exception_tag is
 
-    cause(s String) void =>
-      (flow.exception unit).env.cause (error s)
+  flow.exception body_helper_exception
+    .try (i64 -> choice (Sequence u8) io.end_of_file error) ()->
 
-    # If a message is received with both a Transfer-Encoding and a Content-Length header field, the Transfer-Encoding overrides the Content-Length.
-    # Such a message might indicate an attempt to perform request smuggling (Section 11.2) or response splitting (Section 11.1) and ought to be handled as an error.
-    # An intermediary that chooses to forward the message MUST first remove the received Content-Length field and process the Transfer-Encoding (as described below) prior to forwarding the message downstream.
-    # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.3
-    if header_fields.has "transfer-encoding" && header_fields.has "content-length"
-      cause "request header contains both 'transfer-encoding' and 'content-length' field"
+      cause(s String) void =>
+        (flow.exception body_helper_exception).env.cause (error s)
 
-    else if header_fields.has "transfer-encoding"
+      # If a message is received with both a Transfer-Encoding and a Content-Length header field, the Transfer-Encoding overrides the Content-Length.
+      # Such a message might indicate an attempt to perform request smuggling (Section 11.2) or response splitting (Section 11.1) and ought to be handled as an error.
+      # An intermediary that chooses to forward the message MUST first remove the received Content-Length field and process the Transfer-Encoding (as described below) prior to forwarding the message downstream.
+      # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.3
+      if header_fields.has "transfer-encoding" && header_fields.has "content-length"
+        cause "request header contains both 'transfer-encoding' and 'content-length' field"
 
-      # transfer codings are case-insensitive
-      # https://www.rfc-editor.org/rfc/rfc7230#section-4
-      transfer_encodings :=
-        header_fields["transfer-encoding"]
-          .or_panic
-          .split ","
-          .map (.trim.lower_case)
+      else if header_fields.has "transfer-encoding"
 
-      # If a Transfer-Encoding header field is present and the chunked transfer coding (Section 7.1) is the final encoding, the message body length is determined by reading and decoding the chunked data until the transfer coding indicates the data is complete.
-      if transfer_encodings = [ "chunked" ]
-        body_reader_chunked LM
+        # transfer codings are case-insensitive
+        # https://www.rfc-editor.org/rfc/rfc7230#section-4
+        transfer_encodings :=
+          header_fields["transfer-encoding"]
+            .or_panic
+            .split ","
+            .map (.trim.lower_case)
+
+        # If a Transfer-Encoding header field is present and the chunked transfer coding (Section 7.1) is the final encoding, the message body length is determined by reading and decoding the chunked data until the transfer coding indicates the data is complete.
+        if transfer_encodings = [ "chunked" ]
+          body_reader_chunked LM
+        else
+          cause "message with unsupported transfer encoding"
+
+      else if header_fields.has "content-length"
+        match header_fields["content-length"].or_panic.parse_u64
+          error =>
+
+            # NYI: UNDER DEVELOPMENT: implement recovery
+            # unless the field value can be successfully parsed as a comma-separated list (Section 5.6.1 of [HTTP]), all values in the list are valid, and all values in the list are the same (in which case, the message is processed with that single value used as the Content-Length field value)
+
+            cause "invalid value for field content-length"
+
+          length u64 =>
+            # content Sequence u8 := (io.buffered LM).read_bytes length
+            # (content.count = length) ? option content : (cause "input closed after $(content.count) bytes, but specified content-length: $length")
+            body_reader LM length
+
+      # If this is a request message and none of the above are true, then the message body length is zero (no message body is present).
+      # Otherwise, this is a response message without a declared message body length, so the message body length is determined by the number of octets received prior to the server closing the connection.
+      # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.7
       else
-        cause "message with unsupported transfer encoding"
-
-    else if header_fields.has "content-length"
-      match header_fields["content-length"].or_panic.parse_u64
-        error =>
-
-          # NYI: UNDER DEVELOPMENT: implement recovery
-          # unless the field value can be successfully parsed as a comma-separated list (Section 5.6.1 of [HTTP]), all values in the list are valid, and all values in the list are the same (in which case, the message is processed with that single value used as the Content-Length field value)
-
-          cause "invalid value for field content-length"
-
-        length u64 =>
-          # content Sequence u8 := (io.buffered LM).read_bytes length
-          # (content.count = length) ? option content : (cause "input closed after $(content.count) bytes, but specified content-length: $length")
-          body_reader LM length
-
-    # If this is a request message and none of the above are true, then the message body length is zero (no message body is present).
-    # Otherwise, this is a response message without a declared message body length, so the message body length is determined by the number of octets received prior to the server closing the connection.
-    # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.7
-    else
-      # is_req ? nil : option (Sequence u8) (io.buffered LM).read_fully
-      body_reader LM (is_req ? 0 : nil)
+        # is_req ? nil : option (Sequence u8) (io.buffered LM).read_fully
+        body_reader LM (is_req ? 0 : nil)
+    .or_outcome
 
 
 

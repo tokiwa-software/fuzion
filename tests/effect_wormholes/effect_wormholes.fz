@@ -22,8 +22,8 @@
 # -----------------------------------------------------------------------
 
 # This test uses two new `io.Out` effect handlers `out_A` and `out_B` and
-# performes nested `instate`s for these creating worm holes for the default
-# environment and the the environments using `out_A` and `out_B`.
+# performs nested `instate`s for these creating worm holes for the default
+# environment and the environments using `out_A` and `out_B`.
 #
 # It spawns threads checking while `out_A` and `out_B` are instated and uses
 # wormholes in the new threads to change the environments

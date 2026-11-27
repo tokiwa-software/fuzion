@@ -35,12 +35,12 @@ is
 
   joined := concur.atomic trit .new trit.no
 
-  policy concur.scheduling_policy.val
+  policy0 concur.scheduling_policy.val
   :=
      concur.scheduling_policy.sched_other
 
 
-  priority i32 := 0
+  priority0 i32 := 0
 
   # wait for this thread to finish execution
   #
@@ -79,15 +79,15 @@ is
   # priority only applies to some scheduling policies and is
   # currently limited to a value between 0 and 99.
   #
-  public set_policy(policy0 concur.scheduling_policy.val,
+  public set_policy(policy concur.scheduling_policy.val,
                     reset_on_fork bool,
-                    priority0 i32) outcome unit
+                    priority i32) outcome unit
     pre
-      safety: 0 ≤ priority0 ≤ 99
+      safety: 0 ≤ priority ≤ 99
   =>
     mtx.synchronized (outcome unit) _ ()->
       p i32 :=
-        match policy0
+        match policy
           concur.scheduling_policy.sched_other => 0
           concur.scheduling_policy.sched_fifo => 1
           concur.scheduling_policy.sched_rr => 2
@@ -96,10 +96,10 @@ is
           p | 0x40000000
         else
           p
-      e := fuzion.sys.thread.set_policy thrd p2 priority0
+      e := fuzion.sys.thread.set_policy thrd p2 priority
       if e = 0
-        set policy := policy0
-        set priority := priority0
+        set policy0 := policy
+        set priority0 := priority
         unit
       else
         error "fzE_thread_setschedparam error $(e)"
@@ -113,7 +113,7 @@ is
       i32
   =>
     mtx.synchronized ()->
-      (policy, priority)
+      (policy0, priority0)
 
 
   # pin a thread to the CPUs given by cores
@@ -126,6 +126,17 @@ is
         unit
       else
         error "fzE_thread_setaffinity error $(e)"
+
+
+  # CPU time in nano seconds consumed by this thread so far, negative in case
+  # of an error or if this thread was joined already.
+  #
+  # Use `time.Thread_CPU_Time` to access this as a `time.Clock`.
+  #
+  module cpu_time_ns i64
+  =>
+    # after a join, `thrd` must not be used any longer
+    joined.read.is_no ? fuzion.sys.thread.cpu_time0 thrd : -1
 
 
   # equality
@@ -148,7 +159,7 @@ is
   # private condition variable for this thread, used to put this
   # thread in park mode using the given clock for timeouts
   #
-  cond(C type : time.Clock) => (A1_park_condition C).env.cond
+  cond(C : time.Clock) => (A1_park_condition C).env.cond
 
 
   # is this thread parked? This is an option of a tuple containing the condition
@@ -167,7 +178,7 @@ is
   # The idea is that `code` may release a mutex in a way that ensures that this thread
   # is parked before it is released.
   #
-  module park(F type : ()->unit, condition ()->bool, code F)
+  module park(F : ()->unit, condition ()->bool, code F)
   =>
     # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
     # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
@@ -195,8 +206,8 @@ is
   # result is `true`  if this returns due to a call to `unpark`, it is `false` if there
   # was a timeout.
   #
-  module park_until(C type : time.Clock,
-                    F type : ()->unit,
+  module park_until(C : time.Clock,
+                    F : ()->unit,
                     timeout   time.instant,
                     condition ()->bool,
                     code      F) bool =>
@@ -274,7 +285,7 @@ is
 #    mtx := concur.sync.mtx_init.or_panic
 #
 # but there is currently no easy way to access this field while `concur.Threads.env.current`
-# cannot be used becuse `concur.Threads` is not yet instated.
+# cannot be used because `concur.Threads` is not yet instated.
 #
 # NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
 # is sorted by dependency, but alphabetically, so we add prefix 'A_' as a workaround.
@@ -299,7 +310,7 @@ module A0_park_mutex : thread_local_effect is
 # NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
 # is not be dependency, but alphabetically, so we add prefix 'A_' as a workaround.
 #
-module A1_park_condition(C type : time.Clock) ref : thread_local_effect is
+module A1_park_condition(C : time.Clock) ref : thread_local_effect is
 
   cond_var := concur.sync.condition.new C A0_park_mutex.mtx .or_panic
   cond =>

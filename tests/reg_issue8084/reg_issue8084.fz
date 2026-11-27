@@ -29,7 +29,7 @@ reg_issue8084 =>
 
   # original example from the issue:
 
-  x(V type, v T) =>
+  x(V : Any, v T) =>
   y => x y.0
 
   # some more variants:

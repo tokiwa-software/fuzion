@@ -18,7 +18,7 @@ fixed b : choice i32 is
 
 
 reg_issue6783.fz:30:7: error 4: Illegal use of 'fixed' modifier.
-fixed c(T type) =>
+fixed c(T : Any) =>
 ------^
 'fixed' fixed is only allowed on function features not in universe.
 

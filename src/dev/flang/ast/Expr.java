@@ -91,23 +91,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * Source range of this Expr.  Note that this might be longer than the Expr
-   * itself, e.g., in a call
-   *
-   *    f (x.q y)
-   *
-   * The argument to f is the call {@code x.q y} whose position is
-   *
-   *    f (x.q y)
-   * --------^
-   *
-   * but the source range is
-   *
-   *    f (x.q y)
-   * -----^^^^^^^
-   *
-   */
+  /** {@inheritDoc} */
   @Override
   public SourcePosition sourceRange()
   {
@@ -129,6 +113,33 @@ public abstract class Expr extends ANY implements HasSourcePosition
        _range.byteEndPos() <= r.byteEndPos());
 
     _range = r;
+  }
+
+
+  /**
+   * If Expr.this is used as the target feature in an inheritance call, this gives the feature that
+   * should be used to lookup the parent. E.g., in code like
+   * <pre>{@code
+   *     xyz : abc.def.ghi is
+   *       ...
+   * }</pre>
+   * This is used on {@code abc.def} to determine the result type, which will be used as outer value
+   * for features inherited from `ghi`.
+   *
+   * Note that this is essentially the same as `type().feature()`, but we cannot determine `type()`
+   * at this point since this may result in cyclic resolution dependencies: An inheritance call may
+   * use types based the feature that is inheriting and that is not yet resolved.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used.  For a call {@code abc.def} in
+   * an inherits call {@code xyz : abc.def.ghi is}, {@code context.outerFeature()} is the feature
+   * {@code xyz}.
+   */
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    AstErrors.illegalInheritanceCallTarget(this);
+    return Types.f_ERROR;
   }
 
 
@@ -412,7 +423,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * features. Produce an error otherwise.
    *
    * An expression used as a lazy value or a partially applied call must not
-   * contain any inner declarations.  There is is no fundamental problem, it
+   * contain any inner declarations.  There is no fundamental problem, it
    * just requires that the front end would not add the feature declarations
    * found in this expression to the outer feature eagerly, but only after
    * processing of lazy values and partial application was done.
@@ -554,7 +565,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     return t.isLambdaTargetButNotLazy(res)                       &&
         !(this instanceof Call c && c._wasImplicitImmediateCall) &&
         typeForInferencing() != Types.t_ERROR                    &&
-        (typeForInferencing() == null || !typeForInferencing().isFunctionType(res));
+        (typeForInferencing() == null || !typeForInferencing().isFunctionLikeType());
   }
 
 
@@ -583,7 +594,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
-    return expectedType.isLambdaTarget(res) && expectedType.arity(res) == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType(res)
+    return expectedType.isLambdaTarget(res) && expectedType.arity(res) == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionLikeType()
       ? new Function(pos(), NO_EXPRS, reset())
       : this;
   }
@@ -747,7 +758,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   private List<AbstractCall> allInherited(AbstractFeature f)
   {
-    return f.inherits().flatMap(x -> new List<>(x, allInherited(x.calledFeature())));
+    return f.inherits().flatMap2(x -> new List<AbstractCall>(x, allInherited(x.calledFeature())));
   }
 
 
@@ -813,9 +824,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
       {
         var needsBoxing = needsBoxing(frmlT);
         var boxedType = needsBoxing == null ? type() : needsBoxing;
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(boxedType).yes())
+        var choiceT = frmlT.relayTypeAsThisType();
+        if (choiceT.isChoice() && choiceT.isAssignableFrom(boxedType).yes())
           {
-            checkTagging(this, boxedType, frmlT);
+            checkTagging(this, boxedType, choiceT);
           }
       }
   }
@@ -831,6 +843,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public AbstractType needsBoxing(AbstractType frmlT)
   {
     var t = type();
+    frmlT = frmlT.relayTypeAsThisType();
     if (t.isRef())
       {
         return null;
@@ -845,6 +858,8 @@ public abstract class Expr extends ANY implements HasSourcePosition
       }
     else
       {
+        t = t.relayTypeAsThisType();
+
         if (frmlT.isChoice() &&
             frmlT.isAssignableFromWithoutBoxing(t).no() &&
             frmlT.isAssignableFrom(t).yes())
@@ -870,6 +885,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   private AbstractType findAssignableChoiceGeneric(AbstractType ct, AbstractType t)
   {
+    t = t.relayTypeAsThisType();
     for (var cg : ct.choiceGenerics())
       {
         if (cg.isChoice() && cg.isAssignableFrom(t).yes())
@@ -899,12 +915,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
     // Case 1: types are equal, no tagging necessary
     if (frmlT.compareTo(at) == 0)
-      {
-        return;
-      }
-    // Case 1.1: types are equal, no tagging necessary
-    // NYI: BUG: soundness issue?
-    else if (at.isChoice() && frmlT.asThis().compareTo(at.asThis()) == 0)
       {
         return;
       }

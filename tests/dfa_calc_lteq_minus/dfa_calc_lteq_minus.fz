@@ -23,7 +23,7 @@
 
 # this tests the -° and lteq intrinsic of the DFA
 
-num_test(N type : num.wrap_around) =>
+num_test(N : num.wrap_around) =>
   if N.min -° 1 <= 0 then compile_time_panic else unit
 
 num_test i8

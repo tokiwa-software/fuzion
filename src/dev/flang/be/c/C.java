@@ -94,10 +94,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Called before each expression is processed. May be used to, e.g., produce
-     * tracing code for debugging or a comment.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt expressionHeader(int s)
     {
@@ -114,9 +111,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * A comment, adds human readable information
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt comment(String s)
     {
@@ -124,9 +119,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * no operation, like comment, but without giving any comment.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt nop()
     {
@@ -134,21 +127,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * drop a value, but process its side-effect.
-     *
-     * @param v an expression that calculates a value that is not needed, but
-     * where the calculation might have side-effects (like performing a call) that
-     * we do need.
-     *
-     * For backends that do not perform any side-effects in RESULT, this does
-     * not need to be redefined, the default implementation is nop() which is
-     * fine in this case.
-     *
-     * @param type clazz id for the type of the value
-     *
-     * @return code to perform the side effects of v and ignoring the produced value.
-     */
+    /** {@inheritDoc} */
     @Override public CStmnt drop(CExpr v, int type)
     {
       return CStmnt.EMPTY;
@@ -176,16 +155,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Perform an assignment of a value to a field in tvalue. The type of tvalue
-     * might be dynamic (a reference). See FUIR.access*().
-     *
-     * @param s site of the assignment
-     *
-     * @param tvalue the target instance
-     *
-     * @param avalue the new value to be assigned to the field.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt assign(int s, CExpr tvalue, CExpr avalue)
     {
@@ -193,14 +163,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Perform a call of a feature with target instance tvalue with given
-     * arguments.  The type of tvalue might be dynamic (a reference). See
-     * FUIR.access*().
-     *
-     * Result.v0() may be null to indicate that code generation should stop here
-     * (due to an error or tail recursion optimization).
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args)
     {
@@ -209,9 +172,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * For a given value v of value type vc create a boxed ref value of type rc.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> box(int s, CExpr val, int vc, int rc)
     {
@@ -223,9 +184,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Get the current instance
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> current(int s)
     {
@@ -249,20 +208,16 @@ public class C extends ANY
     }
 
 
-    /**
-     * Get the argument #i
-     */
+    /** {@inheritDoc} */
     @Override
     public CExpr arg(int s, int i) { return CIdent.arg(i); }
 
 
-    /**
-     * Get a constant value of type constCl with given byte data d.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> constData(int s, int constCl, byte[] d)
     {
-      return constData(constCl, d, true);
+      return constData(constCl, d);
     }
 
 
@@ -280,7 +235,7 @@ public class C extends ANY
      *               it was created in.
      * @return
      */
-    private Pair<CExpr, CStmnt> constData(int constCl, byte[] d, boolean onHeap /* NYI: UNDER DEVELOPMENT: init "(larger)" constants only once, globally. */)
+    private Pair<CExpr, CStmnt> constData(int constCl, byte[] d)
     {
       return switch (_fuir.getSpecialClazz(constCl))
         {
@@ -303,13 +258,7 @@ public class C extends ANY
               ? constArray(constCl, d)
               : constValue(constCl, d);
 
-            // NYI: UNDER DEVELOPMENT: without this heap clone tests ternary and unary are failing.
-            yield onHeap
-              ? new Pair<>(heapClone(result)
-                              .castTo(_types.clazz(constCl) + " *")
-                              .deref(),
-                             CStmnt.EMPTY)
-              : new Pair<>(result, CStmnt.EMPTY);
+            yield new Pair<>(result, CStmnt.EMPTY);
           }
         };
     }
@@ -337,14 +286,17 @@ public class C extends ANY
           if (!_fuir.clazzIsUnitType(fr))
             {
               var bytes = _fuir.deserializeConst(fr, bb);
-              sb.append("." + _names.fieldName(arg).code());
-              sb.append(" = ");
-              var cd = constData(_fuir.clazzResultClazz(arg), bytes, false);
-              l.add(cd.v1());
-              sb.append(cd.v0().code());
-              if (i + 1 != argCount)
+              if (_types.fieldExists(arg))
                 {
-                  sb.append(",");
+                  sb.append("." + _names.fieldName(arg).code());
+                  sb.append(" = ");
+                  var cd = constData(_fuir.clazzResultClazz(arg), bytes);
+                  l.add(cd.v1());
+                  sb.append(cd.v0().code());
+                  if (i + 1 != argCount)
+                    {
+                      sb.append(",");
+                    }
                 }
             }
         }
@@ -428,7 +380,7 @@ public class C extends ANY
             {
               var b = _fuir.deserializeConst(elementType, bb);
 
-              constData(elementType, b, false)
+              constData(elementType, b)
                 .v0()
                 .code(sb);
 
@@ -445,9 +397,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Perform a match on value subv.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt match(int s, AbstractInterpreter<CExpr, CStmnt> ai, CExpr sub)
     {
@@ -525,9 +475,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Create a tagged value of type newcl from an untagged value for type valuecl.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> tag(int s, CExpr value, int newcl, int tagNum)
     {
@@ -558,11 +506,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Generate code to terminate the execution immediately.
-     *
-     * @param msg a message explaining the illegal state
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt reportErrorInCode(String msg)
     {
@@ -1278,10 +1222,7 @@ public class C extends ANY
   {
     var msg2 = "*** %s:%d: " + msg + "\n";
     var args2 = new List<CExpr>(CIdent.FILE, CIdent.LINE);
-    for (var a : args)
-      {
-        args2.add(a);
-      }
+    args2.addAll(args);
     return CStmnt.seq(CExpr.fprintfstderr(msg2, args2.toArray(new CExpr[args2.size()])),
                       CExpr.exit(1));
   }

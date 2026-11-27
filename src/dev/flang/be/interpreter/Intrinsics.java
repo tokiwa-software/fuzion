@@ -241,9 +241,9 @@ public class Intrinsics extends ANY
              (t == executor.fuir().clazz(SpecialClazzes.c_u8  )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u16 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u32 )) ||
-             // (t == executor.fuir().clazz(SpecialClazzes.c_u64 )) ||  -- we split up 64-bit values to store tham in an array of ints
+             // (t == executor.fuir().clazz(SpecialClazzes.c_u64 )) ||  -- we split up 64-bit values to store them in an array of ints
              (t == executor.fuir().clazz(SpecialClazzes.c_f32 )) ||
-             // (t == executor.fuir().clazz(SpecialClazzes.c_f64 )) ||  -- we split up 64-bit values to store tham in an array of ints
+             // (t == executor.fuir().clazz(SpecialClazzes.c_f64 )) ||  -- we split up 64-bit values to store them in an array of ints
              (t == executor.fuir().clazz(SpecialClazzes.c_bool)));
         });
 
@@ -502,6 +502,13 @@ public class Intrinsics extends ANY
     put("fuzion.sys.thread.set_affinity0", (executor, innerClazz) -> args ->
         {
           return new i32Value(38 /* ENOSYS - Function not implemented */);
+        });
+    put("fuzion.sys.thread.cpu_time0", (executor, innerClazz) -> args ->
+        {
+          var t = ((JavaRef) args.get(1))._javaRef;
+          // `fuzion.sys.thread.current` results in a FuzionThread, `spawn0` in a Java Thread
+          var thread = t instanceof FuzionThread ft ? ft._javaThread : (Thread) t;
+          return new i64Value(java.lang.management.ManagementFactory.getThreadMXBean().getThreadCpuTime(thread.threadId()));
         });
 
     put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));

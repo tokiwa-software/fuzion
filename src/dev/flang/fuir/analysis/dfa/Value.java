@@ -63,6 +63,7 @@ class Value extends Val
       /**
        * compare two values.
        */
+      @Override
       public int compare(Value a, Value b)
       {
         if      (a == b)                                                       { return 0;                    }
@@ -90,6 +91,7 @@ class Value extends Val
       /**
        * compare two values.
        */
+      @Override
       public int compare(Value a, Value b)
       {
         if      (a == b)                                                       { return 0;                    }
@@ -398,7 +400,7 @@ class Value extends Val
 
 
   /**
-   * Wrapp this value into a tagged union type.
+   * Wrap this value into a tagged union type.
    *
    * @param dfa the current analysis context
    *
@@ -430,6 +432,7 @@ class Value extends Val
    * information unrelated to the actual value (e.g. EmbeddedValue), get the
    * actual value.
    */
+  @Override
   Value value()
   {
     return this;
@@ -441,6 +444,7 @@ class Value extends Val
    *
    * @param f function to apply to unwrapped value.
    */
+  @Override
   public Val rewrap(DFA dfa, Function<Value,Val> f)
   {
     return f.apply(this);

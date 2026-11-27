@@ -44,7 +44,7 @@ reg_issue3308 is
       s(x Any) =>
       say (f (s a.this))
 
-      # fouth, an even simpler version of #3315
+      # fourth, an even simpler version of #3315
       t(_ unit) =>
       f (t unit)
 
@@ -69,7 +69,7 @@ reg_issue3308 is
       s(x Any) =>
       say (f (s b.this))
 
-      # fouth, an even simpler version of #3315
+      # fourth, an even simpler version of #3315
       t(_ unit) =>
       f (t unit)
 

@@ -99,7 +99,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * cached result of innerFeatures()
    */
-  List<FuirFeature> _innerFeatures;
+  List<LibraryFeature> _innerFeatures;
 
 
   /**
@@ -177,6 +177,7 @@ public class LibraryFeature extends FuirFeature
    *
    * @return Routine, Field, Intrinsic, Abstract or Choice.
    */
+  @Override
   public Kind kind()
   {
     return _kind;
@@ -186,6 +187,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * Visibility of this feature
    */
+  @Override
   public Visi visibility()
   {
     return _libModule.featureVisibilityEnum(_index);
@@ -194,6 +196,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * the modifiers of this feature
    */
+  @Override
   public int modifiers()
   {
     return
@@ -213,6 +216,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * Find the outer feature of this feature.
    */
+  @Override
   public AbstractFeature outer()
   {
     AbstractFeature result = _outer;
@@ -228,7 +232,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * The inner features declared within this feature's module file.
    */
-  List<FuirFeature> innerFeatures()
+  List<LibraryFeature> innerFeatures()
   {
     var result = _innerFeatures;
     if (result == null)
@@ -244,7 +248,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * The features declared within this feature.
    */
-  List<FuirFeature> declaredFeatures()
+  List<LibraryFeature> declaredFeatures()
   {
     return innerFeatures();
   }
@@ -253,6 +257,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * The formal arguments of this feature
    */
+  @Override
   public List<AbstractFeature> arguments()
   {
     if (_arguments == null)
@@ -274,6 +279,7 @@ public class LibraryFeature extends FuirFeature
    *
    * @return the result or null if this does not have a result field.
    */
+  @Override
   public FuirFeature resultField()
   {
     var result = _resultField;
@@ -292,11 +298,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * The outer ref field field in case hasOuterRef().
-   *
-   * @return the outer ref or null if this does not have an outer ref.
-   */
+  /** {@inheritDoc} */
   @Override public FuirFeature outerRef()
   {
     var result = _outerRef;
@@ -315,11 +317,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * Check if a cotype exists already, either because this feature was
-   * loaded from a library .fum file that includes a cotype, or because one
-   * was created explicitly using cotype(res).
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean hasCotype()
   {
@@ -327,9 +325,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * Return existing cotype.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractFeature cotype()
   {
@@ -436,12 +432,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * createSelfType returns a new instance of the type of this feature's frame
-   * object.
-   *
-   * @return this feature's frame object
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType createSelfType()
   {
@@ -480,6 +471,7 @@ public class LibraryFeature extends FuirFeature
    *
    * @return the result type. Never null.
    */
+  @Override
   public AbstractType resultType()
   {
     return switch (kind())
@@ -494,12 +486,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
-   *
-   * @return the constraint.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType constraint()
   {
@@ -519,12 +506,14 @@ public class LibraryFeature extends FuirFeature
    * The sourcecode position of this feature declaration's result type,
    * the features source position if not available.
    */
+  @Override
   public SourcePosition resultTypePos()
   {
     return pos(); // NYI: UNDER DEVELOPMENT: resultTypePos currently missing in module file
   }
 
 
+  @Override
   public FeatureName featureName()
   {
     var result = _featureName;
@@ -552,6 +541,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * Source code position where this feature was declared.
    */
+  @Override
   public SourcePosition pos()
   {
     if (_pos == null)
@@ -562,8 +552,9 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  List<AbstractCall> _inherits = null;
-  public List<AbstractCall> inherits()
+  List<LibraryCall> _inherits = null;
+  @Override
+  public List<LibraryCall> inherits()
   {
     if (_inherits == null)
       {
@@ -572,8 +563,8 @@ public class LibraryFeature extends FuirFeature
         var ip = _libModule.featureInheritsPos(_index);
         for (var i = 0; i < n; i++)
           {
-            var p = (AbstractCall) code1(ip);
-            ((LibraryCall) p)._isInheritanceCall = true;
+            var p = (LibraryCall) code1(ip);
+            p._isInheritanceCall = true;
             _inherits.add(p);
             ip = _libModule.codeNextPos(ip);
           }
@@ -587,6 +578,7 @@ public class LibraryFeature extends FuirFeature
    *
    * requires isRoutine() == true
    */
+  @Override
   public Expr code()
   {
     if (PRECONDITIONS) require
@@ -692,7 +684,7 @@ public class LibraryFeature extends FuirFeature
             }
           case Current:
             {
-              x = new AbstractCurrent(selfType().asThis())
+              x = new AbstractCurrent(new ThisType(_libModule, iat, this))
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
@@ -849,6 +841,7 @@ public class LibraryFeature extends FuirFeature
    * LibraryFeature, this will be loaded from the library module file.
    */
   private Set<AbstractFeature> _redefines;
+  @Override
   public Set<AbstractFeature> redefines()
   {
     if (_redefines == null)
@@ -880,6 +873,7 @@ public class LibraryFeature extends FuirFeature
   /**
    * Compare this to other for sorting Features
    */
+  @Override
   public int compareTo(AbstractFeature other)
   {
     return (other instanceof LibraryFeature lf)

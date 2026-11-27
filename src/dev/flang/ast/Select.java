@@ -100,12 +100,7 @@ public class Select extends Call {
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
+   * {@inheritDoc}
    *
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
@@ -161,6 +156,7 @@ public class Select extends Call {
    *
    * @param context the source code context where this Call is used
    */
+  @Override
   public Call resolveTypes(Resolution res, Context context)
   {
     var result = Call.ERROR;
@@ -212,62 +208,62 @@ public class Select extends Call {
   {
     var result = Call.ERROR;
 
-    var typeParameter = at.selfOrConstraint(context).feature();
-    var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
-
-    if (f != null)
+    if (at == Types.t_ERROR)
       {
-        if (_name == null)
-          {
-            result = new Call(pos(), _target, f.baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
-          }
-        else
-          {
-            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
-            result = new Call(pos(), selectTarget, f.baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null)
-            {
-              @Override
-              void checkTypes(Resolution res, Context context)
-              {
-                super.checkTypes(res, context);
-                if (_totalNames >= 0 && _totalNames < target().type().generics().size())
-                  {
-                    AstErrors.nonExhaustiveDestructuring(Select.this.pos(), target().type().generics().size(), _totalNames);
-                  }
-              }
-            };
-          }
-      }
-    else if (_allowValueArgumentAccess && _calledFeature != null)
-      {
-        var va = at.feature().valueArguments().size();
-
-        if (select() < va && _totalNames == va)
-          {
-            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
-            result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).baseName(), FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
-          }
-        else
-          {
-            AstErrors.destructuringMisMatch(pos(), va, _totalNames);
-          }
+        check(Errors.any());
       }
     else
       {
-        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, select(), at);
+        var typeParameter = at.selfOrConstraint(context).feature();
+        var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
+
+        if (f != null)
+          {
+            if (_name == null)
+              {
+                result = new Call(pos(), _target, f.baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
+              }
+            else
+              {
+                var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+                result = new Call(pos(), selectTarget, f.baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null)
+                  {
+                    @Override
+                    void checkTypes(Resolution res, Context context)
+                    {
+                      super.checkTypes(res, context);
+                      if (_totalNames >= 0 && _totalNames < target().type().generics().size())
+                        {
+                          AstErrors.nonExhaustiveDestructuring(Select.this.pos(), target().type().generics().size(), _totalNames);
+                        }
+                    }
+                  };
+              }
+          }
+        else if (_allowValueArgumentAccess && _calledFeature != null)
+          {
+            var va = at.feature().valueArguments().size();
+
+            if (select() < va && _totalNames == va)
+              {
+                var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+                result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).baseName(), FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+              }
+            else
+              {
+                AstErrors.destructuringMismatch(pos(), va, _totalNames);
+              }
+          }
+        else
+          {
+            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, select(), at);
+          }
       }
     return result;
   }
 
 
-  /**
-   * perform static type checking, i.e., make sure that in all assignments from
-   * actual to formal arguments, the types match.
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this Call is used
-   */
+  /** {@inheritDoc} */
   @Override
   void checkTypes(Resolution res, Context context)
   {

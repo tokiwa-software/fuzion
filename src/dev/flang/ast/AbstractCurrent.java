@@ -56,8 +56,7 @@ public abstract class AbstractCurrent extends Expr
   public AbstractCurrent(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null,
-       Types.resolved == null || !t.isVoid());
+      (t.isThisType() || t.feature().isFinal() || t.feature().isUniverse());
 
     this._type = t;
   }
@@ -66,13 +65,7 @@ public abstract class AbstractCurrent extends Expr
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -93,9 +86,6 @@ public abstract class AbstractCurrent extends Expr
   @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _type = _type.visit(v, outer);
-    if (CHECKS) check
-      (_type != null);
     return v.action(this);
   }
 
@@ -128,6 +118,7 @@ public abstract class AbstractCurrent extends Expr
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _type.feature().baseNameHuman() + ".this";

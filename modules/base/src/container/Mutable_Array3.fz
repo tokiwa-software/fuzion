@@ -25,8 +25,8 @@
 # Mutable_Array3 -- three-dimensional mutable array with effect
 #
 module:public Mutable_Array3
-  (T type,
-   E type : mutate) ref
+  (T : Any,
+   E : mutate) ref
 is
 
 
@@ -70,7 +70,7 @@ is
 
   # get element at given indices i0, i1, i2
   #
-  public index [ ] (I type : integer, i0, i1, i2 I) T ! E
+  public index [ ] (I : integer, i0, i1, i2 I) T ! E
     pre
       safety: 0 ≤ i0.as_i64 < length0
       safety: 0 ≤ i1.as_i64 < length1
@@ -82,7 +82,7 @@ is
 
   # set element at given indices i0, i1, i2 to given value o
   #
-  public set [ ] (I type : integer, i0, i1, i2 I, o T) unit ! E
+  public set [ ] (I : integer, i0, i1, i2 I, o T) unit ! E
     pre
       safety: 0 ≤ i0.as_i64 < length0
       safety: 0 ≤ i1.as_i64 < length1

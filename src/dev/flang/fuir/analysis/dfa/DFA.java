@@ -118,7 +118,6 @@ public class DFA extends ANY
     }
 
 
-
     /*
      * Produce the unit type value.  This is used as a placeholder
      * for the universe instance as well as for the instance 'unit'.
@@ -144,56 +143,28 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * A comment, adds human readable information
-     */
+    /** {@inheritDoc} */
     @Override
     public void comment(String s)
     {
     }
 
 
-    /**
-     * no operation, like comment, but without giving any comment.
-     */
+    /** {@inheritDoc} */
     @Override
     public void nop()
     {
     }
 
 
-    /**
-     * drop a value, but process its side-effect.
-     *
-     * @param v an expression that calculates a value that is not needed, but
-     * where the calculation might have side-effects (like performing a call) that
-     * we do need.
-     *
-     * For backends that do not perform any side-effects in RESULT, this does
-     * not need to be redefined, the default implementation is nop() which is
-     * fine in this case.
-     *
-     * @param type clazz id for the type of the value
-     *
-     * @return code to perform the side effects of v and ignoring the produced value.
-     */
+    /** {@inheritDoc} */
     @Override
     public void drop(Val v, int type)
     {
     }
 
 
-    /**
-     * Perform an assignment val to field f in instance rt
-     *
-     * @param s site of the expression causing this assignment
-     *
-     * @param f clazz id of the assigned field
-     *
-     * @param tvalue the target instance
-     *
-     * @param val the new value to be assigned to the field.
-     */
+    /** {@inheritDoc} */
     @Override
     public void assignStatic(int s, int f, Val tvalue, Val val)
     {
@@ -239,14 +210,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Perform a call of a feature with target instance tvalue with given
-     * arguments.  The type of tvalue might be dynamic (a reference). See
-     * FUIR.access*().
-     *
-     * Result.v0() may be null to indicate that code generation should stop here
-     * (due to an error or tail recursion optimization).
-     */
+    /** {@inheritDoc} */
     @Override
     public Val call(int s, Val tvalue, List<Val> args)
     {
@@ -445,20 +409,15 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * For a given value v of value type vc create a boxed ref value of type rc.
-     */
+    /** {@inheritDoc} */
     @Override
     public Val box(int s, Val val, int vc, int rc)
     {
-      var boxed = val.value().box(DFA.this, vc, rc, _call);
-      return boxed;
+      return val.value().box(DFA.this, vc, rc, _call);
     }
 
 
-    /**
-     * Get the current instance
-     */
+    /** {@inheritDoc} */
     @Override
     public Val current(int s)
     {
@@ -466,18 +425,14 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Get the outer instance
-     */
+    /** {@inheritDoc} */
     @Override
     public Val outer(int s)
     {
       return _call.target();
     }
 
-    /**
-     * Get the argument #i
-     */
+    /** {@inheritDoc} */
     @Override
     public Val arg(int s, int i)
     {
@@ -485,9 +440,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Get a constant value of type constCl with given byte data d.
-     */
+    /** {@inheritDoc} */
     @Override
     public Val constData(int s, int constCl, byte[] d)
     {
@@ -615,9 +568,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Perform a match on value subv.
-     */
+    /** {@inheritDoc} */
     @Override
     public Val match(int s, AbstractInterpreter2<Val> ai, Val subv)
     {
@@ -678,16 +629,11 @@ public class DFA extends ANY
     @Override
     public Val tag(int s, Val value, int newcl, int tagNum)
     {
-      Val res = value.value().tag(_call._dfa, newcl, tagNum);
-      return res;
+      return value.value().tag(_call._dfa, newcl, tagNum);
     }
 
 
-    /**
-     * Generate code to terminate the execution immediately.
-     *
-     * @param msg a message explaining the illegal state
-     */
+    /** {@inheritDoc} */
     @Override
     public void reportErrorInCode(String msg)
     {
@@ -1921,7 +1867,7 @@ public class DFA extends ANY
     put("debug"                          , cl -> cl._dfa.boolAsVal(cl._dfa._options.fuzionDebug()));
     put("debug_level"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz()), cl._dfa._options.fuzionDebugLevel()) );
 
-    put("choice.tag"                     , cl -> genericNumResult(cl) ); // NYI: Could be more precise and list the actuall possible tags of the target
+    put("choice.tag"                     , cl -> genericNumResult(cl) ); // NYI: Could be more precise and list the actual possible tags of the target
 
     put("fuzion.sys.args.count"          , cl -> genericNumResult(cl) );
     put("fuzion.sys.args.get"            , cl -> cl._dfa.newConstString(null, cl) );
@@ -2151,6 +2097,7 @@ public class DFA extends ANY
     put("fuzion.sys.thread.join0"        , cl -> genericNumResult(cl));
     put("fuzion.sys.thread.set_policy"   , cl -> genericNumResult(cl));
     put("fuzion.sys.thread.set_affinity0", cl -> genericNumResult(cl));
+    put("fuzion.sys.thread.cpu_time0"    , cl -> genericNumResult(cl));
 
     put("effect.type.set0"               , cl ->
         {
@@ -2178,7 +2125,7 @@ public class DFA extends ANY
     put("effect.type.remove0"              , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
-          // NYI: UNDER DEVELOPMENT: do we need to change the enviornment?
+          // NYI: UNDER DEVELOPMENT: do we need to change the environment?
           // cl.removeEffect(ecl);
           return Value.UNIT;
         });
@@ -2885,12 +2832,29 @@ public class DFA extends ANY
   {
     var clnum = _fuir.clazzId2num(cl);
     return
-      !_hasFields.get(clnum) &&
+      (!_hasFields.get(clnum) || allFieldsNoDataOrNeverRead(cl)) &&
       _defaultEffects.get(cl) == null &&
       _fuir.isConstructor(cl) &&
       !_fuir.clazzIsRef(cl) &&
-      _fuir.clazzArgCount(cl) == 0 &&
       !isBuiltInNumeric(cl);
+  }
+
+
+  /**
+   * Are all fields of `cl` never read or do not contain data?
+   */
+  private boolean allFieldsNoDataOrNeverRead(int cl)
+  {
+    for (int fi = 0; fi < _fuir.clazzFieldCount(cl); fi++)
+      {
+        var fc = _fuir.clazzField(cl, fi);
+        var rc = _fuir.clazzResultClazz(fc);
+        if (_fuir.hasData(rc) && _readFields.get(_fuir.clazzId2num(fc)))
+          {
+            return false;
+          }
+      }
+    return true;
   }
 
 
@@ -3008,13 +2972,15 @@ public class DFA extends ANY
         Long k = vi < wi ? (long) vi << 32 | wi & 0x7FFFFFFF
                          : (long) wi << 32 | vi & 0x7FFFFFFF;
         res = _joined.get(k);
-        if (res == null)
+        if (res == null || res._clazz != clazz)
           {
             if      (v.contains(w)) { res = v; }
             else if (w.contains(v)) { res = w; }
             else
               {
-                res = new ValueSet(this, v, w, clazz);
+                res = res != null
+                  ? new ValueSet((ValueSet) res, clazz)
+                  : new ValueSet(this, v, w, clazz);
                 res = cache(res);
               }
             _joined.put(k, res);
@@ -3031,7 +2997,7 @@ public class DFA extends ANY
    */
   boolean onlyOneInstance(int clazz)
   {
-    return isUnitType(clazz) || ONLY_ONE_INSTANCE &&
+    return _fuir.clazzIsUnitType(clazz) || ONLY_ONE_INSTANCE &&
       // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
       // this should be something generic instead, e.g.
       //
@@ -3329,7 +3295,7 @@ public class DFA extends ANY
 
     Call e, r;
     r = _unitCalls.get(cl);
-    if (isUnitType(cl))
+    if (_fuir.clazzIsUnitType(cl))
       { // as long as we see unit values only, we put them all together
         e = r;
         if (r == null)

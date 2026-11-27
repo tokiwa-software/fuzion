@@ -33,7 +33,7 @@
 #
 # example:
 #
-#     mem := memoize (lock_free.Map i32 String) i32 String x->
+#     mem := memoize (lock_free.Map i64 String) i64 String x->
 #       say "computing $x"
 #       x.as_string
 #
@@ -43,7 +43,7 @@
 #     say <| mem 3
 #
 #
-public memoize(MM type : container.Mutable_Map T R, T type : property.equatable, R type, f T->R) T->R =>
+public memoize(MM : container.Mutable_Map T R, T : property.equatable, R : Any, f T->R) T->R =>
   _ : Unary R T is
 
     # the memory
@@ -70,7 +70,7 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
 #
 # you can now memoize this as follows
 #
-#     fib(n) i32 : memoize => keep n _->
+#     fib(n) i64 : memoize => keep n _->
 #       if n <= 1 then 1 else fib n-1 + fib n-2
 #
 # there are two things required: first, the function has to inherit from
@@ -83,7 +83,7 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
 #
 #     > ./build//bin/fz -effects fib.fz
 #      ...
-#     memoized_effect fib#1 i32 i32
+#     memoized_effect fib#1 i64 i64
 #      ...
 #
 # It might be desired not to keep memoized results forever. To do so, we have
@@ -91,7 +91,7 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
 # done as follows:
 #
 #     # define my own memoization effect
-#     my_fib_memo : memoize.memoized i32 i32 is
+#     my_fib_memo : memoize.memoized i64 i64 is
 #
 #     # create an instance of it and instate it
 #     my_fib_memo ! ()->
@@ -125,11 +125,11 @@ public memoize is
   #
   public memoized(# the key type, i.e, input type of memoized function
                   #
-                  K type : property.orderable,
+                  K : property.orderable,
 
                   # the value type, i.e., result type of memoized function
                   #
-                  V type
+                  V : Any
                   )
                   : effect
   is
@@ -164,11 +164,11 @@ public memoize is
   #
   public keep(# the key type, i.e, input type of memoized function
               #
-              K type : property.orderable,
+              K : property.orderable,
 
               # the value type, i.e., result type of memoized function
               #
-              V type,
+              V : Any,
 
               # the function input
               #
@@ -209,7 +209,7 @@ public memoize is
   #
   public const(# the value type, i.e., result type of memoized function
               #
-              V type,
+              V : Any,
 
               # the function to calculate the result
               #
@@ -228,15 +228,15 @@ public memoize is
 #
 memoized_effect(# type to identify this memoized instance
                 #
-                M type,
+                M : Any,
 
                 # the key type, i.e, input type of memoized function
                 #
-                K type : property.orderable,
+                K : property.orderable,
 
                 # the value type, i.e., result type of memoized function
                 #
-                V type,
+                V : Any,
 
                 # the store used for memoization
                 #
@@ -245,7 +245,7 @@ memoized_effect(# type to identify this memoized instance
                  #
                 store container.ps_map K V,
 
-                # ref containing the mutatble global value, accessed while
+                # ref containing the mutable global value, accessed while
                 # `memoize_mutate.env.exclusive`.
                 #
                 global Ref (memoize_mutate.var (container.ps_map K unit),  # map that is set for key k if a thread started calculating k's value.
@@ -305,9 +305,9 @@ memoize_mutate : concur.blocking_mutate is
 
 calculating is
 
-global_value(V type) : choice nil         # no value available yet
-                              calculating # some thread is calculating the value
-                              V           # the value
+global_value(V : Any) : choice nil         # no value available yet
+                               calculating # some thread is calculating the value
+                               V           # the value
 is
   busy =>
     match global_value.this
@@ -316,24 +316,24 @@ is
 
 # ref type wrapped around mutable `global_value`
 #
-Ref(V type, v V) ref is
+Ref(V : Any, v V) ref is
 
 
 # effect to memoize constant values calculated only once
 #
 private:public memoized_constant_effect(# type to identify this memoized instance
                                         #
-                                        M type,
+                                        M : Any,
 
                                         # the value type, i.e., result type of memoized function
                                         #
-                                        V type,
+                                        V : Any,
 
                                         # the stored value, accessed by current thread only, so no
                                         # need for exclusivity
                                         store option V,
 
-                                        # ref containing the mutatble global value, accessed while
+                                        # ref containing the mutable global value, accessed while
                                         # `memoize_mutate.env.exclusive`.
                                         #
                                         global Ref (memoize_mutate.var (global_value V))

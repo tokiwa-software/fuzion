@@ -418,7 +418,8 @@ class LibraryOut extends ANY
    *   | NYI!   |        |               |                                               |
    *   | !isFiel+--------+---------------+-----------------------------------------------+
    *   | d? !isI| i      | Code          | inherits calls                                |
-   *   | ntrinsc|        |               |                                               |
+   *   | ntrinsi|        |               |                                               |
+   *   | c      |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | R      | 1      | int           | feature offset of precondition feature        |
    *   |        |        +---------------+-----------------------------------------------+
@@ -616,10 +617,10 @@ class LibraryOut extends ANY
             }
           case RefType, ValueType, ThisType ->
             {
-              _data.writeInt(t.isNormalType() ? t.generics().size() : 0);
+              _data.writeInt(t.isPlainType() ? t.generics().size() : 0);
               _data.writeOffset(t.feature());
               _data.writeByte(t.kind().num);
-              if (t.isNormalType())
+              if (t.isPlainType())
                 {
                   for (var gt : t.generics())
                     {

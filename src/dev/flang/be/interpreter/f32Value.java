@@ -32,7 +32,7 @@ package dev.flang.be.interpreter;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class f32Value extends Value
+class f32Value extends Value
 {
 
 
@@ -65,6 +65,7 @@ public class f32Value extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return Float.toString(_val);
@@ -76,6 +77,7 @@ public class f32Value extends Value
    *
    * @return the f32 value
    */
+  @Override
   public float f32Value()
   {
     return _val;
@@ -89,6 +91,7 @@ public class f32Value extends Value
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require

@@ -232,6 +232,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   /*-----------------------------  methods  -----------------------------*/
 
 
+  @Override
   public int compareTo(FeatureName o)
   {
     if (PRECONDITIONS) require
@@ -287,6 +288,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
       n.startsWith(FuzionConstants.AUTO_CHOICE_COMBINE_CASE_W_FIELD_PREFIX) ? n.replace(FuzionConstants.AUTO_CHOICE_COMBINE_CASE_W_FIELD_PREFIX, "w") :
       n.startsWith(FuzionConstants.INTERNAL_NAME_SYMBOL)               ? "_" :
       n.endsWith(FuzionConstants.VALUES_OF_OPEN_TYPE_SUFFIX)           ? n.replace(FuzionConstants.VALUES_OF_OPEN_TYPE_SUFFIX, "._") :
+      n.compareTo(FuzionConstants.COTYPE_RELAY_TYPE) == 0              ? "_" :
       n;
   }
 
@@ -303,6 +305,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   }
 
 
+  @Override
   public String toString()
   {
     return baseNameHuman() + argCountAndIdString();

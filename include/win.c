@@ -333,7 +333,7 @@ int fzE_get_peer_address(int sockfd, void * buf) {
 
 // get the peer's port
 // result is the port number
-// might return useless infomrmation when called on udp socket
+// might return useless information when called on udp socket
 unsigned short fzE_get_peer_port(int sockfd) {
   struct sockaddr_storage peeraddr;
   socklen_t peeraddrlen = sizeof(peeraddr);
@@ -648,7 +648,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
 CRITICAL_SECTION fzE_global_mutex;
 
 /**
- * Run plattform specific initialisation code
+ * Run platform-specific initialisation code
  */
 void fzE_init()
 {
@@ -680,11 +680,25 @@ typedef void* (*posix_thread_func)(void*);
 typedef struct {
   posix_thread_func func;
   void* arg;
+  HANDLE handle;   // handle of the new thread, set before it is resumed
 } thread_trampoline_t;
+
+
+/*
+ * Real handle of the current thread, NULL if not known yet.
+ *
+ * For threads started by fzE_thread_create, this is the handle returned by
+ * fzE_thread_create.  Otherwise, it is created lazily by fzE_thread_current.
+ *
+ * Only this variable is thread local; the handle itself is valid in all
+ * threads of the process until it is closed by fzE_thread_join.
+ */
+static _Thread_local HANDLE fzE_current_thread_handle = NULL;
 
 
 unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
   thread_trampoline_t* trampoline = (thread_trampoline_t*)raw_arg;
+  fzE_current_thread_handle = trampoline->handle;
   trampoline->func(trampoline->arg);
   // NYI: free: trampoline
   return 0;
@@ -696,7 +710,22 @@ unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
  */
 void * fzE_thread_current()
 {
-  return GetCurrentThread();
+  if (fzE_current_thread_handle == NULL)
+    {
+      // GetCurrentThread() returns a pseudo handle that always refers to the
+      // thread that uses it, so it cannot be used by other threads.  Create
+      // a real handle instead.  This happens only for threads that were not
+      // started by fzE_thread_create, i.e., the main thread.  The handle is
+      // never closed.
+      HANDLE p = GetCurrentProcess();
+      if (!DuplicateHandle(p, GetCurrentThread(), p, &fzE_current_thread_handle,
+                           0, FALSE, DUPLICATE_SAME_ACCESS))
+        {
+          fprintf(stderr, "*** DuplicateHandle failed with error %lu\n", GetLastError());
+          exit(EXIT_FAILURE);
+        }
+    }
+  return fzE_current_thread_handle;
 }
 
 
@@ -714,11 +743,18 @@ void * fzE_thread_create(void *(*code)(void *),
     0,                   // stack size
     trampoline_wrapper,  // thread function
     trampoline,          // argument to thread function
-    0,                   // creation flags
+    CREATE_SUSPENDED,    // creation flags: resumed once trampoline->handle is set
     NULL                 // thread ID (optional, can be NULL)
   );
 
   assert(handle != NULL);
+
+  trampoline->handle = handle;
+  if (ResumeThread(handle) == (DWORD)-1)
+    {
+      fprintf(stderr, "*** ResumeThread failed with error %lu\n", GetLastError());
+      exit(EXIT_FAILURE);
+    }
 
   return handle;
 }
@@ -768,6 +804,32 @@ int fzE_thread_setschedparam(void * thrd, int policy, int priority)
 int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
 {
   return 38;
+}
+
+
+/*
+ * Convert a FILETIME, which counts 100 nano second units, to nano seconds.
+ */
+static uint64_t fzE_filetime_to_ns(FILETIME ft)
+{
+  ULARGE_INTEGER u;
+  u.LowPart  = ft.dwLowDateTime;
+  u.HighPart = ft.dwHighDateTime;
+  return u.QuadPart * 100;
+}
+
+
+/*
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd)
+{
+  FILETIME creation_time, exit_time, kernel_time, user_time;
+  if (!GetThreadTimes((HANDLE)thrd, &creation_time, &exit_time, &kernel_time, &user_time))
+    {
+      return -1;
+    }
+  return (int64_t)(fzE_filetime_to_ns(kernel_time) + fzE_filetime_to_ns(user_time));
 }
 
 
@@ -851,7 +913,7 @@ wchar_t *build_unicode_environment_block(char *env[], size_t envLen) {
 }
 
 
-int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+static int fzE_process_create0(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
 
   // Programmatically controlling which handles are inherited by new processes in Win32
   // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
@@ -859,22 +921,6 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   HANDLE hStdinRead, hStdinWrite;
   HANDLE hStdoutRead, hStdoutWrite;
   HANDLE hStderrRead, hStderrWrite;
-
-  SECURITY_ATTRIBUTES saAttr = {
-      .nLength = sizeof(SECURITY_ATTRIBUTES),
-      .bInheritHandle = TRUE,
-      .lpSecurityDescriptor = NULL
-  };
-
-  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0) ||
-      !CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0) ||
-      !CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
-      return -1;
-  }
-
-  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
 
   // we resolve app path manually, because we
   // want to pass empty env where PATH is not set
@@ -899,10 +945,42 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   wchar_t *args_w = build_unicode_args(args, argsLen);
   wchar_t *envBlock = build_unicode_environment_block(env, envLen);
 
-  if (!args_w) {
+  if (!args_w || !envBlock) {
+    free(args_w);
+    free(envBlock);
     SetLastError(ERROR_INVALID_NAME);
     return -1;
   }
+
+  SECURITY_ATTRIBUTES saAttr = {
+      .nLength = sizeof(SECURITY_ATTRIBUTES),
+      .bInheritHandle = TRUE,
+      .lpSecurityDescriptor = NULL
+  };
+
+  BOOL ok = TRUE;
+  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0)) {
+    ok = FALSE;
+  } else if (!CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0)) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    ok = FALSE;
+  } else if (!CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStdoutWrite);
+    ok = FALSE;
+  }
+  if (!ok) {
+    free(args_w);
+    free(envBlock);
+    return -1;
+  }
+
+  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
 
   PROCESS_INFORMATION pi;
   STARTUPINFOW si = {0};
@@ -933,6 +1011,9 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   free(envBlock);
 
   if (!success) {
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStderrRead);
     return -1;
   }
 
@@ -944,6 +1025,15 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   result[3] = (int64_t)hStderrRead;
 
   return 0;
+}
+
+
+int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+  // make sure no files are opened while we start child process
+  fzE_lock();
+  int res = fzE_process_create0(args, argsLen, env, envLen, result);
+  fzE_unlock();
+  return res;
 }
 
 
@@ -1158,10 +1248,10 @@ void fzE_mtx_destroy(void *mtx) {
  * @param clock the clock to be used:
  *
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
- *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
  *
  * NYI: support for other values defined in
- * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ * /usr/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
  *
  * @return NULL on error or pointer to condition
  *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.

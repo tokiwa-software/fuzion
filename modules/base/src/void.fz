@@ -41,7 +41,8 @@
 #
 # void is the result type of the endless loop
 #
-#     do { <loop body> }
+#     endless_loop => do { /* loop body */ }
+#     say (type_of endless_loop)              # prints `void`
 #
 # If used as the result type of a field, the field can never be assigned a value,
 # since no such value can be produced, and the field can never be read since it

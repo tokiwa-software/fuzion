@@ -39,7 +39,7 @@ fuzion_runtime_deinit =>
   # cleanups must be done in reverse order of instation
   #
   cleanups : container.type_applicator (list (Nullary unit)) is
-    public redef apply(T type, e list (Nullary unit)) list (Nullary unit) =>
+    public redef apply(T : Any, e list (Nullary unit)) list (Nullary unit) =>
       if T : effect then
         match T.default_value
           T => (() -> T.env.finally) : e

@@ -425,11 +425,7 @@ abstract class CExpr extends CStmnt
   {
     var l = new List<CExpr>(CIdent.STDERR,
                             string(msg));
-    for (var a : args)
-      {
-        l.add(a);
-      }
-
+    l.addAll(args);
     return call("fprintf", l);
   }
 
@@ -609,11 +605,13 @@ abstract class CExpr extends CStmnt
         _op = op;
       }
 
+    @Override
     int precedence()
     {
       return 2;
     }
 
+    @Override
     void code(CString sb)
     {
       sb.append(_op);
@@ -773,11 +771,13 @@ abstract class CExpr extends CStmnt
       _prec = prec;
     }
 
+    @Override
     int precedence()
     {
       return _prec;
     }
 
+    @Override
     void code(CString sb)
     {
       _left.code(sb, precedence());
@@ -902,6 +902,7 @@ abstract class CExpr extends CStmnt
   /**
    * Create String for debugging-output.
    */
+  @Override
   public String toString()
   {
     return "C-Expression '" + code() + "'";

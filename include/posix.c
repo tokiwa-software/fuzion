@@ -28,6 +28,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #ifdef __linux__
 #define _GNU_SOURCE
 #endif
+#ifdef __APPLE__
+#define _DARWIN_C_SOURCE  // pthread_mach_thread_np
+#endif
 
 #ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
@@ -60,6 +63,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <dirent.h>
 #include <pthread.h>
+#ifdef __APPLE__
+#include <mach/mach.h>  // thread_info, THREAD_BASIC_INFO
+#endif
 #ifdef __linux__
 #include <sched.h>    // CPU_SET
 #if defined(__has_include)
@@ -86,7 +92,7 @@ static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(EWOULDBLOCK == EAGAIN, "EWOULDBLOCK != EAGAIN, failed assumption of fzE_file_read implementation");
-static_assert(NAME_MAX < 1024, "Expected max filename component length to be less than 1024");
+static_assert(NAME_MAX < PATH_MAX, "Expected max filename component length to be less than PATH_MAX, used in fzE_dir_read");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
 
@@ -111,7 +117,7 @@ static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or
 
 /**
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
- *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
  *   - 2 for CLOCK_THREAD_CPUTIME_ID (CPU time consumed by the current thread)
  *   - 3 for CLOCK_PROCESS_CPUTIME_ID (CPU time consumed by all threads of the process)
  */
@@ -185,7 +191,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
   }
   else {
     size_t len = strlen(entry->d_name);
-    if (len >= 1024) {
+    if (len >= PATH_MAX) {  // NYI: CLEANUP: io.dir.Read uses os.max_path, should maybe be NAME_MAX
       return -1;
     }
     fzE_memcpy(result, entry->d_name, len + 1);
@@ -374,7 +380,7 @@ int fzE_get_peer_address(int sockfd, void * buf) {
 
 // get the peer's port
 // result is the port number
-// might return useless infomrmation when called on udp socket
+// might return useless information when called on udp socket
 unsigned short fzE_get_peer_port(int sockfd) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
@@ -550,7 +556,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
 static pthread_mutex_t fzE_global_mutex;
 
 /**
- * Run plattform specific initialisation code
+ * Run platform-specific initialisation code
  */
 void fzE_init()
 {
@@ -701,6 +707,37 @@ int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
 }
 
 
+/*
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd)
+{
+  int64_t res = -1;
+#ifdef __APPLE__
+  // macOS only supports microsecond precision
+  mach_port_t port = pthread_mach_thread_np((pthread_t)thrd);
+  thread_basic_info_data_t info;
+  mach_msg_type_number_t count = THREAD_BASIC_INFO_COUNT;
+
+  if (port != MACH_PORT_NULL ||
+      thread_info(port, THREAD_BASIC_INFO, (thread_info_t)&info, &count) == KERN_SUCCESS)
+    {
+      res = ((int64_t)info.user_time.seconds      + info.system_time.seconds     ) * 1000000000LL
+          + ((int64_t)info.user_time.microseconds + info.system_time.microseconds) * 1000LL;
+    }
+#elif defined(_POSIX_THREAD_CPUTIME) && _POSIX_THREAD_CPUTIME >= 0
+  clockid_t clk;
+  struct timespec ts;
+  if (pthread_getcpuclockid((pthread_t)thrd, &clk) == 0 ||
+      clock_gettime(clk, &ts) == 0)
+    {
+      res = (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+    }
+#endif
+  return res;
+}
+
+
 /**
  * Global lock
  */
@@ -812,12 +849,9 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
     if(s != 0)
     {
-      close(stdIn[0]);
       close(stdIn[1]);
       close(stdOut[0]);
-      close(stdOut[1]);
       close(stdErr[0]);
-      close(stdErr[1]);
       ret = -1;
     }
     else
@@ -1025,10 +1059,10 @@ void fzE_mtx_destroy(void * mtx) {
  * @param clock the clock to be used:
  *
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
- *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
  *
  * NYI: support for other values defined in
- * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ * /usr/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
  *
  * @return NULL on error or pointer to condition
  *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.

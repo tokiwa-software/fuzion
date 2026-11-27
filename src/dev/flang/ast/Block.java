@@ -151,6 +151,7 @@ public class Block extends AbstractBlock
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     SourcePosition result = null;
@@ -210,6 +211,7 @@ public class Block extends AbstractBlock
    *
    * @return this.
    */
+  @Override
   protected Block visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this);
@@ -224,14 +226,7 @@ public class Block extends AbstractBlock
   }
 
 
-  /**
-   * Load all features that are called by this expression.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   */
+  /** {@inheritDoc} */
   @Override
   void loadCalledFeature(Resolution res, Context context)
   {
@@ -255,6 +250,7 @@ public class Block extends AbstractBlock
    *
    * where this is the position of y.
    */
+  @Override
   SourcePosition posOfLast()
   {
     Expr resExpr = resultExpression();
@@ -279,19 +275,7 @@ public class Block extends AbstractBlock
   }
 
 
-  /**
-   * Convert this Expression into an assignment to the given field.  In case
-   * this is a expression with several branches such as an "if" or a "match"
-   * expression, add corresponding assignments in each branch and convert this
-   * into a expression that does not produce a value.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param r the field this should be assigned to.
-   */
+  /** {@inheritDoc} */
   @Override
   Block assignToField(Resolution res, Context context, Feature r)
   {
@@ -333,6 +317,7 @@ public class Block extends AbstractBlock
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
+  @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType type, Supplier<String> from)
   {
     Expr result = this;

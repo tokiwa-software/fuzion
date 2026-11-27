@@ -25,10 +25,10 @@ choice_constraints =>
 
 
   /*
-   * match on a constrainted arg
+   * match on a constrained arg
    */
 
-  a(T type: option String, t T) =>
+  a(T : option String, t T) =>
     match t
       n nil => say n
       str String => say str
@@ -37,17 +37,17 @@ choice_constraints =>
   a (option String) "hello"
 
   /*
-   * return a constrainted arg
+   * return a constrained arg
    */
 
-  b(T type: option String, seq Sequence T) T =>
+  b(T : option String, seq Sequence T) T =>
     seq[0]
 
   say <| b (option String) [(id (option String) nil)]
 
 
   /*
-   * match on returned constrainted type
+   * match on returned constrained type
    */
 
   match b (option String) [(id (option String) nil)]
@@ -61,7 +61,7 @@ choice_constraints =>
    */
 
 
-  c(X type, T type: option X, seq Sequence T) T =>
+  c(X : Any, T : option X, seq Sequence T) T =>
     seq[0]
 
   # NYI: UNDER DEVELOPMENT: type inference
@@ -78,16 +78,3 @@ choice_constraints =>
   match c String (option String) [(id (option String) nil)]
     str String => say str
     n nil => say n
-
-
-  switch.test(X type : switch.this, x X) X => x
-  say <| (id (option String) nil).test (option String) nil
-
-
-  switch.test2(X type : switch.this, x X) =>
-    match x
-      a A => say a
-      b B => say b
-
-  (id (option String) nil).test2 (option String) nil
-

@@ -38,7 +38,7 @@
 #
 # NYI: UNDER DEVELOPMENT: split0, slice, reverse
 #
-private:public Finger_Tree(T type) ref : container.abstract_array T is
+private:public Finger_Tree(T : Any) ref : container.abstract_array T is
 
 
   # prepend seq to this Finger_Tree
@@ -105,7 +105,7 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
 
 # an empty finger tree
 #
-empty(T type) : container.Finger_Tree T is
+empty(T : Any) : container.Finger_Tree T is
   public redef length i64 => 0
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     match seq.as_finger_tree
@@ -113,7 +113,7 @@ empty(T type) : container.Finger_Tree T is
       ft Finger_Tree => ft
   public redef append (seq Sequence T) container.Finger_Tree T =>
     prepend seq
-  public redef index [ ] (I type : integer, i I) T => panic "illegal unless debug turned off"
+  public redef index [ ] (I : integer, i I) T => panic "illegal unless debug turned off"
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft
   redef merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
@@ -127,7 +127,7 @@ empty(T type) : container.Finger_Tree T is
 
 # a finger tree with only one item
 #
-single(T type, data Sequence T) : container.Finger_Tree T
+single(T : Any, data Sequence T) : container.Finger_Tree T
   pre
     debug 2 : data.as_finger_tree = nil
 is
@@ -136,7 +136,7 @@ is
     deep (container.hand [seq]) (empty T) (container.hand [data])
   public redef append (seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [data]) (empty T) (container.hand [seq])
-  public redef index [ ] (I type : integer, i I) T => data[i]
+  public redef index [ ] (I : integer, i I) T => data[i]
   module redef as_finger_tree option (container.Finger_Tree T) => container.single data
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T =>
     ft.prepend data
@@ -157,7 +157,7 @@ is
 # NYI: UNDER DEVELOPMENT: implement this properly, not via
 # abusing Finger_Tree
 #
-node3(T type, a,b,c Sequence T) Sequence T =>
+node3(T : Any, a,b,c Sequence T) Sequence T =>
   container.Finger_Tree T .empty
     .append a
     .append b
@@ -169,7 +169,7 @@ node3(T type, a,b,c Sequence T) Sequence T =>
 #
 # consist of two hands, left and right, and another Finger_Tree in the middle
 #
-deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.hand T) : container.Finger_Tree T is
+deep(T : Any, lft container.hand T, ft container.Finger_Tree T, rght container.hand T) : container.Finger_Tree T is
 
   # cached count of this deep finger tree
   #
@@ -202,7 +202,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
       r
 
 
-  public redef index [ ] (I type : integer, i I) T =>
+  public redef index [ ] (I : integer, i I) T =>
     n := i.as_i64
     if n < lft.count
       lft[n]
@@ -232,16 +232,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
             r.append t
           .append s.data
       d deep =>
-        # NYI: BUG: triggers ugly case in DFA: deep lft (ft.merge ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
-        x := array rght.finger.count+seq.count+d.lft.finger.count i->
-          if i < rght.finger.count
-            rght.finger[i]
-          else if i < rght.finger.count+seq.count
-            seq[i-rght.finger.count]
-          else
-            d.lft.finger[i-rght.finger.count-seq.count]
-        deep lft (ft.merge x d.ft) d.rght
-
+        deep lft (ft.merge ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
 
 
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.deep lft ft rght
@@ -255,7 +246,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
 # this is called digit in the paper
 #
-hand(T type, finger Sequence (Sequence T)) : property.countable
+hand(T : Any, finger Sequence (Sequence T)) : property.countable
   pre
     debug 2 : 1 <= finger.count <= 4
     debug 2 : finger.is_array_backed
@@ -292,13 +283,7 @@ is
     pre
       debug 2 : finger.count < 4
   =>
-    # NYI: BUG: triggers ugly case in DFA: hand ([[seq], finger].flat_map id).as_array_backed
-    if finger.count = 1
-      hand [seq, finger[0]]
-    else if finger.count = 2
-      hand [seq, finger[0], finger[1]]
-    else
-      hand [seq, finger[0], finger[1], finger[2]]
+    hand ([[seq], finger].flat_map id).as_array_backed
 
 
   # new hand with seq appended
@@ -307,13 +292,7 @@ is
     pre
       debug 2 : finger.count < 4
   =>
-    # NYI: BUG: triggers ugly case in DFA: hand ([finger, [seq]].flat_map id).as_array_backed
-    if finger.count = 1
-      hand [finger[0], seq]
-    else if finger.count = 2
-      hand [finger[0], finger[1], seq]
-    else
-      hand [finger[0], finger[1], finger[2], seq]
+    hand ([finger, [seq]].flat_map id).as_array_backed
 
 
   # index access to the element in this hand

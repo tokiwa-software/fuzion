@@ -564,26 +564,26 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Check if a clazz is the special clazz c.
+   * Check if a clazz is the special clazz sc.
    *
    * @param cl a clazz id
    *
-   * @param c one of the constants SpecialClazzes.c_i8,...
+   * @param sc one of the constants SpecialClazzes.c_i8,...
    *
-   * @return true iff cl is the specified special clazz c
+   * @return true iff cl is the specified special clazz sc
    */
-  public boolean clazzIs(int cl, SpecialClazzes c)
+  public boolean clazzIs(int cl, SpecialClazzes sc)
   {
-    return cl == clazz(c);
+    return cl == clazz(sc);
   }
 
 
   /**
    * Get the id of the given special clazz.
    *
-   * @param c the id of clazz c or -1 if that clazz was not created.
+   * @param sc the id of clazz sc or -1 if that clazz was not created.
    */
-  public abstract int clazz(SpecialClazzes c);
+  public abstract int clazz(SpecialClazzes sc);
 
 
   /**
@@ -800,8 +800,7 @@ public abstract class FUIR extends IR
    */
   public boolean isScalar(int cl)
   {
-    var id = getSpecialClazz(cl);
-    return switch (id)
+    return switch (getSpecialClazz(cl))
       {
       case
         c_i8  , c_i16 , c_i32 ,
@@ -833,7 +832,7 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @param gix indec of the generic parameter
+   * @param gix index of the generic parameter
    *
    * @return id of cl's actual generic parameter #gix
    */
@@ -941,6 +940,7 @@ public abstract class FUIR extends IR
    *
    * @param s site
    */
+  @Override
   public abstract ExprKind codeAt(int s);
 
 
@@ -1195,6 +1195,7 @@ public abstract class FUIR extends IR
                       }
       case Tag     -> "Tag";
       case Pop     -> "Pop";
+      case MatchCaseIndex -> "MatchCaseIndex";
       };
   }
 
@@ -1206,6 +1207,7 @@ public abstract class FUIR extends IR
    *
    * @return the source code position or null if not available.
    */
+  @Override
   public abstract SourcePosition sitePos(int s);
 
 
@@ -1316,6 +1318,10 @@ public abstract class FUIR extends IR
       {
         s = codeIndex2(codeBlockStart(s), s, delta);
       }
+
+    if (POSTCONDITIONS) ensure
+      (withinCode(s));
+
     return s;
   }
 
@@ -1338,8 +1344,10 @@ public abstract class FUIR extends IR
    */
   private int codeIndex2(int si, int s, int delta)
   {
-    check
-      (si >= SITE_BASE && s >= SITE_BASE); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
+    if (PRECONDITIONS) require
+      (withinCode(si),
+       withinCode(s),
+       delta < 0);
 
     if (si == s)
       {
@@ -1380,7 +1388,10 @@ public abstract class FUIR extends IR
    */
   public int skipBack(int s)
   {
-    return switch (codeAt(s))
+    if (PRECONDITIONS) require
+      (withinCode(s));
+
+    var result = switch (codeAt(s))
       {
       case Assign  ->
         {
@@ -1401,11 +1412,7 @@ public abstract class FUIR extends IR
           s = codeIndex(s, -1);
           for (var i = 0; i < ac; i++)
             {
-              var acl = clazzArgClazz(cc, ac-1-i);
-              if (clazzResultClazz(acl) != clazzUniverse())
-                {
-                  s = skipBack(s);
-                }
+              s = skipBack(s);
             }
           if (tc != clazzUniverse())
             {
@@ -1424,7 +1431,13 @@ public abstract class FUIR extends IR
         }
       case Tag     -> skipBack(codeIndex(s, -1));
       case Pop     -> skipBack(codeIndex(s, -1));
+      case MatchCaseIndex -> throw new UnsupportedOperationException("unexpected case MatchCaseIndex in skipBack");
       };
+
+    if (POSTCONDITIONS) ensure
+      (result == NO_SITE || withinCode(result));
+
+    return result;
   }
 
 

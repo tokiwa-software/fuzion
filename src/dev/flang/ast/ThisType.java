@@ -29,6 +29,7 @@ package dev.flang.ast;
 
 import java.util.Set;
 
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 
 /**
@@ -65,8 +66,45 @@ class ThisType extends ResolvedType {
 
 
   /**
-   * The feature backing the type.
+   * Create a `.this`-type and check it for validity in the given context.
+   *
+   * @param context the context this type is used in
+   *
+   * @param at source position for error reporting
+   *
+   * @param f the feature the this type refers to.
+   *
+   * @param tolerant behavior in case of error, do not report but return null.
+   *
+   * @return the `ThisType` instance if `f` is an outer feature or cotype origin in `context`,
+   * otherwise `null` (if `tolerant`) or `Types.t_ERROR` (otherwise).
    */
+  public static AbstractType create(Context context,
+                                    HasSourcePosition at,
+                                    AbstractFeature f,
+                                    boolean tolerant)
+  {
+    var n = context.outerFeature();
+    AbstractFeature o;
+    var ok = false;
+    do
+      {
+        o = n.isCotype() ? n.cotypeOrigin() : n;
+        n = o.outer();
+        ok = o == f;
+      }
+    while (!ok && n != null);
+    if (!ok && !tolerant)
+      {
+        AstErrors.illegalThisType(at.pos(), new ThisType(f));
+      }
+    return ok       ? new ThisType(f) :
+           tolerant ? null
+                    : Types.t_ERROR;
+  }
+
+
+  /** {@inheritDoc} */
   @Override
   protected AbstractFeature backingFeature()
   {
@@ -74,11 +112,7 @@ class ThisType extends ResolvedType {
   }
 
 
-  /**
-   * For a normal type, this is the list of actual type parameters given to the type.
-   *
-   * Requires that this is resolved and isNormalType().
-   */
+  /** {@inheritDoc} */
   @Override
   public List<AbstractType> generics()
   {
@@ -86,11 +120,7 @@ class ThisType extends ResolvedType {
   }
 
 
-  /**
-   * The outer of this type. May be null.
-   *
-   * Requires that this is resolved and isNormalType().
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType outer()
   {
@@ -98,9 +128,7 @@ class ThisType extends ResolvedType {
   }
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {
@@ -108,15 +136,36 @@ class ThisType extends ResolvedType {
   }
 
 
-  /**
-   * traverse a resolved type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
+  /** {@inheritDoc} */
   @Override
   protected void usedFeatures(Set<AbstractFeature> s)
   {
     s.add(_feature);
   }
+
+
+  /**
+   * A `ThisType` is fixed, i.e., equivalent to `_feature.thisType(true)` if used in the context of
+   * `f` and in the chain of `f`, `f.outer()`, `f.outer().outer()`, ... there is a feature `g` such
+   * that `g.isFixed()` and `g.outer()==_feature`.
+   *
+   * If so, `this` is equivalent to `_feature.thisType(true)`.
+   *
+   * @param context the context this is used in
+   */
+  boolean isFixedFor(Context context)
+  {
+    var result = _feature.kind() == Feature.Kind.Function;  // a function can not have children, so all is fixed
+    var cf = context.outerFeature();
+    var cfo = cf.outer();
+    while (cfo != null && !result)
+      {
+        result = cf.isFixed() && cfo == _feature;  // context is fixed and outer of context is _feature
+        cf = cfo;
+        cfo = cf.outer();
+      }
+    return result;
+  }
+
 
 }

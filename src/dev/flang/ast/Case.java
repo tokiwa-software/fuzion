@@ -60,6 +60,7 @@ public class Case extends AbstractCase
    * Field with type from this.type created in case fieldName != null.
    */
   private final Feature _field;
+  @Override
   public AbstractFeature field() { return _field; }
 
 
@@ -68,6 +69,7 @@ public class Case extends AbstractCase
    * everything.
    */
   private List<AbstractType> _types;
+  @Override
   public List<AbstractType> types() { return _types; }
 
 
@@ -75,6 +77,7 @@ public class Case extends AbstractCase
    * code to be executed in case of a match
    */
   public Expr _code;
+  @Override
   public Expr code() { return _code; }
 
 
@@ -187,14 +190,7 @@ public class Case extends AbstractCase
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
+  /** {@inheritDoc} */
   @Override
   public void visit(FeatureVisitor v, AbstractMatch m, AbstractFeature outer)
   {
@@ -341,6 +337,7 @@ public class Case extends AbstractCase
    *
    * @return
    */
+  @Override
   public String toString()
   {
     var sb = new StringBuilder();

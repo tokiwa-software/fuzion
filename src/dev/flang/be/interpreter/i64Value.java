@@ -32,7 +32,7 @@ package dev.flang.be.interpreter;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class i64Value extends Value
+class i64Value extends Value
 {
 
 
@@ -65,6 +65,7 @@ public class i64Value extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return Long.toString(_val);
@@ -76,6 +77,7 @@ public class i64Value extends Value
    *
    * @return the i64 value
    */
+  @Override
   public long i64Value()
   {
     return _val;
@@ -89,6 +91,7 @@ public class i64Value extends Value
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require

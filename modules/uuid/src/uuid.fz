@@ -89,7 +89,7 @@ private:public uuid(val u128) : property.orderable is
   public data u128
     post debug: result <= (u128.max >> 6.as_u128)
   =>
-    # remove version (bits 48 through 51) and variant (bit 64 trough 65)
+    # remove version (bits 48 through 51) and variant (bits 64 through 65)
     # and shift the rest to fill the holes
     ((u128 ((val.hi & 0xffff_ffff_ffff_0000) >> 4 | val.hi & 0x0000_0000_0000_0fff) 0) >> 2.as_u128)
       | (val & u128 0 0x3fff_ffff_ffff_ffff)

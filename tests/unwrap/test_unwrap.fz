@@ -28,13 +28,20 @@ test_unwrap =>
 
   say2(v i64) => say v
 
-  (flow.exception (option i64)).on ()->
-    (flow.exception (outcome i64)).on ()->
-      say a
-      say b
+  outer_exception : flow.exception_tag is
+  inner_exception : flow.exception_tag is
 
-      say2 a
-      say2 b
+  (flow.exception outer_exception)
+    .try ()->
+      (flow.exception inner_exception)
+        .try ()->
+          say a
+          say b
 
-      e := a+b
-      say2 e
+          say2 a
+          say2 b
+
+          e := a+b
+          say2 e
+        .or_outcome
+    .or_outcome

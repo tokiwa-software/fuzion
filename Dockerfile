@@ -13,7 +13,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
   systemtap-sdt-dev
 RUN ln -s /usr/bin/clang-18 /usr/bin/clang
 ENV FUZION_REPRODUCIBLE_BUILD="true" PRECONDITIONS="true" POSTCONDITIONS="true"
-RUN make all build/apidocs_git/index.html
+RUN make all
 
 FROM ubuntu:26.04@sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64 AS runner
 # NYI: HACK: chmod is a workaround for Jenkins permission issue

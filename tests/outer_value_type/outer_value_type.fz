@@ -1,0 +1,63 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test outer_value_type
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# This tests deeply nested value types.  This used to be forbidden,
+# but there is actually no reason for this.
+#
+outer_value_type is
+
+  # this is forbidden since the second u in strm2.u.u is a value type with the same value type as outer type
+  strm2.u.print
+  strm2.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
+  strm2 ref is
+
+    u : strm2 is
+
+    print unit =>
+      say "strm2.print $(type_of print.this)"
+
+  # this should not work since it uses value types
+  strm3.u.print
+  strm3.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
+  strm3 is
+
+    u : strm3 is
+
+    print unit =>
+      say "strm3.print $(type_of print.this)"
+
+  # this should not work since it uses value types
+  strm4.u.print
+  strm4.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
+  strm4 ref is
+
+    u : strm4Z is
+
+    print unit =>
+      say "strm4.print $(type_of print.this)"
+
+  strm4X ref : strm4  is
+  strm4Y ref : strm4X is
+  strm4Z ref : strm4Y is

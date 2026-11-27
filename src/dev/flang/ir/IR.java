@@ -38,7 +38,6 @@ import dev.flang.ast.AbstractMatch; // NYI: CLEANUP: remove dependency
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr; // NYI: CLEANUP: remove dependency
 import dev.flang.ast.InlineArray; // NYI: CLEANUP: remove dependency
-import dev.flang.ast.NumLiteral; // NYI: CLEANUP: remove dependency
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe; // NYI: CLEANUP: remove dependency
 
@@ -137,7 +136,8 @@ public abstract class IR extends ANY
     Const,
     Match,
     Tag,
-    Pop;
+    Pop,
+    MatchCaseIndex;
 
     public boolean isCallOrAssign() { return ExprKind.this == Call || ExprKind.this == Assign; }
   }
@@ -370,7 +370,7 @@ public abstract class IR extends ANY
         for (int i=cases.size()-1; i>=0; i--)
           {
             var caseCode = new List<Object>();
-            stack.push(() -> l.add(new NumLiteral(addCode(caseCode))));
+            stack.push(() -> l.add(new MatchCaseIndex(addCode(caseCode))));
             var j = i;
             stack.push(() -> toStack(stack, caseCode, cases.get(j).code(), false));
           }
@@ -420,11 +420,12 @@ public abstract class IR extends ANY
           {
             result = new Box(result, rt);
           }
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(result.type()).yes())
+        var choiceT = frmlT.relayTypeAsThisType();
+        if (choiceT.isChoice() && choiceT.isAssignableFrom(result.type()).yes() && frmlT.isAssignableFromWithoutTagging(expr.type()).no())
           {
-            result = tag(result, frmlT);
+            result = tag(result, choiceT);
             if (CHECKS) check
-              (result.needsBoxing(frmlT) == null);
+              (choiceT.isThisType() || result.needsBoxing(choiceT) == null);
           }
       }
     /**
@@ -480,14 +481,10 @@ public abstract class IR extends ANY
     if (PRECONDITIONS) require
       (frmlT.isChoice());
 
+    var actual = expr.type();
+
     // Case 1: types are equal, no tagging necessary
-    if (frmlT.compareTo(expr.type()) == 0)
-      {
-        return expr;
-      }
-    // Case 1.1: types are equal, no tagging necessary
-    // NYI: BUG: soundness issue? see also isAssignableFrom
-    else if (expr.type().isChoice() && (frmlT.isThisType() || expr.type().isThisType()) && frmlT.asThis().compareTo(expr.type().asThis()) == 0)
+    if (frmlT.compareTo(actual) == 0)
       {
         return expr;
       }
@@ -503,7 +500,7 @@ public abstract class IR extends ANY
     else if (frmlT
              .choiceGenerics()
              .stream()
-             .filter(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes())
+             .filter(cg -> cg.isAssignableFromWithoutTagging(actual).yes())
              .count() > 1)
       {
         Errors.fatal("Ambiguous assignment to choice, should have been caught in frontend.");
@@ -515,7 +512,7 @@ public abstract class IR extends ANY
     else if (frmlT
              .choiceGenerics()
              .stream()
-             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes()))
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(actual).yes()))
       {
         return new Tag(expr, frmlT);
       }
@@ -529,16 +526,14 @@ public abstract class IR extends ANY
         var cgs = frmlT
           .choiceGenerics()
           .stream()
-          .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(expr.type()).yes())
+          .filter(cg -> cg.relayTypeAsThisType().isChoice() && cg.relayTypeAsThisType().isAssignableFromWithoutBoxing(actual).yes())
           .collect(Collectors.toList());
 
-        if (cgs.size() > 1)
+        if (cgs.size() != 1)
           {
-            Errors.fatal("Ambiguous assignment to choice, should have been caught in frontend.");
+            Errors.fatal("Ambiguous or incompatible assignment to choice, should have been caught in frontend.");
+            return Expr.NO_VALUE;
           }
-
-        if (CHECKS) check
-          (Errors.any() || cgs.size() == 1);
 
         return tag(tag(expr, cgs.get(0)), frmlT);
       }
@@ -639,6 +634,10 @@ public abstract class IR extends ANY
     else if (e instanceof Constant)
       {
         result = ExprKind.Const;
+      }
+    else if (e instanceof MatchCaseIndex)
+      {
+        result = ExprKind.MatchCaseIndex;
       }
     else if (e instanceof InlineArray)
       {

@@ -30,7 +30,6 @@ import static dev.flang.util.FuzionConstants.NO_SELECT;
 
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Function;
 
 import java.util.regex.Pattern;
 
@@ -185,9 +184,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * does not permit this to be replaced by an inherited feature, but any outer
    * feature might be.
    *
-   * For a feature a.b.c, _thisTypeFixed is a.this.type.b.this.type.c.
+   * For a feature a.b.c, _thisTypeFinal is a.this.type.b.this.type.c.
    */
-  private AbstractType _thisTypeFixed = null;
+  private AbstractType _thisTypeFinal = null;
 
 
   /**
@@ -267,6 +266,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * only compare features of different comparisonId()s, i.e., of different
    * sub-classes.
    */
+  @Override
   public int compareTo(AbstractFeature other)
   {
     var result = Integer.compare(comparisonId(), other.comparisonId());
@@ -317,7 +317,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * The inherits calls of this feature.
    * Almost never empty since almost every feature inherits from {@code Any}.
    */
-  public abstract List<AbstractCall> inherits();
+  public abstract List<? extends AbstractCall> inherits();
 
 
   /**
@@ -429,7 +429,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * If this feature has a post condition or redefines a feature from which it
    * inherits a post condition, this gives the feature that implements the post
-   * condition check.  The postFeature has tha same outer feature as the
+   * condition check.  The postFeature has the same outer feature as the
    * original feature and the same arguments except for an additional {@code result}
    * argument in case the feature has a non-unit result.
    */
@@ -617,13 +617,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   String qualifiedName(AbstractFeature context, boolean human)
   {
-    var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isCotype() ? outer().cotypeOrigin() : null;
-    return
-      isCoTypesRelayTypeParameter()
-        /* special type parameter used for this.type in type features */
-        ? (tfo != null ? tfo.qualifiedName(context, human) : "null")
-          + ".this.type"
-        : isCotype() && cotypeOrigin() != null
+    return isCotype() && cotypeOrigin() != null
           /* cotype: use original name and add ".type": */
           ? cotypeOrigin().qualifiedName(context, human) + ".type"
           /* a normal feature name */
@@ -767,7 +761,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Number of arguments that are non-inferred, i.e., excluding free types.
    * This is the number of arguments used in `FeatureName` and the number to be
-   * usedin a call to get an exact match withing type parameter inference or
+   * used in a call to get an exact match within type parameter inference or
    * partial application.
    */
   public int explicitArgumentCount()
@@ -942,24 +936,23 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public AbstractType thisType(boolean innerFixed)
   {
-    AbstractType result = innerFixed ? _thisTypeFixed : _thisType;
+    var isFinal =  isFinal() || innerFixed || isUniverse();
+    AbstractType result = isFinal ? _thisTypeFinal : _thisType;
 
     if (result == null)
       {
-        result = selfType();
-        var of = outer();
-        if (!isUniverse() && of != null && !of.isUniverse())
+        if (!isFinal)
           {
-            result = ResolvedNormalType.newType(result, of.thisType(isFixed()));
-          }
-        if (innerFixed)
-          {
-            _thisTypeFixed = result;
+            result = new ThisType(this);
+            _thisType = result;
           }
         else
           {
-            result = result.asThis();
-            _thisType = result;
+            var of = outer();
+            result = of == null || of.isUniverse()
+              ? selfType()
+              : ResolvedNormalType.newType(selfType(), of.thisType(isFixed()));
+            _thisTypeFinal = result;
           }
       }
     return result;
@@ -981,16 +974,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isTypeFeature()
   {
     // NYI: BUG: wrongly returns false for features that a cotype inherits from Type but which are implemented in Any i.e. its outer feature is Any, see #3913
-    return outer() != null && (outer().isCotype() || Types.resolved != null && outer().compareTo(Types.resolved.f_Type) == 0);
+    return outer() != null && (outer().isCotype() || Types.resolved != null && outer() == Types.resolved.f_Type);
   }
 
 
   /**
    * Is this the 'RELAY_TYPE' type parameter in a cotype?
    */
-  public boolean isCoTypesRelayTypeParameter()
+  boolean isRelayTypeParameter()
   {
-    return outer() != null
+    return state().atLeast(State.RESOLVED)
+      && outer() != null
       && outer().isCotype()
       && outer().typeArguments().get(0) == this;
   }
@@ -1242,17 +1236,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return !isUniverse()
       && outer() != null
       && outer().isUniverse()
-      && (   FuzionConstants.I8_NAME  .equals(baseName())
-          || FuzionConstants.I16_NAME .equals(baseName())
-          || FuzionConstants.I32_NAME .equals(baseName())
-          || FuzionConstants.I64_NAME .equals(baseName())
-          || FuzionConstants.U8_NAME  .equals(baseName())
-          || FuzionConstants.U16_NAME .equals(baseName())
-          || FuzionConstants.U32_NAME .equals(baseName())
-          || FuzionConstants.U64_NAME .equals(baseName())
-          || FuzionConstants.F32_NAME .equals(baseName())
-          || FuzionConstants.F64_NAME .equals(baseName())
-          || "bool".equals(baseName()));
+      && (   FeatureName.get(FuzionConstants.I8_NAME , 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.I16_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.I32_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.I64_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.U8_NAME , 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.U16_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.U32_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.U64_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.F32_NAME, 1) .equals(featureName())
+          || FeatureName.get(FuzionConstants.F64_NAME, 1) .equals(featureName())
+          || FeatureName.get("bool"                  , 0) .equals(featureName()));
   }
 
 
@@ -1415,7 +1409,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param l a list of types to be handed down
    *
-   * @param heirType the type we are inherting to.
+   * @param heirType the type we are inheriting to.
    *
    * @return the types from the argument l as seen this by heirType.  Their
    * number might have changed due to open generics.  Result may be
@@ -1457,7 +1451,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param t a type that must not be open generic (unless {@code Errors.any()})
    *
-   * @param heirType the type we are inherting to.
+   * @param heirType the type we are inheriting to.
    *
    * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
    * in case of previous errors.
@@ -1481,7 +1475,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param t a type that must not be open generic (unless {@code Errors.any()})
    *
-   * @param heirType the type we are inherting to.
+   * @param heirType the type we are inheriting to.
    *
    * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
    * in case of previous errors.
@@ -1496,63 +1490,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
                                       // empty, this will result in
                                       // Types.t_ERROR!
-  }
-
-
-  /**
-   * Convenience wrapper around {@code handDownAndApply(List, AbstractType, Function)}
-   * for a single type that is not open generic.
-   *
-   * @param t a type that must not be open generic (unless {@code Errors.any()})
-   *
-   * @param heirType the type we are inherting to.
-   *
-   * @param adjust a function that is applied to the type after it was handed
-   * down and before the heir type's type parameters are applied.
-   *
-   * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
-   * in case of previous errors.
-   */
-  public AbstractType handDownAndApply(AbstractType t,
-                                       AbstractType heirType,
-                                       Function<AbstractType, AbstractType> adjust)
-  {
-    if (PRECONDITIONS) require
-      (Errors.any() || !t.isOpenGeneric());
-
-    return handDownAndApply(new List<>(t), heirType, adjust)
-      .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
-                                      // empty, this will result in
-                                      // Types.t_ERROR!
-  }
-
-
-  /**
-   * Convenience combination of handDownListToType, applying {@code adjust} and
-   * applyTypeParsMaybeOpen.
-   *
-   * @param l a list of types to be handed down
-   *
-   * @param heirType the type we are inherting to.
-   *
-   * @param adjust a function that is applied to the types after they were
-   * handed down and before the heir type's type parameters are applied.
-   *
-   * @return the types from the argument l as seen this by heirType.
-   */
-  public List<AbstractType> handDownAndApply(List<AbstractType> l,
-                                             AbstractType heirType,
-                                             Function<AbstractType, AbstractType> adjust)
-  {
-    return handDownListToType(l, heirType)
-      .flatMap(x ->
-        {
-          var adjusted = adjust.apply(x);
-          return
-            adjusted == Types.t_ERROR      ? new List<>(Types.t_ERROR) :
-            adjusted.isOpenGeneric()       ? adjusted.applyTypeParsMaybeOpen(heirType)
-                                           : new List<>(adjusted.applyTypePars(heirType));
-        });
   }
 
 
@@ -1801,6 +1738,34 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * True if it is known that this feature is never inherited from.
+   *
+   * @return true if this is not a constructor or if this is an internal feature created to hold a
+   * lambda target {@link dev.flang.ast.Function}.
+   */
+  public boolean isFinal()
+  {
+    return switch (kind())
+      {
+      case
+        Constructor,
+        RefConstructor,
+        Choice                 -> false;
+      case
+        Field,
+        ExplicitTypeParameter,
+        FreeTypeParameter,
+        OpenTypeParameter,
+        Intrinsic,
+        Abstract,
+        Native                 -> true;
+      case
+        Function               -> false;  // NYI: UNDER DEVELOPMENT: This should be true, but does not work yet.
+      };
+  }
+
+
+  /**
    * Get inner feature with given name, ignoring the argument count.
    *
    * @param name the name of the feature within this.
@@ -1974,10 +1939,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  /**
-   * Some Expressions do not produce a result, e.g., a Block
-   * whose last expression is not an expression that produces a result.
-   */
+  /** {@inheritDoc} */
   @Override public boolean producesResult()
   {
     return false;
@@ -2063,6 +2025,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * this feature as a human readable string
    */
+  @Override
   public String toString()
   {
     return (visibility() + " " +
@@ -2127,7 +2090,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   AbstractType constraint(Context context)
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_DECLARATIONS),
+      (Errors.any() || state().atLeast(State.RESOLVED_DECLARATIONS),
        isTypeParameter());
 
     var result = context.constraintFor(this);
@@ -2249,13 +2212,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    var result = this;
     var o = outer();
-    if (!isCoTypesRelayTypeParameter() && o.isCotype())
-      {
-        result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
-      }
-    return result;
+    return !isRelayTypeParameter() && o.isCotype()
+      ? o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1)
+      : this;
   }
 
 
@@ -2271,19 +2231,21 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    var result = this;
     var o = outer();
-    if (!o.isCotype() && o.hasCotype())
-      {
-        result = o.cotype().typeArguments().get(typeParameterIndex()+1);
-      }
-    return result;
+    return !o.isCotype() && o.hasCotype()
+      ? o.cotype().typeArguments().get(typeParameterIndex()+1)
+      : this;
   }
 
 
   private Boolean _isUnitTypeWithoutSideEffect = null;
   /**
    * Is this feature a unit type without any side effects?
+   *
+   * This is just a best-effort approach to find many `unit` types to be used to avoid values during
+   * DFA.  Only after DFA, it will be determined for each clazz if it is a true `unit` type.
+   *
+   * @return true if this is known to be a unit type, false if not or if we are not sure.
    */
   public boolean isUnitTypeWithoutSideEffect()
   {
@@ -2302,20 +2264,29 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Is this feature a unit type without any side effects?
    *
-   * @param isInheritedFeature true if we are checking an inherited feature
-   * @return
+   * This is just a best-effort approach to find many `unit` types to be used to avoid values during
+   * DFA.  Only after DFA, it will be determined for each clazz if it is a true `unit` type.
+   *
+   * @param isInheritedFeature true if we are checking an inherited feature. If true, formal
+   * argument types will be ignored, the caller has to check the actual argument types.
+   *
+   * @return true if this is known to be a unit type, false if not or if we are not sure.
    */
   public boolean isUnitTypeWithoutSideEffect(boolean isInheritedFeature)
   {
     return
       isConstructor() &&
       contract().isEmpty() &&
-      valueArguments().stream().allMatch(va -> va.isUnitTypeWithoutSideEffect()) &&
-      (isInheritedFeature || !isRef()) &&
+      (isInheritedFeature || valueArguments().stream().allMatch(va -> va.isUnitTypeWithoutSideEffect()) && !isRef()) &&
       code().isEmpty() &&
       // unit inheriting e.g. property.orderable is fine
       (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitTypeWithoutSideEffect()) &&
-      inherits().stream().allMatch(c -> c.calledFeature().isUnitTypeWithoutSideEffect(true));
+      inherits().stream().allMatch(c -> c.actuals()
+                                         .stream()
+                                         .map(a -> a.type())
+                                         .allMatch(t -> !t.isParametricType() &&
+                                                        t.feature().isUnitTypeWithoutSideEffect()) &&
+                                        c.calledFeature().isUnitTypeWithoutSideEffect(true));
   }
 
 

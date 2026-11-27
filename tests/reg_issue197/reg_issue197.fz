@@ -41,8 +41,8 @@ reg_issue197 =>
   #   2. for the call: B -> T
   #
   ex =>
-    my_array(T type) is
-      my_map(B type) my_array B =>
+    my_array(T : Any) is
+      my_map(B : Any) my_array B =>
         my_array B
       f (ms my_array (Monoid T)) my_array T =>
         ms.my_map T
@@ -53,21 +53,21 @@ reg_issue197 =>
   ex
 
   # smallest example that I found:
-  a(T type) is
-    b(U type) a U => do
+  a(T : Any) is
+    b(U : Any) a U => do
     v a T => (a u8).b T
 
   say "a.v: $(type_of (a f32 .v)) (expecting a f32)"
 
   # smallest example that I found:
-  a0(T type) is
-    b(U type) U => do
+  a0(T : Any) is
+    b(U : Any) U => do
     v T => (a0 u8).b T
 
   say "a0.v: $(type_of (a0 i16 .v)) expecting (i16)"
 
-  a1(T type) is
-    b(U type) (T,U,option T,Sequence U) => do
+  a1(T : Any) is
+    b(U : Any) (T,U,option T,Sequence U) => do
     _() (u8,T,option u8,Sequence T) := (a1 u8).b T
 
   q : a1 unit is
@@ -79,8 +79,8 @@ reg_issue197 =>
   # same example as `a1`, but using the type `T` and `U` as an argument
   # type.
   #
-  a2(T type, v T) is
-    bb(U type, w (T,U,option T,Sequence U)) => say "type is $(type_of w)"
+  a2(T : Any, v T) is
+    bb(U : Any, w (T,U,option T,Sequence U)) => say "type is $(type_of w)"
     if !(T : u8)
       (a2 u8 123).bb codepoint (u8 255,"a",option (u8 128),["b"].cycle.take 3)
 

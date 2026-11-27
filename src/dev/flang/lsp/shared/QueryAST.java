@@ -74,8 +74,7 @@ public class QueryAST extends ANY
       .map(entry -> (AbstractCall) entry.getKey())
       .filter(ac -> SourcePositionTool.compare(ExprTool.endOfExpr(ac), params) <= 0)
       .sorted(ExprTool.compareByEndOfExpr.reversed())
-      .filter(ac -> ac.calledFeature() != null)
-      .filter(CallTool.calledFeatureNotInternal)
+      .filter(ac -> !ac.pos().isBuiltIn() && ac.calledFeature() != null && !ac.calledFeature().featureName().isInternal())
       // if left token is identifier, filter none matching calls by name
       .filter(ac -> !leftToken.token().equals(Token.t_ident) || !(ac instanceof Call)
         || leftToken.text().equals(((Call) ac).name()))

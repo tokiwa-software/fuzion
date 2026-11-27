@@ -44,7 +44,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActuals>
+class FeatureAndActuals extends ANY implements Comparable<FeatureAndActuals>
 {
 
 
@@ -110,6 +110,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    *
    * @return -1, 0, or +1
    */
+  @Override
   public int compareTo(FeatureAndActuals oo)
   {
     var o = oo;
@@ -141,6 +142,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   /**
    * Convert this to a string for debugging:
    */
+  @Override
   public String toString()
   {
     return _f.qualifiedNameHuman() + _tp.toString(t -> " " + t.toStringWrapped(true));

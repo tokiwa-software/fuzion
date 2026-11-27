@@ -23,7 +23,7 @@
 
 reg_issue6026 =>
 
-  a(X,Y type, x X, y Y) is
+  a(X,Y : Any, x X, y Y) is
     say "$X $Y"
 
   a i32 _ (option 42) (option -12) |> type_of |> say

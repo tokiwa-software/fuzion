@@ -37,7 +37,7 @@ import java.util.Set;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class BiGraph<A, B>
+class BiGraph<A, B>
 {
 
 

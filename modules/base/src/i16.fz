@@ -88,23 +88,20 @@ public i16(public val i16) : num.wrap_around, property.interval, java_primitive 
 
   public redef as_u8  u8  => low8bits
   public redef as_u16 u16 => cast_to_u16
-  public redef as_u32 u32 => cast_to_u32
-  public redef as_u64 u64 => cast_to_u64
-  public redef as_u128 u128 => cast_to_u128
+  public redef as_u32 u32 => as_u16.as_u32
+  public redef as_u64 u64 => as_u16.as_u64
+  public redef as_u128 u128 => as_u16.as_u128
   public as_int int =>
     int as_i64
 
   # casting to unsigned, adding 1<<16 if negative
   public redef low8bits u8   => cast_to_u16.as_u8     # 0x1234 ->   0x34, -0x1234 -> 0xcc
   public cast_to_u16    u16  => intrinsic             # 0x1234 -> 0x1234, -0x1234 -> 0xedcc
-  public cast_to_u32    u32  => cast_to_u16.as_u32    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_edcc
-  public cast_to_u64    u64  => cast_to_u16.as_u64    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_edcc
-  public cast_to_u128   u128 => cast_to_u16.as_u128   # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_0000_0000_0000_0000_edcc
 
 
   # create hash code from this number
   public redef type.hash_code(a i16.this) u64 =>
-    hash a.cast_to_u64
+    hash a.as_i64.cast_to_u64
 
 
   # find the highest 1 bit in this integer and return integer with

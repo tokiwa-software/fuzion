@@ -171,22 +171,18 @@ public class This extends ExprWithPos
   @Override
   public UnresolvedType asParsedType()
   {
-    return _qual != null ? new QualThisType(_qual)
+    return _qual != null ? new QualThisType(pos(), _qual)
                          : null;
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
-    return null;  // After type resolution, This is no longer part of the code.
+    return (_feature != null && !_feature.isUniverse() && _feature != Types.f_ERROR)
+      ? new ThisType(_feature)
+      : null;
   }
 
 
@@ -201,9 +197,51 @@ public class This extends ExprWithPos
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
+  @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     return v.action(this);
+  }
+
+
+  /**
+   * determine the static type of all expressions and declared features in this feature
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @return a call to the outer references to access the value represented by
+   * this.
+   */
+  AbstractFeature resolveFeature(Context context)
+  {
+    if (PRECONDITIONS) require
+      (context != null);
+
+    if (_feature == null)
+      {
+        AbstractFeature result;
+        var outer = context.outerFeature();
+        if (_qual != null)
+          {
+            result = getThisFeature(pos(), this, _qual, outer);
+          }
+        else   /* convenience for This(pos) constructor that does not provide outer */
+          {
+            result = outer;
+          }
+        _feature = result;
+      }
+    return _feature;
+  }
+
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    return resolveFeature(context);
   }
 
 
@@ -225,14 +263,7 @@ public class This extends ExprWithPos
        context != null);
 
     var outer = context.outerFeature();
-    if (_qual != null)
-      {
-        this._feature = getThisFeature(pos(), this, _qual, outer);
-      }
-    else if (this._feature == null)  /* convenience for This(pos) constructor that does not provide outer */
-      {
-        this._feature = outer;
-      }
+    resolveFeature(context);
 
     Expr getOuter;
     var f = this._feature;
@@ -384,6 +415,7 @@ public class This extends ExprWithPos
    *
    * @return
    */
+  @Override
   public String toString()
   {
     if (_qual != null)

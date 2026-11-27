@@ -318,7 +318,7 @@ Acceptable range of values: '-128' .. '127'
 basicIntegers_negative.fz:95:5: error 34: Incompatible types in assignment
     _ := i8 (- -1)   # 29. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'i8'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -329,7 +329,7 @@ To solve this, you could convert the value using + '.as_i8'.
 basicIntegers_negative.fz:96:5: error 35: Incompatible types in assignment
     _ := i8 (- - 1)  # 30. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'i8'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -358,7 +358,7 @@ Acceptable range of values: '0' .. '255'
 basicIntegers_negative.fz:105:5: error 38: Incompatible types in assignment
     _ := u8 (- -1)   # 33. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'u8'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -369,7 +369,7 @@ To solve this, you could convert the value using + '.as_u8'.
 basicIntegers_negative.fz:106:5: error 39: Incompatible types in assignment
     _ := u8 (- - 1)  # 34. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'u8'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -398,7 +398,7 @@ Acceptable range of values: '-0b1000000000000000' .. '0b111111111111111'
 basicIntegers_negative.fz:117:5: error 42: Incompatible types in assignment
     _ := i16 -(32768)            # 37. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'i16'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -409,7 +409,7 @@ To solve this, you could convert the value using + '.as_i16'.
 basicIntegers_negative.fz:118:5: error 43: Incompatible types in assignment
     _ := i16 -(-32768)           # 38. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'i16'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -420,7 +420,7 @@ To solve this, you could convert the value using + '.as_i16'.
 basicIntegers_negative.fz:119:5: error 44: Incompatible types in assignment
     _ := i16 -(-(-32768))        # 39. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'i16'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -440,7 +440,7 @@ Acceptable range of values: '-32768' .. '32767'
 basicIntegers_negative.fz:121:5: error 46: Incompatible types in assignment
     _ := i16 -(-(-(32769)))     # 41. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'i16'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -451,7 +451,7 @@ To solve this, you could convert the value using + '.as_i16'.
 basicIntegers_negative.fz:122:5: error 47: Incompatible types in assignment
     _ := i16 +(-(+(32769)))     # 42. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'i16'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -498,7 +498,7 @@ Acceptable range of values: '0' .. '65535'
 basicIntegers_negative.fz:133:5: error 52: Incompatible types in assignment
     _ := u16 (- - 1)             # 47. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'u16'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -527,7 +527,7 @@ Acceptable range of values: '0' .. '18446744073709551615'
 basicIntegers_negative.fz:142:5: error 55: Incompatible types in assignment
     _ := u64 (- 0)                # 50. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'u64'
 actual type found   : 'i64'
 assignable to       : 'i64'
@@ -547,7 +547,7 @@ Acceptable range of values: '0' .. '18446744073709551615'
 basicIntegers_negative.fz:144:5: error 57: Incompatible types in assignment
     _ := u64 (- -1)               # 52. should flag an error, constant out of range
 ----^
-assignment to field : 'basicIntegers_negative.assignToConstructur._'
+assignment to field : 'basicIntegers_negative.assignToConstructor._'
 expected formal type: 'u64'
 actual type found   : 'i64'
 assignable to       : 'i64'

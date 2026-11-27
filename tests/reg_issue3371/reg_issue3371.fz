@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-sum (T type : numeric, l Sequence T) => l.sum
+sum (T : numeric, l Sequence T) => l.sum
 
 a := [("Alice", 23), ("Bob", 12), ("Charly", 32)]
 age_sum := a.map (.1) |> sum

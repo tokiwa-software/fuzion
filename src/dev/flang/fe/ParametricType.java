@@ -73,6 +73,7 @@ class ParametricType extends LibraryType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
+  @Override
   public List<AbstractType> generics()
   {
     if (CHECKS) check
@@ -95,6 +96,7 @@ class ParametricType extends LibraryType
   }
 
 
+  @Override
   public AbstractType outer()
   {
     if (CHECKS) check
@@ -103,9 +105,7 @@ class ParametricType extends LibraryType
   }
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {

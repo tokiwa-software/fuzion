@@ -28,26 +28,28 @@
 #
 # This feature allows Java-like try-catch syntax for fallible
 #
-#     res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE ()->
+#     res := FALLIBLE_TYPE.try RESULT_TYPE ()->
 #               code
 #            .catch s->
 #               handle failure condition `s`
 #
 # or even
 #
-#     res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE code || (s->handle post condition failure `s`)
+#     res := FALLIBLE_TYPE.try RESULT_TYPE code || (s->handle post condition failure `s`)
 #
-public type.try(T type, code_try ()->T) is
+public type.try(T : Any, code_try ()->T) is
+
 
   # a local mutate used for storing an error
   # when throwing an exception
   #
-  universe.try_lm : mutate is
+  universe.try_lm(F : Any) : mutate is
+
 
   # define code to execute in case of fault and run code
   #
   public catch(code_catch ERROR->T) T =>
-    try_lm ! ()->
+    (try_lm fallible.this) ! ()->
       catch0 code_catch
 
 
@@ -56,8 +58,8 @@ public type.try(T type, code_try ()->T) is
   # this is necessary e.g. for `or_try` to avoid
   # an `invalid mutate` error.
   #
-  catch0(code_catch ERROR->T) T ! try_lm =>
-    m := try_lm.env.var (option ERROR nil)
+  catch0(code_catch ERROR->T) T ! (try_lm fallible.this) =>
+    m := (try_lm fallible.this).env.var (option ERROR nil)
     v := fallible.this.new e->
               m <- e
               fallible.this.abort
@@ -77,6 +79,53 @@ public type.try(T type, code_try ()->T) is
     try _ ()->
       catch0 alt
 
+
+  # run `code_try` and return its result wrapped in an `outcome`
+  #
+  # In case of a fault, the `outcome` contains the error instead. If `ERROR`
+  # is not `error`, e.g., the `String` used by `panic`, it is converted using
+  # `as_string`. Use `or_outcome m` for a custom conversion.
+  #
+  # usage example:
+  #
+  #     sqrt_int(n i32) outcome i32 =>
+  #       panic
+  #         .try i32 ()->
+  #           if n < 0 then panic "negative argument $n"
+  #           n.as_f64.sqrt.as_i32
+  #         .or_outcome
+  #
+  #     say (sqrt_int 16)   # 4
+  #     say (sqrt_int -4)   # --error: negative argument -4--
+  #
+  public or_outcome outcome T =>
+    fallible.this.try (outcome T) (()->code_try())
+      .catch e->
+        if ERROR : error then error e.msg e.error_code
+        else                  error e.as_string
+
+
+  # run `code_try` and return its result wrapped in an `outcome`, using `m` to
+  # create the `error` in case of a fault
+  #
+  # This can be used to add context to an error message or to convert an
+  # `ERROR` that is not an `error`.
+  #
+  # usage example:
+  #
+  #     checked_div(a, b i32) outcome i32 =>
+  #       panic
+  #         .try i32 ()->
+  #           if b = 0 then panic "division by zero"
+  #           a / b
+  #         .or_outcome (msg -> error "checked_div $a $b: $msg")
+  #
+  #     say (checked_div 6 3)   # 2
+  #     say (checked_div 1 0)   # --error: checked_div 1 0: division by zero--
+  #
+  public or_outcome(m ERROR -> error) outcome T =>
+    fallible.this.try (outcome T) (()->code_try())
+      .catch (e->m e)
 
 
   # infix alias for catch

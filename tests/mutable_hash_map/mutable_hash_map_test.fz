@@ -23,7 +23,7 @@
 
 # uncomment for easier debugging
 /*
-show_op(A type, B type, itm (option (tuple A B))) String =>
+show_op(A : Any, B : Any, itm (option (tuple A B))) String =>
   match itm
     nil => "--nil--"
     t tuple =>
@@ -235,7 +235,7 @@ primes_test is
 
   primes_test_size := 75
 
-  # NYI: PREFORMANCE: calculation of prime numbers very slow
+  # NYI: PERFORMANCE: calculation of prime numbers very slow
   primes(n i64) =>
     sieve(l list i64) list i64 =>
       l.head.or_panic : sieve (l.tail.filter ((x) -> !(x%%l.head.or_panic))).as_list

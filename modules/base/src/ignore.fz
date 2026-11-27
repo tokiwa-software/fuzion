@@ -47,4 +47,4 @@
 #     _ := hello
 #     _ := say_and_inc 42
 #
-public ignore(T type, x T) unit =>
+public ignore(T : Any, x T) unit =>

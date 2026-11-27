@@ -204,18 +204,26 @@ public class ClassFile extends ANY implements ClassFileConstants
     /**
      * Write unsigned or signed integers or byte arrays: These only increment the size.
      */
+    @Override
     void writeU4 (int    v) { _size += 4; }
+    @Override
     void writeI4 (int    v) { _size += 4; }
+    @Override
     void writeI8 (long   v) { _size += 8; }
+    @Override
     void writeU2 (int    v) { _size += 2; }
+    @Override
     void writeU1 (int    v) { _size += 1; }
+    @Override
     void write   (byte   v) { _size += 1; }
+    @Override
     void write   (byte[] v) { _size += v.length; }
 
 
     /**
      * Set the label's position estimate to the current position.
      */
+    @Override
     void setLabel(Label l)
     {
       if (PRECONDITIONS) require
@@ -229,6 +237,7 @@ public class ClassFile extends ANY implements ClassFileConstants
      * Get an estimate of the offset for a branch. This is MAX_BRANCH_OFFSET
      * during the estimate phase, wide branches are not yet supported.
      */
+    @Override
     int offset(Label from, Label to)
     {
       setLabel(from);
@@ -258,6 +267,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     /**
      * Set the label's final position to the current position.
      */
+    @Override
     void setLabel(Label l)
     {
       if (PRECONDITIONS) require
@@ -275,6 +285,7 @@ public class ClassFile extends ANY implements ClassFileConstants
      * Get an estimate of the offset for a branch based on the estimated
      * position determined in the previous phase.
      */
+    @Override
     int offset(Label from, Label to)
     {
       if (PRECONDITIONS) require
@@ -331,18 +342,26 @@ public class ClassFile extends ANY implements ClassFileConstants
     /**
      * Write unsigned or signed integers or byte arrays:
      */
+    @Override
     void writeU4 (int    v) { _kaku.writeU4(v); }
+    @Override
     void writeI4 (int    v) { _kaku.writeI4(v); }
+    @Override
     void writeI8 (long   v) { _kaku.writeI8(v); }
+    @Override
     void writeU2 (int    v) { _kaku.writeU2(v); }
+    @Override
     void writeU1 (int    v) { _kaku.writeU1(v); }
+    @Override
     void write   (byte   v) { _kaku.write  (v); }
+    @Override
     void write   (byte[] v) { _kaku.write  (v); }
 
 
     /**
      * Check that the final position of the label is equal to the actual position.
      */
+    @Override
     void setLabel(Label l)
     {
       if (PRECONDITIONS) require
@@ -367,6 +386,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     /**
      * Get the offset for a branch from from to label to using the final positions.
      */
+    @Override
     int offset(Label from, Label to)
     {
       if (PRECONDITIONS) require
@@ -374,8 +394,7 @@ public class ClassFile extends ANY implements ClassFileConstants
          to  ._posFinal != -1);
 
       setLabel(from);
-      var offset = to._posFinal - from._posFinal;
-      return offset;
+      return to._posFinal - from._posFinal;
     }
 
   }
@@ -542,6 +561,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     }
 
 
+    @Override
     public int compareTo(CPEntry other)
     {
       var t1 = tag()._tag;
@@ -621,18 +641,22 @@ public class ClassFile extends ANY implements ClassFileConstants
       _str = str;
     }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_utf8; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       return _str.compareTo(((CPUtf8)other)._str);
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeUTF(_str);
     }
 
+    @Override
     public String toString()
     {
       return _str;
@@ -661,8 +685,10 @@ public class ClassFile extends ANY implements ClassFileConstants
       this(t.refDescriptor());
     }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_class; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       var u1 = _utf8;
@@ -670,11 +696,13 @@ public class ClassFile extends ANY implements ClassFileConstants
       return u1.compareTo(u2);
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeU2(_utf8.index());
     }
 
+    @Override
     public String toString()
     {
       return _utf8.toString();
@@ -704,8 +732,10 @@ public class ClassFile extends ANY implements ClassFileConstants
       this(cpUtf8(name));
     }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_string; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       var u1 = _utf8;
@@ -713,6 +743,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       return u1.compareTo(u2);
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeU2(_utf8.index());
@@ -738,8 +769,10 @@ public class ClassFile extends ANY implements ClassFileConstants
       this(cpUtf8(name), cpUtf8(type));
     }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_name_and_type; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       var n1 = _name;
@@ -751,6 +784,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       return rn != 0 ? rn : rt;
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeU2(_name.index());
@@ -776,8 +810,10 @@ public class ClassFile extends ANY implements ClassFileConstants
       _nat = nat;
     }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_field_ref; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       var c1 = _class;
@@ -789,6 +825,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       return rc != 0 ? rc : rn;
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeU2(_class.index());
@@ -813,8 +850,10 @@ public class ClassFile extends ANY implements ClassFileConstants
       _nat = nat;
     }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_method_ref; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       var c1 = _class;
@@ -826,6 +865,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       return rc != 0 ? rc : rn;
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeU2(_class.index());
@@ -851,8 +891,10 @@ public class ClassFile extends ANY implements ClassFileConstants
       _nat = nat;
     }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_interface_method_ref; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       var c1 = _class;
@@ -864,6 +906,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       return rc != 0 ? rc : rn;
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeU2(_class.index());
@@ -886,8 +929,10 @@ public class ClassFile extends ANY implements ClassFileConstants
       _value = value;
     }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_integer; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       var v1 = _value;
@@ -897,6 +942,7 @@ public class ClassFile extends ANY implements ClassFileConstants
         v1 > v2 ? +1 : 0;
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeI4(_value);
@@ -917,8 +963,10 @@ public class ClassFile extends ANY implements ClassFileConstants
       _value = value;
     }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_long; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       var v1 = _value;
@@ -928,6 +976,7 @@ public class ClassFile extends ANY implements ClassFileConstants
         v1 > v2 ? +1 : 0;
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeI8(_value);
@@ -952,8 +1001,10 @@ public class ClassFile extends ANY implements ClassFileConstants
     CPFloat(float value) { this(value, Float.floatToIntBits(value)); }
     CPFloat(int   value) { this(Float.intBitsToFloat(value), value);  }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_float; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       var v1 = _bits;
@@ -963,6 +1014,7 @@ public class ClassFile extends ANY implements ClassFileConstants
         v1 > v2 ? +1 : 0;
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeI4(_bits);
@@ -988,8 +1040,10 @@ public class ClassFile extends ANY implements ClassFileConstants
     CPDouble(double value) { this(value, Double.doubleToLongBits(value)); }
     CPDouble(long   value) { this(Double.longBitsToDouble(value), value); }
 
+    @Override
     CPoolTag tag() { return CPoolTag.tag_double; }
 
+    @Override
     int compareTo2(CPEntry other)
     {
       var v1 = _bits;
@@ -999,6 +1053,7 @@ public class ClassFile extends ANY implements ClassFileConstants
         v1 > v2 ? +1 : 0;
     }
 
+    @Override
     void write(Kaku o)
     {
       o.writeI8(_bits);
@@ -1423,6 +1478,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       _attributes.addAll(_smt, _lnta);
     }
 
+    @Override
     byte[] data()
     {
       _smt.build();
@@ -1807,6 +1863,7 @@ public class ClassFile extends ANY implements ClassFileConstants
   /**
    * String representation for debugging.
    */
+  @Override
   public String toString()
   {
     return "ClassFile instance for class '" + _name + "' to be saved to '" + classFile() + "'";

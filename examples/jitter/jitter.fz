@@ -72,15 +72,15 @@ jitter =>
   # run jitter test using C.clock.run_periodic
   #
   test_jitter(# the clock used to schedule the releases
-              C type : time.Clock,
+              C : time.Clock,
 
               # the clock used to measure the times
-              TIMER type : time.Clock)
+              TIMER : time.Clock)
   =>
 
     # type used to identify flow.exception to stop in case jitter is too high
     #
-    jitter_too_high is
+    jitter_too_high : flow.exception_tag is
 
     # test payload, just some dummy code requiring a moderate amount of calculation
     #
@@ -142,10 +142,12 @@ jitter =>
             e := error "*** overrun: run started at $(actual_release-expected_rel) and took $(actual_finish-actual_release), which is larger than period $period"
             (flow.exception jitter_too_high).env.cause e
 
-    match flow.exception jitter_too_high .on ()->
+    match flow.exception jitter_too_high
+            .try ()->
 
-         for p := period_default, p.scale 0.5 do
-           run_for_period p
+              for p := period_default, p.scale 0.5 do
+                run_for_period p
+            .or_outcome
 
       e error => say $e
       void    => # will not happen

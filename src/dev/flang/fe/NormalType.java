@@ -87,12 +87,12 @@ class NormalType extends LibraryType
 
     if (PRECONDITIONS) require
       (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType,
-       generics.stream().allMatch(g -> g instanceof ResolvedType));
+       generics.stream().allMatch(g -> g instanceof ResolvedType),
+       feature.outer() == null || outer.isParametricType() || outer.feature().inheritsFrom(feature.outer()));
 
     this._feature = feature;
     this._typeKind = typeKind;
-    this._generics = generics;
-    this._generics.freeze();
+    this._generics = generics.freeze();
     this._outer = outer;
   }
 
@@ -100,11 +100,7 @@ class NormalType extends LibraryType
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * {@code this} as a value.
-   *
-   * Requires that at isNormalType().
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType asValue()
   {
@@ -131,7 +127,7 @@ class NormalType extends LibraryType
    * and outer type.
    */
   @Override
-  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
+  public AbstractType replaceGenericsAndOuter0(List<AbstractType> g2, AbstractType o2)
   {
     return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
@@ -161,9 +157,7 @@ class NormalType extends LibraryType
   }
 
 
-  /**
-   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {
