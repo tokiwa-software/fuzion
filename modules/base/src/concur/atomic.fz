@@ -165,7 +165,7 @@ is
 private universe.AAA_builtin_atomic_mutate(T : Any) : concur.atomic_mutate is
 
 
-  # This is instated autmatically at the effect big bang singularity:
+  # This is instated automatically at the effect big bang singularity:
   #
   public redef fixed type.default_value option (AAA_builtin_atomic_mutate T)
   =>

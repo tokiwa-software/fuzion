@@ -37,7 +37,7 @@ import java.nio.file.Path;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FZJavaOptions extends ANY
+class FZJavaOptions extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/

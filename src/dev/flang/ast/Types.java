@@ -157,6 +157,8 @@ public class Types extends ANY
     public final AbstractType t_void;
     public final AbstractType t_codepoint;
     public final AbstractFeature f_Any;
+    public final AbstractFeature f_unit;
+    public final AbstractFeature f_tuple;
     public final AbstractFeature f_i8  ;
     public final AbstractFeature f_i16 ;
     public final AbstractFeature f_i32 ;
@@ -264,7 +266,8 @@ public class Types extends ANY
       f_const_string            = universe            .get(mod, FuzionConstants.CONST_STRING_NAME, 0);
       f_const_string_utf8_data  = f_const_string      .get(mod, FuzionConstants.UTF8_DATA_NAME   , 0);
       f_Any                     = universe            .get(mod, FuzionConstants.ANY_NAME         , 0); t_Any    = f_Any.selfType();
-      t_unit                    = universe            .get(mod, FuzionConstants.UNIT_NAME, 0).selfType();
+      f_unit                    = universe            .get(mod, FuzionConstants.UNIT_NAME        , 0); t_unit   = f_unit.selfType();
+      f_tuple                   = universe            .get(mod, FuzionConstants.TUPLE_NAME       , 2);
       t_void                    = universe            .get(mod, "void", 0).selfType();
       t_codepoint               = universe            .get(mod, "codepoint", 1).selfType();
       f_id                      = universe            .get(mod, "id", 2);

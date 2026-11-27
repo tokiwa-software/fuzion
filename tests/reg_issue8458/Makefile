@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = resource_cleanunp
+override NAME = reg_issue8458
 include ../simple.mk

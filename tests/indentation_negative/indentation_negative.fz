@@ -163,7 +163,7 @@ indentation_negative is
 
   if_with_call1 is
 
-    # 'if' requires the condition to be in a single line, doest not allow vertically aligned arguments
+    # 'if' requires the condition to be in a single line, does not allow vertically aligned arguments
     #
     if callWith2Args arg
                      unit  # this arg is parsed as first expr in the then-block

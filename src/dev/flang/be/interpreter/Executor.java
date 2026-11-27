@@ -57,7 +57,7 @@ import dev.flang.util.StringHelpers;
  * The class Executor implements ProcessExpression of the AbstractInterpreter.
  * It does the actual execution of the code.
  */
-public class Executor extends ProcessExpression<Value, Object>
+class Executor extends ProcessExpression<Value, Object>
 {
 
 
@@ -634,11 +634,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
 
-  /**
-   * Generate code to terminate the execution immediately.
-   *
-   * @param msg a message explaining the illegal state
-   */
+  /** {@inheritDoc} */
   @Override
   public Object reportErrorInCode(String msg)
   {

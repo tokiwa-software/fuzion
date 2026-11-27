@@ -1403,7 +1403,7 @@ dotCall     : dot call   callTail
         AbstractType t = target.asParsedType();
         if (t == null)
           {
-            AstErrors.noValidLHSInExpresssion(target, ".env");
+            AstErrors.noValidLHSInExpression(target, ".env");
             t = Types.t_ERROR;
             result = Call.ERROR;
           }
@@ -1418,7 +1418,7 @@ dotCall     : dot call   callTail
         AbstractType t = target.asParsedType();
         if (t == null)
           {
-            AstErrors.noValidLHSInExpresssion(target, ".type");
+            AstErrors.noValidLHSInExpression(target, ".type");
             t = Types.t_ERROR;
             result = Call.ERROR;
           }
@@ -1949,7 +1949,7 @@ klammer     : LPAREN block RPAREN
           }
         else if (forked_t.size() != 1)
           {
-            res = new ParsedCall(Universe.instance, new ParsedName(tokenSourceRange(), "tuple"), tuple());
+            res = new ParsedTuple(tokenSourceRange(), tuple());
           }
         else
           {
@@ -3681,7 +3681,7 @@ typeOpt     : type
           }
         else
           {
-            result = new ParsedType(pos, "tuple", a);
+            result = new ParsedTupleType(pos, a);
           }
       }
     else

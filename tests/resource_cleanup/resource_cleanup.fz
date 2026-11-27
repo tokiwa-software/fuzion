@@ -17,13 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test resource_cleanunp
+#  Source code of Fuzion test resource_cleanup
 #
 # -----------------------------------------------------------------------
 
 # test for resource cleanup using nested effects
 #
-resource_cleanunp =>
+resource_cleanup =>
 
   # effect that maintains a Sequence of opened resources and
   # provides a operations to open a new resource and return
@@ -105,9 +105,11 @@ resource_cleanunp =>
     (flow.exception exc).env.cause (error "throw!")
 
   say "--------------------------- open / throw / close / error"
-  say <| flow.exception exc .on unit ()->
-    r := e.instate String e test3 def
-    say "*** unreachable *** $r"
+  say <| flow.exception exc
+    .try unit ()->
+      r := e.instate String e test3 def
+      say "*** unreachable *** $r"
+    .or_outcome
 
 
   # -----------------------------------------------------------------------
@@ -138,6 +140,8 @@ resource_cleanunp =>
 
   say "--------------------------- open L M / open P Q / throw / close Q P / close M L / error"
 
-  say <| flow.exception exc .on unit ()->
-    r := e.instate String e test5 def
-    say "*** unreachable *** $r"
+  say <| flow.exception exc
+    .try unit ()->
+      r := e.instate String e test5 def
+      say "*** unreachable *** $r"
+    .or_outcome

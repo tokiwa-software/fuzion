@@ -48,7 +48,7 @@ reg_issue4425 =>
                       say "hi using ()"
                     false)).call 3 |> say
 
-  type_of ()                           |> x -> say "should be empty tuple: $x"
+  type_of ()                           |> x -> say "should be unit: $x"
   type_of ("a",42)                     |> x -> say "should be tuple String 42: $x"
   type_of (id i32,i32->i32 (a,b)->a*b) |> x -> say "should be Binary i32 i32 i32: $x"
   type_of (if 3 = 4 then

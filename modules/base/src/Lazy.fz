@@ -32,7 +32,7 @@
 #     true || 4+5>10
 #
 public Lazy(T : Any) ref : Nullary T,
-# Read here how lazy compuations form a monad: https://blog.ploeh.dk/2022/05/30/the-lazy-monad/
+# Read here how lazy computations form a monad: https://blog.ploeh.dk/2022/05/30/the-lazy-monad/
 # NYI: UNDER DEVELOPMENT: add example where monad is useful #5057
                            monad T is
 

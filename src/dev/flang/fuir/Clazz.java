@@ -328,6 +328,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     _select = select;
     _needsCode = false;
     _code = IR.NO_SITE;
+    // NYI: CLEANUP: normalize outer before calling constructor
     _outer = normalizeOuter(type, outer);
     _type = _outer != null
       ? type.replaceGenericsAndOuter(type.generics(), _outer._type)
@@ -376,7 +377,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Additional initialization code that has to be run after this Clazz was
-   * added to FUIRI._clazzes for recursive clazz lookup.
+   * added to FUIR._clazzes for recursive clazz lookup.
    */
   void init(int id)
   {
@@ -411,7 +412,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
                 gi = gi.feature().isRef() ? gi.asRef() : gi.asValue();
                 }
-            _actualTypeParameters[i] = _fuir.type2clazz(gi);
+            _actualTypeParameters[i] = _fuir.clazz(gi);
           }
       }
 
@@ -511,7 +512,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         var t1 = t0.outer().isRef()
           ? t0
           : t0.replaceGenericsAndOuter(t0.generics(), _type.actualType(f.outer().thisType(false)));
-        var result = _fuir.newClazz(f.handDownAndApply(t1, _type));
+        var result = _fuir.clazz(f.handDownAndApply(t1, _type));
         result._isNormalized = true;
         return result;
       }
@@ -577,7 +578,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             var pt = inh_call.type();
             var t0 = handDownAndReplaceThisType(pt, NO_SELECT, (_,_)->{}, new List<>());
-            var pc = _fuir.newClazz(t0);
+            var pc = _fuir.clazz(t0);
 
             if (!result.contains(pc))
               {
@@ -608,7 +609,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     //       a => say "a"
     //   b : o.a is
     //   ignore b
-    return replaceThisType(t0, inh);
+    return replaceThisType(t0);
   }
 
 
@@ -643,13 +644,13 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @param t a type
    * @param inh
    */
-  AbstractType replaceThisType(AbstractType t, List<AbstractCall> inh)
+  AbstractType replaceThisType(AbstractType t)
   {
     return switch (t.kind())
       {
         case ParametricType -> t;
-        case ThisType -> replaceThisType0(t, inh);
-        case RefType, ValueType -> t.applyToGenericsAndOuter(g -> replaceThisType(g, inh));
+        case ThisType -> replaceThisType0(t);
+        case RefType, ValueType -> t.applyToGenericsAndOuter(g -> replaceThisType(g));
       };
   }
 
@@ -670,7 +671,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var result = this._type.replaceGenerics(new_generics);
 
     // Replace any {@code a.this.type} actual generics by the actual outer clazz:
-    result = result.map(t->replaceThisType(t, inh));
+    result = result.map(t -> handDownAndReplaceThisType(t, NO_SELECT, null, inh));
 
     if (_outer != null)
       {
@@ -1168,7 +1169,7 @@ class Clazz extends ANY implements Comparable<Clazz>
  */
 
             var outerUnboxed = isBoxed() && !f.isConstructor() ? asValue() : this;
-            innerClazz = _fuir.newClazz(outerUnboxed, t, select);
+            innerClazz = _fuir.clazz(outerUnboxed, t, select);
             if (CHECKS) check
               (innerClazz._select == select);
             if (select < 0)
@@ -1459,7 +1460,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         result = new List<>();
         for (var t : actualGenerics(feature().choiceGenerics(), new List<>()))
           {
-            result.add(_fuir.newClazz(t));
+            result.add(_fuir.clazz(t));
           }
       }
     else
@@ -1576,12 +1577,15 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz asRef()
   {
-    var result = _asRef;
+    // if _select == NO_SELECT we use caching of _fuir.clazz
+    var result = _select == NO_SELECT
+      ? _fuir.clazz(_type.asRef())
+      : _asRef;
     if (result == null)
       {
         result = isRef()
           ? this
-          : _fuir.newClazz(_outer, _type.asRef(), _select);
+          : _fuir.clazz(_outer, _type.asRef(), _select);
         _asRef = result;
       }
     return result;
@@ -1742,12 +1746,9 @@ class Clazz extends ANY implements Comparable<Clazz>
           case ParametricType -> _fuir.error();
           case RefType, ValueType, ThisType ->
             {
-              var tt = _type.cotypeType();
-              var ty = Types.resolved.f_Type.selfType();
-              yield _type.containsError()  ? _fuir.error() :
-                     feature().isUniverse() ? this    :
-                     tt.compareTo(ty) == 0  ? _fuir.newClazz(_fuir.universe()  , ty, FuzionConstants.NO_SELECT)
-                                            : _fuir.newClazz(_outer.typeClazz(), tt, FuzionConstants.NO_SELECT);
+              yield _type.containsError()   ? _fuir.error() :
+                     feature().isUniverse() ?  this         :
+                     _fuir.clazz(_type.cotypeType());
             }
           };
       }
@@ -1764,21 +1765,19 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Find outer clazz of this corresponding to this-type {@code o}.
    *
-   * @param o the this-type whose clazz we are searching for.
-   * @param inh
+   * @param thisType the this-type whose clazz we are searching for.
    *
    * @return the outer clazz of this corresponding this-type {@code o}.
    */
-  // NYI: UNDER DEVELOPMENT: logic too complicated and likely subtly wrong.
-  private AbstractType replaceThisType0(AbstractType o, List<AbstractCall> inh)
+  private AbstractType replaceThisType0(AbstractType thisType)
   {
     if (PRECONDITIONS) require
-      (o.isThisType());
+      (thisType.isThisType());
 
     /* starting with feature(), follow outer references
      * until we find o.
      */
-    var of = handDown(o, NO_SELECT, (_,_)->{}, inh).feature();
+    var of = thisType.feature();
     var res = _type;
     while (res != null && res.feature() != of && !res.feature().isCotype())
       {
@@ -1789,7 +1788,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         // we arrived at a cotype, we use its relay type
         // to determine the actual type.
         return res.feature().isCotype()
-          ? res.generics().get(0).actualType(o)
+          ? res.generics().get(0).actualType(thisType)
           : res;
       }
 
@@ -1833,7 +1832,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     t = handDownAndReplaceThisType(t, select, foundRef, inh);
 
-    var res = _fuir.type2clazz(t);
+    var res = _fuir.clazz(t);
     if (res.feature().isCotype())
       {
         var ac = handDown(res._type.generics().get(0), inh);
@@ -2064,10 +2063,14 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz asValue()
   {
+    // if _select == NO_SELECT we use caching of _fuir.clazz
+    _asValue = _select == NO_SELECT
+      ? _fuir.clazz(_type.asValue())
+      : _asValue;
     if (_asValue == null)
       {
         _asValue = isRef()
-          ? _fuir.newClazz(_outer, _type.asValue(), _select)
+          ? _fuir.clazz(_outer, _type.asValue(), _select)
           : this;
       }
 

@@ -79,7 +79,7 @@ reg_issue8137 =>
   case4
 
 
-  # declaring a new `utf8_data` (which is internally used for const_string but should never be ambgiuous):
+  # declaring a new `utf8_data` (which is internally used for const_string but should never be ambiguous):
   #
   case5 =>
     utf8_data => "bla".utf8

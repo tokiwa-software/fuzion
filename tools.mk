@@ -128,3 +128,24 @@ regenerated_header_files:
 # NYI: ENHANCEMENT: do not assume clang 19 and debian location
 	C_INCLUDE_PATH="/usr/lib/llvm-19/include:$(C_INCLUDE_PATH)" $(FZ) -jvm -modules=clang -JLibraries=clang ./bin/fzextract.fz /usr/lib/llvm-19/include/clang-c/Index.h > modules/clang/src/native.fz
 	$(FZ) -jvm -modules=clang -JLibraries=clang ./bin/fzextract.fz /usr/lib/llvm-19/include/clang-c/Index.h > modules/clang/src/native.fz
+
+# check that the C runtime used on Windows compiles, without a Windows
+# machine. Requires 'sudo apt install gcc-mingw-w64-x86-64'.
+#
+# The Boehm GC is not available for MinGW on Linux, so a stub gc.h is
+# generated that declares only what include/*.c use.
+#
+.PHONY: lint-c-win
+lint-c-win:
+	mkdir -p $(BUILD_DIR)/lint-c-win
+	printf '%s\n' \
+		'#include <stdlib.h>' \
+		'#include <stdint.h>' \
+		'#define GC_MALLOC(n) malloc(n)' \
+		'#define GC_FREE(p) free(p)' \
+		'#define GC_INIT()' \
+		'uintptr_t GC_beginthreadex(void *, unsigned, unsigned (__stdcall *)(void *), void *, unsigned, unsigned *);' \
+		> $(BUILD_DIR)/lint-c-win/gc.h
+	x86_64-w64-mingw32-gcc -fsyntax-only -std=c11 -Wall -Wextra -Wno-unused-parameter \
+		-I$(BUILD_DIR)/lint-c-win -I$(FZ_SRC)/include \
+		$(FZ_SRC)/include/shared.c $(FZ_SRC)/include/win.c

@@ -54,22 +54,22 @@ tupletest is
   chck (g1bv1.a && g1bv1.b && !g1bv1.c) "g1b AAAA infer AAAA==bool"
   chck (g1bv2.a.codepoint_count + g1bv2.b.codepoint_count + g1bv2.c.codepoint_count)=11 "g1b AAAA infer AAAA==string"
 
-  nothing1 tuple := tuple  ; p "nothing1 is $nothing1" # empty tuple using explicit types
-  nothing2 tuple := tuple  ; p "nothing2 is $nothing2" # empty tuple using explicit type and inferring generic
-  nothing3 tuple :=      (); p "nothing3 is $nothing3" # empty tuple using explicit type and tuple syntax sugar
-  nothing4 tuple := tuple  ; p "nothing4 is $nothing4" # empty tuple inferring generics and explicit type
-  nothing5 tuple := tuple  ; p "nothing5 is $nothing5" # empty tuple inferring generics and inferring generic
-  nothing6 tuple :=      (); p "nothing6 is $nothing6" # empty tuple inferring generics and tuple syntax sugar
-  nothing7       := tuple  ; p "nothing7 is $nothing7" # empty tuple inferring type and explicit type
-  nothing8       := tuple  ; p "nothing8 is $nothing8" # empty tuple inferring type and inferring generic
-  nothing9       :=      (); p "nothing9 is $nothing9" # empty tuple inferring type and tuple syntax sugar
+  nothing1 tuple := tuple    ; p "nothing1 is $nothing1" # empty tuple using explicit types
+  nothing2 tuple := tuple    ; p "nothing2 is $nothing2" # empty tuple using explicit type and inferring generic
+  nothing3 unit  :=        (); p "nothing3 is $nothing3" # empty tuple using explicit type and tuple syntax sugar
+  nothing4 tuple := tuple    ; p "nothing4 is $nothing4" # empty tuple inferring generics and explicit type
+  nothing5 tuple := tuple    ; p "nothing5 is $nothing5" # empty tuple inferring generics and inferring generic
+  nothing6 unit  :=        (); p "nothing6 is $nothing6" # empty tuple inferring generics and tuple syntax sugar
+  nothing7       := tuple    ; p "nothing7 is $nothing7" # empty tuple inferring type and explicit type
+  nothing8       := tuple    ; p "nothing8 is $nothing8" # empty tuple inferring type and inferring generic
+  nothing9       :=        (); p "nothing9 is $nothing9" # empty tuple inferring type and tuple syntax sugar
 # ()             := tuple  ; p "nothing10 is ()"
 # ()             := tuple  ; p "nothing11 is ()"
 # ()             :=      (); p "nothing12 is ()"
 # ()             := tuple  ; p "nothing10 is ()"                   # should cause syntax error
 # ()             := tuple  ; p "nothing11 is ()"                   # should cause syntax error
 # ()             :=      (); p "nothing12 is ()"                   # should cause syntax error
-  # cant do any chck()s on empty tuples, let's hope everything is fine
+  # can't do any chck()s on empty tuples, let's hope everything is fine
 
   one2 tuple i64 := tuple(     42); p "one2 is $(one2.values.0)" # one-tuple using explicit type and inferring generic
   public one16 i64 := 42

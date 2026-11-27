@@ -41,7 +41,7 @@ redef_with_type_pars is
 
   show(x T) => say "$x ($T)"
 
-  show (b.f i32 String unit 42 "fourty-two" unit)
-  show (c.f i32 String unit 42 "fourty-two" unit)
-  show (b.f String bool i32 "fourty-two" false 42)
-  show (c.f String bool i32 "fourty-two" false 42)
+  show (b.f i32 String unit 42 "forty-two" unit)
+  show (c.f i32 String unit 42 "forty-two" unit)
+  show (b.f String bool i32 "forty-two" false 42)
+  show (c.f String bool i32 "forty-two" false 42)

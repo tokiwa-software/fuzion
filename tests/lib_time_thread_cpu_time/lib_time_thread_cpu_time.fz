@@ -39,7 +39,7 @@ lib_time_thread_cpu_time =>
 
     # instate the clock for `t` and read it twice
     #
-    time.Thread_CPU_Time t ! ()->
+    time.Thread_CPU_Time.new t ! ()->
       _ := time.Thread_CPU_Time.env.read
       _ := time.Thread_CPU_Time.env.read
       say "alive: ok"

@@ -374,17 +374,34 @@ public class Function extends AbstractLambda
                        .applyTypePars(cl, tps_as_actuals.map2(tp -> tp.resolve(res, context)));
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PUB, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, AbstractCall.NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(),
+                                      Visi.PUB,
+                                      FuzionConstants.MODIFIER_REDEFINE |
+                                      FuzionConstants.MODIFIER_FIXED,   // required to keep inner types used in result from containing `call.this`, see #4428 #8262
+                                      rt,
+                                      new List<String>(cl.baseName()),
+                                      args,
+                                      AbstractCall.NO_CALLS,
+                                      Contract.EMPTY_CONTRACT,
+                                      new Impl(_expr.pos(), _expr, im))
               {
-                /**
-                 * Is this the {@code call} implementation of a lambda?
-                 *
-                 * This is used to allow an implicit result type even though
-                 * {@code call} is marked as public and to suppress some redundant errors.
-                 *
-                 */
+                /** {@inheritDoc} */
                 @Override
                 public boolean isLambdaCall()
+                {
+                  return true;
+                }
+
+                /**
+                 * This is an internal feature that is known never to be redefined.
+                 *
+                 * This information is important since it permits type inference from
+                 * `lambda.this` where the exact type is known, see #4428.
+                 *
+                 * @return true
+                 */
+                @Override
+                public boolean isFinal()
                 {
                   return true;
                 }
@@ -413,7 +430,22 @@ public class Function extends AbstractLambda
                                        AbstractFeature._NO_FEATURES_,
                                        new List<>(_inheritsCall),
                                        Contract.EMPTY_CONTRACT,
-                                       new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
+                                       new Impl(pos(), new Block(expressions), Impl.Kind.Routine))
+                  {
+                    /**
+                     * This is an internal feature that is known never to be redefined.
+                     *
+                     * This information is important since it permits type inference from
+                     * `lambda.this` where the exact type is known, see #4428.
+                     *
+                     * @return true
+                     */
+                    @Override
+                    public boolean isFinal()
+                    {
+                      return true;
+                    }
+                  };
                 res._module.findDeclarations(_wrapper, context.outerFeature());
                 res.resolveDeclarations(_wrapper);
                 res.resolveTypes(_feature);
@@ -468,7 +500,7 @@ public class Function extends AbstractLambda
    * @param tt the target type of the lambda or any outer, can be a this type as in #6044
    *
    * @return the code to create the outer instances of {@code null} if outer is
-   * the unverse.
+   * the universe.
    */
   private Expr targetCalls(Resolution res, Context context, AbstractType tt)
   {
@@ -476,13 +508,13 @@ public class Function extends AbstractLambda
       {
         case TypeKind.ThisType -> new Current(pos(), tt.feature());
         case TypeKind.ParametricType -> {
-          AstErrors.lamdaOuterMustNotBeTypeParameter(pos(), tt);
+          AstErrors.lambdaOuterMustNotBeTypeParameter(pos(), tt);
           yield Call.ERROR;
         }
         default -> {
           if (!tt.feature().valueArguments().isEmpty())
             {
-              AstErrors.lamdaOuterMustNotHaveArgs(pos(), tt);
+              AstErrors.lambdaOuterMustNotHaveArgs(pos(), tt);
               yield Call.ERROR;
             }
           else
@@ -605,7 +637,7 @@ public class Function extends AbstractLambda
             // `()->nil` if this is supposed to result in, e.g., option.
             //
             // So we create a Runnable to do this that is to be called when the
-            // going get's tough during a call to `type()` if we still have
+            // going gets tough during a call to `type()` if we still have
             // nothing to offer.
             _resultTypeLastResort = ()->
               {
@@ -665,13 +697,7 @@ public class Function extends AbstractLambda
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {

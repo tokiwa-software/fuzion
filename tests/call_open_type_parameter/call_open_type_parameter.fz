@@ -32,7 +32,7 @@ call_open_type_parameter =>
       say O
       say (type_of O)
 
-    say "case1: expecing 'i32 unit f64' and `...#Open_Types<n>`"
+    say "case1: expecting 'i32 unit f64' and `...#Open_Types<n>`"
     x i32 unit f64
 
   say "----"
@@ -47,7 +47,7 @@ call_open_type_parameter =>
       say o
       say (type_of o)
 
-    say "case2: expecing 'i32 unit f64' and `...#Open_Types<n>`"
+    say "case2: expecting 'i32 unit f64' and `...#Open_Types<n>`"
     x i32 unit f64
 
   say "----"
@@ -61,7 +61,7 @@ call_open_type_parameter =>
       say A
       say (type_of A)
 
-    say "case3: expecing 'u16'' and `Type of 'Type`"
+    say "case3: expecting 'u16' and `Type`"
     x u16
 
   say "----"
@@ -82,7 +82,7 @@ call_open_type_parameter =>
       n,s := O.type_foldf (0,0) count_numeric
       say "$n numeric and $s String types"
 
-    say "case4: expecing 3 numerics and 3 strings"
+    say "case4: expecting 4 numerics and 3 strings"
     x u16 u8 u64 String String codepoint (num.complex f64)
 
   say "----"

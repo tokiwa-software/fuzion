@@ -29,20 +29,20 @@
 #
 public trit : choice true_ false_ nil, property.equatable is
 
-  public type.yes trit     => true_
-  public type.no  trit     => false_
-  public type.unknown trit => nil
+  public type.yes trit.this     => true_
+  public type.no  trit.this     => false_
+  public type.unknown trit.this => nil
 
 
-  public fixed is_yes            bool => trit.this =  trit.yes
-  public fixed is_no             bool => trit.this =  trit.no
-  public fixed is_unknown        bool => trit.this =  trit.unknown
-  public fixed is_known          bool => trit.this != trit.unknown
-  public fixed is_yes_or_unknown bool => trit.this != trit.no
-  public fixed is_no_or_unknown  bool => trit.this != trit.yes
+  public is_yes            bool => trit.this =  trit.this.yes
+  public is_no             bool => trit.this =  trit.this.no
+  public is_unknown        bool => trit.this =  trit.this.unknown
+  public is_known          bool => trit.this != trit.this.unknown
+  public is_yes_or_unknown bool => trit.this != trit.this.no
+  public is_no_or_unknown  bool => trit.this != trit.this.yes
 
 
-  public fixed redef type.equality(a,b trit) bool =>
+  public redef type.equality(a,b trit.this) bool =>
     match a
       true_ =>
         match b

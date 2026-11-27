@@ -29,7 +29,7 @@ package dev.flang.lsp.shared;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class MarkdownTool
+class MarkdownTool
 {
 
   private static String escape(String str)

@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Test choice type used as actual type parameter without matching the contstraint
+# Test choice type used as actual type parameter without matching the constraint
 #
 reg_issue3362 is
 

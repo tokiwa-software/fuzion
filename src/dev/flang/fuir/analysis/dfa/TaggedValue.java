@@ -107,9 +107,7 @@ class TaggedValue extends Value implements Comparable<TaggedValue>
   }
 
 
-  /**
-   * Does this Value cover the values in other?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean contains(Value other)
   {
@@ -120,17 +118,7 @@ class TaggedValue extends Value implements Comparable<TaggedValue>
   }
 
 
-  /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   *
-   * @param dfa the current analysis context.
-   *
-   * @param v the value this value should be joined with.
-   *
-   * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
-   */
+  /** {@inheritDoc} */
   @Override
   public Value joinInstances(DFA dfa, Value v, int clazz)
   {

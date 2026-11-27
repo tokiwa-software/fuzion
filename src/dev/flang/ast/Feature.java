@@ -1684,7 +1684,7 @@ public class Feature extends AbstractFeature
   private boolean needsCotypeInFumFile(Resolution res)
   {
     // If we are compiling a module
-    // we can omit creating coptypes that are unused
+    // we can omit creating cotypes that are unused
     // and can not be used from outside the module
     return res._module.name() == FuzionConstants.MAIN_MODULE_NAME
       ? !isUniverse()
@@ -2430,16 +2430,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * resultTypeIfPresentUrgent returns the result type of this feature using the
-   * formal generic argument.
-   *
-   * @param urgent if true and the result type is inferred and inference would
-   * currently not succeed, then enforce it even if that would produce an error.
-   *
-   * @return this feature's result type, null in case the type is currently
-   * unknown since the type inference is incomplete.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType resultTypeIfPresentUrgent(Resolution res, boolean urgent)
   {
@@ -2575,12 +2566,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
-   *
-   * @return the constraint.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType constraint()
   {
@@ -2734,9 +2720,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * Is this base-lib's choice-feature?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean isBaseChoice()
   {

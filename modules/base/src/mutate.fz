@@ -144,7 +144,7 @@ public mutate : effect is
     M.get_if_instated >>? (x -> id = x.id && x.exclusive_thread=concur.Threads.env.current)
 
 
-  # check if the current mutate is a child of 'conur.atomic_mutate'
+  # check if the current mutate is a child of 'concur.atomic_mutate'
   #
   public is_atomic bool
   =>
@@ -180,7 +180,7 @@ public mutate : effect is
 
     # is this element open, i.e., can it be mutated?
     #
-    # NYI: UNDER_DEVELOPMENT: #7705 Proper synchronziation for accesses to this
+    # NYI: UNDER_DEVELOPMENT: #7705 Proper synchronization for accesses to this
     # flag and the mutable field is currently not ensured, the read_fences
     # are most likely insufficient
     #

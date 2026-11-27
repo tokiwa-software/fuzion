@@ -65,7 +65,7 @@ public class Match extends AbstractMatch
 
 
   /**
-   * Static type of this match or null if none. Set by propgateExpectedType.
+   * Static type of this match or null if none. Set by propagateExpectedType.
    */
   private AbstractType _type;
 
@@ -208,22 +208,7 @@ public class Match extends AbstractMatch
   }
 
 
-  /**
-   * Convert this Expression into an assignment to the given field.  In case
-   * this is a expression with several branches such as an "if" or a "match"
-   * expression, add corresponding assignments in each branch and convert this
-   * into a expression that does not produce a value.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param r the field this should be assigned to.
-   *
-   * @return the Expr this Expr is to be replaced with, typically an Assign
-   * that performs the assignment to r.
-   */
+  /** {@inheritDoc} */
   @Override
   Match assignToField(Resolution res, Context context, Feature r)
   {
@@ -237,26 +222,7 @@ public class Match extends AbstractMatch
   }
 
 
-  /**
-   * During type inference: Inform this expression that it is used in an
-   * environment that expects the given type.  In particular, if this
-   * expression's result is assigned to a field, this will be called with the
-   * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   *
-   * @param from for error output: if non-null, produces a String describing
-   * where the expected type came from.
-   *
-   * @return either this or a new Expr that replaces thiz and produces the
-   * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the expression that reads the field.
-   */
+  /** {@inheritDoc} */
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
@@ -301,23 +267,14 @@ public class Match extends AbstractMatch
 
 
 
-  /**
-   * Some Expressions do not produce a result, e.g., a Block
-   * whose last expression is not an expression that produces a result.
-   */
+  /** {@inheritDoc} */
   @Override public boolean producesResult()
   {
     return !_assignedToField;
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -329,13 +286,7 @@ public class Match extends AbstractMatch
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {

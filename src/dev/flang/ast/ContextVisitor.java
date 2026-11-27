@@ -33,7 +33,7 @@ package dev.flang.ast;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class ContextVisitor extends FeatureVisitor
+abstract class ContextVisitor extends FeatureVisitor
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -53,9 +53,9 @@ public abstract class ContextVisitor extends FeatureVisitor
   /**
    * Constructor for a ContextVisitor with the given initial context.
    */
-  ContextVisitor(Context initialConext)
+  ContextVisitor(Context initialContext)
   {
-    this._context = initialConext;
+    this._context = initialContext;
   }
 
 

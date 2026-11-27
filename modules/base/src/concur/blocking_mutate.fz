@@ -152,7 +152,7 @@ public blocking_mutate_using_clock(C : time.Clock) : blocking_mutate_using_clock
   #                            .exclusive_when condition ()->
   #                              # condition was met before timeout
   #         nil => # timeout occurred before condition became true
-  #         r T => # r was returned by code passed ot `exclusive_when`.
+  #         r T => # r was returned by code passed to `exclusive_when`.
   #
   public timeout(deadline time.duration | time.instant)
   is

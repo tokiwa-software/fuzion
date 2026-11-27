@@ -165,13 +165,7 @@ public abstract class AbstractCall extends Expr
   {
     var result = new Constant(AbstractCall.this.pos()) {
 
-      /**
-       * actuals are serialized in order. example
-       * {@code tuple (u8 5) (codepoint u32 72)} results in
-       * the following data:
-       *        b b b b b
-       * u8 ----^ ^^^^^^^--- codepoint u32 (both little endian)
-       */
+      /** {@inheritDoc} */
       @Override
       public byte[] data()
       {
@@ -257,9 +251,7 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  /**
-   * Is this expression a call to {@code type_as_value}?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean isTypeAsValueCall()
   {
@@ -430,10 +422,7 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  /**
-   * If this expression is a Call to a type parameter,
-   * return the type parameters type, otherwise null.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType asTypeParameterType()
   {
@@ -581,9 +570,7 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  /**
-   * Is this Expr a call to an outer ref?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean isCallToOuterRef()
   {
@@ -591,7 +578,7 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  // need to overrid this here since this is not visible for LibraryCall
+  // need to override this here since this is not visible for LibraryCall
   // and we want LibraryCall.typeForInferencing to not return null...
   @Override
   AbstractType typeForInferencing()

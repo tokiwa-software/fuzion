@@ -97,23 +97,15 @@ class ArtificialBuiltInType extends ResolvedNormalType
   public AbstractType outer()
   {
     return null;
+    // NYI: CLEANUP: throw new UnsupportedOperationException("outer of ArtificialBuiltInType");
   }
 
 
-  /**
-   * Id to differentiate artificial types.
-   */
+  /** {@inheritDoc} */
   @Override
-  public int artificialBuiltInID()
+  int artificialBuiltInID()
   {
     return _id;
-  }
-
-
-  @Override
-  public boolean isArtificialType()
-  {
-    return true;
   }
 
 

@@ -100,12 +100,7 @@ public class Select extends Call {
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
+   * {@inheritDoc}
    *
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
@@ -256,7 +251,7 @@ public class Select extends Call {
               }
             else
               {
-                AstErrors.destructuringMisMatch(pos(), va, _totalNames);
+                AstErrors.destructuringMismatch(pos(), va, _totalNames);
               }
           }
         else
@@ -268,14 +263,7 @@ public class Select extends Call {
   }
 
 
-  /**
-   * perform static type checking, i.e., make sure that in all assignments from
-   * actual to formal arguments, the types match.
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this Call is used
-   */
+  /** {@inheritDoc} */
   @Override
   void checkTypes(Resolution res, Context context)
   {

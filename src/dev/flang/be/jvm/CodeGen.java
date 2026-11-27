@@ -162,9 +162,7 @@ class CodeGen
   }
 
 
-  /**
-   * A comment, adds human readable information
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr comment(String s)
   {
@@ -172,9 +170,7 @@ class CodeGen
   }
 
 
-  /**
-   * no operation, like comment, but without giving any comment.
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr nop()
   {
@@ -537,7 +533,7 @@ class CodeGen
         // in case we access the value in a boxed target, unbox it first:
         tv = Expr
           .comment("UNBOXING , boxed type " + clazzInQuotes(tt) + " desired type " + clazzInQuotes(cco))
-          .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getfield works vor unit type (resulting in tv.drop()).
+          .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getFieldOrUnit works for unit type (resulting in tv.drop()).
                                      Names.BOXED_VALUE_FIELD_NAME,
                                      _types.javaType(cco)));
       }
@@ -947,9 +943,7 @@ class CodeGen
   }
 
 
-  /**
-   * For a given value v of value type vc create a boxed ref value of type rc.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> box(int s, Expr val, int vc, int rc)
   {
@@ -967,9 +961,7 @@ class CodeGen
   }
 
 
-  /**
-   * Get the current instance
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> current(int s)
   {
@@ -1053,9 +1045,7 @@ class CodeGen
   }
 
 
-  /**
-   * Get a constant value of type constCl with given byte data d.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> constData(int si, int constCl, byte[] d)
   {
@@ -1270,11 +1260,7 @@ class CodeGen
   }
 
 
-  /**
-   * Generate code to terminate the execution immediately.
-   *
-   * @param msg a message explaining the illegal state
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr reportErrorInCode(String msg)
   {

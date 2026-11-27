@@ -234,18 +234,21 @@ public class List<T>
    */
   public String toString(String pre, String sep, String term)
   {
-    var res = new StringBuilder().append(pre);
+    var res = new StringBuilder();
     Iterator<T> it = iterator();
     if (it.hasNext())
       {
-        res.append(it.next());
+        res.
+          append(pre).
+          append(it.next());
         while (it.hasNext())
           {
-            res.append(sep)
-               .append(it.next());
+            res
+              .append(sep)
+              .append(it.next());
           }
+        res.append(term);
       }
-    res.append(term);
     return res.toString();
   }
 

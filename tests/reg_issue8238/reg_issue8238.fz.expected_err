@@ -22,6 +22,7 @@ assignable to constraint: 'Any',
                           'property.hashable',
                           'property.orderable',
                           'property.partially_orderable',
+                          'tuple',
                           'unit'
 
 
@@ -111,6 +112,7 @@ assignable to constraint: 'Any',
                           'property.hashable',
                           'property.orderable',
                           'property.partially_orderable',
+                          'tuple',
                           'unit'
 
 
@@ -124,6 +126,7 @@ assignable to constraint: 'Any',
                           'property.hashable',
                           'property.orderable',
                           'property.partially_orderable',
+                          'tuple',
                           'unit'
 
 
