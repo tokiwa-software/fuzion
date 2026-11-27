@@ -6,13 +6,13 @@ PASSED: g1b AAAA infer AAAA==bool
 PASSED: g1b AAAA infer AAAA==string
 nothing1 is ()
 nothing2 is ()
-nothing3 is ()
+nothing3 is unit
 nothing4 is ()
 nothing5 is ()
-nothing6 is ()
+nothing6 is unit
 nothing7 is ()
 nothing8 is ()
-nothing9 is ()
+nothing9 is unit
 one2 is 42
 PASSED: one2
 two2 is 4, 2
