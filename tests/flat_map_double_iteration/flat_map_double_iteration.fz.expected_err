@@ -1,0 +1,2 @@
+flat_map result iterated twice, this is a potential performance problem
+To solve, use as_array on result before evaluating it.
