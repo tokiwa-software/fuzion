@@ -804,6 +804,7 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
         _originalGenerics = g.map2(x -> x instanceof HasSourcePosition p ? p : null);
         _splitOffGenerics = g.freeze();
         _actuals = a;
+        _type = null;
       }
   }
 
