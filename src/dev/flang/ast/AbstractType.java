@@ -2228,7 +2228,7 @@ there is no common super type of the two types (Types.t_ERROR)
    *     a : choice bool i64 is
    *       type.answer a.this => 42
    *
-   * the result type of {@code a.type.answer} is a relay type, the corrsponding {@code thisType} is
+   * the result type of {@code a.type.answer} is a relay type, the corresponding {@code thisType} is
    * `a.this`.
    *
    * @return the corresponding {@code thisType} iff {@code isRelayType()}, otherwise {@code this}.
