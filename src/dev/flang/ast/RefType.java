@@ -66,23 +66,9 @@ public class RefType extends ReturnType
    * @return true for a constructor return type.
    */
   @Override
-  public boolean isConstructorType()
+  boolean isConstructorType()
   {
     return true;
-  }
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
-  @Override
-  public void visit(FeatureVisitor v, AbstractFeature outer)
-  {
   }
 
 

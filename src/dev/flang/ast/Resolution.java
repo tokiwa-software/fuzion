@@ -151,20 +151,6 @@ public class Resolution extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
-  /**
-   * FeatureVisitor to call resolve() on all types.
-   *
-   * This is used during state RESOLVING_DECLARATIONS to find called features.
-   */
-  FeatureVisitor resolveTypesOnly(AbstractFeature f)
-  {
-    var c = f.context();
-    return new FeatureVisitor()
-      {
-        @Override public AbstractType action(AbstractType t) { return t.resolve(Resolution.this, c); }
-      };
-  }
-
   Feature.ResolveTypes resolveTypesFully(AbstractFeature f)
   {
     return new Feature.ResolveTypes(this, f.context());

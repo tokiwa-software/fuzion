@@ -1275,7 +1275,6 @@ public class Feature extends AbstractFeature
           (Errors.any() || c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
     _impl.visit(v, this);
-    _returnType.visit(v, this);
   }
 
 
@@ -1439,12 +1438,11 @@ public class Feature extends AbstractFeature
 
         if (CHECKS) check
           (_state == State.RESOLVING_DECLARATIONS);
-        /**
-         * Find all the types used in this that refer to formal generic arguments of
-         * this or any of this' outer classes.
-         */
-        resolveArgumentTypes(res);
-        visit(res.resolveTypesOnly(this));
+
+        resolveReturnTypes(res);
+
+        // NYI: CLEANUP: unclear why this is necessary?
+        _inherits.forEach(c -> ((Call)c).resolveGenerics(res, context()));
 
         _state = State.RESOLVED_DECLARATIONS;
         while (!whenResolvedDeclarations.isEmpty())
@@ -1456,6 +1454,27 @@ public class Feature extends AbstractFeature
 
     if (POSTCONDITIONS) ensure
       (_state.atLeast(State.RESOLVING_DECLARATIONS));
+  }
+
+
+  /**
+   * This resolves the type of the return type of the feature and
+   * the type of the return type of all value arguments.
+   *
+   * This is necessary for the free type mechanism to work
+   *
+   * @param res the resolution instance
+   */
+  private void resolveReturnTypes(Resolution res) {
+    valueArguments().stream().forEach(a ->
+      {
+        if (a instanceof Feature af)
+          {
+            af.returnType().resolveType(res, a.context());
+          }
+      }
+    );
+    returnType().resolveType(res, context());
   }
 
 
@@ -1515,9 +1534,7 @@ public class Feature extends AbstractFeature
     }
 
     @Override public Expr         action      (This            t) { return t.resolveTypes      (res,   _context); }
-    @Override public AbstractType action      (AbstractType    t) { return t.resolve           (res,   _context); }
     @Override public Expr         action      (AbstractCurrent c) { return c.resolveTypes      (res,   _context); }
-
     @Override public boolean doVisitActuals() { return false; }
   }
 
@@ -1533,18 +1550,6 @@ public class Feature extends AbstractFeature
   public boolean isExtensionFeature()
   {
     return _qname.size() > 1 && _qname.get(0) != FuzionConstants.TYPE_NAME;
-  }
-
-
-  /**
-   * Resolve argument types such that type parameters for free types will be
-   * added.
-   *
-   * @param res the resolution instance.
-   */
-  void resolveArgumentTypes(Resolution res)
-  {
-    valueArguments().stream().forEach(a -> { if (a instanceof Feature af) af.returnType().resolveArgumentType(res, af); } );
   }
 
 
@@ -2070,6 +2075,11 @@ A ((Choice)) declaration must not contain a result type.
 
     _state = State.CHECKING_TYPES;
 
+    if (!isRelayTypeParameter())
+      {
+        returnType().checkType(context());
+      }
+
     choiceTypeCheckAndInternalFields(res);
 
     visit(new ContextVisitor(context()) {
@@ -2080,7 +2090,6 @@ A ((Choice)) declaration must not contain a result type.
         @Override public Expr         action(Constant       c) {        c.checkRange(); return c;               }
         @Override public Expr         action(AbstractMatch  m) {        m.checkTypes(_context); return m; }
         @Override public Expr         action(InlineArray    i) {        i.checkTypes(_context); return i; }
-        @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
         @Override public Expr         action(Function       f) { return f.checkTypes();                         }
       });

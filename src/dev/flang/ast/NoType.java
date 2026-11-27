@@ -66,44 +66,9 @@ public class NoType extends ReturnType
    * @return true for a constructor return type.
    */
   @Override
-  public boolean isConstructorType()
+  boolean isConstructorType()
   {
     return false;
-  }
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
-  @Override
-  public void visit(FeatureVisitor v, AbstractFeature outer)
-  {
-  }
-
-
-  /**
-   * Resolve the type this function returns. This is needed to resolve free
-   * types used in an argument type, which change the number of type parameters
-   * in a call.
-   *
-   * @param res the resolution instance
-   *
-   * @param outer the outer feature, which is the argument this is the result
-   * type of.
-   */
-  @Override
-  void resolveArgumentType(Resolution res, Feature outer)
-  {
-    if (PRECONDITIONS) require
-      (outer.isArgument(),
-       this == outer.returnType());
-
-    // result type will be inferred from actual arg, nothing to be done here.
   }
 
 

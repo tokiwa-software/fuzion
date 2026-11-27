@@ -80,7 +80,7 @@ public class FunctionReturnType extends ReturnType
    * @return true for a constructor return type, false for a function.
    */
   @Override
-  public boolean isConstructorType()
+  boolean isConstructorType()
   {
     return false;
   }
@@ -92,7 +92,7 @@ public class FunctionReturnType extends ReturnType
    * @return the function return type.
    */
   @Override
-  public AbstractType functionReturnType(boolean allowIncomplete)
+  AbstractType functionReturnType(boolean allowIncomplete)
   {
     return _type == Types.t_UNDEFINED || _type.isIncompleteType() && !allowIncomplete
       ? null
@@ -102,50 +102,33 @@ public class FunctionReturnType extends ReturnType
 
   /** {@inheritDoc} */
   @Override
-  public SourcePosition posOrNull()
+  SourcePosition posOrNull()
   {
     return _pos;
   }
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
+   * @see dev.flang.ast.ReturnType#resolveType(dev.flang.ast.Resolution, dev.flang.ast.Context)
    */
   @Override
-  public void visit(FeatureVisitor v, AbstractFeature outer)
+  void resolveType(Resolution res, Context context)
   {
-    _type = _type.visit(v, outer);
-    if (CHECKS) check
-      (_type != null);
+    _type = _type.resolve(res, context);
   }
 
-
   /**
-   * Resolve the type this function returns. This is needed to resolve free
-   * types used in an argument type, which change the number of type parameters
-   * in a call.
-   *
-   * @param res the resolution instance
-   *
-   * @param outer the outer feature, which is the argument this is the result
-   * type of.
+   * @see dev.flang.ast.ReturnType#checkType(dev.flang.ast.Context)
    */
   @Override
-  void resolveArgumentType(Resolution res, Feature outer)
+  void checkType(Context context)
   {
-    if (PRECONDITIONS) require
-      (outer.isArgument(),
-       this == outer.returnType());
-
-    res.resolveDeclarations(outer);
-    _type = _type.resolve(res, outer.context());
-    if (CHECKS) check
-      (_type != null);
+    _type.selfOuterAndGenerics(t -> {
+      switch (t.kind()) {
+        case RefType, ValueType -> AbstractType.checkActualTypePars(context, t.feature(), t.generics(), t.originalGenericsPos(), _pos, x->x);
+        case ParametricType, ThisType -> {}
+      }
+    });
   }
 
 

@@ -1,0 +1,55 @@
+
+check_type_pars.fz:27:28: error 1: Incompatible type parameter 'fuzion' for 'HK : property.hashable'
+  a(HM: container.hash_map fuzion unit) is
+---------------------------^^^^^^
+formal type parameter 'HK : property.hashable'
+actual type parameter 'fuzion'
+assignable to constraint: 'Any',
+                          'fuzion'
+
+
+check_type_pars.fz:33:24: error 2: Incompatible type parameter 'fuzion' for 'HK : property.hashable'
+  c container.hash_map fuzion unit => abstract
+-----------------------^^^^^^
+formal type parameter 'HK : property.hashable'
+actual type parameter 'fuzion'
+assignable to constraint: 'Any',
+                          'fuzion'
+
+
+check_type_pars.fz:36:27: error 3: Incompatible type parameter 'fuzion' for 'HK : property.hashable'
+  d (e container.hash_map fuzion unit) unit =>
+--------------------------^^^^^^
+formal type parameter 'HK : property.hashable'
+actual type parameter 'fuzion'
+assignable to constraint: 'Any',
+                          'fuzion'
+
+
+check_type_pars.fz:40:39: error 4: Incompatible type parameter 'fuzion' for 'HK : property.hashable'
+  aa(HM: Sequence (container.hash_map fuzion unit)) is
+--------------------------------------^^^^^^
+formal type parameter 'HK : property.hashable'
+actual type parameter 'fuzion'
+assignable to constraint: 'Any',
+                          'fuzion'
+
+
+check_type_pars.fz:44:35: error 5: Incompatible type parameter 'fuzion' for 'HK : property.hashable'
+  cc Sequence (container.hash_map fuzion unit) => abstract
+----------------------------------^^^^^^
+formal type parameter 'HK : property.hashable'
+actual type parameter 'fuzion'
+assignable to constraint: 'Any',
+                          'fuzion'
+
+
+check_type_pars.fz:46:38: error 6: Incompatible type parameter 'fuzion' for 'HK : property.hashable'
+  dd (e Sequence (container.hash_map fuzion unit)) unit =>
+-------------------------------------^^^^^^
+formal type parameter 'HK : property.hashable'
+actual type parameter 'fuzion'
+assignable to constraint: 'Any',
+                          'fuzion'
+
+6 errors.

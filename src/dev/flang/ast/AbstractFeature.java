@@ -810,7 +810,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                       {
                         if (res != null)
                           {
-                            af.returnType().resolveArgumentType(res, af);
+                            res.resolveDeclarations(af);
                           }
                         t = af.returnType().functionReturnType();
                       }
@@ -851,10 +851,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             AbstractType t;
             if (a instanceof Feature af)
               {
-                if (res != null)
-                  {
-                    af.returnType().resolveArgumentType(res, af);
-                  }
                 t = af.returnType().functionReturnType();
               }
             else

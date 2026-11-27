@@ -896,13 +896,6 @@ public class Call extends AbstractCall
 
     var calledName = FeatureName.get(_name, _actuals.size());
     var fos = res._module.lookup(target, _name, this, _target == null, false, isFixedFor);
-    for (var fo : fos)
-      {
-        if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
-          {
-            ff.resolveArgumentTypes(res);
-          }
-      }
     var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
       ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
     return new Pair<>(fos, fo);
@@ -1117,13 +1110,6 @@ public class Call extends AbstractCall
       (targetFeature  != null);
 
     var fos = res._module.lookup(targetFeature, _name, this, _target == null, true);
-    for (var fo : fos)
-      {
-        if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
-          {
-            ff.resolveArgumentTypes(res);
-          }
-      }
     return FeatureAndOuter
       .findExactOrCandidate(
         fos,
@@ -1382,7 +1368,6 @@ public class Call extends AbstractCall
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this);
-    _generics = _generics.map(g -> g.visit(v, outer));
     if (v.doVisitActuals())
       {
         visitActuals(v, outer);
@@ -3177,7 +3162,7 @@ public class Call extends AbstractCall
   /**
    * Resolve the generics of this call.
    */
-  private void resolveGenerics(Resolution res, Context context)
+  void resolveGenerics(Resolution res, Context context)
   {
     _generics = res.resolveTypes(_generics, context);
   }
@@ -3394,6 +3379,17 @@ public class Call extends AbstractCall
               _originalGenerics,
               pos(),
               constraint -> adjustType(res, context, constraint, null));
+
+            // NYI: BUG: does not work for #4354
+            //
+            // _generics.forEach(g -> {
+            //   g.selfOuterAndGenerics(x -> {
+            //     if (x.isPlainType())
+            //       {
+            //         AbstractType.checkActualTypePars(context, x.feature(), x.generics(), x.originalGenericsPos(), _pos, constraint -> adjustType(res, context, constraint, null));
+            //       }
+            //   });
+            // });
           }
       }
   }

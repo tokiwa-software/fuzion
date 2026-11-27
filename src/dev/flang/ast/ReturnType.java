@@ -47,7 +47,7 @@ public abstract class ReturnType extends ANY
   /**
    * Constructor
    */
-  public ReturnType()
+  ReturnType()
   {
   }
 
@@ -60,7 +60,7 @@ public abstract class ReturnType extends ANY
    *
    * @return the source position or null if there is none (e.g. for NoType).
    */
-  public SourcePosition posOrNull()
+  SourcePosition posOrNull()
   {
     return null;
   }
@@ -71,7 +71,7 @@ public abstract class ReturnType extends ANY
    *
    * @return true for a constructor return type, false for a function.
    */
-  public abstract boolean isConstructorType();
+  abstract boolean isConstructorType();
 
 
   /**
@@ -79,7 +79,7 @@ public abstract class ReturnType extends ANY
    *
    * @return the function result type.
    */
-  public AbstractType functionReturnType()
+  AbstractType functionReturnType()
   {
     return functionReturnType(false);
   }
@@ -93,7 +93,7 @@ public abstract class ReturnType extends ANY
    *
    * @return the function result type.
    */
-  public AbstractType functionReturnType(boolean allowIncomplete)
+  AbstractType functionReturnType(boolean allowIncomplete)
   {
     if (PRECONDITIONS) require
       (!isConstructorType());
@@ -103,36 +103,21 @@ public abstract class ReturnType extends ANY
 
 
   /**
-   * visit all the expressions within this feature.
+   * Used for checking an explicitly given return type for validity.
    *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
+   * @param context the source code context where this return type is used
    */
-  public abstract void visit(FeatureVisitor v, AbstractFeature outer);
+  void checkType(Context context) { }
 
 
   /**
-   * Resolve the type this function returns. This is needed to resolve free
-   * types used in an argument type, which change the number of type parameters
-   * in a call.
+   * used for resolving the (explicit) type of a return type
    *
    * @param res the resolution instance
    *
-   * @param outer the outer feature, which is the argument this is the result
-   * type of.
+   * @param context the source code context where this return type is used
    */
-  void resolveArgumentType(Resolution res, Feature outer)
-  {
-    if (PRECONDITIONS) require
-      (outer.isArgument(),
-       this == outer.returnType());
-
-    // this will be redefined in FunctionReturnType, which is the return type of
-    // arguments.
-    throw new Error("Unexpected ReturnType of argument " + getClass());
-  }
+  void resolveType(Resolution res, Context context) { }
 
 
 }

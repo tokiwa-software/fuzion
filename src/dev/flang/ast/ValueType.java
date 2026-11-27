@@ -32,7 +32,7 @@ package dev.flang.ast;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ValueType extends ReturnType
+class ValueType extends ReturnType
 {
 
 
@@ -42,7 +42,7 @@ public class ValueType extends ReturnType
   /**
    * The singleton instance.
    */
-  public static final ValueType INSTANCE = new ValueType();
+  static final ValueType INSTANCE = new ValueType();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -66,23 +66,9 @@ public class ValueType extends ReturnType
    * @return true for a constructor return type.
    */
   @Override
-  public boolean isConstructorType()
+  boolean isConstructorType()
   {
     return true;
-  }
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
-  @Override
-  public void visit(FeatureVisitor v, AbstractFeature outer)
-  {
   }
 
 
