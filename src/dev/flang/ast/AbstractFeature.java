@@ -1531,7 +1531,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        Errors.any() || !t.isOpenGeneric() || (select >= 0),
        inh != null);
 
-    return handDownListThroughInheritsCalls(new List<>(t), inh, select).get(0);
+    return handDownListThroughInheritsCalls1(new List<>(t), inh, select).get(0);
   }
 
 
@@ -1545,7 +1545,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public static List<AbstractType> handDownListThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh)
   {
-    return handDownListThroughInheritsCalls(l, inh, NO_SELECT);
+    return handDownListThroughInheritsCalls1(l, inh, NO_SELECT);
   }
 
 
@@ -1557,7 +1557,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param inh the inheritance chain along which types should be handed down.
    */
-  public static List<AbstractType> handDownListThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh, int select)
+  private static List<AbstractType> handDownListThroughInheritsCalls1(List<AbstractType> l, List<AbstractCall> inh, int select)
   {
     if (PRECONDITIONS) require
       (l != null,
@@ -1565,30 +1565,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     for (AbstractCall c : inh)
       {
-        l = handDownListThroughInheritsCall(l, select, c);
+        l = l.flatMap(t ->
+                 // first, apply type pars using target type
+                 (t.isOpenGeneric() || c.target().typeForInferencing() == null
+                    ? t
+                    : t.applyTypePars(c.target().type()))
+                 // then apply type pars using the call
+                 .applyTypeParsMaybeOpen(c.calledFeature(), c.actualTypeParameters(), select)
+               );
       }
     return l;
-  }
-
-
-  /**
-   * Hand down l in the inheritance call c
-   *
-   * @param l the list of types to be handed down.
-   *
-   * @param c the inheritance call where l is supposed to be handed down
-   */
-  private static List<AbstractType> handDownListThroughInheritsCall(List<AbstractType> l, int select, AbstractCall c)
-  {
-    return l
-      .flatMap(t ->
-          // first, apply type pars using target type
-          (t.isOpenGeneric() || c.target().typeForInferencing() == null
-             ? t
-             : t.applyTypePars(c.target().type()))
-          // then apply type pars using the call
-          .applyTypeParsMaybeOpen(c.calledFeature(), c.actualTypeParameters(), select)
-        );
   }
 
 

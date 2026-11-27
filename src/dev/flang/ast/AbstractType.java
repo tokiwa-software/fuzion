@@ -844,8 +844,8 @@ NYI: UNDER DEVELOPMENT:
    * exactly one element.
    */
   List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
-                                                   List<AbstractType> actualTypes,
-                                                   int select)
+                                            List<AbstractType> actualTypes,
+                                            int select)
   {
     return isOpenGeneric() && typeParameter().outer() == f && select == NO_SELECT
       ? typeParameter().replaceOpen(actualTypes)
