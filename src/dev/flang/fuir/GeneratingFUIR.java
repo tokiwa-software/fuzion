@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayDeque;
@@ -1840,16 +1842,20 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var cc = clazz(cl);
-    var vcc = cc.asValue();
 
-    if (CHECKS) check
-      (vcc.isValue());
+    var vc = NO_CLAZZ;
+    if (cc._select == NO_SELECT)
+      {
+        var vcc = cc.asValue();
 
-    var vc = vcc._id;
+        if (CHECKS) check
+          (vcc.isValue());
 
-    if (POSTCONDITIONS) ensure
-      (!clazzIsRef(vc));
+        vc = vcc._id;
 
+        if (CHECKS) check
+          (!clazzIsRef(vc));
+      }
     return vc;
   }
 

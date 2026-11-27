@@ -178,13 +178,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * For a clazz with isRef()==true, this will be set to a value version of this
-   * clazz.
-   */
-  private Clazz _asValue;
-
-
-  /**
    * The type of the result of calling thiz clazz.
    *
    * This is initialized after Clazz creation by dependencies().
@@ -319,7 +312,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        !type.containsThisType(),
        // NYI: UNDER DEVELOPMENT: currently not possible because of type_as_value and `Type.infix :`
        //  !type.feature().isTypeParameter(),
-       type.feature().resultType().isOpenGeneric() == (select >= 0),
+       type.feature().resultType().isOpenGeneric() != (select == NO_SELECT),
        type != Types.t_ERROR,
        // outer clazzes of fields must be values
        outer == null || outer.isValue() || !type.feature().isField());
@@ -1570,25 +1563,16 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
-  // cache field for asRef()
-  private Clazz _asRef = null;
   /**
    * In case this is a Clazz of value type, create the corresponding reference clazz.
    */
   Clazz asRef()
   {
-    // if _select == NO_SELECT we use caching of _fuir.clazz
-    var result = _select == NO_SELECT
-      ? _fuir.clazz(_type.asRef())
-      : _asRef;
-    if (result == null)
-      {
-        result = isRef()
-          ? this
-          : _fuir.clazz(_outer, _type.asRef(), _select);
-        _asRef = result;
-      }
-    return result;
+    // would be weird to call asRef on a field of open parametric type
+    if (PRECONDITIONS) require
+      (_select == NO_SELECT);
+
+    return _fuir.clazz(_type.asRef());
   }
 
 
@@ -2054,21 +2038,11 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz asValue()
   {
-    // if _select == NO_SELECT we use caching of _fuir.clazz
-    _asValue = _select == NO_SELECT
-      ? _fuir.clazz(_type.asValue())
-      : _asValue;
-    if (_asValue == null)
-      {
-        _asValue = isRef()
-          ? _fuir.clazz(_outer, _type.asValue(), _select)
-          : this;
-      }
+    // would be weird to call asValue on a field of open parametric type
+    if (PRECONDITIONS) require
+      (_select == NO_SELECT);
 
-    if (CHECKS) check
-      (_asValue.isValue());
-
-    return _asValue;
+    return _fuir.clazz(_type.asValue());
   }
 
 }
