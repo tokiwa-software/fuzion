@@ -896,8 +896,26 @@ public class GeneratingFUIR extends FUIR
        actualType != Types.t_ERROR);
 
     // NYI: BUG: test needed for: "Recursive value type is not allowed"
+    // NYI: CLEANUP: just use the result of  adjustOuter(outer, actualType) for
+    // checking if we have a recursive value type...
     checkIfRecursiveValueType(actualType, outer);
 
+    var cl = new Clazz(this, adjustOuter(outer, actualType), select);
+    var existing = _clazzesTM.get(cl);
+    if (existing == null)
+      {
+        init(cl);
+      }
+    return existing == null
+      ? cl
+      : existing;
+  }
+
+
+  /**
+   * Adjust the outer of actualType to the given outer clazz `outer`
+   */
+  private AbstractType adjustOuter(Clazz outer, AbstractType actualType) {
     // normalize outer to be value in case t describes a field
     // NYI: CLEANUP: ugly special handling.
     // outers of fields are currently normalized to be values
@@ -907,15 +925,7 @@ public class GeneratingFUIR extends FUIR
     actualType = outer != null
       ? actualType.replaceGenericsAndOuter(actualType.generics(), outer._type)
       : actualType;
-    var cl = new Clazz(this, outer, actualType, select);
-    var existing = _clazzesTM.get(cl);
-    if (existing == null)
-      {
-        init(cl);
-      }
-    return existing == null
-      ? cl
-      : existing;
+    return actualType;
   }
 
 

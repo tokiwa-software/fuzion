@@ -294,8 +294,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @fuir FUIR instance used to lookup reference clazzes
    *
-   * @param outer the outer clazz, will be normalized before it is used.
-   *
    * @param type the actual type this clazz is built on. The actual type must
    * not be a generic argument.
    *
@@ -303,7 +301,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    * open generic parameter, select specifies the actual generic to be used.
    */
   Clazz(GeneratingFUIR fuir,
-        Clazz outer,
         AbstractType type,
         int select)
   {
@@ -315,13 +312,13 @@ class Clazz extends ANY implements Comparable<Clazz>
        type.feature().resultType().isOpenGeneric() != (select == NO_SELECT),
        type != Types.t_ERROR,
        // outer clazzes of fields must be values
-       outer == null || outer.isValue() || !type.feature().isField());
+       !type.feature().isField() || type.outer().isValue());
 
     _fuir = fuir;
     _select = select;
     _needsCode = false;
     _code = IR.NO_SITE;
-    _outer = outer;
+    _outer = type.outer() == null ? null : _fuir.clazz(type.outer());
     _type = type;
     _feature = (FuirFeature) _type.feature();
 
