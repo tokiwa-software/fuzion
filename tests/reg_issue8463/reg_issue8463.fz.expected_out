@@ -1,0 +1,9 @@
+()
+(3)
+(hi, 3.14, unit, 2+3i)
+()
+(3)
+(hi, 3.14, unit, 2+3i)
+instance[reg_issue8463.testA1]
+unit --nil-- 12
+12

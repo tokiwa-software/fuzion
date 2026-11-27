@@ -1694,6 +1694,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     var f = feature();
     var o = _outer;
+    // NYI: CLEANUP: Would be nice to use `findInheritanceChain`, i.e., not to cluelessly try ouer luck
     var inh = o.feature().tryFindInheritanceChain(f.outer());
     if (inh != null && inh.size() > 0)
       { // type parameter was inherited, so get value from parameter of inherits call:
@@ -1915,38 +1916,24 @@ class Clazz extends ANY implements Comparable<Clazz>
    * clazz.  The resulting list could be empty.
    *
    * @param ft the type that is an open generic
-   *
-   * @param fouter the outer feature where ft is used. This might be an heir of
-   * _outer.feature() in case ft is the result type of an inherited feature.
    */
-  List<AbstractType> replaceOpen(AbstractType ft, AbstractFeature fouter)
+  List<AbstractType> replaceOpen(AbstractType ft)
   {
     if (PRECONDITIONS) require
       (Errors.any() || ft.isOpenGeneric());
 
-    List<AbstractType> types;
-    var inh = _outer == null ? null : _outer.feature().tryFindInheritanceChain(fouter.outer());
     var declaredIn = ft.typeParameter().outer();
-    if (inh != null &&
-        inh.stream().anyMatch(c -> c.calledFeature() == declaredIn))
-      {
-        types = fouter.outer().handDown(new List<>(ft), _outer.feature());
-      }
-    else if (feature() == declaredIn)
-      {
-        types = ft.typeParameter().replaceOpen(_type.generics());
-      }
-    else if (_outer != null)
-      {
-        types = _outer.replaceOpen(ft, fouter);
-      }
-    else
-      {
-        if (CHECKS) check
-          (Errors.any());
-        types = new List<>();
-      }
-    return types;
+
+    // NYI: CLEANUP: Would be nice to use `findInheritanceChain`, i.e., not to cluelessly try every `_outer`
+    var inh = feature().tryFindInheritanceChain(declaredIn);
+
+    if (CHECKS) check
+      (Errors.any() || inh != null || _outer != null);
+
+    return
+      inh != null    ? actualGenerics(new List<>(ft), inh) :
+      _outer != null ? _outer.replaceOpen(ft)
+                     : new List<>();
   }
 
 
@@ -1961,7 +1948,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (Errors.any() || a != Types.f_ERROR || a.resultType().isOpenGeneric());
 
-    return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType(), a.outer()).size();
+    return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType()).size();
   }
 
 
