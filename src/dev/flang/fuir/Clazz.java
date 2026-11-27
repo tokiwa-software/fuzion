@@ -322,7 +322,8 @@ class Clazz extends ANY implements Comparable<Clazz>
        type.feature().resultType().isOpenGeneric() == (select >= 0),
        type != Types.t_ERROR,
        // outer clazzes of fields must be values
-       outer == null || outer.isValue() || !type.feature().isField());
+       outer == null || outer.isValue() || !type.feature().isField(),
+       outer == null || outer._select == NO_SELECT);
 
     _fuir = fuir;
     _select = select;
