@@ -175,6 +175,24 @@ public abstract_array
     (slice i.as_i64 length).as_list
 
 
+  public redef fixed as_dynamic_list container.Dynamic_List T
+  =>
+    dc(i i64) : Dynamic_Cons T is
+      public redef head T
+      =>
+        abstract_array.this[i]
+
+      public redef fixed tail nil | dc
+      =>
+        i = length ? nil
+                   : dc i+1
+
+    _ : container.Dynamic_List T is
+      public redef use(DA : Dynamic_Applicator T, da DA) unit
+      =>
+        da.apply dc (id (nil | dc) (length = 0 ? nil : dc 0))
+
+
   # create a slice from this array's elements at index 'from' (included)
   # up to 'to' (excluded).
   #

@@ -108,6 +108,28 @@ is
   public redef fixed as_list list A => list.this
 
 
+  public redef fixed as_dynamic_list container.Dynamic_List A
+  =>
+    dc(c Cons A (list A)) : Dynamic_Cons A is
+      public redef head A
+      =>
+        c.head
+
+      public redef fixed tail nil | dc
+      =>
+        c.tail ? nil     => nil
+               | c2 Cons => dc c2
+
+    _ : container.Dynamic_List A is
+      public redef use(DA : Dynamic_Applicator A, da DA) unit
+      =>
+        da.apply dc (id (nil | dc) (list.this ? nil    => nil
+                                              | c Cons => dc c))
+
+
+
+
+
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
