@@ -1931,22 +1931,19 @@ class Clazz extends ANY implements Comparable<Clazz>
    * clazz.  The resulting list could be empty.
    *
    * @param ft the type that is an open generic
-   *
-   * @param fouter the outer feature where ft is used. This might be an heir of
-   * _outer.feature() in case ft is the result type of an inherited feature.
    */
-  List<AbstractType> replaceOpen(AbstractType ft, AbstractFeature fouter)
+  List<AbstractType> replaceOpen(AbstractType ft)
   {
     if (PRECONDITIONS) require
       (Errors.any() || ft.isOpenGeneric());
 
     var declaredIn = ft.typeParameter().outer();
     List<AbstractType> types;
-    var inh = feature().tryFindInheritanceChain(fouter);
+    var inh = feature().tryFindInheritanceChain(declaredIn);
     if (inh != null &&
         inh.stream().anyMatch(c -> c.calledFeature() == declaredIn))
       {
-        types = fouter.handDown(new List<>(ft), feature());
+        types = declaredIn.handDown(new List<>(ft), feature());
       }
     else if (feature() == declaredIn)
       {
@@ -1954,7 +1951,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (_outer != null)
       {
-        types = _outer.replaceOpen(ft, fouter.outer());
+        types = _outer.replaceOpen(ft);
       }
     else
       {
@@ -1977,7 +1974,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (Errors.any() || a != Types.f_ERROR || a.resultType().isOpenGeneric());
 
-    return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType(), a.outer()).size();
+    return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType()).size();
   }
 
 
