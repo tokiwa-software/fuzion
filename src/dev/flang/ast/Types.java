@@ -317,11 +317,11 @@ public class Types extends ANY
       f_effect_types_type_foldf = f_effect_types      .get(mod, "type_foldf", 4);
       f_Open_Types              = universe            .get(mod, FuzionConstants.OPEN_TYPES_FEAT, 0);
       f_Open_Types_type_foldf   = f_Open_Types        .get(mod, "type_foldf", 4);
-      f_Values_Of_Open_Type     = universe            .get(mod, FuzionConstants.VALUES_OF_OPEN_TYPE_FEAT, 0);
+      f_Values_Of_Open_Type     = universe            .get(mod, FuzionConstants.VALUES_OF_OPEN_TYPE_FEAT, 1);
       f_container               = universe            .get(mod, "container", 0);
       f_type_applicator         = f_container         .get(mod, FuzionConstants.TYPE_APPLICATOR_FEAT, 1);
       f_type_applicator_apply   = f_type_applicator   .get(mod, FuzionConstants.TYPE_APPLICATOR_APPLY_FEAT, 2);
-      f_typed_applicator        = f_container         .get(mod, FuzionConstants.TYPED_APPLICATOR_FEAT, 1);
+      f_typed_applicator        = f_container         .get(mod, FuzionConstants.TYPED_APPLICATOR_FEAT, 2);
       f_typed_applicator_apply  = f_typed_applicator  .get(mod, FuzionConstants.TYPED_APPLICATOR_APPLY_FEAT, 3);
       f_Type                    = universe            .get(mod, FuzionConstants.TYPE_FEAT, 0);
       f_Type_infix_colon        = f_Type              .get(mod, "infix :", 1);

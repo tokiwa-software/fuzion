@@ -39,7 +39,9 @@
 # `Sequence` is available here, but at the cost of boxing into `Typed_Value`
 # references values.
 #
-public Typed_Sequence ref : Sequence container.Typed_Value is
+public Typed_Sequence(# constraint on the types this is applied to, `Any` if none.
+                      C : Any
+                     ) ref : Sequence (container.Typed_Value C) is
 
 
   # create a list from this Typed_Sequence.
@@ -47,14 +49,14 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   # Note that this creates boxed ref instances of `Typed_Value`.  The preferred
   # means to access the values is via a call to `typed_foldf`.
   #
-  public redef as_list list container.Typed_Value =>
+  public redef as_list list (container.Typed_Value C) =>
 
     as_reverse_list : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
-                      container.typed_applicator (list container.Typed_Value) is
+                      container.typed_applicator C (list (container.Typed_Value C)) is
 
-      public redef apply(A : Any, e (list container.Typed_Value), v A) list container.Typed_Value
+      public redef apply(A : C, e (list (container.Typed_Value C)), v A) list (container.Typed_Value C)
       =>
-        container.typed_value v : e
+        container.typed_value C A v : e
 
     typed_foldf nil as_reverse_list .reverse_list
 
@@ -77,7 +79,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   public redef count i64
   =>
     count_elements : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
-                     container.typed_applicator i64 is
+                     container.typed_applicator C i64 is
       public redef apply(A : Any, e i64, v A) i64 => e + 1
 
     typed_foldf 0 count_elements
@@ -88,7 +90,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
-  public typed_foldf(E : Any, A : container.typed_applicator E, e E, a A) E
+  public typed_foldf(E : Any, A : container.typed_applicator C E, e E, a A) E
   =>
     abstract
 
@@ -118,7 +120,18 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
 #
 #       res    # field `res` will receive the result of last `apply`
 #
-public typed_fold(E : Any, e E, s container.Typed_Sequence) : container.typed_applicator E is
+public typed_fold(# constraint on the types this is applied to, `Any` if none.
+                  C : Any,
+
+                  # type of cumulative value
+                  E : Any,
+
+                  # initial cumulative value
+                  e E,
+
+                  # sequence to fold
+                  s container.Typed_Sequence C
+                 ) : container.typed_applicator C E is
 
   # the result of the fold
   #
@@ -148,11 +161,16 @@ public typed_fold(E : Any, e E, s container.Typed_Sequence) : container.typed_ap
 # lambdas for `typed_applicator` are supported.  We should compare example and
 # the usability of different APis.
 #
-public variadic(E : Any) : container.typed_applicator E is
+public variadic(# constraint on the types of the values contained in this `variadic`
+                C : Any,
+
+                # type of cumulative value
+                E : Any
+               ) : container.typed_applicator C E is
 
   # the result of the fold
   #
-  public process(e E, s container.Typed_Sequence) E
+  public process(e E, s container.Typed_Sequence C) E
   =>
     s.typed_foldf e variadic.this
 
@@ -162,7 +180,11 @@ public variadic(E : Any) : container.typed_applicator E is
 # This is used as an argument to `Typed_Sequence.typed_foldf` to process the typed
 # values.
 #
-public typed_applicator(E : Any) is
+public typed_applicator(# constraint on the types this is applied to, `Any` if none.
+                        C : Any,
+
+                        # type of cumulative value
+                        E : Any) is
 
 
   # Apply an operation on a value v of type T using the cumulative value
@@ -179,7 +201,7 @@ public typed_applicator(E : Any) is
   #       =>
   #         e + $v
   #
-  public apply(T : Any, e E, v T) E
+  public apply(T : C, e E, v T) E
     : fuzion.lambda_target
   =>
     abstract
@@ -189,13 +211,15 @@ public typed_applicator(E : Any) is
 #
 # The value can be extracted by a call to `Typed_Value.apply_to`
 #
-public Typed_Value ref is
+public Typed_Value(# constraint on the types this may contain, `Any` if none.
+                   C : Any
+                  ) ref is
 
 
   # Feed this value's type, the cumulative value `e` and this value itself into
   # `a.apply` and return the resulting cumulative value.
   #
-  public apply_to(E : Any, A : container.typed_applicator E, e E, a A) E
+  public apply_to(E : Any, A : container.typed_applicator C E, e E, a A) E
   =>
     abstract
 
@@ -206,16 +230,19 @@ public Typed_Value ref is
 # have different actual type parameters and still create ref values
 # of all the same type `Typed_Value`.
 #
-public typed_value(# the type
-                   T : Any,
+public typed_value(# constraint on the types this may contain, `Any` if none.
+                   C : Any,
+
+                   # the type
+                   T : C,
 
                    # the value
                    v T)
-  : Typed_Value is
+  : Typed_Value C is
 
   # apply `a` to `T` `e` `v`
   #
-  public redef apply_to(E : Any, A : container.typed_applicator E, e E, a A) E
+  public redef apply_to(E : Any, A : container.typed_applicator C E, e E, a A) E
   =>
     a.apply T e v
 

@@ -1192,7 +1192,14 @@ public class Feature extends AbstractFeature
         // monomorphization, we know what field to use
         var name = FuzionConstants.createFieldsOfOpenTypeName(baseName());
         var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
-                              new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Values_Of_Open_Type)),
+                              new List<>(new Call(pos(),
+                                                  Universe.instance,
+                                                  Types.resolved.f_Values_Of_Open_Type.baseName(),
+                                                  FuzionConstants.NO_SELECT,
+                                                  new List<>(constraint()),
+                                                  Expr.NO_EXPRS,
+                                                  Types.resolved.f_Values_Of_Open_Type)
+                                        ),
                               Contract.EMPTY_CONTRACT,
                               new Impl(pos(), new Block(), Impl.Kind.Routine));
 
