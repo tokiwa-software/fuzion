@@ -36,11 +36,11 @@ effect_wormholes =>
   lm : racy_mutate is
 
   out_A : io.Out is
-    public redef print(s Any) unit =>
+    public redef print(s _ : Any) unit =>
       io.Err.env.print (($s).replace "!" "! -- out_A on io.err")
 
   out_B : io.Out is
-    public redef print(s Any) unit =>
+    public redef print(s _ : Any) unit =>
       io.Err.env.print (($s).replace "!" "! -- out_B on io.err")
 
   lm ! ()->

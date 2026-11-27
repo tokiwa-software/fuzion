@@ -1,11 +1,10 @@
 
-reg_issue4959.fz:43:33: error 1: Selector not permitted since no actual type parameters are given for the open type parameter type
+reg_issue4959.fz:43:22: error 1: Failed to infer actual type parameters
   hay6 => (42,unit); say (hay6 .0)  # 1. should flag an error
---------------------------------^
-In call to 'tuple.values'
-Selected variant 'values.0'
-Number of actual type parameters: 0
-Actual type parameters: none
+---------------------^^^
+In call to 'say', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: '_'
+Type inference failed for one type parameter '_'
 
 
 reg_issue4959.fz:45:28: error 2: Implementation restriction, cyclic type inference with select not supported yet.

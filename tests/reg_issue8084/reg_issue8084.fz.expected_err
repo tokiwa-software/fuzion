@@ -45,7 +45,7 @@ reg_issue8084.fz:40:9: error 6: Failed to infer actual type parameters
   y5 => x <| y5
 --------^^^^^^^
 In call to 'infix_right <|', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'A, R'
-Type inference failed for 2 type parameters 'A', 'R'
+Expected type parameters: 'A, R, _'
+Type inference failed for 3 type parameters 'A', 'R', '_'
 
 6 errors.
