@@ -1710,6 +1710,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     var f = feature();
     var o = _outer;
+    // NYI: CLEANUP: Would be nice to use `findInheritanceChain`, i.e., not to cluelessly try ouer luck
     var inh = o.feature().tryFindInheritanceChain(f.outer());
     if (inh != null && inh.size() > 0)
       { // type parameter was inherited, so get value from parameter of inherits call:
@@ -1938,28 +1939,16 @@ class Clazz extends ANY implements Comparable<Clazz>
       (Errors.any() || ft.isOpenGeneric());
 
     var declaredIn = ft.typeParameter().outer();
-    List<AbstractType> types;
+
+    // NYI: CLEANUP: Would be nice to use `findInheritanceChain`, i.e., not to cluelessly try every `_outer`
     var inh = feature().tryFindInheritanceChain(declaredIn);
-    if (inh != null &&
-        inh.stream().anyMatch(c -> c.calledFeature() == declaredIn))
-      {
-        types = declaredIn.handDown(new List<>(ft), feature());
-      }
-    else if (feature() == declaredIn)
-      {
-        types = ft.typeParameter().replaceOpen(_type.generics());
-      }
-    else if (_outer != null)
-      {
-        types = _outer.replaceOpen(ft);
-      }
-    else
-      {
-        if (CHECKS) check
-          (Errors.any());
-        types = new List<>();
-      }
-    return types;
+
+    if (CHECKS) check
+      (Errors.any() || inh != null || feature() == declaredIn || _outer != null);
+
+    return (inh != null || feature() == declaredIn || _outer == null)
+      ? actualGenerics(new List<>(ft), inh)
+      : _outer.replaceOpen(ft);
   }
 
 
