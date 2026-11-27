@@ -2241,6 +2241,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   private Boolean _isUnitTypeWithoutSideEffect = null;
   /**
    * Is this feature a unit type without any side effects?
+   *
+   * This is just a best-effort approach to find many `unit` types to be used to avoid values during
+   * DFA.  Only after DFA, it will be determined for each clazz if it is a true `unit` type.
+   *
+   * @return true if this is known to be a unit type, false if not or if we are not sure.
    */
   public boolean isUnitTypeWithoutSideEffect()
   {
@@ -2259,20 +2264,29 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Is this feature a unit type without any side effects?
    *
-   * @param isInheritedFeature true if we are checking an inherited feature
-   * @return
+   * This is just a best-effort approach to find many `unit` types to be used to avoid values during
+   * DFA.  Only after DFA, it will be determined for each clazz if it is a true `unit` type.
+   *
+   * @param isInheritedFeature true if we are checking an inherited feature. If true, formal
+   * argument types will be ignored, the caller has to check the actual argument types.
+   *
+   * @return true if this is known to be a unit type, false if not or if we are not sure.
    */
   public boolean isUnitTypeWithoutSideEffect(boolean isInheritedFeature)
   {
     return
       isConstructor() &&
       contract().isEmpty() &&
-      valueArguments().stream().allMatch(va -> va.isUnitTypeWithoutSideEffect()) &&
-      (isInheritedFeature || !isRef()) &&
+      (isInheritedFeature || valueArguments().stream().allMatch(va -> va.isUnitTypeWithoutSideEffect()) && !isRef()) &&
       code().isEmpty() &&
       // unit inheriting e.g. property.orderable is fine
       (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitTypeWithoutSideEffect()) &&
-      inherits().stream().allMatch(c -> c.calledFeature().isUnitTypeWithoutSideEffect(true));
+      inherits().stream().allMatch(c -> c.actuals()
+                                         .stream()
+                                         .map(a -> a.type())
+                                         .allMatch(t -> !t.isParametricType() &&
+                                                        t.feature().isUnitTypeWithoutSideEffect()) &&
+                                        c.calledFeature().isUnitTypeWithoutSideEffect(true));
   }
 
 

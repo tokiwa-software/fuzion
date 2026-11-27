@@ -1776,7 +1776,7 @@ public class GeneratingFUIR extends FUIR
                 code.add(or);  // field clazz means assignment to field
               }
             if (CHECKS) check
-              (p.actuals().size() == p.calledFeature().valueArguments().size());
+              (p.actuals().size() == p.calledFeature().valueArguments().flatMap2(a -> pf.handDownAndApply(new List<>(a.resultType()), ff.selfType())).size());
 
             AbstractFeature cf = pf;
             var n = p.actuals().size();
