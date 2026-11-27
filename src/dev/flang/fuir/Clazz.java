@@ -195,7 +195,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Is this a normalized outer clazz? If so, there might be calls on this as an
    * outer clazz even if it is not instantiated.
    */
-  private boolean _isNormalized = false;
+  boolean _isNormalized = false;
 
 
   /**
@@ -321,11 +321,8 @@ class Clazz extends ANY implements Comparable<Clazz>
     _select = select;
     _needsCode = false;
     _code = IR.NO_SITE;
-    // NYI: CLEANUP: normalize outer before calling constructor
-    _outer = normalizeOuter(type, outer);
-    _type = _outer != null
-      ? type.replaceGenericsAndOuter(type.generics(), _outer._type)
-      : type;
+    _outer = outer;
+    _type = type;
     _feature = (FuirFeature) _type.feature();
 
     if (_feature.isFixed() &&
@@ -427,88 +424,6 @@ class Clazz extends ANY implements Comparable<Clazz>
        !i.feature().isField() || _fields == null);
 
     _inner.add(i);
-  }
-
-
-  /**
-   * Check if the given feature requires specialization for the exact outer
-   * clazz.
-   *
-   * If an outer ref is used to access the outer instance, we must not normalize
-   * because we will need the exact type of the outer instance to specialize
-   * code or to access features that only exist in the specific version
-   *
-   * @param f the feature to check if it has an outer ref
-   */
-  private static boolean needsSpecialization(AbstractFeature f)
-  {
-    // NYI: CLEANUP: add documentation why we do not
-    // specialize constructors
-    return !f.isConstructor()
-      && f.hasOuterRef();
-  }
-
-
-  /**
-   * Normalize an outer clazz for a given type. For a reference clazz that
-   * inherits from f, this will return the corresponding clazz derived from
-   * f. The idea is that, e.g., we do not need to distinguish const_string.length
-   * from (array u8).length.
-   *
-   * @param t the type of the newly created clazz
-   *
-   * @param outer the outer clazz that should be normalized for the newly
-   * created clazz
-   *
-   * @return the normalized version of outer.
-   */
-  private Clazz normalizeOuter(AbstractType t, Clazz outer)
-  {
-    var f = t.feature();
-    return outer == null || needsSpecialization(f) || f.isField() || t == Types.t_ERROR
-      ? outer
-      : outer.normalize(f.outer());
-  }
-
-
-  /**
-   * Normalize a reference clazz to the given feature.  For a reference clazz
-   * that inherits from f, this will return the corresponding clazz derived
-   * from f. The idea is that, e.g., we do not need to distinguish const_string.length
-   * from (array u8).length.
-   *
-   * @param f the feature we want to normalize to (array in the example above).
-   *
-   * @return the normalized clazz.
-   */
-  private Clazz normalize(AbstractFeature f)
-  {
-    if (// an outer clazz of value type is not normalized (except for
-        // universe, which was done already).
-        isValue() ||
-
-        // optimization: if feature() is already f, there is nothing to
-        // normalize anymore
-        feature() == f ||
-
-        needsSpecialization(feature())
-        )
-      {
-        return this;
-      }
-    else
-      {
-        var t0 = f.selfType().asRef();
-        // we are dealing with a ref (`t0`) inside of a ref (`t0.outer()`)
-        // We have to use the outer-this type and use replaceThisType to find
-        // the correct t0.outer() within this clazz. see #5653 for an example
-        var t1 = t0.outer().isRef()
-          ? t0
-          : t0.replaceGenericsAndOuter(t0.generics(), _type.actualType(f.outer().thisType(false)));
-        var result = _fuir.clazz(f.handDownAndApply(t1, _type));
-        result._isNormalized = true;
-        return result;
-      }
   }
 
 
