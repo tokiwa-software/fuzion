@@ -1,0 +1,41 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test counterexample_29_polymorphic_union_refinement
+#
+# -----------------------------------------------------------------------
+
+# `ElementOrArray T` is a tagged union, so `identity` cannot mistakenly refine
+# `T` to `array T` when `T` itself is `array i32`.  The `T` alternative stays
+# tagged as `T`, and the recursive call returns the original array unchanged.
+counterexample_29_polymorphic_union_refinement is
+
+  ElementOrArray(T type) : choice T (array T) is
+
+  or_singleton(T type, x ElementOrArray T) array T =>
+    match x
+      a array T => a
+      e T => [e]
+
+  identity(T type, x T) T =>
+    xs := or_singleton T x
+    xs[0]
+
+  say (identity i32 42)
+  say (identity (array i32) [3, 1, 4])

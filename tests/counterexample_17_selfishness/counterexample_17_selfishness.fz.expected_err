@@ -1,0 +1,12 @@
+
+counterexample_17_selfishness.fz:34:26: error 1: Incompatible types in assignment
+    redef make C.this => C  # 1. should flag an error: C is not the exact this type
+-------------------------^
+assignment to field : 'counterexample_17_selfishness.C.make.result'
+expected formal type: 'counterexample_17_selfishness.C.this'
+actual type found   : 'counterexample_17_selfishness.this.C'
+assignable to       : 'counterexample_17_selfishness.this.C'
+for value assigned  : 'C'
+To solve this, you could change the type of the target 'counterexample_17_selfishness.C.make.result' to 'counterexample_17_selfishness.this.C' or convert the type of the assigned value to 'counterexample_17_selfishness.C.this'.
+
+one error.

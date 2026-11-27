@@ -1,0 +1,36 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test counterexample_16_subtyping_vs_inheritance
+#
+# -----------------------------------------------------------------------
+
+# A redefinition must accept every argument accepted by the original feature.
+# Narrowing `go` from `Base` to `Sub` would allow a `Base` argument to reach a
+# `Sub`-specific operation, so Fuzion rejects the redefinition.
+counterexample_16_subtyping_vs_inheritance is
+
+  Base ref is
+  Sub ref : Base is
+
+  A ref is
+    go(x Base) unit => say "A.go"
+
+  B ref : A is
+    redef go(x Sub) unit => say "B.go"  # 1. should flag an error: argument must stay Base

@@ -1,0 +1,13 @@
+
+counterexample_09_any_single_thing.fz:37:5: error 1: Incompatible types in assignment
+    r RWRef(A, B) := build A  # 1. should flag an error: both type parameters must be A
+----^
+assignment to field : 'counterexample_09_any_single_thing.castit.r'
+expected formal type: 'counterexample_09_any_single_thing.this.RWRef A B'
+actual type found   : 'counterexample_09_any_single_thing.this.RWRef A A'
+assignable to       : 'Any',
+                      'counterexample_09_any_single_thing.this.RWRef A A'
+for value assigned  : 'build A'
+To solve this, you could change the type of the target 'counterexample_09_any_single_thing.castit.r' to 'counterexample_09_any_single_thing.this.RWRef A A' or convert the type of the assigned value to 'counterexample_09_any_single_thing.this.RWRef A B'.
+
+one error.
