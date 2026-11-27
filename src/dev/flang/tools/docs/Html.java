@@ -892,6 +892,7 @@ class Html extends ANY
 
     // NYI: OPTIMIZATION: use lexer to retrieve comments
 
+    // Match lines whose first non-whitespace character is '#'.
     while (line > 0 && source.line(line).matches("(?s)^\\s*#.*"))
       {
         result.add(source.line(line));
@@ -900,6 +901,10 @@ class Html extends ANY
 
     if (line > 0 && (af.isArgument() || af.isTypeParameter()))
       {
+        // Match a comment after '(' in a feature signature, capturing from '#' onward:
+        //
+        //   some_feat(# first argument's comment
+        //             arg i64) is
         var inline = Pattern.compile("(?s)^.*?\\(\\s*(#.*)$")
           .matcher(source.line(line));
         if (inline.matches())
