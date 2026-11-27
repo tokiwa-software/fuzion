@@ -1944,11 +1944,12 @@ class Clazz extends ANY implements Comparable<Clazz>
     var inh = feature().tryFindInheritanceChain(declaredIn);
 
     if (CHECKS) check
-      (Errors.any() || inh != null || feature() == declaredIn || _outer != null);
+      (Errors.any() || inh != null || _outer != null);
 
-    return (inh != null || feature() == declaredIn || _outer == null)
-      ? actualGenerics(new List<>(ft), inh)
-      : _outer.replaceOpen(ft);
+    return
+      inh != null    ? actualGenerics(new List<>(ft), inh) :
+      _outer != null ? _outer.replaceOpen(ft)
+                     : new List<>();
   }
 
 
