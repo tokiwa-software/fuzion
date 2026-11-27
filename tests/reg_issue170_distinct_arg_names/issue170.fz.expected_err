@@ -1,24 +1,38 @@
 
---CURDIR--/issue170.fz:24:16: error 1: Names of arguments used in this feature must be distinct.
+issue170.fz:24:16: error 1: Names of arguments used in this feature must be distinct.
 say (a 3 4 5); a(b,b,b i32) => b+b+b
 ---------------^
 The duplicate name is 'b'
 Feature with equally named arguments: 'a'
-Argument #0: 'b' is duplicate 
-Argument #1: 'b' is duplicate 
-Argument #2: 'b' is duplicate 
+Argument #0: 'b' is duplicate at issue170.fz:24:18
+say (a 3 4 5); a(b,b,b i32) => b+b+b
+-----------------^
+Argument #1: 'b' is duplicate at issue170.fz:24:20
+say (a 3 4 5); a(b,b,b i32) => b+b+b
+-------------------^
+Argument #2: 'b' is duplicate at issue170.fz:24:22
+say (a 3 4 5); a(b,b,b i32) => b+b+b
+---------------------^
 To solve this, rename the arguments to have unique names.
 
 
---CURDIR--/issue170.fz:25:18: error 2: Names of arguments used in this feature must be distinct.
+issue170.fz:25:18: error 2: Names of arguments used in this feature must be distinct.
 say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
 -----------------^
 The duplicate names are 'd', 'e'
 Feature with equally named arguments: 'c'
-Argument #0: 'd' is duplicate 
-Argument #1: 'd' is duplicate 
-Argument #2: 'e' is duplicate 
-Argument #3: 'e' is duplicate 
+Argument #0: 'd' is duplicate at issue170.fz:25:20
+say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
+-------------------^
+Argument #1: 'd' is duplicate at issue170.fz:25:22
+say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
+---------------------^
+Argument #2: 'e' is duplicate at issue170.fz:25:24
+say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
+-----------------------^
+Argument #3: 'e' is duplicate at issue170.fz:25:26
+say (c 3 4 5 6); c(d,d,e,e i32) => d+d+e+e
+-------------------------^
 To solve this, rename the arguments to have unique names.
 
 2 errors.

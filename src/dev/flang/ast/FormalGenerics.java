@@ -26,16 +26,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 
 
 /**
  * FormalGenerics represents a list for formal generics argument.
  *
- * e.g. For {@code Function(public R type, public A type...) ref is}
+ * e.g. For {@code Function(public R : Any, public A... : Any) ref is}
  * the formal generics are {@code R} and {@code A}. (With {@code A} being an open type parameter.)
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
@@ -47,25 +50,10 @@ public class FormalGenerics extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  private static final List<AbstractFeature> NO_FEATURES = new List<>();
-  // NYI: UNDER DEVELOPMENT: { NO_FEATURES.freeze(); }
-
-  private final AbstractFeature _feature;
-
-
   /**
-   * Field with type from this.type created in case fieldName != null.
-   *
-   * This is private to prevent direct access that does not take care about
-   * isOpen.
+   * The feature that this is the formal generics of.
    */
-  // NYI: CLEANUP: remove this method
-  public final List<AbstractFeature> list()
-  {
-    return _feature == null
-      ? NO_FEATURES
-      : _feature.typeArguments();
-  };
+  final AbstractFeature _feature;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -90,7 +78,7 @@ public class FormalGenerics extends ANY
    */
   public boolean isOpen()
   {
-    return !list().isEmpty() && list().getLast().isOpenTypeParameter();
+    return !_feature.typeArguments().isEmpty() && _feature.typeArguments().getLast().isOpenTypeParameter();
   }
 
 
@@ -107,9 +95,26 @@ public class FormalGenerics extends ANY
    */
   public boolean sizeMatches(List<AbstractType> actualGenerics)
   {
+    return sizeMatches(actualGenerics.size());
+  }
+
+
+  /**
+   * Check if the number of actual generics provided as an argument matches the
+   * number of formal arguments required by this.  This takes into account that
+   * the formal generics list might be open, i.e, the last argument can be
+   * repeated zero or more times.
+   *
+   * @param n the number of actual generics.
+   *
+   * @return true iff the number of actual type parameters fits with the number of
+   * expected type parameters.
+   */
+  public boolean sizeMatches(int n)
+  {
     return isOpen()
-      ? (list().size()-1) <= actualGenerics.size()
-      : list().size() == actualGenerics.size();
+      ? _feature.typeArguments().size()-1 <= n
+      : _feature.typeArguments().size() == n;
   }
 
 
@@ -121,18 +126,18 @@ public class FormalGenerics extends ANY
    *
    * @param pos the source code position at which the error should be reported
    *
-   * @param detail1 part of the detail message to indicate where this happened,
-   * i.e., "call" or "type".
+   * @param detail supplier to return the following:
+   *    - part of the detail message to indicate where this happened,
+   *    i.e., "call" or "type".
    *
-   * @param detail2 optional extra lines of detail message giving further
-   * information, like {@code Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n}.
+   *    - optional extra lines of detail message giving further
+   *    information, like {@code Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n}.
    *
    * @return true iff size and type of actualGenerics does match
    */
   public boolean errorIfSizeDoesNotMatch(List<AbstractType> actualGenerics,
                                          SourcePosition pos,
-                                         String detail1,
-                                         String detail2)
+                                         Supplier<Pair<String, String>> detail)
   {
     if (PRECONDITIONS) require
       (Errors.any() || !actualGenerics.contains(Types.t_ERROR));
@@ -140,80 +145,14 @@ public class FormalGenerics extends ANY
     var result = sizeMatches(actualGenerics) || actualGenerics.contains(Types.t_ERROR);
     if (!result)
       {
-        AstErrors.wrongNumberOfGenericArguments(this,
-                                                actualGenerics,
-                                                pos,
-                                                detail1,
-                                                detail2);
+        var d = detail.get();
+        AstErrors.wrongNumberOfTypeArguments(this,
+                                             actualGenerics,
+                                             pos,
+                                             d.v0(),
+                                             d.v1());
       }
     return result;
-  }
-
-
-
-  /**
-   * Wrapper class for result of asActuals(). This is used to quickly identify
-   * the generics list of formals used as actuals, e.g., in an outer reference,
-   * such that it can be replaced 1:1 by the actual generic arguments.
-   */
-  class AsActuals extends List<AbstractType>
-  {
-    /**
-     * create AsActuals from FormalGenerics.this.list and freeze it.
-     */
-    AsActuals()
-    {
-      // NYI: This is a bit ugly, can we avoid adding all these types
-      // here?  They should never be used since AsActuals is only a
-      // placeholder for the actual generics.
-      for (var g : list())
-        {
-          add(g.asGenericType());
-        }
-      freeze();
-    }
-
-    /**
-     * Create non-frozen clone of from.
-     */
-    AsActuals(AsActuals from)
-    {
-      super(from);
-    }
-
-    /**
-     * Create non-frozen clone of this.
-     */
-    public List<AbstractType> clone()
-    {
-      return new AsActuals(this);
-    }
-
-    /**
-     * Check if this are the formal generics of f used as actuals.
-     */
-    boolean actualsOf(AbstractFeature f)
-    {
-      return f.generics() == FormalGenerics.this;
-    }
-
-    public boolean sizeMatches(List<AbstractType> actualGenerics)
-    {
-      return FormalGenerics.this.sizeMatches(actualGenerics);
-    }
-  };
-
-
-  /**
-   * Create the formal generics parameters for an outer reference for any inner
-   * feature declared within this formal generic's feature.
-   *
-   * @return actual generics that match these formal generics.
-   */
-  public List<AbstractType> asActuals()
-  {
-    // NYI: UNDER DEVELOPMENT: re-add caching?
-    return new AsActuals();
   }
 
 
@@ -225,8 +164,8 @@ public class FormalGenerics extends ANY
    */
   public String sizeText()
   {
-    int sz = isOpen() ? list().size() - 1
-                      : list().size();
+    int sz = isOpen() ? _feature.typeArguments().size() - 1
+                      : _feature.typeArguments().size();
     return
       isOpen()    && (sz == 0) ? "any number of generic arguments"
       :  isOpen() && (sz == 1) ? "at least one generic argument"
@@ -242,11 +181,12 @@ public class FormalGenerics extends ANY
    *
    * @return
    */
+  @Override
   public String toString()
   {
-    return !isOpen() && list().isEmpty()
+    return !isOpen() && _feature.typeArguments().isEmpty()
       ? ""
-      : list().map2(f -> f.featureName().baseNameHuman()) + (isOpen() ? "..." : "");
+      : _feature.typeArguments().map2(f -> f.baseNameHuman()) + (isOpen() ? "..." : "");
   }
 
 }

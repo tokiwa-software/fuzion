@@ -29,6 +29,7 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.ResolvedType;
 import dev.flang.ast.TypeKind;
 
 import dev.flang.util.List;
@@ -85,17 +86,32 @@ class NormalType extends LibraryType
     super(mod, at);
 
     if (PRECONDITIONS) require
-      (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType);
+      (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType,
+       generics.stream().allMatch(g -> g instanceof ResolvedType),
+       feature.outer() == null || outer.isParametricType() || outer.feature().inheritsFrom(feature.outer()));
 
     this._feature = feature;
     this._typeKind = typeKind;
-    this._generics = generics;
-    this._generics.freeze();
+    this._generics = generics.freeze();
     this._outer = outer;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /** {@inheritDoc} */
+  @Override
+  public AbstractType asValue()
+  {
+    return switch (kind())
+      {
+      case ValueType -> this;
+      case RefType   -> new NormalType(_libModule, _at, _feature, TypeKind.ValueType, generics(), outer());
+      default        -> throw new Error("unexpected kind "+kind()+" for NormalType");
+      };
+  }
+
 
 
   /**
@@ -110,9 +126,8 @@ class NormalType extends LibraryType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
-  // NYI: CLEANUP: remove, why does this behave differently from super.replaceGenericsAndOuter?
   @Override
-  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
+  public AbstractType replaceGenericsAndOuter0(List<AbstractType> g2, AbstractType o2)
   {
     return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
@@ -123,7 +138,7 @@ class NormalType extends LibraryType
    *
    * @return the underlying feature.
    *
-   * @throws Error if this is not resolved or isGenericArgument().
+   * @throws Error if this is not resolved or isParametricType().
    */
   @Override
   protected AbstractFeature backingFeature()
@@ -142,9 +157,7 @@ class NormalType extends LibraryType
   }
 
 
-  /**
-   * The mode of the type: ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {

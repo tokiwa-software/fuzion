@@ -61,7 +61,6 @@ import dev.flang.lsp.shared.FeatureTool;
 import dev.flang.lsp.shared.HasSourcePositionTool;
 import dev.flang.lsp.shared.IO;
 import dev.flang.lsp.shared.ParserTool;
-import dev.flang.lsp.shared.TypeTool;
 import dev.flang.lsp.shared.Util;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.lsp.util.Computation;
@@ -71,6 +70,7 @@ public enum Commands
   showSyntaxTree,
   run, callGraph, codeActionFixIdentifier, codeActionGenerateMatchCases;
 
+  @Override
   public String toString()
   {
     switch (this)
@@ -88,7 +88,7 @@ public enum Commands
       }
   }
 
-  private final static CompletableFuture<Object> completedFuture = CompletableFuture.completedFuture(null);
+  private static final CompletableFuture<Object> completedFuture = CompletableFuture.completedFuture(null);
 
   public static CompletableFuture<Object> execute(ExecuteCommandParams params)
   {
@@ -142,7 +142,7 @@ public enum Commands
               .choiceGenerics()
               .stream()
               .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFromDirectly(cg).yes()))
-              .map(t -> indent + CaseConverter.toSnakeCase(TypeTool.baseName(t)) + " " + TypeTool.label(t) + " =>")
+              .map(t -> indent + CaseConverter.toSnakeCase(t.selfOrConstraint().feature().featureName().baseName()) + " " + t.toString(true) + " =>")
               .collect(Collectors.joining(System.lineSeparator()));
 
           var endOfSubPos = Bridge.toPosition(ExprTool.endOfExpr(m.subject()));

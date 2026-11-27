@@ -26,12 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ir;
 
-import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
-import dev.flang.ast.ExpressionVisitor;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Types;
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 
@@ -52,7 +48,7 @@ public class Tag extends Expr
   /**
    * the original value instance.
    */
-  public Expr _value;
+  public final Expr _value;
 
 
   /**
@@ -87,11 +83,7 @@ public class Tag extends Expr
             .choiceGenerics()
             .stream()
             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type()).yes())
-            .count() == 1
-        // NYI: UNDER DEVELOPMENT: why is value.type() sometimes unit
-        // even though none of the choice elements is unit
-        || value.type().compareTo(Types.resolved.t_unit) == 0
-       );
+            .count() == 1);
 
     this._value = value;
     this._taggedType = taggedType;
@@ -113,14 +105,6 @@ public class Tag extends Expr
   }
 
 
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visit'");
-  }
-
-
   /**
    * The number to be used for tagging this value.
    */
@@ -138,23 +122,11 @@ public class Tag extends Expr
 
 
   /**
-   * visit all the expressions within this Tag.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    super.visitExpressions(v);
-    _value.visitExpressions(v);
-  }
-
-
-  /**
    * toString
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "tag(" + _value + ")";

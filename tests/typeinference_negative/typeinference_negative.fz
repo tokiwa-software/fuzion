@@ -41,7 +41,7 @@ typeinference_negative is
      x := cyclic2b.x  # 7. c2.a should flag an error, cyclic type inference between cousins
 
   cyclic2b is
-     x := cyclic2a.x  # 8. c2.b should flag an error, cyclic type inference between cousins
+     x := cyclic2a.x  # does not flag an error since cyclic2a.x already errored.
 
 
   cyclic3aok is
@@ -191,7 +191,7 @@ typeinference_negative is
   mix6 is # the types here are ok, but this has an access to an uninitialized field
     x := 3
     f => x
-    g => y # 44. m6.z should flag an error, y accessed before it is initialized
+    g => y # does not flag an error access to an uninitialized field is detected later
     _ := g
     y := f
 

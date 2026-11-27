@@ -1,0 +1,178 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5095_pre_else_err
+#
+# -----------------------------------------------------------------------
+
+
+test_1 is
+  grandparent is
+    foo => unit
+
+  parent_1 : grandparent is
+
+  parent_2 is
+    foo => unit
+    bar unit => abstract
+
+
+  # multiple parents
+
+  child_1 : parent_1, parent_2 is
+    redef foo
+      pre true          # 1. should flag an error: implicit `pre true` inherited
+    =>
+      unit
+
+  child_2 : parent_1, parent_2 is
+    redef foo
+      pre else true     # 2. should flag an error: implicit `pre true` inherited
+    => unit
+
+
+  # single parent, no grandparent
+
+  child_3 : parent_2 is
+    redef bar
+      pre true          # 3. should flag an error: implicit `pre true` inherited
+    => unit
+
+  child_4 : parent_2 is
+    redef bar
+      pre else true     # 4. should flag an error: implicit `pre true` inherited
+    => unit
+
+  # single parent with grandparent
+
+  child_5 : parent_1 is
+    redef foo
+      pre true          # 5. should flag an error: implicit `pre true` inherited
+    => unit
+
+  child_6 : parent_1 is
+    redef foo
+      pre else true     # 6. should flag an error: implicit `pre true` inherited
+    => unit
+
+
+
+test_2 is
+  grandparent is
+    foo
+      pre true
+    => unit
+
+  parent_1 : grandparent is
+      redef foo
+        pre else true
+      => unit
+
+  parent_2 is
+    foo => unit
+    bar unit
+      pre true
+    => abstract
+
+
+  # multiple parents
+
+  child_1 : parent_1, parent_2 is
+    redef foo
+      pre true          # 7. should flag an error: implicit `pre true` inherited (see #5149)
+    =>
+      unit
+
+  child_2 : parent_1, parent_2 is
+    redef foo
+      pre else true     # 8. should flag an error: implicit `pre true` inherited (see #5149)
+    => unit
+
+
+  # single parent, no grandparent
+
+  child_3 : parent_2 is
+    redef bar
+      pre true          # 9. should flag an error: else missing
+    => unit
+
+  child_4 : parent_2 is
+    redef bar
+      pre else true  # correct
+    => unit
+
+  # single parent with grandparent
+
+  child_5 : parent_1 is
+    redef foo
+      pre true          # 10. should flag an error: else missing
+    => unit
+
+  child_6 : parent_1 is
+    redef foo
+      pre else true  # correct
+    => unit
+
+
+
+test_3 is
+  grandparent is
+    foo
+      pre true
+    => unit
+
+  parent : grandparent is
+    redef foo => unit
+
+  child : parent is
+    redef foo
+      pre else true  # correct
+    =>
+      unit
+
+
+
+test_4 is
+  parent_1 is
+    foo unit
+      pre true
+    => abstract
+
+  parent_2 is
+    foo => unit
+
+  child : parent_1, parent_2 is
+    redef foo
+      pre else true     # 11. should flag an error: implicit `pre true` inherited (see #5149)
+    =>
+      unit
+
+
+
+test_5 is
+
+  other_1 is
+    foo
+    pre else true       # 12. should flag an error: must not use else
+    => unit
+
+  other_2 is
+    foo
+    pre true  # correct
+    => unit

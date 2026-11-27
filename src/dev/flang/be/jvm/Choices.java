@@ -28,6 +28,9 @@ package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
+
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
@@ -46,7 +49,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Choices extends ANY implements ClassFileConstants
+class Choices extends ANY implements ClassFileConstants
 {
 
 
@@ -208,18 +211,15 @@ public class Choices extends ANY implements ClassFileConstants
    */
   boolean overlappingRefs(int c1, int c2)
   {
-    if (_fuir.clazzIsRef(c1) && _fuir.clazzIsRef(c2))
+    var h1 = _fuir.clazzInstantiatedHeirs(c1);
+    var h2 = _fuir.clazzInstantiatedHeirs(c2);
+    for (var i1 : h1)
       {
-        var h1 = _fuir.clazzInstantiatedHeirs(c1);
-        var h2 = _fuir.clazzInstantiatedHeirs(c2);
-        for (var i1 : h1)
+        for (var i2 : h2)
           {
-            for (var i2 : h2)
+            if (i1 == i2)
               {
-                if (i1 == i2)
-                  {
-                    return true;
-                  }
+                return true;
               }
           }
       }
@@ -278,19 +278,16 @@ public class Choices extends ANY implements ClassFileConstants
               for (var tagNum = 0; tagNum < nc; tagNum++)
                 {
                   var tc = _fuir.clazzChoice(cl, tagNum);
-                  if (_fuir.clazzIsRef(tc))
+                  for (var h : _fuir.clazzInstantiatedHeirs(tc))
                     {
-                      for (var h : _fuir.clazzInstantiatedHeirs(tc))
-                        {
-                          var hcf = _types.classFile(h);
-                          hcf.addImplements(ci._name);
+                      var hcf = _types.classFile(h);
+                      hcf.addImplements(ci._name);
 
-                          var bc_tag = Expr.iconst(tagNum)
-                            .andThen(Expr.IRETURN);
-                          var code_tag = hcf.codeAttribute(gtn + "in interface for "+_fuir.clazzAsString(cl),
-                                                           bc_tag, new List<>(), ClassFile.StackMapTable.empty(hcf, new List<>(VerificationType.UninitializedThis), bc_tag));
-                          hcf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
-                        }
+                      var bc_tag = Expr.iconst(tagNum)
+                        .andThen(Expr.IRETURN);
+                      var code_tag = hcf.codeAttribute(gtn + "in interface for "+_fuir.clazzName(cl),
+                                                        bc_tag, new List<>(), ClassFile.StackMapTable.empty(hcf, new List<>(VerificationType.UninitializedThis), bc_tag));
+                      hcf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
                     }
                 }
 
@@ -329,7 +326,7 @@ public class Choices extends ANY implements ClassFileConstants
                 .andThen(Expr.RETURN);
               var initLocals = Types.addToLocals(new List<>(), ut);
               initLocals.add(VerificationType.Integer);
-              var code_init = cf.codeAttribute("<init> in class for " + _fuir.clazzAsString(cl),
+              var code_init = cf.codeAttribute("<init> in class for " + _fuir.clazzName(cl),
                                                bc_init, new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, bc_init));
               cf.method(ACC_PUBLIC, "<init>", "(I)V", new List<>(code_init));
 
@@ -338,7 +335,7 @@ public class Choices extends ANY implements ClassFileConstants
                                        Names.TAG_NAME,
                                        PrimitiveType.type_int))
                 .andThen(Expr.IRETURN);
-              var code_tag = cf.codeAttribute(gtn + "in class for " + _fuir.clazzAsString(cl),
+              var code_tag = cf.codeAttribute(gtn + "in class for " + _fuir.clazzName(cl),
                                               bc_tag, new List<>(), ClassFile.StackMapTable.empty(cf, Types.addToLocals(new List<>(), ut), bc_tag));
               cf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
 
@@ -371,6 +368,7 @@ public class Choices extends ANY implements ClassFileConstants
                     }
                 }
             }
+            break;
           default:
             break;
           }
@@ -420,6 +418,72 @@ public class Choices extends ANY implements ClassFileConstants
 
 
   /**
+   * From a value of choice type, obtain the tag.  The tag corresponds to the
+   * source position, i.e, `id (choice void void void unit nil void) unit .tag`
+   * is `3` even though this choice would never contain `void`.
+   *
+   * @param jvm the JVM instance
+   *
+   * @param s site of the call to intrinsic `choice.tag`.
+   *
+   * @param subjClazz code to produce the target of the call to `.tag`
+   *
+   * @return the code to obtain the tag integer
+   */
+  public Expr getTag(JVM jvm, int s, int subjClazz, Expr sub)
+  {
+    return switch (kind(subjClazz))
+      {
+      case voidlike     ->
+        {
+          Errors.fatal("JVM backend match called .tag for void-like choice type " + _fuir.clazzName(subjClazz) + " when compiling " + _fuir.siteAsString(s));
+          throw new Error(); // never executed, just to keep javac from complaining.
+        }
+      case unitlike     ->
+        {
+          var tagNum = 0;
+          while (_fuir.clazzIsVoidType(_fuir.clazzChoice(subjClazz, tagNum)))
+            {
+              tagNum++;
+            }
+          yield sub.drop().andThen(Expr.iconst(tagNum));
+        }
+      case boollike     -> sub.andThen(Expr.branch(O_ifeq,
+                                                   Expr.iconst(0),
+                                                   Expr.iconst(1)));
+      case intlike      -> sub;  // == tag!
+      case nullable     ->
+        {
+          var pos = 0;
+          while (!_fuir.clazzIsRef(_fuir.clazzChoice(subjClazz, pos)))
+            {
+              pos++;
+            }
+          var neg = 0;
+          while (!_fuir.clazzIsUnitType(_fuir.clazzChoice(subjClazz, neg)))
+            {
+              neg++;
+            }
+          yield sub.andThen(Expr.branch(O_ifnull,
+                                        Expr.iconst(neg),
+                                        Expr.iconst(pos)));
+        }
+      case refsAndUnits -> sub.andThen(Expr.invokeInterface(_types.interfaceFile(subjClazz)._name,
+                                                            _names.getTag(subjClazz),
+                                                            "()I",
+                                                            PrimitiveType.type_int,
+                                                            _fuir.sitePos(s).line()));
+      case general      -> sub.andThen(Expr.getfield(_names.javaClass(subjClazz),
+                                                     Names.TAG_NAME,
+                                                     ClassFileConstants.PrimitiveType.type_int));
+      default ->
+        throw new Error("Unexpected choice kind in match of JVM backend: " + kind(subjClazz));
+      };
+  }
+
+
+
+  /**
    * Perform a match on value sub.
    *
    * @param jvm the JVM instance
@@ -442,7 +506,7 @@ public class Choices extends ANY implements ClassFileConstants
       {
       case voidlike:
         {
-          Errors.fatal("JVM backend match called for void-like choice type " + _fuir.clazzAsString(subjClazz) + " when compiling " + _fuir.siteAsString(s));
+          Errors.fatal("JVM backend match called for void-like choice type " + _fuir.clazzName(subjClazz) + " when compiling " + _fuir.siteAsString(s));
           throw new Error(); // never executed, just to keep javac from complaining.
         }
       case unitlike:
@@ -477,11 +541,11 @@ public class Choices extends ANY implements ClassFileConstants
                   var t = intValueForTagNum(subjClazz, tagNum);
                   switch (t)
                     {
-                    case 0: neg = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc))); break;
-                    case 1: pos = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc))); break;
-                    case -1: break; //  void type
-                    default: throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.siteAsString(s));
-                  }
+                    case 0  -> neg = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc)));
+                    case 1  -> pos = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc)));
+                    case -1 -> {} //  void type
+                    default -> throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.siteAsString(s));
+                    }
                 }
             }
           pos = pos != null ? pos : jvm.reportUnreachable(s, "bool pos");
@@ -532,7 +596,7 @@ public class Choices extends ANY implements ClassFileConstants
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
                   if (_fuir.clazzIsRef(tc))
                     {
-                      if (field != -1 && jvm.fieldExists(field))
+                      if (field != NO_CLAZZ && jvm.fieldExists(field))
                         {                                                                      // sub
                           pos =
                             (cl == _fuir.clazzUniverse()
@@ -586,7 +650,7 @@ public class Choices extends ANY implements ClassFileConstants
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
                   if (!_fuir.clazzIsVoidType(tc))
                     {
-                      if (field != -1 && jvm.fieldExists(field))
+                      if (field != NO_CLAZZ && jvm.fieldExists(field))
                         {
                           var rt = _types.resultType(_fuir.clazzResultClazz(field));
                           pos =                                                 // stack is sub, tag
@@ -638,7 +702,7 @@ public class Choices extends ANY implements ClassFileConstants
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
                   if (!_fuir.clazzIsVoidType(tc))
                     {
-                      if (field != -1 && jvm.fieldExists(field))
+                      if (field != NO_CLAZZ && jvm.fieldExists(field))
                         {
                           var rc = _fuir.clazzResultClazz(field);
                           var rt = _types.resultType(rc);
@@ -708,7 +772,7 @@ public class Choices extends ANY implements ClassFileConstants
       {
       case voidlike:
         {
-          throw new Error("JVM backend tag called for voidlike choice type" + _fuir.clazzAsString(newcl) + " when compiling " + _fuir.siteAsString(s));
+          throw new Error("JVM backend tag called for voidlike choice type" + _fuir.clazzName(newcl) + " when compiling " + _fuir.siteAsString(s));
         }
       case unitlike:
         {

@@ -1,27 +1,27 @@
 
---CURDIR--/reg_issue3493.fz:25:1: error 1: Syntax error: expected 'is', ':=' or '{', found end-of-file
+reg_issue3493.fz:25:1: error 1: Syntax error: expected 'is', ':=' or '{', found end-of-file
 ^
 While parsing: impl, parse stack: implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
---CURDIR--/reg_issue3493.fz:24:1: error 2: Missing result type in field declaration with initialization
+reg_issue3493.fz:24:1: error 2: Missing result type in field declaration with initialization
 s pre x =>
 ^
 Field declared: 's'
 
 
---CURDIR--/reg_issue3493.fz:24:3: error 3: Implementation restriction: pre-condition for field not supported yet.
+reg_issue3493.fz:24:3: error 3: Implementation restriction: pre-condition for field not supported yet.
 s pre x =>
 --^^^^^^^^
 
 
---CURDIR--/reg_issue3493.fz:24:7: error 4: Failed to infer type of expression.
+reg_issue3493.fz:24:7: error 4: Failed to infer type of expression.
 s pre x =>
 ------^
 Expression with unknown type: 'x'
 
 
---CURDIR--/reg_issue3493.fz:24:7: error 5: Incompatible types in assignment
+reg_issue3493.fz:24:7: error 5: Incompatible types in assignment
 s pre x =>
 ------^
 assignment to field : 'pre s.result'

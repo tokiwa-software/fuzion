@@ -33,7 +33,7 @@ package dev.flang.util;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class MapComparable2Int<T extends Comparable> extends Map2Int<T>
+public class MapComparable2Int<T extends Comparable<T>> extends Map2Int<T>
 {
 
 
@@ -64,6 +64,7 @@ public class MapComparable2Int<T extends Comparable> extends Map2Int<T>
   /**
    * redefined to indicate that T is Comparable.
    */
+  @Override
   protected boolean isComparable()
   {
     return true;

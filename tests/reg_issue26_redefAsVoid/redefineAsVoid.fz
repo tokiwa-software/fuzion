@@ -44,6 +44,6 @@ redefineAsVoid is
     #
     redef f void =>
       say "PASSED: exiting f that was redefined to return void."
-      exit 0
+      Exit.env.exit 0
 
   _ := h

@@ -21,8 +21,9 @@
 #
 # -----------------------------------------------------------------------
 
-reg_issue1698 is
-  x := exception unit void ()->
-    t := (exception unit).env
-    t.cause (error "a")
+reg_issue1698 : flow.exception_tag is
+  x := flow.exception reg_issue1698.this
+    .try void ()->
+      (flow.exception reg_issue1698.this).env.cause (error "a")
+    .or_outcome
   say x

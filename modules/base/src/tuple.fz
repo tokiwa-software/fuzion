@@ -47,12 +47,11 @@
 # Similarly, syntactic sugar for the destructuring of tuples can be used
 # to access the values as in
 #
-#     (a, b, c, ...) := t
+#     a, b, c, ... := t
 #
-# In destructurings, we can denote values we are not interested in using
-# '_' as in
+# When destructuring, '_' denotes a value that is to be ignored, as in
 #
-#  (_, b) := ("first", "second")
+#  _, b := ("first", "second")
 #
 # which will set 'b' to '"second"' and drop the first element of the tuple.
 #
@@ -65,87 +64,134 @@
 #
 # Then, we could extract Bob's age using
 #
-#     (_, age) := b
+#     _, age := b
 #
 # or Claire's name using
 #
-#     (name, _) := c
+#     name, _ := c
 #
 # Destructuring also works for general features, e.g.
 #
 #     point (x,y i32) is {}
 #
-#     p := point 3, 4
-#     (px, py) := p       # will set px to 3 and py to 4
+#     p := point 3 4
+#     px, py := p          # will set px to 3 and py to 4
 #
 # and the destructured value can then be used to create a tuple
 #
-#     t := (px, py)       # will create tuple<i32,i32> instance
+#     t := (px, py)        # will create an instance of tuple i32 i32
 #
 # however, tuples are not assignment compatible with general features even
 # if they would destructure into the same types, i.e.,
 #
 #     u tuple i32 i32 = p  # will cause compile time error
-#     q point = (7, 12)      # will cause compile time error
+#     q point = (7, 12)    # will cause compile time error
 #
-# The unit tuple '()' can be used as a short-hand to create the empty tuple
-# 'tuple'.  The empty tuple can be destructured like any other tuple
-# using
+# The 0-tuple '()' can be used as a shorthand to create the empty tuple
+# 'tuple'.  The 0-tuple can not be destructured.
+# A tuple type with no actual generic arguments is isomorphic to 'unit', i.e, it
+# is a type that has only one single value: '()'.
 #
-#     () := ()
-#
-# even though this has no effect.
-#
-# An instance of the single tuple 'tuple A' with sole element 'a' can not
+# An instance of the 1-tuple 'tuple A' with sole element 'a' can not
 # be created using syntactic sugar '(a)', this will produce the plain
-# value of 'a' instead. However, destructuring of a single tuple is possible:
+# value of 'a' instead. Destructuring of a 1-tuple is not possible.
 #
-#    (a0) := tuple a
-#
-# which is equivalent to
-#
-#     a0 := a
-#
-# NYI: A single tuple 'tuple A' is currently not assignment compatible with
+# NYI: A 1-tuple 'tuple A' is currently not assignment compatible with
 # type 'A', which would make handling of general tuples easier.
 #
 # tuples and destructuring can be used to swap two elements or create a
 # permutation as in
 #
-#     (a, b) := (b, a)
-#     (o, t, a, n) := (n, a, t, o)
+#     a, b := (b, a)
+#     o, t, a, n := (n, a, t, o)
 #
-# A tuple type with no actual generic arguments is isomorphic to 'unit', i.e, it
-# is a type that has only one single value: '()'.
-#
-public tuple(public A type...,
-             public values A...) is
+public tuple(A... : Any,
+             public values A...
+             ) : property.orderable,
+                 property.hashable
+is
 
 
-# create a one tuple
-#
-public tuple1(t T) => (t)
+  # given a tuple of several effect instances
+  # instate the in order of declaration and
+  # run code in their context
+  #
+  #
+  public infix !(# result type
+                 R : Any,
 
-# create a two tuple
-#
-public tuple2(t T, u U) => (t, u)
+                 # the code to execute with `e` instated.
+                 code () -> R
+  ) R
+    # NYI: BUG: cannot constraint open type parameter yet: pre A : effect
+  =>
+    (values.typed_foldf (option (Functional R) nil) T,e,v->
+      if T : effect
+        match e
+          nil => v.as_functional R
+          f (Functional R) => f.and v
+      else
+        compile_time_panic).or_panic.call code
 
-# create a three tuple
-#
-public tuple3(t T, u U, v V) => (t, u, v)
 
-# create a four tuple
-#
-public tuple4(t T, u U, v V, w W) => (t, u, v, w)
+  # equality of two tuple `a` and `b` is defined only if all elements of the tuple
+  # are equatable and all elements are equal.
+  #
+  # This will result in a runtime `panic` in case any element type is not equatable.
+  #
+  public redef type.equality(a, b tuple.this) bool
+  =>
+    a.values.typed_zip_and_fold b.values true T,e,v,w->
+      if T : property.equatable then
+        e && v = w
+      else
+        compile_time_panic
 
-# create a five tuple
-#
-public tuple5(t T, u U, v V, w W, x X) => (t, u, v, w, x)
 
-# create a six tuple
-#
-public tuple6(t T, u U, v V, w W, x X, y Y) => (t, u, v, w, x, y)
 
-# create a seven tuple
-#
-public tuple7(t T, u U, v V, w W, x X, y Y, z Z) => (t, u, v, w, x, y, z)
+  # A total order between two tuples `a` and `b` is defined by the total order of
+  # their first elements. If the first `i` element pairs are equal, the order is defined by
+  # the `i+1`th element pair.
+  #
+  # This will result in a runtime `panic` in case any element type is not orderable.
+  #
+  public redef type.lteq(a, b tuple.this) bool
+  =>
+    s => a.values.typed_zip_and_fold b.values 0 T,e,v,w->
+                   if T : property.orderable then
+                     if      e != 0 then  e
+                     else if v = w  then  0
+                     else if v < w  then -1
+                     else                +1
+                   else
+                     compile_time_panic
+    s <= 0
+
+
+  # create hash code for this tuple
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  # This will result in a compile-time `panic` in case any element type is not hashable.
+  #
+  public redef fixed type.hash_code(a tuple.this) u64 : container.typed_fold xxh_first a.values
+  =>
+    public redef apply(T : Any, h u64, v T) u64
+    =>
+      if T : property.hashable then
+        xxh_next h (T.hash_code v)
+      else
+        compile_time_panic  # tuple is not hashable since one element type is not
+    res
+
+
+  # create a String from this instance.
+  #
+  public redef as_string String =>
+
+    concat : container.typed_applicator String is
+      public redef apply(V : Any, e String, v V) String => e="" ? $v : "$e, $v"
+
+    "($(values.typed_foldf "" concat))"

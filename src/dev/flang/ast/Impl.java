@@ -48,8 +48,9 @@ public class Impl extends ANY
 
   public static final Impl FIELD = new Impl(Kind.Field);
 
-  public static final Impl TYPE_PARAMETER = new Impl(Kind.TypeParameter);
-  public static final Impl TYPE_PARAMETER_OPEN = new Impl(Kind.TypeParameterOpen);
+  public static final Impl EXPLICIT_TYPE_PARAMETER = new Impl(Kind.ExplicitTypeParameter);
+  public static final Impl FREE_TYPE_PARAMETER     = new Impl(Kind.FreeTypeParameter);
+  public static final Impl TYPE_PARAMETER_OPEN     = new Impl(Kind.TypeParameterOpen);
 
   public static final Impl ABSTRACT = new Impl(Kind.Abstract);
 
@@ -99,30 +100,33 @@ public class Impl extends ANY
     FieldActual,  // an argument field with type defined by actual argument
     FieldIter,    // a field f declared as an iterator index in a loop (eg., for f in myset { print(f); } )
     Field,        // a field
-    TypeParameter,// a type parameter Field
-    TypeParameterOpen,// an open (list) type parameter Field
+    ExplicitTypeParameter,// a type parameter
+    FreeTypeParameter,    // a free type parameter
+    TypeParameterOpen,    // an open (list) type parameter
     RoutineDef,   // normal feature with code and implicit result type
     Routine,      // normal feature with code
     Abstract,     // an abstract feature
     Intrinsic,    // an intrinsic feature
     Native;       // a native feature
 
+    @Override
     public String toString()
     {
       return switch(this)
         {
-          case FieldInit         : yield "field initialization";
-          case FieldDef          : yield "field definition";
-          case FieldActual       : yield "actual argument";
-          case FieldIter         : yield "iterator";
-          case Field             : yield "field";
-          case TypeParameter     : yield "type parameter";
-          case TypeParameterOpen : yield "open type parameter";
-          case RoutineDef        : yield "routine definition";
-          case Routine           : yield "routine";
-          case Abstract          : yield "abstract";
-          case Intrinsic         : yield "intrinsic";
-          case Native            : yield "native";
+          case FieldInit            : yield "field initialization";
+          case FieldDef             : yield "field definition";
+          case FieldActual          : yield "actual argument";
+          case FieldIter            : yield "iterator";
+          case Field                : yield "field";
+          case ExplicitTypeParameter: yield "type parameter";
+          case FreeTypeParameter    : yield "free type parameter";
+          case TypeParameterOpen    : yield "open type parameter";
+          case RoutineDef           : yield "routine definition";
+          case Routine              : yield "routine";
+          case Abstract             : yield "abstract";
+          case Intrinsic            : yield "intrinsic";
+          case Native               : yield "native";
         };
     }
   };
@@ -131,13 +135,6 @@ public class Impl extends ANY
    *
    */
   public final Kind _kind;
-
-
-  /**
-   * Flag to detect infinite recursion when resolving types of initial
-   * values. Used by @see initialValueFromCall.
-   */
-  private boolean _infiniteRecursionInResolveTypes = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -297,6 +294,7 @@ public class Impl extends ANY
    */
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
+    v.action(this);
     if (isRoutineLike())
       {
         this._expr = this._expr.visit(v, outer);
@@ -309,7 +307,6 @@ public class Impl extends ANY
         //
         // this.visitCode(v, outer.outer());
       }
-    v.action(this);
   }
 
 
@@ -377,23 +374,12 @@ public class Impl extends ANY
       {
         _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType(), null);
       }
+    else if (context.outerFeature().isConstructor())
+      {
+        _expr = _expr.propagateExpectedType(res, context, Types.resolved.t_unit, null);
+      }
   }
 
-
-  /**
-   * Inform the expression of this implementation that its expected type is {@code t}.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   */
-  void propagateExpectedType(Resolution res, Context context, AbstractType t)
-  {
-    _expr = _expr.propagateExpectedType(res, context, t, null);
-  }
 
 
   /**
@@ -422,19 +408,12 @@ public class Impl extends ANY
     if (outer.isConstructor() && outer.preFeature() != null)
       { // For constructors, the constructor itself checks the precondition (while
         // for functions, this is done by the caller):
-        var c = outer.contract().callPreCondition(res, outer, context);
+        var c = Contract.callPreCondition(res, outer, context);
         _expr = new Block(new List<>(c, _expr));
       }
     if (needsImplicitAssignmentToResult(outer))
       {
-        var resultField = outer.resultField();
-        Assign ass = new Assign(res,
-                                this._expr.pos(),
-                                resultField,
-                                this._expr,
-                                context);
-        ass._value = this._expr;
-        this._expr = ass;
+        this._expr = _expr.assignToField(res, context, (Feature) outer.resultField());
       }
 
     // Add call to post condition feature:
@@ -444,9 +423,10 @@ public class Impl extends ANY
         switch (outer.kind())
           {
           case Field             -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3092 postcondition for field not supported yet");
-          case TypeParameter     ,
-               OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
-          case Routine           ->
+          case ExplicitTypeParameter,
+               FreeTypeParameter    ,
+               OpenTypeParameter     -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
+          case Function, Constructor, RefConstructor ->
             {
               var callPostCondition = Contract.callPostCondition(res, context);
               this._expr = new Block(new List<>(this._expr, callPostCondition));
@@ -480,6 +460,7 @@ public class Impl extends ANY
       }
   }
 
+  static class RecursiveActualArgumentTypeResolution extends Error { }
 
   /**
    * Get the initial value from actual argument in a call.
@@ -503,13 +484,32 @@ public class Impl extends ANY
             var actl = aargs.next();
             if (frml instanceof Feature f && f.impl() == this)
               {
-                if (res != null && !_infiniteRecursionInResolveTypes)
+                if (res != null)
                   {
-                    _infiniteRecursionInResolveTypes = true;
-                    actl = res.resolveType(actl, ic.resolvedFor());
-                    aargs.set(actl);
-                    _infiniteRecursionInResolveTypes = false;
+                    try
+                      {
+                        actl.visit(new FeatureVisitor()
+                          {
+                            @Override
+                            public void action(AbstractCall c)
+                            {
+                              if (c instanceof Call cc && cc.resolvingTypesRightNow())
+                                {
+                                  throw new RecursiveActualArgumentTypeResolution();
+                                }
+                            }
+                          }, null);
+
+                        actl = res.resolveType(actl, ic.resolvedFor());
+                        aargs.set(actl);
+
+                      }
+                    catch (RecursiveActualArgumentTypeResolution _)
+                      {
+                        // ignore this actual argument, see #7836 for an example
+                      }
                   }
+
                 if (CHECKS) check
                   (result == Call.ERROR);
                 result = actl;
@@ -541,15 +541,21 @@ public class Impl extends ANY
   private AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean urgent)
   {
     var exprs = new List<Expr>();
-    for (var i = 0; i < _initialCalls.size(); i++)
-      {
-        var iv = initialValueFromCall(i, res);
-        exprs.add(iv);
-      }
-    var result = Expr.union(exprs, Context.NONE, urgent);
+    AbstractType result = null;
+
     if (urgent)
       {
-        if (_initialCalls.size() == 0)
+        for (var i = 0; i < _initialCalls.size(); i++)
+          {
+            var iv = initialValueFromCall(i, res);
+            exprs.add(iv);
+          }
+        result = Expr.union(exprs, Context.NONE, urgent);
+        if (result == Types.t_FORWARD_CYCLIC)
+          {
+            result = Types.resolved.t_void;
+          }
+        else if (_initialCalls.size() == 0)
           {
             AstErrors.noActualCallFound(formalArg);
             result = Types.t_ERROR;
@@ -562,7 +568,7 @@ public class Impl extends ANY
               {
                 var iv = initialValueFromCall(i, null);
                 var t = iv.typeForInferencing();
-                if (t != null)
+                if (t != null && t.compareTo(Types.resolved.t_void) != 0)
                   {
                     var l = positions.get(t);
                     if (l == null)
@@ -574,13 +580,25 @@ public class Impl extends ANY
                     l.add(iv.pos());
                   }
               }
-            AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
+            if (positions.size() > 1)
+              {
+                AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
+                _initialCalls.forEach(ic -> ic.setDefunct());
+              }
+            else
+              {
+                if (CHECKS) check
+                  (Errors.any() || positions.size() == 0);  // would be strange if there is only one call that causes incompatibility
+              }
           }
       }
-    else if (result == Types.t_ERROR)
+    else if (result == Types.t_ERROR         ||
+             result == Types.resolved.t_void ||
+             result == Types.t_FORWARD_CYCLIC   )
       {
         result = null; // not urgent, we will report an error during CHECKING_TYPES phase.
       }
+
     if (POSTCONDITIONS) ensure
       (!urgent || result != null);
 
@@ -634,14 +652,27 @@ public class Impl extends ANY
           // may not be resolved yet.
           // see #348 for an example.
           var fo = f.outer();
-          if (res != null && t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVING_TYPES)))
+          if (res != null && t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVED_TYPES)))
             {
               f.visit(res.resolveTypesFully(fo), fo);
               t  = _expr.typeForInferencing();
             }
           if (t == null && urgent)
             {
-              t = _expr.type();  // produce _expr's error if we really need the type and can't get it
+              // for a field definition that is a lambda
+              // we do not call type() since this would
+              // possibly give us t_FORWARD_CYCLIC
+              if (_expr instanceof Function fun && !fun._names.isEmpty())
+                {
+                  t = Types.t_ERROR;
+                  // suppress any further errors in the lambda
+                  fun.setDefunct();
+                  AstErrors.noTypeInferenceFromLambda(_expr.pos());
+                }
+              else
+                {
+                  t = _expr.type();  // produce _expr's error if we really need the type and can't get it
+                }
             }
           yield t;
         }
@@ -652,8 +683,11 @@ public class Impl extends ANY
     if (CHECKS) check
       (!urgent || result != null);
 
-    return result != null &&
-           result.isCotypeType() &&
+    return result != null                   &&
+           result != Types.t_FORWARD_CYCLIC &&
+           result != Types.t_ERROR          &&
+           result.isCotypeType()            &&
+           _expr != null                    &&
            /**
             * this allows code like:
             * p := codepoint.type
@@ -684,42 +718,49 @@ public class Impl extends ANY
    *
    * @return
    */
+  @Override
   public String toString()
   {
     String result;
-    if (_expr != null) {
-      result = _expr.toString();
-    } else {
-      switch (_kind)
-        {
-        case FieldInit  : result = " = "  + _expr.getClass() + ": " +_expr; break;
-        case FieldDef   : result = " := " + _expr.getClass() + ": " +_expr; break;
-        case FieldActual: result = " type_inferred_from_actual";                            break;
-        case Field      : result = "";                                                      break;
-        case TypeParameter:     result = "type";                                            break;
-        case TypeParameterOpen: result = "type...";                                         break;
-        case RoutineDef : result = " => " + _expr.toString();                               break;
-        case Routine    : result = " is " + _expr.toString();                               break;
-        case Abstract   : result = "is abstract";                                           break;
-        case Intrinsic  : result = "is intrinsic";                                          break;
-        default: throw new Error("Unexpected Kind: "+_kind);
-        }
-    }
+    if (_expr != null)
+      {
+        result = _expr.toString();
+      }
+    else
+      {
+        result = switch (_kind)
+          {
+          case FieldInit             -> " = "  + _expr.getClass() + ": " +_expr;
+          case FieldDef              -> " := " + _expr.getClass() + ": " +_expr;
+          case FieldActual           -> " type_inferred_from_actual";
+          case Field                 -> "";
+          case ExplicitTypeParameter -> "type";
+          case FreeTypeParameter     -> "free type";
+          case TypeParameterOpen     -> "type...";
+          case RoutineDef            -> " => " + _expr.toString();
+          case Routine               -> " is " + _expr.toString();
+          case Abstract              -> "is abstract";
+          case Intrinsic             -> "is intrinsic";
+          default                    -> throw new Error("Unexpected Kind: "+_kind);
+          };
+      }
     return result;
   }
 
 
   /**
-   * Add initial call to the expression of
+   * Add surrounding calls to the expression of
    * this implementation.
    */
-  public void addInitialCall(AbstractCall ac)
+  public void addCalls(AbstractCall start, AbstractCall end)
   {
     if (PRECONDITIONS) require
-      (ac.type().compareTo(Types.resolved.t_unit) == 0);
+      (start.type().compareTo(Types.resolved.t_unit) == 0,
+       end.type().compareTo(Types.resolved.t_unit) == 0);
 
-    _expr = new Block(new List<>(ac, _expr));
+    _expr = new Block(new List<>(start, _expr, end));
   }
+
 
 }
 

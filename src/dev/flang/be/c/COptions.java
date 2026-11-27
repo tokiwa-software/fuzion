@@ -55,6 +55,12 @@ public class COptions extends FuzionOptions
 
 
   /**
+   * Should we do a debug build?
+   */
+  final boolean _debugBuild;
+
+
+  /**
    * Name of the C compiler to use.
    */
   final String _cCompiler;
@@ -100,7 +106,7 @@ public class COptions extends FuzionOptions
    * Constructor initializing fields as given.
    * @param keepGeneratedCode
    */
-  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, String cCompiler, String cFlags, String cTarget, String cInclude, String cLink, boolean keepGeneratedCode)
+  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, String cCompiler, String cFlags, String cTarget, String cInclude, String cLink, boolean keepGeneratedCode, boolean debugBuild)
   {
     super(fo);
 
@@ -112,6 +118,7 @@ public class COptions extends FuzionOptions
     _cInclude = cInclude;
     _cLink = cLink;
     _keepGeneratedCode = keepGeneratedCode;
+    _debugBuild = debugBuild;
   }
 
 

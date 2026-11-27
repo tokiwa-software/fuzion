@@ -29,7 +29,7 @@ catch_postcondition is
   # test feature will cause postcondition failure if called with types
   # smaller than 64 bits:
   #
-  test(T type : integer) =>
+  test(T : integer) =>
 
     # duplicate x
     #
@@ -39,7 +39,7 @@ catch_postcondition is
     =>
       x +^ x
 
-    yak "trying $T... "
+    yap "trying $T... "
     for v := T.one, double v
         i in 0..50
     else
@@ -92,7 +92,7 @@ catch_postcondition is
 
   # convenience feature to install post_fault handler:
   #
-  handle_post(T type) is
+  handle_post(T : Any) is
 
     # try and catch to be redefined by user
     #
@@ -103,14 +103,14 @@ catch_postcondition is
     lm : mutate is
 
     res := lm ! ()->
-        m := lm.env.new (option String nil)
+        m := lm.env.var (option String nil)
         (fuzion.runtime.post_fault.instate
           T
           (rt.post_fault msg->
             m <- msg
             fuzion.runtime.post_fault.abort)
           try
-          (_ -> catch m.get.get))
+          (_ -> catch m.get.or_panic))
 
 
   # -------------------------------
@@ -129,7 +129,7 @@ catch_postcondition is
 
   say "using anonymous instance of convenience feature with `try` and `catch`"
 
-  say (ref : handle_post String is
+  say (_ : handle_post String is
         redef try =>
           test i32
         redef catch(s String) =>
@@ -148,7 +148,7 @@ catch_postcondition is
   c0 := mut 0
 
   z : handle_post (option String) is
-    redef try option String  => tries[c0].call
+    redef try option String  => tries[c0.get].call
     redef catch(s String) option String => {say "*** failed: $s ***"; c0 <- c0.get + 1; if c0.get < tries.count then z.res else nil}
 
   say z.res
@@ -184,7 +184,7 @@ catch_postcondition is
   #
   #   res := try_post code || (s->handle post condition failure `s`)
   #
-  try_post(T type, code_try ()->T) is
+  try_post(T : Any, code_try ()->T) is
 
     # define code to execute in case of fault and run code
     #
@@ -197,7 +197,7 @@ catch_postcondition is
     # alternative implementation of catch using anonymous feature
     #
     catch1(code_catch String->T) =>
-      (ref : handle_post T is
+      (_ : handle_post T is
         redef try             => code_try()
         redef catch(s String) => code_catch s).res
 
@@ -275,7 +275,7 @@ catch_postcondition is
     r := fuzion.runtime.fault.try ()->
            option tries[c].call
          .catch s->
-           say "*** failed: {s.0} {s.1} ***"
+           say "*** failed: $(s.0) $(s.1) ***"
            nil
   until r??
     say r

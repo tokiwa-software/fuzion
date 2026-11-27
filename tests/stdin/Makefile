@@ -25,4 +25,4 @@
 
 override NAME = stdintest
 
-include ../simple_inp.mk
+include ../simple.mk

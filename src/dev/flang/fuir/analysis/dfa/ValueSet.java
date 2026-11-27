@@ -38,7 +38,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ValueSet extends Value
+class ValueSet extends Value
 {
 
 
@@ -46,7 +46,7 @@ public class ValueSet extends Value
 
 
   /**
-   * Helper class to collet the values when creating a ValueSet.
+   * Helper class to collect the values when creating a ValueSet.
    *
    * This handles two cases: Usually, the values in the set will just be joined,
    * ordered by their _id fields.
@@ -189,7 +189,7 @@ public class ValueSet extends Value
   /**
    * The values as an array.
    */
-  Value[] _componentsArray;
+  final Value[] _componentsArray;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -216,6 +216,19 @@ public class ValueSet extends Value
   }
 
 
+  /**
+   * Clone this ValueSet but set a different clazz.
+   *
+   * @param original
+   * @param cl
+   */
+  public ValueSet(ValueSet original, int cl)
+  {
+    super(cl);
+    _componentsArray = original._componentsArray;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -229,6 +242,10 @@ public class ValueSet extends Value
    */
   public int compareTo(ValueSet other)
   {
+    if (_clazz != other._clazz)
+      {
+        return Integer.compare(_clazz, other._clazz);
+      }
     var s1 =       _componentsArray.length;
     var s2 = other._componentsArray.length;
     if (s1 == s2)
@@ -324,6 +341,7 @@ public class ValueSet extends Value
   /**
    * Create human-readable string from this value.
    */
+  @Override
   public String toString()
   {
     var sb = new StringBuilder();
@@ -338,6 +356,7 @@ public class ValueSet extends Value
    *
    * @param c a consumer to apply to the values.
    */
+  @Override
   public void forAll(ValueConsumer c)
   {
     for (var v : _componentsArray)
@@ -351,6 +370,7 @@ public class ValueSet extends Value
    * Box this value. This works both for Instances as well as for value types
    * such as i32, bool, etc.
    */
+  @Override
   Value box(DFA dfa, int vc, int rc, Context context)
   {
     Value result = null;
@@ -367,6 +387,7 @@ public class ValueSet extends Value
   /**
    * Unbox this value.
    */
+  @Override
   Value unbox(DFA dfa, int vc)
   {
     Value result = null;

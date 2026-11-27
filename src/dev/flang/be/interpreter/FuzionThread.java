@@ -47,7 +47,7 @@ public class FuzionThread extends ANY
   /**
    * ThreadLocal to hold current FuzionThread instance.
    */
-  static ThreadLocal<FuzionThread> _current_ =
+  static final ThreadLocal<FuzionThread> _current_ =
     new ThreadLocal<>()
     {
       protected FuzionThread initialValue() { return new FuzionThread(); }
@@ -65,6 +65,10 @@ public class FuzionThread extends ANY
 
   /*----------------------------  variables  ----------------------------*/
 
+  /**
+   * the Java thread this FuzionThread belongs to.
+   */
+  final Thread _javaThread = Thread.currentThread();
 
   /**
    * Current call stack, for debugging output

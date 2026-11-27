@@ -21,11 +21,11 @@
 #
 # -----------------------------------------------------------------------
 
-String.mysubstring(from, to i32) String
+String.mysubstring(from, to i64) String
   pre
-    debug: 0 <= from <= to <= String.this.byte_length
+    debug: 0 <= from <= to <= String.this.byte_count
   =>
-    ref : String is
+    _ : String is
       public redef utf8 Sequence u8 =>
         String.this.utf8.slice(from, to)
 

@@ -1,0 +1,84 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.file.meta_data
+#
+# -----------------------------------------------------------------------
+
+# meta_data will be a feature storing the metadata of file/dir
+#
+public meta_data(
+  public path path,
+  # the size of the file/dir
+  sz i64,
+  # the time of last access to the path
+  # (or some other timestamp when filesystem mounted with noatime)
+  atime i64,
+  # the time of last modification of the file/dir
+  mtime i64,
+  # the time of creation of the path
+  ctime i64,
+  # boolean to check if the pathname is a regular file
+  public is_regular bool,
+  # boolean to check if the pathname is a directory
+  public is_dir bool,
+  # is the path a symlink
+  public is_link bool,
+  # owner of the path
+  public uid i64,
+  # group of the path
+  public gid i64)
+  pre debug: path.is_absolute
+is
+
+  # the size of the file/dir
+  #
+  public size units.data_size =>
+    units.data_size sz.as_u128
+
+  # the time of last access to the path
+  # (or some other timestamp when filesystem mounted with noatime)
+  #
+  public access_time time.date_time =>
+    universe.time.date_time.from_seconds meta_data.this.atime.as_u64
+
+  # the time of last modification of the file/dir
+  #
+  public modification_time time.date_time =>
+    universe.time.date_time.from_seconds meta_data.this.mtime.as_u64
+
+  # the time of creation of the path
+  #
+  public creation_time time.date_time =>
+    universe.time.date_time.from_seconds meta_data.this.ctime.as_u64
+
+
+  public redef as_string String =>
+    """
+      path              : $path
+      size              : $size
+      access time       : $(access_time)
+      modification time : $(modification_time)
+      creation time     : $(creation_time)
+      is regular file   : $is_regular
+      is directory      : $is_dir
+      is link           : $is_link
+      user id           : $uid
+      group id          : $gid"""
+

@@ -35,18 +35,16 @@
 scenario1 =>
   fs b
 
-  a(T type) is
+  a(T : Any) is
     type.zero option T => abstract
 
   b : a b is
     redef type.zero option b => nil
 
-  fs(F type : a F) =>
+  fs(F : a F) =>
     _ := F.zero
 
-# NYI: BUG: #3649 scenario1
-
-
+scenario1
 
 
 # ------  second scenario  ------
@@ -56,27 +54,27 @@ scenario1 =>
 
 scenario2 is
 
-  M(T type) ref is
+  M(T : Any) ref is
     e T => abstract
 
-  a(T type) is
+  a(T : Any) is
     type.z => zero
     type.zero T => abstract
 
     type.sum =>
-      ref : scenario2.M T is
+      _ : scenario2.M T is
         fixed redef e => zero
 
-  b : a scenario2.b is
+  b : scenario2.a scenario2.b is
 
     fixed redef type.zero scenario2.b => scenario2.b
 
-  fs(F type : a F) =>
+  fs(F : a F) =>
     _ := F.z
     _ := F.sum.e
 
 run_scenario2 =>
-  _ := scenario2.fs scenario2.b
+  scenario2.fs scenario2.b
 
 run_scenario2
 
@@ -89,7 +87,7 @@ scenario3 =>
 
   fs f64
 
-  fs(F type : float) =>
+  fs(F : float) =>
     _ := F.sum.e
 
 scenario3
@@ -124,7 +122,7 @@ ex202 =>
   sum_map_fold =>
     # using map and fold
     sum := a.map x->x*x
-            .fold i32.sum
+            .fold i64.sum
     say "sum is $sum"
 
   sum_loop =>
@@ -138,11 +136,11 @@ ex202 =>
 
   sum_tail_rec =>
     # using a tail-recursive function
-    sum_of_squares (sum i32, s list i32) i32 =>
+    sum_of_squares (sum i64, s list i64) i64 =>
       s ? nil    => sum
         | c Cons => sum_of_squares (sum + c.head**2) c.tail
 
-    say "sum is {sum_of_squares 0 a.as_list}"
+    say "sum is $(sum_of_squares 0 a.as_list)"
 
   sum_map
   sum_map_fold
@@ -157,7 +155,7 @@ ex202
 # the example for idiom204 caused the problem from the next scenario:
 #
 ex204 =>
-  frexp (x f64) tuple f64 i32 =>
+  frexp (x f64) tuple f64 i64 =>
     bits := x.cast_to_u64
     # bits is f in the following representation
     # seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -175,7 +173,7 @@ ex204 =>
     # 0000000000000000000000000000000000000000000000000000seeeeeeeeeee
     # AND this with mask
     # 00000000000000000000000000000000000000000000000000000eeeeeeeeeee
-    exp := ((bits >> fract_bits) & mask).as_i32 - bias.as_i32 + 1
+    exp := ((bits >> fract_bits) & mask).as_i64 - bias.as_i64 + 1
     # mask << fract_bits is
     # 0111111111110000000000000000000000000000000000000000000000000000
     # NOT this to get
@@ -196,11 +194,11 @@ ex204 =>
 
   a f64 := 3.14
   b, c := frexp a
-  say "{b} {c}"
+  say "$(b) $(c)"
 
   d f64 := 5E-324
   e, f := frexp d
-  say "{e} {f}"
+  say "$(e) $(f)"
 
 ex204
 
@@ -217,7 +215,7 @@ _ := ~8
 
 scenario7 is
 
-  p (W type: p W) is
+  p (W : p W) is
     type.abs option W => abstract
     a => W.abs
 
@@ -242,8 +240,8 @@ scenario7 is
   # respectively. `v1`, `v2`, `w1` and `w2` inherit from `u1` or `u2` giving `q2` or `q3` as
   # type parameters in both possible orders.
   #
-  u1(A type : p A, B type : p B) : p A is
-  u2(A type : p A, B type : p B) : p B is
+  u1(A : p A, B : p B) : p A is
+  u2(A : p A, B : p B) : p B is
 
   v1 : u1 q2 q3 is
   v2 : u1 q3 q2 is
@@ -255,24 +253,24 @@ run_scenario7 =>
   # Finally, we create instances from all the examples and call `a`, which calls `abs` for
   # all of them:
   #
-  x1 := scenario7.q .a; say (type_of x1)   # Type of 'q'
-  x2 := scenario7.r .a; say (type_of x2)   # Type of 'q'
-  x3 := scenario7.s .a; say (type_of x3)   # Type of 'q'
-  x4 := scenario7.t .a; say (type_of x4)   # Type of 'q'
-  x5 := scenario7.v1.a; say (type_of x5)   # Type of 'q2'  (inherited through p.W -> u1.A -> q2)
-  x6 := scenario7.v2.a; say (type_of x6)   # Type of 'q3'  (inherited through p.W -> u1.A -> q3)
-  x7 := scenario7.w1.a; say (type_of x7)   # Type of 'q3'  (inherited through p.W -> u2.B -> q3)
-  x8 := scenario7.w2.a; say (type_of x8)   # Type of 'q2'  (inherited through p.W -> u2.B -> q2)
+  x1 := scenario7.q .a; say (type_of x1)   # q
+  x2 := scenario7.r .a; say (type_of x2)   # q
+  x3 := scenario7.s .a; say (type_of x3)   # q
+  x4 := scenario7.t .a; say (type_of x4)   # q
+  x5 := scenario7.v1.a; say (type_of x5)   # q2  (inherited through p.W -> u1.A -> q2)
+  x6 := scenario7.v2.a; say (type_of x6)   # q3  (inherited through p.W -> u1.A -> q3)
+  x7 := scenario7.w1.a; say (type_of x7)   # q3  (inherited through p.W -> u2.B -> q3)
+  x8 := scenario7.w2.a; say (type_of x8)   # q2  (inherited through p.W -> u2.B -> q2)
 
 run_scenario7
 
 
 
-# ------  eigth scenario  ------
+# ------  eighth scenario  ------
 #
 # taken from issue #1590. The problematic code is at the bottom:
 # `arr2.fold T.sum` which creates an instance of `sum` with an outer
-# type defined by a type paraemter.
+# type defined by a type parameter.
 
 scenario8 is
 
@@ -315,7 +313,7 @@ scenario8 is
     # create string representation consisting of type, to_u32
     # and valueString
     #
-    public redef as_string => "num0.this {to_u32} {to_u32_loop} '$valueString'"
+    public redef as_string String => "num0.this $(to_u32) $(to_u32_loop) '$valueString'"
 
     # string representation of this value, to be implemented by
     # children.
@@ -323,14 +321,14 @@ scenario8 is
     valueString String => abstract
 
     type.sum =>
-      ref : Monoid num0.this is
-        public redef infix ∙ (a, b num0.this) => a.plus b
-        public redef e => zero
+      _ : Monoid num0.this is
+        public redef infix ∙ (a, b num0.this) scenario8.num0.this => a.plus b
+        public redef e scenario8.num0.this => zero
 
 
   # integer mod 2 implementation of num0
   #
-  intM2(is_zero bool) : num0 is
+  intM2(is_zero bool) : scenario8.num0 is
     fixed z => intM2 true
     fixed o => intM2 false
     fixed redef type.zero => scenario8.intM2 true
@@ -345,7 +343,7 @@ run_scenario8 =>
   s8 => scenario8
 
   arr array scenario8.intM2 := [ s8.intM2 true, s8.intM2 false ]
-  x (T type : scenario8.num0, arr2 array T) is
+  x (T : scenario8.num0, arr2 array T) is
      say (arr2.fold T.sum)
   _ := x arr
 

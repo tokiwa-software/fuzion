@@ -50,7 +50,7 @@ public class Version extends ANY
 
 
   /**
-   * The required JDK version, e.g., "21".
+   * The required JDK version, e.g., "25".
    */
   public static final String JAVA_VERSION = "@@JAVA_VERSION@@";
 

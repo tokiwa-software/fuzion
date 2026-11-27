@@ -27,14 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.State;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
-
-import dev.flang.mir.MIR;
-import dev.flang.mir.MirModule;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -43,7 +38,6 @@ import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -58,7 +52,7 @@ import java.util.stream.Stream;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Module extends ANY implements FeatureLookup
+public abstract class Module extends ANY
 {
 
 
@@ -70,6 +64,12 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   static class FData
   {
+    /**
+     * Cache for findRedefinition: map each feature that is redefined in this
+     * feature to the redefining feature.
+     */
+    SortedMap<AbstractFeature, AbstractFeature> _redefinitions;
+
 
     /**
      * Features declared inside a feature. The inner features are mapped from
@@ -87,16 +87,6 @@ public abstract class Module extends ANY implements FeatureLookup
      * is collected during RESOLVING_DECLARATIONS.
      */
     Set<AbstractFeature> _heirs = new TreeSet<>();
-
-    /**
-     * Cached result of SourceModule.allInnerAndInheritedFeatures().
-     */
-    Set<AbstractFeature> _allInnerAndInheritedFeatures = null;
-
-    /**
-     * offset of this feature's data in .mir file.
-     */
-    int _mirOffset = -1;
 
   }
 
@@ -208,7 +198,7 @@ public abstract class Module extends ANY implements FeatureLookup
    * During resolution, load all inner features of f that are defined in
    * separate files within this module.
    *
-   * NYI: cleanup: See #462: Remove once sub-directories are loaded
+   * NYI: CLEANUP: See #462: Remove once sub-directories are loaded
    * directly, not implicitly when outer feature is found
    *
    * @param f the outer feature whose inner features should be loaded from
@@ -265,14 +255,14 @@ public abstract class Module extends ANY implements FeatureLookup
                     var res = this instanceof SourceModule sm ? sm._res : null;
                     if (!f.isFixed())
                       {
-                        var newfn = cf.handDown(res, f, fn, p, outer);
+                        var newfn = cf.outer().handDown(res, f, fn, p, outer);
                         addDeclaredOrInherited(set, outer, newfn, f);
                       }
                     else
                       {
                         for (var f2 : f.redefines())
                           {
-                            var newfn = cf.handDown(res, f2, fn, p, outer);
+                            var newfn = cf.outer().handDown(res, f2, fn, p, outer);
                             addDeclaredOrInherited(set, outer, newfn, f2);
                           }
                       }
@@ -305,11 +295,21 @@ public abstract class Module extends ANY implements FeatureLookup
         var existing = it.next();
         if (f != existing)
           {
-            if (redefines(f, existing))
+            var fInherited = f.outer() != outer;
+            var existingInherited = existing.outer() != outer;
+            if (
+                fInherited && existingInherited &&
+                ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0) ==
+                ((existing.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
+               )
+              {
+                // will trigger: Repeated inheritance, see #7062
+              }
+            else if (f.redefinesFull().contains(existing))
               {
                 it.remove();
               }
-            else if (redefines(existing, f))
+            else if (existing.redefinesFull().contains(f))
               {
                 f = null;
               }
@@ -319,16 +319,6 @@ public abstract class Module extends ANY implements FeatureLookup
       {
         add(set, fn, f);
       }
-  }
-
-
-  /**
-   * Does f1 redefine f2?
-   */
-  private boolean redefines(AbstractFeature f1, AbstractFeature f2)
-  {
-    return this instanceof SourceModule  && f1.redefines().contains(f2) ||
-        !(this instanceof SourceModule) && f1.outer().inheritsFrom(f2.outer()); // NYI: cleanup: #478: better check f1.redefines(f2)
   }
 
 
@@ -434,9 +424,6 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   private SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer, Module[] modules)
   {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());
-
     var d = data(outer);
     var s = d._declaredOrInheritedFeatures;
     if (s == null)
@@ -445,7 +432,7 @@ public abstract class Module extends ANY implements FeatureLookup
 
         if (outer instanceof LibraryFeature olf)
           {
-            // NYI: cleanup: See #462: Remove once sub-directories are loaded
+            // NYI: CLEANUP: See #462: Remove once sub-directories are loaded
             // directly, not implicitly when outer feature is found
             loadInnerFeatures(outer);
 
@@ -529,88 +516,40 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   public void forEachDeclaredOrInheritedFeature(AbstractFeature af, Consumer<AbstractFeature> fun)
   {
-    for (var l: declaredOrInheritedFeatures(af).values())
+    for (var l: new List<List<AbstractFeature>>(declaredOrInheritedFeatures(af).values().iterator()))
       {
         l.forEach(fun);
       }
   }
 
 
-  /**
-   * Are {@code a} and {@code b} defined in the same module?
-   */
-  private boolean sameModule(AbstractFeature a, AbstractFeature b)
-  {
-    return a instanceof Feature && b instanceof Feature
-     || (a instanceof LibraryFeature lf && b instanceof LibraryFeature olf && lf._libModule == olf._libModule);
-  }
-
 
   /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
+   * Find the effective main feature from the given main feature name. In case
+   * main is null, this is the universe.  Otherwise, it is a feature with given
+   * name {@code main} or, if exits, its {@code preAndCallFeature}.
    *
-   * NYI: UNDER DEVELOPMENT: result includes features that are redefined and thus not relevant.
+   * @param universe the universe feature, may be null
+   *
+   * @param main the main features name, may be null
+   *
+   * @return the effective main feature, null in case universe is null or lookup failed.
    */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
+  AbstractFeature effectiveMain(AbstractFeature universe, String main)
   {
-    var d = data(f);
-    var result = d._allInnerAndInheritedFeatures;
-
-    if (result == null)
+    var result = universe == null || main == null
+      ? universe
+      : declaredOrInheritedFeatures(universe, FeatureName.get(main, 0)).getFirstOrNull();
+    if (result != null)
       {
-        result = new TreeSet<>();
-        for (var s : declaredOrInheritedFeatures(f).values())
+        var pac = result.preAndCallFeature();
+        if (pac != null)
           {
-            result.addAll(s);
+            result = pac;
           }
-
-        for (var p : f.inherits())
-          {
-            var cf = p.calledFeature();
-            if (CHECKS) check
-              (Errors.any() || cf != null);
-
-            if (cf != null)
-              {
-                result.addAll(allInnerAndInheritedFeatures(cf));
-              }
-          }
-        d._allInnerAndInheritedFeatures = result;
       }
     return result;
   }
-
-
-  /**
-   * Find feature with given name in outer.
-   *
-   * @param outer the declaring or inheriting feature
-   */
-  @Override
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
-  {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(State.RESOLVED_DECLARATIONS));
-
-    return declaredOrInheritedFeatures(outer, name).getFirstOrNull();
-  }
-
-
-  /**
-   * Create MIR based on given main feature.
-   */
-  static MIR createMIR(MirModule mirMod, AbstractFeature universe, AbstractFeature main)
-  {
-    var result = new MIR(universe, main, mirMod);
-    if (!Errors.any())
-      {
-        new DFA(result).check();
-      }
-
-    return result;
-  }
-
 
 }
 

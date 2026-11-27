@@ -30,10 +30,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 // https://stackoverflow.com/questions/11040133/what-does-defining-win32-lean-and-mean-exclude-exactly#comment108482188_11040230
 #define WIN32_LEAN_AND_MEAN
 
-#ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
 #include <gc.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,22 +41,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include <math.h>
 
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2tcpip.h>
 #include <winbase.h>
+#include <process.h>
 #include <synchapi.h> // WaitForSingleObject
 #include <namedpipeapi.h>
-
-#ifdef FUZION_ENABLE_THREADS
-// NYI: UNDER DEVELOPMENT: remove POSIX imports
-#include <pthread.h>
-#endif
+#include <direct.h>
 
 #include "fz.h"
 
 static_assert(sizeof(L'\0') == 2, "wide char, unexpected bytes");
+static_assert(_WIN32_WINNT >= 0x0600, "rt: win, expected Windows Vista or greater.");
 
 
 /**
@@ -80,21 +77,11 @@ void fzE_mem_zero_secure(void *dest, size_t sz)
   SecureZeroMemory(dest, sz);
 }
 
-// thread local to hold the last
-// error that occurred in fuzion runtime.
-_Thread_local int64_t last_error = 0;
-
-
 // returns the latest error number of
 // the current thread
 int64_t fzE_last_error(void){
-  // NYI: CLEANUP:
-  return last_error == 0
-    ? GetLastError()
-    : last_error;
+  return GetLastError();
 }
-
-// NYI: UNDER DEVELOPMENT: missing set_last_error, see posix.c
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -132,9 +119,9 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
   free(wideStr);
 
   if (dir->handle == INVALID_HANDLE_VALUE) {
-    // NYI: BUG: free(dir);
+    fzE_free(dir);
     result[0] = GetLastError();
-    return dir;
+    return NULL;
   } else {
     result[0] = 0;
     return dir;
@@ -167,7 +154,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
 int fzE_dir_close(intptr_t * dir) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FindClose(d->handle);
-  // NYI: BUG: free(dir);
+  fzE_free(dir);
 
   return res
     ? 0
@@ -235,7 +222,7 @@ int fzE_get_protocol(int protocol)
 
 
 // close a socket descriptor
-int fzE_close(int sockfd)
+int fzE_socket_close(int sockfd)
 {
   closesocket(sockfd);
   return fzE_net_error();
@@ -245,10 +232,7 @@ int fzE_close(int sockfd)
 // initialize a new socket for given
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
-  WSADATA wsaData;
-  return WSAStartup(MAKEWORD(2,2), &wsaData) != 0
-    ? -1
-    : socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
+  return socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
 }
 
 
@@ -268,31 +252,20 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 
 
 // create a new socket and bind to given host:port
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    result[0] = fzE_net_error();
-    return -1;
-  }
+int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, AI_PASSIVE, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
+    SetLastError(fzE_net_error());
     return -1;
   }
-  int bind_res = bind(result[0], addr_info->ai_addr, (int)addr_info->ai_addrlen);
-
-  if(bind_res == -1)
-  {
-    fzE_close(result[0]);
-    result[0] = fzE_net_error();
-    return -1;
-  }
+  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
+  if (bind_res != 0)
+    {
+      SetLastError(fzE_net_error());
+    }
   freeaddrinfo(addr_info);
   return bind_res;
 }
@@ -315,31 +288,20 @@ int fzE_accept(int sockfd){
 
 
 // create connection for given parameters
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  // get socket
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    result[0] = fzE_net_error();
-    return -1;
-  }
+int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, 0, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
+    SetLastError(fzE_net_error());
     return -1;
   }
-  int con_res = connect(result[0], addr_info->ai_addr, addr_info->ai_addrlen);
-  if(con_res == -1)
-  {
-    // NYI: UNDER DEVELOPMENT: do we want to try another address in addr_info->ai_next?
-    fzE_close(result[0]);
-    result[0] = fzE_net_error();
-  }
+  int con_res = connect(sockfd, addr_info->ai_addr, addr_info->ai_addrlen);
+  if (con_res != 0)
+    {
+      SetLastError(fzE_net_error());
+    }
   freeaddrinfo(addr_info);
   return con_res;
 }
@@ -351,24 +313,27 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
 int fzE_get_peer_address(int sockfd, void * buf) {
   struct sockaddr_storage peeraddr;
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == -1) {
-    return -1;
-  } else if (peeraddr.ss_family == AF_INET) {
-    fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
-    return 4;
-  } else if (peeraddr.ss_family == AF_INET6) {
-    fzE_memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
-    return 16;
-  } else {
-    return -1;
-  }
-  return -1;
+  int result = -1;
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) != -1)
+    {
+      if (peeraddr.ss_family == AF_INET)
+        {
+          fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
+          result = 4;
+        }
+      else if (peeraddr.ss_family == AF_INET6)
+        {
+          fzE_memcpy(buf, &(((struct sockaddr_in6 *)&peeraddr)->sin6_addr.s6_addr), 16);
+          result = 16;
+        }
+    }
+  return result;
 }
 
 
 // get the peer's port
 // result is the port number
-// might return useless infomrmation when called on udp socket
+// might return useless information when called on udp socket
 unsigned short fzE_get_peer_port(int sockfd) {
   struct sockaddr_storage peeraddr;
   socklen_t peeraddrlen = sizeof(peeraddr);
@@ -403,11 +368,10 @@ int fzE_socket_read(int sockfd, void * buf, size_t count){
 
 // write buf to sockfd
 // may block if socket is set to blocking.
-// return error code or zero on success
+// -1 or number of bytes written on success
 int fzE_socket_write(int sockfd, const void * buf, size_t count){
-return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
-  ? fzE_net_error()
-  : 0;
+  // NYI: setlast error missing: fzE_net_error
+  return sendto( sockfd, buf, count, 0, NULL, 0 );
 }
 
 
@@ -442,13 +406,12 @@ long fzE_get_file_size(void * file) {
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
  * returns:
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ *   - error   :  NULL
+ *   - success :  an address where the file was mapped to
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
+void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 
   if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
-    result[0] = -1;
     return NULL;
   }
 
@@ -459,15 +422,12 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
   */
   HANDLE file_mapping_handle = CreateFileMapping(file, NULL, PAGE_READWRITE, 0, 0, NULL);
   if (file_mapping_handle == NULL) {
-    result[0] = -1;
     return NULL;
   }
 
   void * mapped_address = MapViewOfFile(file_mapping_handle, FILE_MAP_ALL_ACCESS, high_word(offset), low_word(offset), size);
 
   CloseHandle(file_mapping_handle);
-
-  result[0] = mapped_address == NULL ? -1 : 0;
 
   return mapped_address;
 }
@@ -483,10 +443,11 @@ int fzE_munmap(void * mapped_address, const int file_size){
 
 
 /**
- * returns a monotonically increasing timestamp.
+ * @return the time of the given posix clock
  */
-uint64_t fzE_nanotime()
+uint64_t fzE_posix_time(int clockid)
 {
+  // NYI: BUG: clockid currently ignored
   static LARGE_INTEGER frequency = {0};
   if (frequency.QuadPart == 0) {
       if (!QueryPerformanceFrequency(&frequency)) {
@@ -501,6 +462,9 @@ uint64_t fzE_nanotime()
       exit(EXIT_FAILURE);
   }
 
+  // assert that this division will not be rounded to zero
+  assert( 1000000000ULL / frequency.QuadPart != 0ULL );
+
   return (uint64_t)(counter.QuadPart * (1000000000ULL / frequency.QuadPart));
 }
 
@@ -510,17 +474,16 @@ uint64_t fzE_nanotime()
  */
 void fzE_nanosleep(uint64_t n)
 {
-  uint64_t start = fzE_nanotime();
+  uint64_t start = fzE_posix_time(-1);
   uint64_t end = start + n;
 
-  while (fzE_nanotime() < end) {
-      uint64_t remaining_ns = end - fzE_nanotime();
-      if (remaining_ns > 1000000ULL) {
-          Sleep((DWORD)(remaining_ns / 1000000ULL));
-      } else {
-          YieldProcessor();
-      }
-  }
+  uint64_t now = fzE_posix_time(-1);
+  while (now < end)
+    {
+      uint64_t remaining_ms = (end - now) / 1000000ULL;
+      Sleep((DWORD)(remaining_ms == 0 ? 1ULL : remaining_ms));
+      now = fzE_posix_time(-1);
+    }
 }
 
 
@@ -547,6 +510,17 @@ int fzE_rm(char * path)
 
 
 /**
+ * convert from windows file time to unix time stamp
+ * see also: https://learn.microsoft.com/en-us/windows/win32/sysinfo/file-times
+ */
+int64_t win_time_to_unix_time(LONGLONG qp)
+{
+  static const int64_t WINDOWS_TO_UNIX_EPOCH_DIFF = 11644473600ULL;
+  return (qp / 10000000ULL) - WINDOWS_TO_UNIX_EPOCH_DIFF;
+}
+
+
+/**
  * Get file status (resolves symbolic links)
  */
 int fzE_stat(const char *pathname, int64_t * metadata)
@@ -562,15 +536,27 @@ int fzE_stat(const char *pathname, int64_t * metadata)
     fileSize.HighPart = fileInfo.nFileSizeHigh;
     fileSize.LowPart = fileInfo.nFileSizeLow;
 
-    FILETIME ft = fileInfo.ftLastWriteTime;
-    ULARGE_INTEGER ull;
-    ull.LowPart = ft.dwLowDateTime;
-    ull.HighPart = ft.dwHighDateTime;
+    ULARGE_INTEGER lat;
+    lat.LowPart =  fileInfo.ftLastAccessTime.dwLowDateTime;
+    lat.HighPart = fileInfo.ftLastAccessTime.dwHighDateTime;
+
+    ULARGE_INTEGER lwt;
+    lwt.LowPart =  fileInfo.ftLastWriteTime.dwLowDateTime;
+    lwt.HighPart = fileInfo.ftLastWriteTime.dwHighDateTime;
+
+    ULARGE_INTEGER ct;
+    ct.LowPart =  fileInfo.ftCreationTime.dwLowDateTime;
+    ct.HighPart = fileInfo.ftCreationTime.dwHighDateTime;
 
     metadata[0] = fileSize.QuadPart;
-    metadata[1] = (ull.QuadPart / 10000000ULL) - 11644473600ULL;
-    metadata[2] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
-    metadata[3] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[1] = win_time_to_unix_time(lat.QuadPart); /* Time of last access */
+    metadata[2] = win_time_to_unix_time(lwt.QuadPart); /* Time of last modification */
+    metadata[3] = win_time_to_unix_time(ct.QuadPart);  /* Time of last status change */
+    metadata[4] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+    metadata[5] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[6] = 0; /* NYI: UNDER DEVELOPMENT: is link  */
+    metadata[7] = 0; /* NYI: UNDER DEVELOPMENT: uid  */
+    metadata[8] = 0; /* NYI: UNDER DEVELOPMENT: gid  */
 
     result = 0;
   }
@@ -593,15 +579,76 @@ int fzE_stat(const char *pathname, int64_t * metadata)
  */
 int fzE_lstat(const char *pathname, int64_t * metadata)
 {
-  return fzE_stat(pathname, metadata);
+  int result = -1;
+
+  BY_HANDLE_FILE_INFORMATION fileInfo;
+
+  SECURITY_ATTRIBUTES sa = {0};
+  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+  sa.bInheritHandle = FALSE;
+  sa.lpSecurityDescriptor = NULL;
+
+  wchar_t* wideStr = utf8_to_wide_str(pathname);
+
+  HANDLE hFile = CreateFileW(
+      wideStr,
+      GENERIC_READ,
+      FILE_SHARE_READ,
+      &sa,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+      NULL
+  );
+
+  free(wideStr);
+
+  if (hFile != INVALID_HANDLE_VALUE && GetFileInformationByHandle(hFile, &fileInfo)) {
+    LARGE_INTEGER fileSize;
+    fileSize.HighPart = fileInfo.nFileSizeHigh;
+    fileSize.LowPart = fileInfo.nFileSizeLow;
+
+    ULARGE_INTEGER lat;
+    lat.LowPart =  fileInfo.ftLastAccessTime.dwLowDateTime;
+    lat.HighPart = fileInfo.ftLastAccessTime.dwHighDateTime;
+
+    ULARGE_INTEGER lwt;
+    lwt.LowPart =  fileInfo.ftLastWriteTime.dwLowDateTime;
+    lwt.HighPart = fileInfo.ftLastWriteTime.dwHighDateTime;
+
+    ULARGE_INTEGER ct;
+    ct.LowPart =  fileInfo.ftCreationTime.dwLowDateTime;
+    ct.HighPart = fileInfo.ftCreationTime.dwHighDateTime;
+
+    metadata[0] = fileSize.QuadPart;
+    metadata[1] = win_time_to_unix_time(lat.QuadPart); /* Time of last access */
+    metadata[2] = win_time_to_unix_time(lwt.QuadPart); /* Time of last modification */
+    metadata[3] = win_time_to_unix_time(ct.QuadPart);  /* Time of last status change */
+    metadata[4] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+    metadata[5] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[6] = 0; /* NYI: UNDER DEVELOPMENT: is link  */
+    metadata[7] = 0; /* NYI: UNDER DEVELOPMENT: uid  */
+    metadata[8] = 0; /* NYI: UNDER DEVELOPMENT: gid  */
+
+    CloseHandle(hFile);
+
+    result = 0;
+  }
+  else {
+    metadata[0] = (int64_t)GetLastError();
+    metadata[1] = 0LL;
+    metadata[2] = 0LL;
+    metadata[3] = 0LL;
+    result = -1;
+  }
+
+
+  return result;
 }
 
-#ifdef FUZION_ENABLE_THREADS
-pthread_mutex_t fzE_global_mutex;
-#endif
+CRITICAL_SECTION fzE_global_mutex;
 
 /**
- * Run plattform specific initialisation code
+ * Run platform-specific initialisation code
  */
 void fzE_init()
 {
@@ -610,19 +657,75 @@ void fzE_init()
   SetConsoleOutputCP(CP_UTF8);
   // also set input code page
   SetConsoleCP(CP_UTF8);
-#ifdef FUZION_ENABLE_THREADS
-  pthread_mutexattr_t attr;
-  fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
-  bool res = pthread_mutexattr_init(&attr) == 0 &&
-            // NYI: UNDER DEVELOPMENT: #1646 setprotocol returns EINVAL on windows.
-            // pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
-            pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
-  assert(res);
-#endif
 
-#ifdef GC_THREADS
+  // Initialize Winsock
+  WSADATA wsaData;
+  if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+    fprintf(stderr, "*** WSAStartup failed\n");
+    exit(EXIT_FAILURE);
+  }
+  // NYI: UNDER DEVELOPMENT: WSACleanup
+
+  if (!InitializeCriticalSectionEx(&fzE_global_mutex, 0, 0))
+  {
+    fprintf(stderr, "*** InitializeCriticalSectionEx failed\n");
+    exit(EXIT_FAILURE);
+  }
+  // NYI: UNDER DEVELOPMENT: DeleteCriticalSection(&fzE_global_mutex);
+
   GC_INIT();
-#endif
+}
+
+typedef void* (*posix_thread_func)(void*);
+typedef struct {
+  posix_thread_func func;
+  void* arg;
+  HANDLE handle;   // handle of the new thread, set before it is resumed
+} thread_trampoline_t;
+
+
+/*
+ * Real handle of the current thread, NULL if not known yet.
+ *
+ * For threads started by fzE_thread_create, this is the handle returned by
+ * fzE_thread_create.  Otherwise, it is created lazily by fzE_thread_current.
+ *
+ * Only this variable is thread local; the handle itself is valid in all
+ * threads of the process until it is closed by fzE_thread_join.
+ */
+static _Thread_local HANDLE fzE_current_thread_handle = NULL;
+
+
+unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
+  thread_trampoline_t* trampoline = (thread_trampoline_t*)raw_arg;
+  fzE_current_thread_handle = trampoline->handle;
+  trampoline->func(trampoline->arg);
+  // NYI: free: trampoline
+  return 0;
+}
+
+
+/**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current()
+{
+  if (fzE_current_thread_handle == NULL)
+    {
+      // GetCurrentThread() returns a pseudo handle that always refers to the
+      // thread that uses it, so it cannot be used by other threads.  Create
+      // a real handle instead.  This happens only for threads that were not
+      // started by fzE_thread_create, i.e., the main thread.  The handle is
+      // never closed.
+      HANDLE p = GetCurrentProcess();
+      if (!DuplicateHandle(p, GetCurrentThread(), p, &fzE_current_thread_handle,
+                           0, FALSE, DUPLICATE_SAME_ACCESS))
+        {
+          fprintf(stderr, "*** DuplicateHandle failed with error %lu\n", GetLastError());
+          exit(EXIT_FAILURE);
+        }
+    }
+  return fzE_current_thread_handle;
 }
 
 
@@ -632,40 +735,101 @@ void fzE_init()
 void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
-#ifdef GC_THREADS
-  int res = GC_pthread_create(pt,NULL,code,args);
-#else
-  int res = pthread_create(pt,NULL,code,args);
-#endif
-  if (res!=0)
-  {
-    fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
-    exit(EXIT_FAILURE);
-  }
-  return pt;
-#else
-  printf("You discovered a severe bug. (fzE_thread_join)");
-  exit(EXIT_FAILURE);
-  return NULL;
-#endif
+  thread_trampoline_t* trampoline = (thread_trampoline_t*)fzE_malloc_safe(sizeof(thread_trampoline_t));
+  trampoline->func = code;
+  trampoline->arg = args;
+  HANDLE handle = (HANDLE)GC_beginthreadex(
+    NULL,                // security attributes
+    0,                   // stack size
+    trampoline_wrapper,  // thread function
+    trampoline,          // argument to thread function
+    CREATE_SUSPENDED,    // creation flags: resumed once trampoline->handle is set
+    NULL                 // thread ID (optional, can be NULL)
+  );
+
+  assert(handle != NULL);
+
+  trampoline->handle = handle;
+  if (ResumeThread(handle) == (DWORD)-1)
+    {
+      fprintf(stderr, "*** ResumeThread failed with error %lu\n", GetLastError());
+      exit(EXIT_FAILURE);
+    }
+
+  return handle;
+}
+
+/**
+* Join with a running thread.
+*/
+int fzE_thread_join(void * thrd) {
+  DWORD result = WaitForSingleObject((HANDLE)thrd, INFINITE);
+  CloseHandle((HANDLE)thrd);
+  switch (result)
+    {
+      case WAIT_OBJECT_0:
+        return 0;
+      case WAIT_ABANDONED:
+        return 1;
+      case WAIT_TIMEOUT:
+        return 2;
+      case WAIT_FAILED:
+        {
+          DWORD err = GetLastError();
+          if (err == ERROR_INVALID_HANDLE)
+            {
+              return 3;
+            }
+          return 2;
+        }
+      default:
+        assert(false);
+        return -1;
+    }
 }
 
 
-/**
- * Join with a running thread.
+/*
+ * Set the scheduling policy and priority of a running thread.
  */
-void fzE_thread_join(void * thrd)
+int fzE_thread_setschedparam(void * thrd, int policy, int priority)
 {
-#ifdef FUZION_ENABLE_THREADS
-#ifdef GC_THREADS
-  GC_pthread_join(*(pthread_t *)thrd, NULL);
-#else
-  pthread_join(*(pthread_t *)thrd, NULL);
-#endif
-  fzE_free(thrd);
-#endif
+  return 38; // ENOSYS - Function not implemented
+}
+
+
+/*
+ * Set the scheduling CPU affinity of a running thread.
+ */
+int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
+{
+  return 38;
+}
+
+
+/*
+ * Convert a FILETIME, which counts 100 nano second units, to nano seconds.
+ */
+static uint64_t fzE_filetime_to_ns(FILETIME ft)
+{
+  ULARGE_INTEGER u;
+  u.LowPart  = ft.dwLowDateTime;
+  u.HighPart = ft.dwHighDateTime;
+  return u.QuadPart * 100;
+}
+
+
+/*
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd)
+{
+  FILETIME creation_time, exit_time, kernel_time, user_time;
+  if (!GetThreadTimes((HANDLE)thrd, &creation_time, &exit_time, &kernel_time, &user_time))
+    {
+      return -1;
+    }
+  return (int64_t)(fzE_filetime_to_ns(kernel_time) + fzE_filetime_to_ns(user_time));
 }
 
 
@@ -674,12 +838,7 @@ void fzE_thread_join(void * thrd)
  */
 void fzE_lock()
 {
-#ifdef FUZION_ENABLE_THREADS
-  int res = pthread_mutex_lock(&fzE_global_mutex);
-  assert( res == 0 );
-#else
-  printf("You discovered a severe bug. (fzE_lock)");
-#endif
+  EnterCriticalSection(&fzE_global_mutex);
 }
 
 
@@ -688,17 +847,15 @@ void fzE_lock()
  */
 void fzE_unlock()
 {
-#ifdef FUZION_ENABLE_THREADS
-  int res = pthread_mutex_unlock(&fzE_global_mutex);
-  assert( res == 0 );
-#else
-  printf("You discovered a severe bug. (fzE_unlock)");
-#endif
+  LeaveCriticalSection(&fzE_global_mutex);
 }
 
 
 // combine NULL-terminated UTF-8 string array into wide string
 wchar_t *build_unicode_args(char *args[], size_t argsLen) {
+
+  // NYI: UNDER DEVELOPMENT: need to escape quotes (") ?
+
   size_t totalLen = 2;
   for (size_t i = 0; i < argsLen - 1; ++i) {
     totalLen += MultiByteToWideChar(CP_UTF8, 0, args[i], -1, NULL, 0) + 1 + sizeof(L"\"\" ");
@@ -756,7 +913,7 @@ wchar_t *build_unicode_environment_block(char *env[], size_t envLen) {
 }
 
 
-int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+static int fzE_process_create0(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
 
   // Programmatically controlling which handles are inherited by new processes in Win32
   // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
@@ -764,22 +921,6 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   HANDLE hStdinRead, hStdinWrite;
   HANDLE hStdoutRead, hStdoutWrite;
   HANDLE hStderrRead, hStderrWrite;
-
-  SECURITY_ATTRIBUTES saAttr = {
-      .nLength = sizeof(SECURITY_ATTRIBUTES),
-      .bInheritHandle = TRUE,
-      .lpSecurityDescriptor = NULL
-  };
-
-  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0) ||
-      !CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0) ||
-      !CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
-      return -1;
-  }
-
-  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
 
   // we resolve app path manually, because we
   // want to pass empty env where PATH is not set
@@ -797,17 +938,49 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   );
   free(app);
   if (spw == 0) {
-    last_error = ERROR_FILE_NOT_FOUND;
+    SetLastError(ERROR_FILE_NOT_FOUND);
     return -1;
   }
 
   wchar_t *args_w = build_unicode_args(args, argsLen);
   wchar_t *envBlock = build_unicode_environment_block(env, envLen);
 
-  if (!args_w) {
-    last_error = ERROR_INVALID_NAME;
+  if (!args_w || !envBlock) {
+    free(args_w);
+    free(envBlock);
+    SetLastError(ERROR_INVALID_NAME);
     return -1;
   }
+
+  SECURITY_ATTRIBUTES saAttr = {
+      .nLength = sizeof(SECURITY_ATTRIBUTES),
+      .bInheritHandle = TRUE,
+      .lpSecurityDescriptor = NULL
+  };
+
+  BOOL ok = TRUE;
+  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0)) {
+    ok = FALSE;
+  } else if (!CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0)) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    ok = FALSE;
+  } else if (!CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
+    CloseHandle(hStdinRead);
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStdoutWrite);
+    ok = FALSE;
+  }
+  if (!ok) {
+    free(args_w);
+    free(envBlock);
+    return -1;
+  }
+
+  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
 
   PROCESS_INFORMATION pi;
   STARTUPINFOW si = {0};
@@ -838,7 +1011,9 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   free(envBlock);
 
   if (!success) {
-    last_error = GetLastError();
+    CloseHandle(hStdinWrite);
+    CloseHandle(hStdoutRead);
+    CloseHandle(hStderrRead);
     return -1;
   }
 
@@ -853,25 +1028,105 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 }
 
 
-// wait for process to finish
-// returns exit code or -1 on wait-failure.
-int64_t fzE_process_wait(int64_t p){
-  DWORD status = 0;
-  WaitForSingleObject((HANDLE)p, INFINITE);
-  if (!GetExitCodeProcess((HANDLE)p, &status)){
-    return -1;
-  }
-  CloseHandle((HANDLE)p);
+int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
+  // make sure no files are opened while we start child process
+  fzE_lock();
+  int res = fzE_process_create0(args, argsLen, env, envLen, result);
+  fzE_unlock();
+  return res;
+}
+
+
+// check the status of process p, does not wait for process to finish
+//
+// result
+//   >=0 : the process exit code (including exception/termination codes)
+//   -1  : process is still running
+//   -2  : an error occurred when calling waitpid, check errno
+int64_t fzE_process_poll(int64_t p){
+
+  assert(p != 0);
+
+  HANDLE h = (HANDLE)p;
+
+  DWORD result = WaitForSingleObject(h, 0);
+
+  if (result == WAIT_TIMEOUT)
+    {
+      return -1; // still running
+    }
+
+  if (result == WAIT_FAILED)
+    {
+      return -2;
+    }
+
+  DWORD status;
+
+  if (!GetExitCodeProcess(h, &status))
+    {
+      return -2;
+    }
+
   return (int64_t)status;
 }
 
+/**
+ * close process handle, free memory
+ */
+int fzE_process_close(int64_t p)
+{
+  return CloseHandle((HANDLE)p)
+    ? 0
+    : 1;
+}
+
+
+// returns -1 on error or length of the hostname otherwise
+//
+int fzE_hostname(char *buf, size_t nbytes)
+{
+    if (buf == NULL || nbytes == 0)
+        return -1;
+
+    if (gethostname(buf, (int)nbytes) == SOCKET_ERROR) {
+        return -1;
+    }
+
+    buf[nbytes - 1] = '\0';
+
+    return (int)strnlen(buf, nbytes);
+}
+
+
+// open a new pipe
+//
+int fzE_pipe_create(int64_t *fds)
+{
+  HANDLE hRead, hWrite;
+
+  SECURITY_ATTRIBUTES saAttr = {
+    .nLength = sizeof(SECURITY_ATTRIBUTES),
+    .bInheritHandle = FALSE,
+    .lpSecurityDescriptor = NULL
+  };
+
+  if (CreatePipe(&hRead, &hWrite, &saAttr, 0)) {
+    fds[0] = (int64_t) hRead;
+    fds[1] = (int64_t) hWrite;
+    return 0;
+  }
+  DWORD le = GetLastError();
+  assert(le > 0);
+  return (int)le;
+}
 
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
   DWORD bytesRead;
   if (!ReadFile((HANDLE)desc, buf, nbytes, &bytesRead, NULL)){
-    return GetLastError() == ERROR_BROKEN_PIPE
+    return GetLastError() == ERROR_BROKEN_PIPE || GetLastError() == ERROR_OPERATION_ABORTED /* canceled by CancelIoEx in fzE_pipe_close */
       ? 0
       : -1;
   }
@@ -891,7 +1146,7 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI: UNDER DEVELOPMENT: do we need to flush?
+  CancelIoEx((HANDLE)desc, NULL /* If this parameter is NULL, all I/O requests for the hFile parameter are canceled. */);
   return CloseHandle((HANDLE)desc)
     ? 0
     : -1;
@@ -920,18 +1175,37 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
       NULL
   );
 
+  free(file_name_w);
+
   open_results[0] = hFile == INVALID_HANDLE_VALUE
     ? (int64_t)GetLastError()
     : 0;
 
-  if (hFile != INVALID_HANDLE_VALUE && mode == FZ_FILE_MODE_APPEND)
+  // align to posix api
+  // mode=write, truncate file
+  // mode=append, set file pointer to end of file
+  if (hFile != INVALID_HANDLE_VALUE)
   {
     LARGE_INTEGER zero = {0}, new_pos = {0};
-    if (!SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
+    if(mode == FZ_FILE_MODE_WRITE) {
+      if (!SetFilePointerEx(hFile, zero, NULL, FILE_BEGIN)) {
+        open_results[0] = (int64_t)GetLastError();
+        CloseHandle(hFile);
+        return NULL;
+      }
+
+      if (!SetEndOfFile(hFile)) {
+        open_results[0] = (int64_t)GetLastError();
+        CloseHandle(hFile);
+        return NULL;
+      }
+    }
+    else if (mode == FZ_FILE_MODE_APPEND && !SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
       open_results[0] = (int64_t)GetLastError();
       CloseHandle(hFile);
       return NULL;
     }
+
   }
 
   return (void *)hFile;
@@ -939,85 +1213,92 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 
 
 void * fzE_mtx_init() {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_mutex_t *mtx = (pthread_mutex_t *)fzE_malloc_safe(sizeof(pthread_mutex_t));
-  return pthread_mutex_init(mtx, NULL) == 0 ? (void *)mtx : NULL;
-#else
-  return NULL;
-#endif
+  CRITICAL_SECTION *mtx = (CRITICAL_SECTION *)fzE_malloc_safe(sizeof(CRITICAL_SECTION));
+  if (!InitializeCriticalSectionEx(mtx, 0, 0))
+  {
+    fzE_free(mtx);
+    fprintf(stderr, "*** InitializeCriticalSectionEx failed\n");
+    exit(EXIT_FAILURE);
+  }
+  return (void *)mtx;
 }
 
-int32_t fzE_mtx_lock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
+int32_t fzE_mtx_lock(void *mtx) {
+  EnterCriticalSection((CRITICAL_SECTION *)mtx);
   return 0;
-#endif
 }
 
-int32_t fzE_mtx_trylock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
+int32_t fzE_mtx_trylock(void *mtx) {
+  return TryEnterCriticalSection((CRITICAL_SECTION *)mtx) ? 0 : -1;
+}
+
+int32_t fzE_mtx_unlock(void *mtx) {
+  LeaveCriticalSection((CRITICAL_SECTION *)mtx);
   return 0;
-#endif
 }
 
-int32_t fzE_mtx_unlock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
+void fzE_mtx_destroy(void *mtx) {
+  DeleteCriticalSection((CRITICAL_SECTION *)mtx);
+  fzE_free(mtx);
 }
 
-void fzE_mtx_destroy(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_mutex_destroy((pthread_mutex_t *)mtx);
-  // NYI: free(mtx);
-#else
-#endif
+/**
+ * initialize a condition
+ *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /usr/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
+ * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
+ */
+void * fzE_cnd_init(int clock) {
+  // NYI: UNDER DEVELOPMENT: clock is ignored for condition variable
+  CONDITION_VARIABLE *cnd = (CONDITION_VARIABLE *)fzE_malloc_safe(sizeof(CONDITION_VARIABLE));
+  InitializeConditionVariable(cnd);
+  return (void *)cnd;
 }
 
-void * fzE_cnd_init() {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
-  return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
-#else
- return NULL;
-#endif
+void fzE_cnd_signal(void *cnd) {
+  WakeConditionVariable((CONDITION_VARIABLE *)cnd);
 }
 
-int32_t fzE_cnd_signal(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
+void fzE_cnd_broadcast(void *cnd) {
+  WakeAllConditionVariable((CONDITION_VARIABLE *)cnd);
 }
 
-int32_t fzE_cnd_broadcast(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
+void fzE_cnd_wait(void *cnd, void *mtx) {
+  BOOL ok = SleepConditionVariableCS(
+      (CONDITION_VARIABLE *)cnd,
+      (CRITICAL_SECTION *)mtx,
+      INFINITE);
+  if (!ok)
+    {
+      fprintf(stderr, "*** SleepConditionVariableCS failed\n");
+      exit(EXIT_FAILURE);
+    }
 }
 
-int32_t fzE_cnd_wait(void * cnd, void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
+void fzE_cnd_timedwait(void *cnd, void *mtx, uint64_t time_ns) {
+  DWORD ms = (DWORD)(time_ns / 1000000);
+  BOOL ok = SleepConditionVariableCS(
+      (CONDITION_VARIABLE *)cnd,
+      (CRITICAL_SECTION *)mtx,
+      ms);
+  if (!ok && GetLastError() != ERROR_TIMEOUT)
+    {
+      fprintf(stderr, "*** SleepConditionVariableCS failed\n");
+      exit(EXIT_FAILURE);
+    }
 }
 
-void fzE_cnd_destroy(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_cond_destroy((pthread_cond_t *)cnd);
-  // NYI: free(cnd);
-#else
-#endif
+void fzE_cnd_destroy(void *cnd) {
+  // Windows CONDITION_VARIABLEs do not need explicit destruction.
+  fzE_free(cnd);
 }
 
 
@@ -1026,11 +1307,9 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
   DWORD bytesRead = 0;
   BOOL success = ReadFile(file, buf, (DWORD)size, &bytesRead, NULL);
 
-  return !success
-    ? -2 // ERROR
-    : bytesRead == 0
-    ? -1 // EOF
-    : (int32_t)bytesRead;
+  return success
+    ? (int32_t)bytesRead
+    : (GetLastError() == ERROR_BROKEN_PIPE ? 0 : -1);
 }
 
 
@@ -1112,7 +1391,14 @@ int64_t fzE_file_position(void *file)
 
 int32_t fzE_file_flush(void *file)
 {
-  return FlushFileBuffers((HANDLE)file)
+  HANDLE h = (HANDLE)file;
+
+  // flushing stdout/stderr does not work
+  if (GetFileType(h) == FILE_TYPE_CHAR)
+  {
+    return 0;
+  }
+  return FlushFileBuffers(h)
     ? 0
     : -1;
 }
@@ -1123,6 +1409,65 @@ void * fzE_file_stderr(void) { return GetStdHandle(STD_ERROR_HANDLE); }
 
 int fzE_send_signal(int64_t pid, int sig)
 {
+  if (sig == 9 /* KILL */ || sig == 15 /* TERM */)
+    {
+      return TerminateProcess((HANDLE)pid, 1) ? 0 : -1;
+    }
   // windows does not have signals
   return -1;
+}
+
+int32_t fzE_path_max(void)
+{
+  return MAX_PATH;
+}
+
+int64_t fzE_page_size(void)
+{
+  SYSTEM_INFO sys_info;
+  GetSystemInfo(&sys_info);
+  return (int64_t)(uint64_t)sys_info.dwPageSize;
+}
+
+int64_t fzE_mmap_offset_multiple(void)
+{
+  SYSTEM_INFO sys_info;
+  GetSystemInfo(&sys_info);
+  return (int64_t)(uint64_t)sys_info.dwAllocationGranularity;
+}
+
+// convert C:\path\file to /c/path/file
+//
+int as_posix_style_path(void * buf, size_t size)
+{
+  // turn C: into /C
+  ((char * )buf)[1] = ((char * )buf)[0];
+  ((char * )buf)[0] = '/';
+  for (char *p = buf; *p; ++p) {
+    if (*p == '\\') {
+      *p = '/';
+    }
+  }
+  return 0;
+}
+
+int fzE_cwd(void * buf, size_t size)
+{
+  return _getcwd(buf, size) == NULL
+    ? -1
+    : as_posix_style_path(buf, size);
+}
+
+int fzE_isnan(double d)
+{
+  return _isnan(d);
+}
+
+
+/**
+ * wrapper around DTRACE_PROBE
+ */
+void fzE_dtrace_probe(char col, const char* msg)
+{
+  // NYI: UNDER DEVELOPMENT: No support for DTRACE_PROBE for windows yet
 }

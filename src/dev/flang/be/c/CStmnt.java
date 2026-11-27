@@ -48,15 +48,17 @@ abstract class CStmnt extends ANY
   /**
    * break statement
    */
-  static final CStmnt BREAK = new CStmnt() { void code(CString sb) { sb.append("break"); } };
+  static final CStmnt BREAK = new CStmnt() {
+    @Override void code(CString sb) { sb.append("break"); }
+  };
 
 
   /**
    * empty statement
    */
   static final CStmnt EMPTY = new CStmnt() {
-      boolean isEmpty() { return true; }
-      void code(CString sb) { }
+      @Override boolean isEmpty() { return true; }
+      @Override void code(CString sb) { }
     };
 
 
@@ -310,6 +312,25 @@ abstract class CStmnt extends ANY
           return body == null;
         }
     };
+  }
+
+
+  /**
+   * a directive for the preprocessor
+   */
+  static CStmnt directive(String s)
+  {
+    return new CStmnt()
+      {
+        boolean isEmpty()
+        {
+          return true;
+        }
+        void code(CString sb)
+        {
+          sb.append("#").append(s).append("\n");
+        }
+      };
   }
 
 
@@ -587,7 +608,7 @@ abstract class CStmnt extends ANY
 
 
   /**
-   * Add label l before this statement, such that is is possible to 'goto $l'.
+   * Add label l before this statement, such that it is possible to 'goto $l'.
    *
    * @param l identifier to be used as a label for this.
    */
@@ -668,6 +689,7 @@ abstract class CStmnt extends ANY
   /**
    * Create String for debugging-output.
    */
+  @Override
   public String toString()
   {
     return "C-Statement '" + code() + "'";

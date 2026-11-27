@@ -26,24 +26,27 @@ mod_json_encode =>
     c := 4.5
     d := true
 
-    public redef json_encode String =>
-      [("a", id Any a),
-       ("b", id Any b),
-       ("c", id Any c),
-       ("d", id Any d)].json_encode_feature
+    public redef json_members array (String, Any) =>
+      [
+       ($"a", id Any a),
+       ($"b", id Any b),
+       ($"c", id Any c),
+       ($"d", id Any d)
+      ]
 
   some_custom_feature2(a i32, b String) is
     c := 4.5
     d := true
     e := some_custom_feature a "inner"
 
-    public redef json_encode String =>
-      [("a", id Any a),
-       ("b", id Any b),
-       ("c", id Any c),
-       ("d", id Any d),
-       ("f", id Any [id Any e, id Any e])
-       ].json_encode_feature
+    public redef json_members array (String, Any) =>
+      [
+       ($"a", id Any a),
+       ($"b", id Any b),
+       ($"c", id Any c),
+       ($"d", id Any d),
+       ($"f", id Any [id Any e, id Any e])
+      ]
 
 
   say (some_custom_feature2 2 "json").json_encode

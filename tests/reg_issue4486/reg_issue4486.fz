@@ -23,7 +23,7 @@
 
 reg_issue4486 =>
 
-  LM : mutate is
+  lm : mutate is
 
   test_strings array (String) :=
     ["",
@@ -35,35 +35,33 @@ reg_issue4486 =>
 
   # Read handler for stdin
   #
-  read_handler(arg String) : io.Read_Handler is
+  reader(arg String) : io.buffered lm .Reader is
     already_returned := mut false
-    public redef read(count i32) choice (array u8) io.end_of_file error =>
+    public redef read(max_count i64) choice (Sequence u8) io.end_of_file error =>
       if !already_returned.get
         already_returned <- true
         # return eof for empty string to simulate: `printf "" | fz read_lines_test.fz`
-        arg = "" ? io.end_of_file : arg.utf8.as_array
+        arg = "" ? io.end_of_file : arg.utf8
       else
         io.end_of_file
 
 
   for input in test_strings do
 
-    say "input: '{input.replace "\n" "\\n"}'"
+    say "input: '$(input.replace "\n" "\\n")'"
 
-    LM ! ()->
-      b := io.buffered LM
-      b.reader (read_handler input) 1024 ! ()->
-        for l := b.read_line
+    lm ! ()->
+      io.buffered lm .Reader.instate (reader input) ()->
+        for l := io.buffered lm .read_line
             i in 1..
         while l??
           say "  using read_line:  $i: '$l'"
 
     say ""
 
-    LM ! ()->
-      b := io.buffered LM
-      b.reader (read_handler input) 1024 ! ()->
-        for l in b.read_lines
+    lm ! ()->
+      io.buffered lm .Reader.instate (reader input) ()->
+        for l in io.buffered lm .read_lines.or_panic
             i in 1..
         do
           say "  using read_lines: $i: '$l'"

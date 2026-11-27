@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue3406.fz:25:3: error 1: Syntax error: expected term (lbrace, lparen, lbracket, fun, string, integer, old, match, or name), found end-of-file
+reg_issue3406.fz:25:3: error 1: Syntax error: expected term (lbrace, lparen, lbracket, fun, string, integer, old, match, or name), found end-of-file
 (#
 --^
 While parsing: term, parse stack: term, opExpr, operatorExpr, actualCommas, tuple, klammer, bracketTerm, term, opExpr, operatorExpr, expr, exprs, block (twice), unit

@@ -26,14 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.SpecialClazzes;
 
 /**
  * i16Value is a value of type i16
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class i16Value extends Value
+class i16Value extends Value
 {
 
 
@@ -69,53 +68,29 @@ public class i16Value extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return Integer.toString(_val);
   }
 
 
-  /**
-   * For a value of type i16, return the value.
-   *
-   * @return the i16 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public int i16Value()
   {
     return _val;
   }
 
 
-  /**
-   * Store this value in a field
-   *
-   * @param slot the slot that addresses the field this should be stored in.
-   *
-   * @param size the size of the data to be stored
-   */
+  /** {@inheritDoc} */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require
       (size == 1);
 
     slot.container.nonrefs[slot.offset] = _val;
-  }
-
-
-  /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  void checkStaticClazz(int expected)
-  {
-    if (expected != fuir().clazz(SpecialClazzes.c_i16))
-      {
-        throw new Error("i16 value not allowed for clazz " + expected);
-      }
   }
 
 

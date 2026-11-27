@@ -13,3 +13,21 @@ hell😀 w😀rld
 ""hell😀 world""!
 
 hello world
+---
+Multiline string,
+  first line
+    is indentation reference,
+no trailing empty line.
+---
+Multiline string
+followed by empty line.
+
+---
+
+
+Multiline string
+with two leading empty lines.
+---
+
+Leading whitespace-only lines are treated as empty
+---

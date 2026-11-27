@@ -57,6 +57,7 @@ public class Types extends ANY
    */
   public static final String FUNCTION_NAME = "Function";
 
+
   /**
    * Name of abstract features for Nullary types:
    */
@@ -98,7 +99,7 @@ public class Types extends ANY
 
   /**
    * Dummy name used for type t_FORWARD_CYCLIC which is used to
-   * indicate a forward or cylic type inference.
+   * indicate a forward or cyclic type inference.
    */
   private static final String FORWARD_CYCLIC_NAME = "FORWARD_CYCLIC";
 
@@ -106,7 +107,7 @@ public class Types extends ANY
   /**
    * Names of internal types that are not backed by physical feature definitions.
    */
-  static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
+  static final Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
     (new TreeSet<>(Arrays.asList(UNDEFINED_NAME,
                                  ERROR_NAME)));
 
@@ -143,7 +144,6 @@ public class Types extends ANY
     public final AbstractType t_f64 ;
     public final AbstractType t_bool;
     public final AbstractType t_Any;
-    private final AbstractType t_fuzion;
     public final AbstractType t_String;
     public final AbstractType t_unit;
 
@@ -156,9 +156,31 @@ public class Types extends ANY
      */
     public final AbstractType t_void;
     public final AbstractType t_codepoint;
+    public final AbstractFeature f_Any;
+    public final AbstractFeature f_unit;
+    public final AbstractFeature f_tuple;
+    public final AbstractFeature f_i8  ;
+    public final AbstractFeature f_i16 ;
+    public final AbstractFeature f_i32 ;
+    public final AbstractFeature f_i64 ;
+    public final AbstractFeature f_u8  ;
+    public final AbstractFeature f_u16 ;
+    public final AbstractFeature f_u32 ;
+    public final AbstractFeature f_u64 ;
+    public final AbstractFeature f_f32 ;
+    public final AbstractFeature f_f64 ;
+    public final AbstractFeature f_String;
+    public final AbstractFeature f_const_string;
+    public final AbstractFeature f_const_string_utf8_data;
     public final AbstractFeature f_id;
     public final AbstractFeature f_void;
     public final AbstractFeature f_choice;
+    public final AbstractFeature f_choice_apply;
+    public final AbstractFeature f_choice_apply_f;
+    public final AbstractFeature f_choice_combine;
+    public final AbstractFeature f_choice_combine_other;
+    public final AbstractFeature f_choice_combine_e;
+    public final AbstractFeature f_choice_combine_f;
     public final AbstractFeature f_TRUE;
     public final AbstractFeature f_FALSE;
     public final AbstractFeature f_true;
@@ -169,106 +191,162 @@ public class Types extends ANY
     public final AbstractFeature f_bool_OR;
     public final AbstractFeature f_bool_IMPLIES;
     public final AbstractFeature f_bool_TERNARY;
-    public final AbstractFeature f_debug;
-    public final AbstractFeature f_debug_level;
     public final AbstractFeature f_Function;
     public final AbstractFeature f_Function_call;
-    public final AbstractFeature f_safety;
     public final AbstractFeature f_array;
-    public final AbstractFeature f_array_internal_array;
+    public final AbstractFeature f_mutate;
+    public final AbstractFeature f_mutate_array;
+    public final AbstractFeature f_mutate_var;
+    public final AbstractFeature f_mutate_var_mutable_value;
     public final AbstractFeature f_effect;
     public final AbstractFeature f_effect_finally;
     public final AbstractFeature f_effect_static_finally;
-    public final AbstractFeature f_error;
-    public final AbstractFeature f_error_msg;
+    public final AbstractFeature f_effect_default_value;
+    public final AbstractFeature f_effect_from_env;
     public final AbstractFeature f_fuzion;
     public final AbstractFeature f_fuzion_java;
     public final AbstractFeature f_fuzion_Java_Object;
     public final AbstractFeature f_fuzion_Java_Object_Ref;
+    public final AbstractFeature f_fuzion_lambda_target;
     public final AbstractFeature f_fuzion_sys;
     public final AbstractFeature f_fuzion_sys_array;
-    public final AbstractFeature f_fuzion_sys_array_length;
     public final AbstractFeature f_fuzion_sys_array_data;
+    public final AbstractFeature f_flow;
+    public final AbstractFeature f_flow_fallible;
+    public final AbstractFeature f_flow_fallible_cause;
     public final AbstractFeature f_concur;
-    public final AbstractFeature f_concur_atomic;
-    public final AbstractFeature f_concur_atomic_v;
+    public final AbstractFeature f_effect_types;
+    public final AbstractFeature f_effect_types_type_foldf;
+    public final AbstractFeature f_Open_Types;
+    public final AbstractFeature f_Open_Types_type_foldf;
+    public final AbstractFeature f_Values_Of_Open_Type;
+    public final AbstractFeature f_container;
+    public final AbstractFeature f_type_applicator;
+    public final AbstractFeature f_type_applicator_apply;
+    public final AbstractFeature f_typed_applicator;
+    public final AbstractFeature f_typed_applicator_apply;
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Type_infix_colon;
     public final AbstractFeature f_Type_infix_colon_true;
     public final AbstractFeature f_Type_infix_colon_false;
     public final AbstractFeature f_type_as_value;
+    public final AbstractFeature f_Typed_Function;
+    public final AbstractFeature f_Typed_Function_call;
+    public final AbstractFeature f_Typed_Combiner;
+    public final AbstractFeature f_Typed_Combiner_call;
     public final AbstractFeature f_Nullary;
     public final AbstractFeature f_Lazy;
-    public final AbstractFeature f_Unary;
-    public final AbstractFeature f_Binary;
     public final AbstractFeature f_auto_unwrap;
+    public final AbstractFeature f_Java_Ref;
+    public final AbstractFeature f_Mutex;
+    public final AbstractFeature f_Condition;
+    public final AbstractFeature f_File_Descriptor;
+    public final AbstractFeature f_Directory_Descriptor;
+    public final AbstractFeature f_Mapped_Memory;
+    public final AbstractFeature f_Native_Ref;
+    public final AbstractFeature f_Internal_Thread;
+    public final AbstractFeature f_stackoverflow_cause;
+    public final AbstractFeature f_fuzion_runtime_init;
+    public final AbstractFeature f_fuzion_runtime_deinit;
     public final Set<AbstractType> numericTypes;
     public Resolved(AbstractModule mod, AbstractFeature universe, boolean forFrontEnd)
     {
       this.universe = universe;
-      t_i8                      = universe.get(mod, FuzionConstants.I8_NAME,  1).selfType();
-      t_i16                     = universe.get(mod, FuzionConstants.I16_NAME, 1).selfType();
-      t_i32                     = universe.get(mod, FuzionConstants.I32_NAME, 1).selfType();
-      t_i64                     = universe.get(mod, FuzionConstants.I64_NAME, 1).selfType();
-      t_u8                      = universe.get(mod, FuzionConstants.U8_NAME,  1).selfType();
-      t_u16                     = universe.get(mod, FuzionConstants.U16_NAME, 1).selfType();
-      t_u32                     = universe.get(mod, FuzionConstants.U32_NAME, 1).selfType();
-      t_u64                     = universe.get(mod, FuzionConstants.U64_NAME, 1).selfType();
-      t_f32                     = universe.get(mod, FuzionConstants.F32_NAME, 1).selfType();
-      t_f64                     = universe.get(mod, FuzionConstants.F64_NAME, 1).selfType();
-      t_bool                    = universe.get(mod, "bool", 0).selfType();
-      t_fuzion                  = universe.get(mod, "fuzion", 0).selfType();
-      t_String                  = universe.get(mod, FuzionConstants.STRING_NAME, 0).selfType();
-      t_Any                     = universe.get(mod, FuzionConstants.ANY_NAME, 0).selfType();
-      t_unit                    = universe.get(mod, FuzionConstants.UNIT_NAME, 0).selfType();
-      t_void                    = universe.get(mod, "void", 0).selfType();
-      t_codepoint               = universe.get(mod, "codepoint", 1).selfType();
-      f_id                      = universe.get(mod, "id", 2);
-      f_void                    = universe.get(mod, "void", 0);
-      f_choice                  = universe.get(mod, FuzionConstants.CHOICE_NAME, 1);
-      f_TRUE                    = universe.get(mod, "true_", 0);
-      f_FALSE                   = universe.get(mod, "false_", 0);
-      f_true                    = universe.get(mod, "true", 0);
-      f_false                   = universe.get(mod, "false", 0);
-      f_bool                    = universe.get(mod, "bool", 0);
+      f_i8                      = universe            .get(mod, FuzionConstants.I8_NAME          , 1); t_i8     = f_i8 .selfType();
+      f_i16                     = universe            .get(mod, FuzionConstants.I16_NAME         , 1); t_i16    = f_i16.selfType();
+      f_i32                     = universe            .get(mod, FuzionConstants.I32_NAME         , 1); t_i32    = f_i32.selfType();
+      f_i64                     = universe            .get(mod, FuzionConstants.I64_NAME         , 1); t_i64    = f_i64.selfType();
+      f_u8                      = universe            .get(mod, FuzionConstants.U8_NAME          , 1); t_u8     = f_u8 .selfType();
+      f_u16                     = universe            .get(mod, FuzionConstants.U16_NAME         , 1); t_u16    = f_u16.selfType();
+      f_u32                     = universe            .get(mod, FuzionConstants.U32_NAME         , 1); t_u32    = f_u32.selfType();
+      f_u64                     = universe            .get(mod, FuzionConstants.U64_NAME         , 1); t_u64    = f_u64.selfType();
+      f_f32                     = universe            .get(mod, FuzionConstants.F32_NAME         , 1); t_f32    = f_f32.selfType();
+      f_f64                     = universe            .get(mod, FuzionConstants.F64_NAME         , 1); t_f64    = f_f64.selfType();
+      f_String                  = universe            .get(mod, FuzionConstants.STRING_NAME      , 0); t_String = f_String.selfType();
+      f_const_string            = universe            .get(mod, FuzionConstants.CONST_STRING_NAME, 0);
+      f_const_string_utf8_data  = f_const_string      .get(mod, FuzionConstants.UTF8_DATA_NAME   , 0);
+      f_Any                     = universe            .get(mod, FuzionConstants.ANY_NAME         , 0); t_Any    = f_Any.selfType();
+      f_unit                    = universe            .get(mod, FuzionConstants.UNIT_NAME        , 0); t_unit   = f_unit.selfType();
+      f_tuple                   = universe            .get(mod, FuzionConstants.TUPLE_NAME       , 2);
+      t_void                    = universe            .get(mod, "void", 0).selfType();
+      t_codepoint               = universe            .get(mod, "codepoint", 1).selfType();
+      f_id                      = universe            .get(mod, "id", 2);
+      f_void                    = universe            .get(mod, "void", 0);
+      f_choice                  = universe            .get(mod, FuzionConstants.CHOICE_NAME, 1);
+      f_choice_apply            = f_choice            .get(mod, "apply", 3);
+      f_choice_apply_f          = f_choice_apply      .get(mod, "f", 0);
+      f_choice_combine          = f_choice            .get(mod, "combine", 5);
+      f_choice_combine_other    = f_choice_combine    .get(mod, "other", 0);
+      f_choice_combine_e        = f_choice_combine    .get(mod, "e", 0);
+      f_choice_combine_f        = f_choice_combine    .get(mod, "f", 0);
+      f_TRUE                    = universe            .get(mod, "true_", 0);
+      f_FALSE                   = universe            .get(mod, "false_", 0);
+      f_true                    = universe            .get(mod, "true", 0);
+      f_false                   = universe            .get(mod, "false", 0);
+      f_bool                    = universe            .get(mod, "bool", 0);                            t_bool   = f_bool.selfType();
       f_bool_NOT                = forFrontEnd ? f_bool.get(mod, FuzionConstants.PREFIX_OPERATOR_PREFIX + "!"   , 0) : null;
       f_bool_AND                = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "&&"   , 1) : null;
       f_bool_OR                 = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "||"   , 1) : null;
       f_bool_IMPLIES            = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + ":"    , 1) : null;
       f_bool_TERNARY            = forFrontEnd ? f_bool.get(mod, FuzionConstants.TERNARY_OPERATOR_PREFIX + "? :", 3) : null;
-      f_debug                   = universe.get(mod, "debug", 0);
-      f_debug_level             = universe.get(mod, "debug_level", 0);
-      f_Function                = universe.get(mod, FUNCTION_NAME, 2);
-      f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
-      f_safety                  = universe.get(mod, "safety", 0);
-      f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 5);
-      f_array_internal_array    = f_array.get(mod, "internal_array", 0);
-      f_effect                  = universe.get(mod, "effect", 0);
-      f_effect_finally          = f_effect.get(mod, "finally", 0);
-      f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);
-      f_error                   = universe.get(mod, "error", 1);
-      f_error_msg               = f_error.get(mod, "msg", 0);
-      f_fuzion                  = universe.get(mod, "fuzion", 0);
-      f_fuzion_java             = f_fuzion.get(mod, "java", 0);
-      f_fuzion_Java_Object      = f_fuzion_java.get(mod, "Java_Object", 1);
+      f_Function                = universe            .get(mod, FUNCTION_NAME, 2);
+      f_Function_call           = f_Function          .get(mod, FuzionConstants.OPERATION_CALL, 1);
+      f_array                   = universe            .get(mod, FuzionConstants.ARRAY_NAME, 6);
+      f_mutate                  = universe            .get(mod, "mutate", 0);
+      f_mutate_array            = f_mutate            .get(mod, FuzionConstants.ARRAY_NAME, 2);
+      f_mutate_var              = f_mutate            .get(mod, "var", 2);
+      f_mutate_var_mutable_value= f_mutate_var        .get(mod, "mutable_value");
+      f_effect                  = universe            .get(mod, "effect", 0);
+      f_effect_finally          = f_effect            .get(mod, "finally", 0);
+      f_effect_static_finally   = f_effect            .get(mod, "static_finally", 0);
+      f_effect_default_value    = f_effect.cotype()   .get(mod, "default_value", 0);
+      f_effect_from_env         = f_effect.cotype()   .get(mod, "from_env", 0);
+      f_fuzion                  = universe            .get(mod, "fuzion", 0);
+      f_fuzion_java             = f_fuzion            .get(mod, "java", 0);
+      f_fuzion_Java_Object      = f_fuzion_java       .get(mod, "Java_Object", 1);
       f_fuzion_Java_Object_Ref  = f_fuzion_Java_Object.get(mod, "java_ref", 0);
-      f_fuzion_sys              = f_fuzion.get(mod, "sys", 0);
-      f_fuzion_sys_array        = f_fuzion_sys.get(mod, "internal_array", 3);
-      f_fuzion_sys_array_data   = f_fuzion_sys_array.get(mod, "data", 0);
-      f_fuzion_sys_array_length = f_fuzion_sys_array.get(mod, "length", 0);
-      f_concur                  = universe.get(mod, "concur", 0);
-      f_concur_atomic           = f_concur.get(mod, "atomic", 2);
-      f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);
-      f_Type                    = universe.get(mod, FuzionConstants.TYPE_FEAT, 0);
-      f_Type_infix_colon        = f_Type.get(mod, "infix :", 1);
-      f_Type_infix_colon_true   = f_Type.get(mod, "infix_colon_true", 1);
-      f_Type_infix_colon_false  = f_Type.get(mod, "infix_colon_false", 1);
-      f_type_as_value           = universe.get(mod, "type_as_value", 1);
-      f_Nullary                 = universe.get(mod, NULLARY_NAME, 1);
-      f_Lazy                    = universe.get(mod, LAZY_NAME, 1);
-      f_Unary                   = universe.get(mod, UNARY_NAME, 2);
-      f_Binary                  = universe.get(mod, BINARY_NAME, 3);
-      f_auto_unwrap             = universe.get(mod, "auto_unwrap", 2);
+      f_fuzion_lambda_target    = f_fuzion            .get(mod, "lambda_target", 0);
+      f_fuzion_sys              = f_fuzion            .get(mod, "sys", 0);
+      f_fuzion_sys_array        = f_fuzion_sys        .get(mod, "internal_array", 3);
+      f_fuzion_sys_array_data   = f_fuzion_sys_array  .get(mod, "data", 0);
+      f_flow                    = universe            .get(mod, "flow", 0);
+      f_flow_fallible           = f_flow              .get(mod, "fallible", 2);
+      f_flow_fallible_cause     = f_flow_fallible     .get(mod, "cause", 1);
+      f_concur                  = universe            .get(mod, "concur", 0);
+      f_effect_types            = universe            .get(mod, "effect_types", 0);
+      f_effect_types_type_foldf = f_effect_types      .get(mod, "type_foldf", 4);
+      f_Open_Types              = universe            .get(mod, FuzionConstants.OPEN_TYPES_FEAT, 0);
+      f_Open_Types_type_foldf   = f_Open_Types        .get(mod, "type_foldf", 4);
+      f_Values_Of_Open_Type     = universe            .get(mod, FuzionConstants.VALUES_OF_OPEN_TYPE_FEAT, 0);
+      f_container               = universe            .get(mod, "container", 0);
+      f_type_applicator         = f_container         .get(mod, FuzionConstants.TYPE_APPLICATOR_FEAT, 1);
+      f_type_applicator_apply   = f_type_applicator   .get(mod, FuzionConstants.TYPE_APPLICATOR_APPLY_FEAT, 2);
+      f_typed_applicator        = f_container         .get(mod, FuzionConstants.TYPED_APPLICATOR_FEAT, 1);
+      f_typed_applicator_apply  = f_typed_applicator  .get(mod, FuzionConstants.TYPED_APPLICATOR_APPLY_FEAT, 3);
+      f_Type                    = universe            .get(mod, FuzionConstants.TYPE_FEAT, 0);
+      f_Type_infix_colon        = f_Type              .get(mod, "infix :", 1);
+      f_Type_infix_colon_true   = f_Type              .get(mod, "infix_colon_true", 1);
+      f_Type_infix_colon_false  = f_Type              .get(mod, "infix_colon_false", 1);
+      f_type_as_value           = universe            .get(mod, "type_as_value", 1);
+      f_Typed_Function          = universe            .get(mod, "Typed_Function", 2);
+      f_Typed_Function_call     = f_Typed_Function    .get(mod, "call", 3);
+      f_Typed_Combiner          = universe            .get(mod, "Typed_Combiner", 2);
+      f_Typed_Combiner_call     = f_Typed_Combiner    .get(mod, "call", 4);
+      f_Nullary                 = universe            .get(mod, NULLARY_NAME, 1);
+      f_Lazy                    = universe            .get(mod, LAZY_NAME, 1);
+      f_auto_unwrap             = universe            .get(mod, "auto_unwrap", 2);
+      f_Java_Ref                = universe            .get(mod, "Java_Ref", 0);
+      f_Mutex                   = universe            .get(mod, "Mutex", 0);
+      f_Condition               = universe            .get(mod, "Condition", 0);
+      f_File_Descriptor         = universe            .get(mod, "File_Descriptor", 0);
+      f_Directory_Descriptor    = universe            .get(mod, "Directory_Descriptor", 0);
+      f_Mapped_Memory           = universe            .get(mod, "Mapped_Memory", 0);
+      f_Native_Ref              = universe            .get(mod, "Native_Ref", 0);
+      f_Internal_Thread         = universe            .get(mod, "Internal_Thread", 0);
+      f_stackoverflow_cause     = universe            .get(mod, "stackoverflow_cause", 1);
+      f_fuzion_runtime_init     = universe            .get(mod, "fuzion_runtime_init", 0);
+      f_fuzion_runtime_deinit   = universe            .get(mod, "fuzion_runtime_deinit", 0);
+
       numericTypes = new TreeSet<AbstractType>(new List<>(
         t_i8,
         t_i16,
@@ -317,7 +395,6 @@ public class Types extends ANY
         t_f32        ,
         t_f64        ,
         t_bool       ,
-        t_fuzion     ,
         t_String     ,
         t_Any        ,
         t_unit       ,
@@ -346,7 +423,7 @@ public class Types extends ANY
     {
       if (_fuzionSysCall == null)
         {
-          var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion").resolveTypes(res, context);
+          var fuzion       = new Call(SourcePosition.builtIn, Universe.instance, "fuzion").resolveTypes(res, context);
           _fuzionSysCall   = new Call(SourcePosition.builtIn, fuzion, "sys" ).resolveTypes(res, context);
         }
       return _fuzionSysCall;

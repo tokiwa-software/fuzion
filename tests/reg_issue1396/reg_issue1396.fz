@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 # used to give error "Ambiguous targets found for call to 'p'"
-# due to to scoping not being implemented properly.
+# due to scoping not being implemented properly.
 reg_issue1396 is
 
   target is
@@ -37,6 +37,6 @@ reg_issue1396 is
 
   match create
     p target =>
-      _ := concur.threads.spawn (() ->
+      _ := concur.Threads.env.spawn (() ->
         _:= p.my_call)
     error =>

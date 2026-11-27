@@ -26,14 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.SpecialClazzes;
 
 /**
  * f64Value is a value of type f64
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class f64Value extends Value
+class f64Value extends Value
 {
 
 
@@ -66,6 +65,7 @@ public class f64Value extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return Double.toString(_val);
@@ -77,6 +77,7 @@ public class f64Value extends Value
    *
    * @return the f64 value
    */
+  @Override
   public double f64Value()
   {
     return _val;
@@ -90,6 +91,7 @@ public class f64Value extends Value
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require
@@ -98,23 +100,6 @@ public class f64Value extends Value
     var l = Double.doubleToRawLongBits(_val);
     slot.container.nonrefs[slot.offset    ] = (int) l;
     slot.container.nonrefs[slot.offset + 1] = (int) (l >> 32);
-  }
-
-
-  /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  void checkStaticClazz(int expected)
-  {
-    if (expected != fuir().clazz(SpecialClazzes.c_f64))
-      {
-        throw new Error("f64 value not allowed for clazz " + expected);
-      }
   }
 
 

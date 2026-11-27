@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4745.fz:25:6: error 1: Could not find called feature
+reg_issue4745.fz:25:6: error 1: Could not find called feature
 0 |> blabla
 -----^^^^^^
 Feature not found: 'blabla' (no arguments)

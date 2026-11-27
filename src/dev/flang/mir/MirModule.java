@@ -26,9 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.mir;
 
-import java.nio.ByteBuffer;
-
-import dev.flang.ast.AbstractModule; // NYI: Remove dependency!
+import dev.flang.ast.AbstractModule; // NYI: CLEANUP: Remove dependency!
 
 
 /**
@@ -39,11 +37,6 @@ import dev.flang.ast.AbstractModule; // NYI: Remove dependency!
  */
 public interface MirModule extends AbstractModule
 {
-
-  /**
-   * The binary data from this module's .mir file.
-   */
-  ByteBuffer data(String name);
 
 }
 

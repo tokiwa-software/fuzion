@@ -33,7 +33,7 @@
 #
 testRedefine is
 
-  getter (A type) ref is
+  getter (A : Any) ref is
     get A => abstract
 
   good : getter (String | i32 | nil) is
@@ -48,6 +48,6 @@ testRedefine is
   show(g getter (String | i32 | nil)) =>
     say g.get
 
-  yak "good: "; show good
-  yak "bad1: "; show bad1
-  yak "bad2: "; show bad2
+  yap "good: "; show good
+  yap "bad1: "; show bad1
+  yap "bad2: "; show bad2

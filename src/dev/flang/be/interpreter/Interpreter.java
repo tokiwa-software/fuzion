@@ -56,7 +56,6 @@ public class Interpreter extends FUIRContext
     FUIRContext.set_fuir(fuir);
     var processor = new Executor(_fuir, _options_);
     _ai = new AbstractInterpreter<Value, Object>(_fuir, processor);
-    Intrinsics.ENABLE_UNSAFE_INTRINSICS = options.enableUnsafeIntrinsics();  // NYI: Add to Fuzion IR or BE Config
   }
 
 
@@ -80,11 +79,11 @@ public class Interpreter extends FUIRContext
       }
     catch (StackOverflowError e)
       {
-        Errors.fatal("*** " + e + "\n" + Executor.callStack(_fuir));
+        Errors.fatal("*** " + e + "\n" + Executor.callStack());
       }
     catch (RuntimeException | Error e)
       {
-        Errors.error("*** " + e + "\n" + Executor.callStack(_fuir));
+        Errors.error("*** " + e + "\n" + Executor.callStack());
         throw e;
       }
   }
@@ -111,19 +110,19 @@ public class Interpreter extends FUIRContext
    */
   public static Value boxedConstString(byte[] bytes)
   {
-    int cl = fuir().clazz_const_string();
+    int cl = fuir().clazzConstString();
     Instance result = new Instance(cl);
-    var clArr = fuir().clazz_array_u8();
+    var clArr = fuir().clazzArrayU8();
     Instance arr = new Instance(clArr);
-    var saCl = fuir().clazz_fuzionSysArray_u8();
+    var saCl = fuir().clazzFuzionSysArrayU8();
     Instance sa = new Instance(saCl);
-    setField(fuir().clazz_fuzionSysArray_u8_length(), saCl, sa, new i32Value(bytes.length));
-    var arrayData = new ArrayData(bytes);
-    setField(fuir().clazz_fuzionSysArray_u8_data(), saCl, sa, arrayData);
-    setField(fuir().lookup_array_internal_array(clArr), clArr, arr, sa);
-    setField(fuir().clazz_const_string_utf8_data(), cl, result, arr);
+    setField(fuir().clazzFuzionSysArrayU8Length(), saCl, sa, new i64Value(bytes.length));
+    var arrayData = new ArrayData(bytes, saCl);
+    setField(fuir().clazzFuzionSysArrayU8Data(), saCl, sa, arrayData);
+    setField(fuir().clazzArg(clArr,0), clArr, arr, sa);
+    setField(fuir().clazzConstStringUTF8Data(), cl, result, arr);
 
-    return new Boxed(fuir().clazz_ref_const_string(), cl, result);
+    return new Boxed(fuir().clazzRefConstString(), cl, result);
   }
 
 
@@ -148,11 +147,7 @@ public class Interpreter extends FUIRContext
     // if fclazz == FUIR.NO_CLAZZ
     // this likely means field was never read
     // during DFA phase.
-    if (fclazz != FUIR.NO_CLAZZ
-      // NYI: UNDER DEVELOPMENT remove once:
-      // Layout.get(staticClazz).size() == 0 <=> isUnitType(staticClazz)
-      && Layout.get(staticClazz).size() != 0
-        )
+    if (fclazz != FUIR.NO_CLAZZ)
       {
         LValue slot = fieldSlot(thiz, staticClazz, fclazz, curValue);
         setFieldSlot(thiz, fclazz, slot, v);
@@ -162,13 +157,12 @@ public class Interpreter extends FUIRContext
 
   /**
    * Get the result clazz of thiz
-   * or if thiz is an address to a value
-   * c_address.
+   * or if thiz is an address to clazz Any.
    */
   private static int clazzForField(int thiz)
   {
     return fuir().clazzFieldIsAdrOfValue(thiz)
-      ? fuir().clazz(SpecialClazzes.c_Array)
+      ? fuir().clazzAny()
       : fuir().clazzResultClazz(thiz);
   }
 
@@ -434,8 +428,9 @@ public class Interpreter extends FUIRContext
     var clazz = staticClazz;
     if (fuir().clazzIsRef(staticClazz))
       {
-        curValue = (curValue instanceof LValue lv) ? loadRefField(thiz, lv, false)
-                                                   : curValue;
+        curValue = curValue instanceof LValue lv
+          ? loadRefField(thiz, lv, false)
+          : curValue;
         clazz = ((ValueWithClazz) curValue).clazz();
       }
     if (fuir().clazzIsBoxed(staticClazz))
@@ -444,15 +439,6 @@ public class Interpreter extends FUIRContext
         curValue = ((Boxed)curValue)._contents;
       }
     int off = Layout.get(clazz).offset(thiz);
-
-    // NYI: UNDER DEVELOPMENT:
-    // if (CHECKS) check
-    //   (Layout.get(clazz).size() != 0);
-
-    // NYI: check if this is a can be enabled or removed:
-    //
-    //  check
-    //    (staticClazz.isAssignableFrom(clazz));
     return curValue.at(fclazz, off);
   }
 
@@ -612,14 +598,9 @@ public class Interpreter extends FUIRContext
        slot != null,
        v != null || fuir().clazzIsChoice(thiz));
 
-    if (fuir().clazzIsRef(fclazz))
-      {
-        return slot.container.refs[slot.offset] == v;
-      }
-    else
-      {
-        return v.equalsBitWise(slot, Layout.get(fclazz).size());
-      }
+    return fuir().clazzIsRef(fclazz)
+      ? slot.container.refs[slot.offset] == v
+      : v.equalsBitWise(slot, Layout.get(fclazz).size());
   }
 
 }

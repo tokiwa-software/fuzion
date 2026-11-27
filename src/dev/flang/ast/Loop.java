@@ -26,9 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
@@ -36,6 +37,7 @@ import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 
 
 /**
@@ -158,11 +160,20 @@ public class Loop extends ANY
    */
   static private long _id_ = 0;
 
+  /**
+   * quick-and-dirty way to make unique names for loop variants
+   */
+  static private long _id_var_ = 0;
+
 
   /**
    * env var to enable debug output for code generated for loops:
+   *
+   * To enable, use fz with:
+   *
+   *   dev_flang_ast_FUZION_DEBUG_LOOPS=true
    */
-  static private final boolean FUZION_DEBUG_LOOPS = FuzionOptions.boolPropertyOrEnv("FUZION_DEBUG_LOOPS");
+  static private final boolean FUZION_DEBUG_LOOPS = FuzionOptions.boolPropertyOrEnv("dev.flang.ast.FUZION_DEBUG_LOOPS");
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -199,21 +210,25 @@ public class Loop extends ANY
   private final SourcePosition _elsePos;
 
 
-  /*----------------------------  variables  ----------------------------*/
+  /**
+   * the sourceposition position of the loop
+   */
+  private final SourcePosition _pos;
 
 
   /**
    * Success block or null.
    */
-  private Block _successBlock;
+  private final Block _successBlock;
 
 
   /**
-   * Else block or null if not present. Parsed twice since we might need the code twice.
+   * Else block or null if not present. Parsed three times since we might need the code three times.
    */
-  private Expr _elseBlock0;
-  private Expr _elseBlock1;
-  private Expr _elseBlock2;
+  private final Expr _elseBlock;
+
+
+  /*----------------------------  variables  ----------------------------*/
 
 
   /**
@@ -221,6 +236,13 @@ public class Loop extends ANY
    * routines, the first for the prolog, the other for the rest of the loop.
    */
   private Feature[] _loopElse;
+
+
+  /**
+   * Has there been an error found in the loops code?
+   * This is used for displaying/suppressing loop specific error messages.
+   */
+  private boolean _defunct = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -234,10 +256,9 @@ public class Loop extends ANY
    *
    * @param iv index vars of this loop
    *
-   * @param nv next values for index variables, may contain null for index
-   * variables that do not get update
+   * @param nv next values for index variables
    *
-   * @param var loop variant or null
+   * @param variant loop variant or null
    *
    * @param inv loop invariant or null
    *
@@ -254,7 +275,7 @@ public class Loop extends ANY
   public Loop(SourcePosition pos,
               List<Feature> iv,
               List<Feature> nv,
-              Expr var,        /* NYI: loop variant currently ignored */
+              Expr variant,
               List<Cond> inv,
               Expr whileCond,
               Block block,
@@ -266,36 +287,36 @@ public class Loop extends ANY
               Expr eb2)
   {
     if (PRECONDITIONS) require
-      (iv != null,
-       nv != null,
+      (iv != null && iv.stream().allMatch(x -> x != null),
+       nv != null && nv.stream().allMatch(x -> x != null),
        iv.size() == nv.size(),
        sb == null || untilCond != null,
        eb0 == null || eb0 instanceof Block || eb0 instanceof Match);
 
+    _pos       = pos;
     _elsePos   = ePos;
     _indexVars = iv;
     _nextValues = nv;
     block = Block.newIfNull(block);
     _successBlock = sb;
-    _elseBlock0 = eb0;
-    _elseBlock1 = eb1;
-    _elseBlock2 = eb2;
     var loopName = FuzionConstants.REC_LOOP_PREFIX +  _id_++ ;
     _rawLoopName = loopName;
-    if (!iterates() && whileCond == null && _elseBlock0 != null)
+    var iterates = iterates();
+    if (!iterates && whileCond == null && eb0 != null)
       {
-        AstErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock0);
+        AstErrors.loopElseBlockRequiresWhileOrIterator(pos, eb0);
       }
 
-    var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond);
     // if there are no iterates then else block may access every loop var.
     // if there are iterates we move else block to feature and
     // insert it later, see `addIterators()`.
-    if (_elseBlock0 != null && iterates())
+    if (eb0 != null && iterates)
       {
-        moveElseBlockToRoutine();
-        _elseBlock0 = new Block(new List<>(_loopElse[1], callLoopElse(1)));
+        moveElseBlockToRoutine(eb0, eb1, eb2);
       }
+    _elseBlock = eb0 != null && iterates
+      ? new Block(new List<>(_loopElse[1], callLoopElse(1)))
+      : eb0;
 
     var prologBlock = new List<Expr>();
     var nextItBlock = new List<Expr>();
@@ -313,20 +334,132 @@ public class Loop extends ANY
     nextItSuccessBlock.add(tailRecursiveCall);
 
     Expr nextIteration = untilCond == null
-      ? new Block(nextItBlock, hasImplicitResult)
+      ? new Block(nextItBlock)
       : Match.createIf(untilCond.pos(),
                untilCond,
-               Block.newIfNull(_successBlock),
-               new Block(nextItBlock, hasImplicitResult), false);
+               _successBlock == null || _successBlock._expressions.isEmpty()
+                 ? new Block() { public SourcePosition pos() { return new SourceRange(pos._sourceFile, pos.bytePos(), _elsePos.byteEndPos()); }; }
+                 : Block.fromExpr(_successBlock),
+               new Block(nextItBlock), AbstractMatch.Kind.Until);
 
     block._expressions.add(nextIteration);
     if (whileCond != null)
       {
-        block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock0, false));
+        block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock, AbstractMatch.Kind.While));
       }
     if (inv != null)
       {
         block = new Block(new List<>(Contract.asFault(inv, "invariantcondition_fault"), block));
+      }
+    if (variant != null)
+      {
+        var i64one = new ParsedCall(new ParsedCall(Universe.instance, new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "one"));
+        var i64minusOne = new ParsedOperatorCall(i64one, new ParsedName(SourcePosition.builtIn, FuzionConstants.PREFIX_OPERATOR_PREFIX + "-"), 10);
+
+        // wrap variant expression to add type check for later phase
+        // loop variant must be of type i64
+        var var0 = new Expr() {
+          Expr v0 = variant;
+
+          // should the variant expression be unwrapped again (after type was checked once)
+          boolean replace = false;
+
+          @Override
+          public SourcePosition pos()
+          {
+            return v0.pos();
+          }
+
+          @Override
+          protected Expr visit(FeatureVisitor v, AbstractFeature outer)
+          {
+            v0 = v0.visit(v, outer);
+            return replace ? v0 : this;
+          }
+
+          @Override
+          Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
+          {
+            v0 = v0.propagateExpectedType(res, context, t, from);
+            return this;
+          }
+
+          @Override
+          AbstractType typeForInferencing()
+          {
+            var result = v0.typeForInferencing();
+            if (result != null && result != Types.t_ERROR && result.compareTo(Types.resolved.t_i64) != 0)
+              {
+                AstErrors.wrongLoopVariantType(variant);
+                result = Types.t_ERROR;
+              }
+            return result;
+          }
+
+          @Override
+          public AbstractType type()
+          {
+            // type was checked, so variant can be unwrapped again
+            replace = true;
+
+            var result = v0.type();
+            if (result != Types.t_ERROR && result.compareTo(Types.resolved.t_i64) != 0)
+              {
+                AstErrors.wrongLoopVariantType(variant);
+                result = Types.t_ERROR;
+              }
+            return result;
+          }
+        };
+
+        // variant is internally reduced by one so initially value is guaranteed to be smaller than i64.max, therefore check for variant >= -1
+        var var1 = new ParsedOperatorCall(var0,  new ParsedName(var0.sourceRange(), FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "-^"),  5, i64one);
+
+        // current value of loop variant
+        var varFn = new ParsedName(SourcePosition.builtIn, "#variantExp" + _id_var_++);
+        var f = new Feature(SourcePosition.builtIn,
+                  Visi.PRIV,
+                  0,
+                  new ParsedType(SourcePosition.builtIn, "i64"),
+                  varFn._name,
+                  Contract.EMPTY_CONTRACT,
+                  Impl.FIELD);
+        var varAss = new Assign(SourcePosition.builtIn, varFn , var1);
+        var varCurVal = new ParsedCall(varFn);
+
+        // previous value of loop variant
+        var varPrevValName = "#var_prev_value" + _id_var_++;
+        var varPrevVal = new ParsedCall(new ParsedName(SourcePosition.builtIn, varPrevValName));
+
+        // condition that variant must be non negative
+        // because variant is internally decremented by one, check is made for `>= -1` instead of `>= 0`
+        var varNonNegative    = new ParsedOperatorCall(varCurVal,  new ParsedName(SourcePosition.builtIn, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">="),  5, i64minusOne);
+
+        // condition that variant must decrease in each iteration
+        var varDecreasing     = new ParsedOperatorCall(varCurVal,  new ParsedName(SourcePosition.builtIn, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<"),   5, varPrevVal);
+
+        // combine variant conditions
+        var variantCondition  = new ParsedOperatorCall(varNonNegative, new ParsedName(variant.sourceRange(),  FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "&&"),  4, varDecreasing);
+
+        // add definition and assignment of current variant value as well as check for variant conditions
+        block = new Block(new List<>(f, varAss, asVarFault(variantCondition), block));
+
+        // add formal argument for variant value
+        formalArguments.add(
+          new Feature(SourcePosition.builtIn,
+                  Visi.PRIV,
+                  0,
+                  new ParsedType(SourcePosition.builtIn, "i64"),
+                  varPrevValName,
+                  Contract.EMPTY_CONTRACT,
+                  Impl.FIELD)
+        );
+
+        // initial value for previous variant is set to i64.max, therefore variant defined by user is internally decremented by one
+        initialActuals.add(new ParsedCall(new ParsedCall(Universe.instance, new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "max")));
+
+        // add current variant value
+        nextActuals.add(varCurVal);
       }
     var p = block.pos();
     Feature loop = new Feature(p,
@@ -335,15 +468,46 @@ public class Loop extends ANY
                                NoType.INSTANCE,
                                new List<String>(loopName),
                                formalArguments,
-                               Function.NO_CALLS,
+                               AbstractCall.NO_CALLS,
                                Contract.EMPTY_CONTRACT,
-                               new Impl(p, block, Impl.Kind.RoutineDef));
+                               new Impl(p, block, Impl.Kind.RoutineDef))
+      {
+        @Override public void setOuter(AbstractFeature outer) {
+          propagateResultType(outer);
+          super.setOuter(outer);
+        }
+
+        /**
+         * if loop is the result of outer feature
+         * and outer has an explicit result type
+         * propagate this result type to the loop.
+         * @param outer
+         */
+        private void propagateResultType(AbstractFeature outer)
+        {
+          var setExplicitResultType =
+             ((Block)outer.code()).resultExpression() == _impl;
+          if (((Feature)outer).returnType() instanceof FunctionReturnType frt && setExplicitResultType)
+            {
+              if (Loop.this.producesResult())
+                {
+                  setFunctionReturnType(frt.functionReturnType());
+                }
+              if (_loopElse != null)
+                {
+                  for (int i = 0; i < _loopElse.length; i++)
+                    {
+                      _loopElse[i].setFunctionReturnType(frt.functionReturnType());
+                    }
+                }
+            }
+        }
+      };
 
     var initialCall = new Call(pos, null, loopName, initialActuals);
     prologSuccessBlock.add(initialCall);
 
-    _impl           = new Block(new List<>(loop, prologBlock), hasImplicitResult);
-    _impl._newScope = true;
+    _impl           = new Block(true, new List<>(loop, prologBlock));
   }
 
 
@@ -364,6 +528,31 @@ public class Loop extends ANY
 
 
   /**
+   * Does this loop potentially yield a result?
+   * @return
+   */
+  private boolean producesResult()
+  {
+    return (_successBlock != null && !_successBlock._expressions.isEmpty()) || _elseBlock != null;
+  }
+
+
+  /**
+   * Creates code for the given loop variant expression
+   *
+   * @param variantExpr the loop variant expression
+   */
+  Expr asVarFault(Expr variantExpr)
+  {
+    var p = variantExpr.sourceRange();
+    var f = new Call(p, "fuzion");
+    var r = new Call(p, f, "runtime");
+    var e = new Call(p, r, "variantcondition_fault", new List<>(new StrConst(p, p.sourceText())));
+    return Match.createIf(p, variantExpr, new Block(), e, AbstractMatch.Kind.Contract);
+  }
+
+
+  /**
    * Is any of the _indexVars an iteration ('x in Set')?
    */
   private boolean iterates()
@@ -378,82 +567,9 @@ public class Loop extends ANY
 
 
   /**
-   * Does this loop implicitly produce the value of the last index variable as a result.
-   *
-   * This is the case for non-iterating loops without an else or success block.
-   */
-  private boolean lastIndexVarAsImplicitResult()
-  {
-    return !iterates() && _elseBlock0 == null && _successBlock == null && !_indexVars.isEmpty();
-  }
-
-
-  /**
-   * Does this loop implicitly produce a boolean result that indicates successful
-   * (until condition holds) or failed (while condition is false or iteration
-   * ended) execution.
-   *
-   * This is the case for loops that have an until condition and that are iterating
-   * or have a while condition and that have neither a else nor a success block.
-   */
-  private boolean booleanAsImplicitResult(Expr whileCond, Expr untilCond)
-  {
-    return
-      /* loop can fail: */     (iterates() || whileCond != null) &&
-      /* loop can succeed: */  (untilCond != null) &&
-      /* success and else block do not end in expression: */
-      (_successBlock == null || _elseBlock0 == null);
-  }
-
-
-  /**
-   * Create default code for success and else blocks if not present.  Default code is used for
-   *
-   * 1. loops with index variables that are no iterators and no else block nor
-   *    success block: The last index variable is returned by both success and
-   *    else blocks.
-   *
-   * 2. loops that can fail and succeed but that syntactically cannot return a
-   *    value (a call can syntactically return a value, even though the called
-   *    function may return void, an assignment or empty block can not). In this
-   *    case, success block returns true and else block returns false.
-   *
-   * @return true if implicit success and else blocks have been added.
-   */
-  private boolean defaultSuccessAndElseBlocks(Expr whileCond, Expr untilCond)
-  {
-    boolean result = false;
-    if (lastIndexVarAsImplicitResult())
-      { /* add last index var as implicit result */
-        Feature lastIndexVar = _indexVars.getLast();
-        var p = lastIndexVar.pos();
-        var readLastIndexVar0 = new Call(p, lastIndexVar.featureName().baseName());
-        var readLastIndexVar1 = new Call(p, lastIndexVar.featureName().baseName());
-        var readLastIndexVar2 = new Call(p, lastIndexVar.featureName().baseName());
-        var readLastIndexVar3 = new Call(p, lastIndexVar.featureName().baseName());
-        _elseBlock0   = Block.fromExpr(readLastIndexVar0);
-        _elseBlock1   = Block.fromExpr(readLastIndexVar1);
-        _elseBlock2   = Block.fromExpr(readLastIndexVar2);
-        _successBlock = Block.fromExpr(readLastIndexVar3);
-        result = true;
-      }
-    else if (booleanAsImplicitResult(whileCond, untilCond))
-      {
-        /* add implicit TRUE / FALSE results to success and else blocks: */
-        _successBlock = new Block(true, _successBlock == null ? new List<>(BoolConst.TRUE) : new List<>(_successBlock, BoolConst.TRUE));
-        _elseBlock0 = new Block(true, _elseBlock0 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock0, BoolConst.FALSE));
-        _elseBlock1 = new Block(true, _elseBlock1 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock1, BoolConst.FALSE));
-        _elseBlock2 = new Block(true, _elseBlock2 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock2, BoolConst.FALSE));
-        result = true;
-      }
-    return result;
-  }
-
-
-  /**
    * Create code that moves the else block into dedicated routines.
    */
-  private void moveElseBlockToRoutine()
+  private void moveElseBlockToRoutine(Expr eb0, Expr eb1, Expr eb2)
   {
     _loopElse = new Feature[3];
     for (int ei=0; ei<3; ei++)
@@ -465,9 +581,9 @@ public class Loop extends ANY
                                     NoType.INSTANCE,
                                     new List<String>(name),
                                     new List<>(),
-                                    Function.NO_CALLS,
+                                    AbstractCall.NO_CALLS,
                                     Contract.EMPTY_CONTRACT,
-                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : (ei == 1 ? _elseBlock1 : _elseBlock2), Impl.Kind.RoutineDef));
+                                    new Impl(_elsePos, ei == 0 ? eb0 : (ei == 1 ? eb1 : eb2), Impl.Kind.RoutineDef));
       }
   }
 
@@ -488,7 +604,40 @@ public class Loop extends ANY
                          (_loopElse != null);
 
     return new Call(_elsePos,
-                    _loopElse[elseNum].featureName().baseName());
+                    _loopElse[elseNum].baseName());
+  }
+
+
+   /**
+   * Create an actual argument that passes the value of an index var to the tail
+   * recursive loop feature.
+   *
+   * The source position and range are taken from the expression that defines
+   * the value such that error messages, e.g., for failed type inference, refer
+   * to that expression and not to the index variable's name.
+   *
+   * @param f an index var (for the initial value) or the corresponding feature
+   * from _nextValues (for the value used in the next iteration)
+   *
+   * @param prefix ITER_ARG_PREFIX_INIT or ITER_ARG_PREFIX_NEXT
+   *
+   * @param name the base name of the index var
+   *
+   * @param fallback the position to be used in case the value of f does not
+   * correspond to an expression in the source code, e.g., for an iterating
+   * index var ('for x in s') whose Impl was replaced in addIterators.
+   */
+  private Call iterArgActual(Feature f, String prefix, String name, SourcePosition fallback)
+  {
+    var e = f.impl().expr();
+    var useE = e != null && !e.pos().isBuiltIn();
+    var result = new Call(useE ? e.pos() : fallback, prefix + name);
+    // NYI: CLEANUP: set source range/pos in constructor call
+    if (useE && e.sourceRange() instanceof SourceRange r)
+      {
+        result.setSourceRange(r);
+      }
+    return result;
   }
 
 
@@ -505,28 +654,29 @@ public class Loop extends ANY
                                 List<Expr> initialActuals,
                                 List<Expr> nextActuals)
   {
-    int i = -1;
     int iteratorCount = 0;
-    Iterator<Feature> ivi = _indexVars.iterator();
+    var ivi = _indexVars .iterator();
+    var nvi = _nextValues.iterator();
+
     while (ivi.hasNext())
       {
-        i++;
         Feature f = ivi.next();
+        Feature n = nvi.next();
 
         // iterators should have been replaced by FieldDef in `addIterators`
         if (CHECKS) check
           (f.impl()._kind != Impl.Kind.FieldIter);
 
         var p = f.pos();
-        var ia = new Call(p, FuzionConstants.ITER_ARG_PREFIX_INIT + f.featureName().baseName());
-        var na = new Call(p, FuzionConstants.ITER_ARG_PREFIX_NEXT + f.featureName().baseName());
+        var ia = iterArgActual(f                 , FuzionConstants.ITER_ARG_PREFIX_INIT, f.baseName(), p);
+        var na = iterArgActual(n                 , FuzionConstants.ITER_ARG_PREFIX_NEXT, f.baseName(), p);
         var type = (f.impl()._kind == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
-          : _indexVars.get(i).returnType().functionReturnType();
+          : f.returnType().functionReturnType();
         var arg = new Feature(p,
                               Visi.PRIV,
                               type,
-                              f.featureName().baseName(),
+                              f.baseName(),
                               type != null ? Impl.FIELD
                                            : new Impl(Impl.Kind.FieldActual));
         arg._isIndexVarUpdatedByLoop = true;
@@ -573,8 +723,32 @@ public class Loop extends ANY
       @Override
       public Expr action(Function f)
       {
-        f.expr().visit(this, null);
+        // we must not replace calls to the lambda args
+        // this will raise ambiguity errors later
+        var n = new TreeSet<>(names);
+        n.removeAll(f._names.stream().map(x -> x._name).collect(Collectors.toSet()));
+        f.expr().visit(prefixVisitor(n, prefix), null);
         return super.action(f);
+      }
+
+      @Override
+      public Expr action(Feature f, AbstractFeature outer)
+      {
+        var expr = f.impl().expr();
+        if (expr != null)
+          {
+            // we must not replace calls to the
+            // feature itself or any of its args
+            // this will raise ambiguity errors later
+            var n = new TreeSet<>(names);
+            n.remove(f.baseName());
+            for (var arg : f.arguments())
+              {
+                n.remove(arg.baseName());
+              }
+            expr.visit(prefixVisitor(n, prefix), f);
+          }
+        return super.action(f, outer);
       }
     };
   }
@@ -624,18 +798,33 @@ public class Loop extends ANY
                                          /* impl */        new Impl(p, asList, Impl.Kind.FieldDef));
             list._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
             prologBlock.add(list);
-            ParsedType nilType = new ParsedType(p, "nil", new List<>(), null);
-            ParsedType consType = new ParsedType(p, "Cons", new List<>(), null);
+            ParsedType nilType = new ParsedType(p, "nil");
+            ParsedType consType = new ParsedType(p, "Cons");
             Call next1    = new Call(p, new Call(p, listName + "cons"), "head");
             Call next2    = new Call(p, new Call(p, listName + "cons"), "head");
             List<Expr> prolog2 = new List<>();
             List<Expr> nextIt2 = new List<>();
             Case match1c = new Case(p, consType, listName + "cons", new Block(prolog2));
             Case match1n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(0)) : Block.newIfNull(null));
-            Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n));
+            Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n))
+            {
+              @Override
+              void showIncomptiableTypesError()
+              {
+                _defunct = true;
+                AstErrors.loopResultsInTwoIncompatibleTypes(_pos, this);
+              }
+            };
             Case match2c = new Case(p, consType, listName + "cons", new Block(nextIt2));
             Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(2)) : Block.newIfNull(null));
-            Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n));
+            Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n))
+              {
+                @Override
+                Match assignToField(Resolution res, Context context, Feature r)
+                {
+                  return _defunct ? this : super.assignToField(res, context, r);
+                }
+              };
             prologBlock.add(match1);
             nextItBlock.add(match2);
             prologBlock = prolog2;
@@ -651,7 +840,7 @@ public class Loop extends ANY
         f._isIndexVarUpdatedByLoop = true;
         n._isIndexVarUpdatedByLoop = true;
 
-        names.add(f.featureName().baseName());
+        names.add(f.baseName());
         prologBlock.add(createInternalIterArgFeature(f, FuzionConstants.ITER_ARG_PREFIX_INIT));
         nextItBlock.add(createInternalIterArgFeature(n, FuzionConstants.ITER_ARG_PREFIX_NEXT));
       }
@@ -677,7 +866,7 @@ public class Loop extends ANY
   private Feature createInternalIterArgFeature(Feature f, String prefix)
   {
     var f1 = new Feature(f.visibility(), f.modifiers(), f.returnType(),
-      new List<>(new ParsedName(f.pos(), prefix + f.featureName().baseName())),
+      new List<>(new ParsedName(f.pos(), prefix + f.baseName())),
       new List<>(), new List<>(),
       Contract.EMPTY_CONTRACT, f.impl(), null);
     f1._isLoopIterator = f._isLoopIterator;

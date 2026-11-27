@@ -35,7 +35,10 @@ import dev.flang.ast.ParsedOperatorCall;
 import dev.flang.ast.ParsedName;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
 
 /**
  * Helper class to collect parsed operators and expressions
@@ -65,24 +68,24 @@ class OpExpr extends ANY
    * table of precedences
    */
   private final Precedence[] precedences = {
-    new Precedence(16,        "@"  ),
-    new Precedence(15,        "^"  ),
-    new Precedence(14, 5, 14, "!"  ),
-    new Precedence(13,        "~"  ),
-    new Precedence(12,        "⁄"  ),
-    new Precedence(11,        "*/%⊛⊗⊘⦸⊝⊚⊙⦾⦿⨸⨁⨂⨷"),
-    new Precedence(10,        "+-⊕⊖" ),
-    new Precedence( 9,        "."  ),
-    new Precedence( 8,        "#"  ),
-    new Precedence(14, 7, 14, "$"  ),
-    new Precedence( 6,        ""   ),
-    new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≟≤≥"),
-    new Precedence( 4,        "&"  ),
-    new Precedence( 3,        "|⦶⦷"),
-    new Precedence( 2,        "∀"  ),
-    new Precedence( 1,        "∃"  ),
-    // all other operators: 0
-    new Precedence( -1,       ":" ),
+    new Precedence(17,        "@"  ),
+    new Precedence(16,        "^"  ),
+    new Precedence(15, 6, 15, "!"  ),
+    new Precedence(14,        "~"  ),
+    new Precedence(13,        "⁄"  ),
+    new Precedence(12,        "*/%⊛⊗⊘⦸⊝⊚⊙⦾⦿⨸⨁⨂⨷"),
+    new Precedence(11,        "+-⊕⊖" ),
+    new Precedence(10,        "."  ),
+    new Precedence( 9,        "#"  ),
+    new Precedence(15, 8, 15, "$"  ),
+    new Precedence( 7,        ""   ),
+    new Precedence( 6,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≤≥"),
+    new Precedence( 5,        "&"  ),
+    new Precedence( 4,        "|⦶⦷"),
+    new Precedence( 3,        "∀"  ),
+    new Precedence( 2,        "∃"  ),
+    // all other operators: 1
+    new Precedence( 0,        ":"  ),
   };
 
 
@@ -90,9 +93,9 @@ class OpExpr extends ANY
    * Offset added to the precedence if operator and expression
    * have no white space in between.
    *
-   * NOTE: this must be higher than any other precendence
+   * NOTE: this must be higher than any other precedence
    */
-  static final int NO_WHITESPACE_PRECENDENCE_OFFSET = 1000;
+  static final int NO_WHITESPACE_PRECEDENCE_OFFSET = 1000;
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -160,10 +163,10 @@ class OpExpr extends ANY
                         // 'a + +b' => 'a + (+b)'
                         // 'a+ +b'  => 'a + (+b)' due to white space
                         isOp(i-1) && !op._whiteSpaceAfter && op._whiteSpaceBefore && op(i-1)._whiteSpaceBefore &&
-                        precedence(i, Kind.prefix) + NO_WHITESPACE_PRECENDENCE_OFFSET > pmax)
+                        precedence(i, Kind.prefix) + NO_WHITESPACE_PRECEDENCE_OFFSET > pmax)
                       {
                         max = i;
-                        pmax = precedence(i, Kind.prefix) + NO_WHITESPACE_PRECENDENCE_OFFSET;
+                        pmax = precedence(i, Kind.prefix) + NO_WHITESPACE_PRECEDENCE_OFFSET;
                       }
                     else if (// 'a + * b' => 'a + (* b)' and
                              // 'a + + b' => 'a + (+ b)' and
@@ -181,12 +184,12 @@ class OpExpr extends ANY
                         // 'a+ +b'   => 'a + (+b)' and
                         // 'a+ + b+' => '(a+) + (b+)' due to white space
                         (isOp(i+1) && op(i+1)._whiteSpaceAfter || isOp(i-2) && op(i-2)._whiteSpaceAfter) && !op._whiteSpaceBefore && op._whiteSpaceAfter &&
-                        precedence(i, Kind.postfix) + NO_WHITESPACE_PRECENDENCE_OFFSET > pmax)
+                        precedence(i, Kind.postfix) + NO_WHITESPACE_PRECEDENCE_OFFSET > pmax)
                       {
                         // in case white space suggests higher precedence for
                         // postfix op, then treat it as a postfix op.
                         max = i;
-                        pmax = precedence(i, Kind.postfix) + NO_WHITESPACE_PRECENDENCE_OFFSET;
+                        pmax = precedence(i, Kind.postfix) + NO_WHITESPACE_PRECEDENCE_OFFSET;
                       }
                     else if (// 'a + * b' => 'a + (* b)' and
                              // 'a * + b' => '(a *) + b' due to precedence
@@ -203,7 +206,20 @@ class OpExpr extends ANY
           { // infix op:
             Expr e1 = expr(max-1);
             Expr e2 = expr(max+1);
-            Expr e = new ParsedOperatorCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + op._text), pmax, e2);
+            if (!op._whiteSpaceBefore &&  op._whiteSpaceAfter && !op._text.equals(":") ||  // we still allow code like `pre debug: i >= 3`.
+                 op._whiteSpaceBefore && !op._whiteSpaceAfter)                             // but not `x := 3 :z`
+              {
+                var p = op._pos;
+                Errors.error(p,
+                             "Syntax error: infix operator "+Errors.code(op._text)+" appears to be "+(op._whiteSpaceAfter ? "postfix" : "prefix")+" operator.",
+                             "Whitespace "+(op._whiteSpaceBefore?"before":"after")+ " this operator suggests that\n" +
+                             "it was not intended as an infix operator.\n"+
+                             "To fix this, you may try to insert white space "+(op._whiteSpaceBefore?"after":"before")+" the operator at "+
+                             (op._whiteSpaceAfter ? p.startPos()
+                                                  : p.endPos()).show() + "\n" +
+                             "Parse stack: " + Parser.parseStack());
+              }
+            Expr e = new ParsedOperatorCall(e1, new ParsedName(SourcePosition.range(new List<>(e1, e2)), FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + op._text), pmax, e2);
             _els.remove(max+1);
             _els.remove(max);
             _els.set(max-1, e);
@@ -349,7 +365,7 @@ class OpExpr extends ANY
             ? (kind == Kind.prefix ? precedences[i].prefix :
                kind == Kind.infix  ? precedences[i].infix :
                /* Kind.postfix */    precedences[i].postfix )
-            : 0);
+            : 1);
   }
 
 

@@ -1,0 +1,25 @@
+
+reg_issue4912.fz:35:24: error 1: Ambiguous targets found for call to 'f'
+  say "10. f a^b   : $(f a^b)"
+-----------------------^
+Found several possible call targets within the current feature at the same outer level in 'reg_issue4912' found 'reg_issue4912.f' defined at reg_issue4912.fz:31:3
+  f(x)       => "(f $x)"
+--^
+and in 'reg_issue4912' found 'Any.f' defined at reg_issue4912.fz:30:7
+  Any.f(a)   => "($(Any.this).f $a)"
+------^
+To solve this, you may rename one of these features.
+
+
+reg_issue4912.fz:31:5: error 2: Type inference from actual arguments failed since no actual call was found
+  f(x)       => "(f $x)"
+----^
+For the formal argument 'reg_issue4912.f.x' the type can only be derived if there is a call to 'reg_issue4912.f'.
+
+
+reg_issue4912.fz:30:9: error 3: Type inference from actual arguments failed since no actual call was found
+  Any.f(a)   => "($(Any.this).f $a)"
+--------^
+For the formal argument 'Any.f.a' the type can only be derived if there is a call to 'Any.f'.
+
+3 errors.

@@ -44,10 +44,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   flex-wrap: wrap;
 }
 
-.pl-5{
-  padding-left: .5em;
-}
-
 .mr-5{
   margin-right: .5em;
 }
@@ -65,11 +61,68 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   margin-left: .2em;
 }
 
+.ml-5{
+  margin-left: .5em;
+}
+
+.fd-module-name{
+  font-size: 1.4em;
+  vertical-align: baseline;
+}
+
+/* Keep the grid inside summary so its native disclosure marker is preserved. */
+.fd-summary{
+  display: grid;
+  grid-template-columns: 1fr min-content;
+}
+
+.fd-src-link{
+  align-self: start;
+}
+
+.fd-signature{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  max-width: 100%;
+}
+
+.fd-signature-col1,
+.fd-signature-col2,
+.fd-signature-col3{
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+.fd-signature-col1,
+.fd-signature-col2{
+  align-self: flex-start;
+}
+
+.fd-signature-col1,
+.fd-signature-col3,
+.fd-signature-arg{
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.fd-signature-arg{
+  max-width: 100%;
+}
+
+.fd-signature-col3{
+  align-self: flex-end;
+}
+
 .ml-10{
   margin-left: 1em;
 }
 
 .container{
+  width: max-content;
+  min-width: min(55rem, 100%);
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 15px;
 }
 
@@ -77,8 +130,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   justify-content: space-between;
 }
 
-.word-break-break-word{
-  word-break: break-word;
+.overflow-wrap-break-word{
+  overflow-wrap: break-word;
 }
 
 .white-space-no-wrap{
@@ -89,17 +142,44 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   cursor: pointer;
 }
 
-.flex-grow-1{
-  flex-grow: 1;
-}
-
 .font-weight-600{
   font-weight: 600;
 }
 
 .fd{
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   position: relative;
+}
+
+.fd .runcode{
+  opacity: 0;
+}
+
+/* Standalone examples remain readable even if Ace cannot be loaded. */
+.standalone-docs .runcode{
+  display: block;
+  opacity: 1;
+  margin: 1em 0;
+}
+
+.standalone-docs .ace_cursor-layer,
+.standalone-docs .runcode-wrapper > .fa-spinner,
+.standalone-docs .runcode .run-buttons,
+.standalone-docs .runcode .computer-output,
+.standalone-docs .runcode label{
+  display: none;
+}
+
+.standalone-docs .runcode .code-input{
+  box-sizing: border-box;
+  width: 100%;
+  font-family: monospace;
+  caret-color: transparent;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
 }
 
 .fd a{
@@ -110,16 +190,22 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   color: #af00db;
 }
 
-.fd-feature{
+.fd-feature, .fd .toggle-feature-details{
   color: #795e26;
 }
 
+.fd-fname{
+  font-family: 'Fira Mono', monospace;
+  color: #795e26;
+  font-weight: 600;
+}
+
 .fd-type{
-  color: #267f99;
+  color: #1b5a6c;
   font-style: italic;
 }
 
-.fd-comment{
+.fd-comment, .fd-contract{
   padding: 1em;
 }
 
@@ -128,10 +214,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd details{
-  margin: 1em;
-  /* marker needs more space */
-  margin-left: 2em;
-  border: 2px outset rgba(0,0,0,0.1);
+  /* Extra left space accommodates the disclosure marker. */
+  margin: 1em 0 1em 2em;
+  border: 2px outset rgb(0 0 0 / 10%);
+}
+
+/* Exclude feature descriptions in collapsed feature-list entries from browser search. */
+.fd details:not([open])::details-content{
+  visibility: hidden;
+}
+
+.fd-comment details, .fd-contract details{
+  margin: 0;
+  margin-bottom: 1em;
 }
 
 .fd details p{
@@ -140,16 +235,38 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .fd summary{
   list-style-position: outside;
+  background-color: rgb(0 0 0 / 2%);
 }
 
 .fd-anchor-sign{
-  color: rgba(0,0,0,0.3);
-  opacity: 0;
-  margin-left: .3em;
+  color: #535353;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  margin-left: 0.3em;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
-.fd summary:hover .fd-anchor-sign{
-  opacity: 1;
+/* Only feature-list entries need a permalink. */
+.heading-summary .fd-anchor-sign {
+  display: none;
+}
+
+.fd summary:hover .fd-anchor-sign,
+.fd summary:focus-within .fd-anchor-sign {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0 0 0 0.3em;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+  border: none;
 }
 
 .fd-inherited{
@@ -160,6 +277,26 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 .fd .sidenav{
   padding-right: 15px;
+}
+
+.fd .toggle-feature-details {
+  display: block;
+  margin-left: auto;
+  padding: .25em 0 .25em .6em;
+  font: inherit;
+  background: transparent;
+  border: 0;
+}
+
+.toggle-nav {
+  appearance: none;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.2em;
+  padding: 0.5em;
 }
 
 .fd .sidenav .toggle-nav{
@@ -180,52 +317,98 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   padding-left: 0;
 }
 
-.fd a:hover{
+.fd .sidenav nav .fd-module-list{
+  list-style: disc inside;
+}
+
+/* Tree structure using CSS borders, previously shown with box-drawing characters (├─, └─, │). */
+
+/* Remove extra vertical spacing around nested lists. */
+.fd .sidenav nav .fd-nav-tree ul{
+  margin: 0;
+}
+
+/* Indent nested items and position connectors relative to each item. */
+.fd .sidenav nav .fd-nav-tree ul > li{
+  position: relative;
+  padding-left: 3ch;
+}
+
+/* Shared setup for the two connector lines; the rules below draw their borders. */
+.fd .sidenav nav .fd-nav-tree ul > li::before,
+.fd .sidenav nav .fd-nav-tree ul > li::after{
+  content: "";
+  position: absolute;
+  left: .5ch;
+  pointer-events: none;
+}
+
+/* Draw the vertical line through the item and its descendants. */
+.fd .sidenav nav .fd-nav-tree ul > li::before{
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid currentColor;
+}
+
+/* Draw a horizontal branch halfway down the first text line. */
+.fd .sidenav nav .fd-nav-tree ul > li::after{
+  top: 0.5lh;
+  width: 1.5ch;
+  border-top: 1px solid currentColor;
+}
+
+/* Stop the last sibling's vertical line where its horizontal branch begins. */
+.fd .sidenav nav .fd-nav-tree ul > li:last-child::before{
+  bottom: auto;
+  height: 0.5lh;
+}
+
+.fd-contract a, .fd-comment a, .fd-parent a{
+  color: unset;
+}
+
+.fd a:hover, .fd .toggle-feature-details:hover{
   text-decoration: underline;
 }
 
 .fd-parent{
-  color: grey;
+  color: #535353;
   font-size: 0.7em;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.fd-parent a{
-  color: unset;
-}
-.fd-parent a:hover{
+
+.fd-contract a:hover, .fd-comment a:hover, .fd-parent a:hover{
   color: #795e26;
 }
 
-.fz-code, .fd-feature, .fd-keyword, .fd-type {
+.fd-contract-title, .fz-code, .fd-feature, .fd-keyword, .fd-type {
   font-family: 'Fira Mono', monospace;
+}
+
+.fd-contract-title {
+  font-family: 'Fira Mono', monospace;
+  font-weight: bold;
+}
+
+.fd-contract {
+  font-family: Fira, sans-serif;
 }
 
 /* Version hash at the bottom of api docs */
 .version-hash{
   text-align: center;
-  color:grey;
+  color: #535353;
   font-size:0.7em;
-}
-
-.space-1{
-  display: inline-block;
-  width: 1ch;
-}
-
-.space-2{
-  display: inline-block;
-  width: 2ch;
-}
-
-.space-3{
-  display: inline-block;
-  width: 3ch;
 }
 
 .heading-summary{
   font-size: 120%;
   margin-bottom: 0.5em;
   font-weight: 700;
+}
+
+.f-category {
+  font-size: 1em;
 }

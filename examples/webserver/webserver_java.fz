@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# webserver is a minimalistic webserver example based on the Java module
+# webserver is a minimalist webserver example based on the Java module
 # java.base.
 #
 # See Makefile for how to start fuzion to run this webserver.
@@ -37,7 +37,7 @@ webserver_java is
     jio := Java.java.io
 
     # open socket
-    port := 8080
+    port i32 := 8080
     serversocket := jnet.ServerSocket.new port
     match serversocket
       err error => say "#### $err ####"
@@ -50,7 +50,7 @@ webserver_java is
             unit      => say "ok."
             err error => say "#### $err ####"
 
-  /* NYI: This syntactic sugar is not supported yet: 'pstfix ?' should return immediately in case of error and unwrap outcome otherwise:
+  /* NYI: This syntactic sugar is not supported yet: 'postfix ?' should return immediately in case of error and unwrap outcome otherwise:
 
       accept outcome unit is
         # accept and handle connection
@@ -59,7 +59,7 @@ webserver_java is
         output := jio.DataOutputStream.new s.getOutputStream?
 
         req := read?
-        say "got request ({req.byte_length} bytes): $req"
+        say "got request ($(req.byte_count) bytes): $req"
         if req.starts_with "GET "
           (send200 "<html>Hello Fuzion $n!</html>")?
 
@@ -83,7 +83,7 @@ webserver_java is
           output.writeBytes ( "HTTP/1.1 200 OK\n"
                             + "Connection: close\n"
                             + "Server: Fuzion demo WebServer v0.01\n"
-                            + "Content-Length: " + data.byte_length + "\n"
+                            + "Content-Length: " + data.byte_count + "\n"
                             + "Content-Type: text/html\n"
                             + "\n"
                             + data)?
@@ -103,11 +103,11 @@ webserver_java is
                       r := "", "$r$s\n"
                       s := input.readLine
                       ready := input.ready
-                    while s?? && (ready??)
-                    until s.val = "" || !ready.val
+                    while s.ok && ready.ok
+                    until s.or_panic = "" || !ready.or_panic
                       r
                     else
-                      say "#### {if (s.ok) s.err else ready.err}"
+                      say "#### $(if (s.ok) s.err else ready.err)"
                       "--error--"
 
 
@@ -117,18 +117,18 @@ webserver_java is
                     ok := output.writeBytes ( "HTTP/1.1 200 OK\n"
                                       + "Connection: close\n"
                                       + "Server: Fuzion demo WebServer v0.01\n"
-                                      + "Content-Length: " + data.byte_length + "\n"
+                                      + "Content-Length: " + data.byte_count + "\n"
                                       + "Content-Type: text/html\n"
                                       + "\n"
                                       + data)
-                    if ok!!
+                    if !ok
                       say "#### "+ok.err
 
 
                   output := jio.DataOutputStream.new o
 
                   req := read
-                  say "got request ({req.byte_length} bytes): $req"
+                  say "got request ($(req.byte_count) bytes): $req"
                   if req.starts_with "GET "
                     send200 "<html>Hello Fuzion $n!</html>"
 

@@ -1,0 +1,45 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5266
+#
+# -----------------------------------------------------------------------
+
+reg_issue5266 =>
+
+  f(a   bool) is xyz => say "f xyz"
+  g(a,b bool) is xyz => say "g xyz"
+
+  ignore <| f true       # ok, parsed as call with one arg
+              .xyz
+
+  ignore <| g true       # ok
+              true
+
+  ignore <| g true       # ok
+              true
+            .xyz
+
+  ignore <| g true       # ok
+              true
+              .xyz
+
+  ignore <| g true       # fails, parsed as call with three args
+              true
+              .xyz

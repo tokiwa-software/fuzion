@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4542.fz:24:9: error 1: Failed to infer actual type parameters
+reg_issue4542.fz:24:9: error 1: Failed to infer actual type parameters
 ignore (memo 42)
 --------^^^^
 In call to 'memo', no actual type parameters are given and inference of the type parameters failed.

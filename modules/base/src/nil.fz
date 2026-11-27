@@ -29,9 +29,16 @@
 # not present, e.g, in an option.
 #
 #
-public nil is
+public nil : unit is
 
 
   # convert this to a string.
   #
   public redef as_string String => "--nil--"
+
+
+  # create hash code for nil
+  #
+  public redef fixed type.hash_code(_ nil) u64
+  =>
+    0xfe6f6476106a56b6  # generated using secure random generator at https://cryptotools.dev/

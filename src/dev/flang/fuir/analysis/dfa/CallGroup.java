@@ -30,6 +30,9 @@ package dev.flang.fuir.analysis.dfa;
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 
 import java.util.TreeSet;
@@ -42,7 +45,7 @@ import java.util.stream.Collectors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class CallGroup extends ANY implements Comparable<CallGroup>
+class CallGroup extends ANY implements Comparable<CallGroup>
 {
 
 
@@ -64,12 +67,12 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
    *
    * @return -1 or a values that is unique for the given cl/site/tvalue.
    */
-  static long quickHash(DFA dfa, int cl, int site, Value tvalue)
+  private long quickHash(DFA dfa, int cl, int site, Value tvalue)
   {
     long k = -1;
     var k1 = dfa._fuir.clazzId2num(cl);
     var k2 = tvalue._id;
-    var k3 = dfa.siteSensitive(cl) ? dfa.siteIndex(site) : 0;
+    var k3 = dfa.siteSensitive(cl) ? DFA.siteIndex(site) : 0;
     var k4 = 0; // NYI: 10 unused bits still available in the hash code.
     if (CHECKS) check
       (k1 >= 0,
@@ -139,22 +142,15 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
 
   /**
-   * Set of CallGroups this may call.
-   */
-  TreeSet<CallGroup> _to   = new TreeSet<>();
-
-
-  /**
    * Set of clazz ids for effects this CallGroup uses.
    */
   TreeSet<Integer> _usedEffects = new TreeSet<>();
 
 
   /**
-   * Set of clazz ids for effects that may be instated when this CallGroup is
-   * called.
+   * The quick hash of this call group or -1 if none.
    */
-  TreeSet<Integer> _mayHaveEffects = new TreeSet<>();
+  private final long _quickHash;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -174,17 +170,18 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
    */
   public CallGroup(DFA dfa, int cc, int site, Value target)
   {
-    if (dfa._real && !dfa._calledClazzesDuringPrePhase.contains(cc) && !true /* NYI! */)
-      {
-        System.out.println("PROBLE FOR "+dfa._fuir.clazzAsString(cc));
-      }
     if (PRECONDITIONS) require
-      (!dfa._real || dfa._calledClazzesDuringPrePhase.contains(cc) || true /* NYI! */);
+      (Errors.any() ||
+       dfa._fuir.clazzOuterClazz(cc) == target._clazz ||
+       dfa._fuir.clazzOuterClazz(cc) == dfa._fuir.clazzUniverse() && target._clazz == NO_CLAZZ ||
+       dfa._fuir.clazzIsUnitType(dfa._fuir.clazzOuterClazz(cc)) ||
+       dfa._fuir.clazzIsRef(dfa._fuir.clazzOuterClazz(cc)) &&  dfa._fuir.clazzIsRef(target._clazz));
 
     _dfa = dfa;
     _cc = cc;
     _site = site;
     _target = target;
+    _quickHash = quickHash(dfa, cc, site, target);
   }
 
 
@@ -194,9 +191,10 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   /**
    * Compare this to another Call.
    */
+  @Override
   public int compareTo(CallGroup other)
   {
-    return
+    return _quickHash != -1 ? Long.compare(_quickHash, other._quickHash) :
       _cc         != other._cc         ? Integer.compare(_cc        , other._cc        ) :
       _target._id != other._target._id ? Integer.compare(_target._id, other._target._id) :
       _dfa.siteSensitive(_cc)          ? Integer.compare(_site      , other._site      ) : 0;
@@ -216,52 +214,29 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
 
   /**
-   * Record that there is a call chain that leads to this CallGroup with effect
-   * `ecl` instated.
-   *
-   * @param ecl clazz id of an effect that is instated when this is called.
-   */
-  void mayHaveEffect(int ecl)
-  {
-    if (_mayHaveEffects.add(ecl))
-      {
-        for (var t : _to)
-          {
-            t.mayHaveEffect(ecl);
-          }
-      }
-  }
-
-
-  /**
-   * For all effects `e` that this needs and that this may have, record that
-   * `_cc` requires `e` in `_dfa._clazzesThatRequireEffect` and
-   * `_dfa._effectsRequiredByClazz`.
+   * For all effects {@code e} that this needs and that this may have, record that
+   * {@code _cc} requires {@code e} in {@code _dfa._clazzesThatRequireEffect} and
+   * {@code _dfa._effectsRequiredByClazz}.
    */
   void saveEffects()
   {
     if (PRECONDITIONS) require
       (!_dfa._real);
 
-    _dfa._calledClazzesDuringPrePhase.add(_cc);
     for (var e : _usedEffects)
       {
-        if (_mayHaveEffects.contains(e))
-          {
-            _dfa._clazzesThatRequireEffect.computeIfAbsent(e  , k->new TreeSet<>()).add(_cc);
-            _dfa._effectsRequiredByClazz  .computeIfAbsent(_cc, k->new TreeSet<>()).add(e  );
-          }
+        _dfa._effectsRequiredByClazz  .computeIfAbsent(_cc, k->new TreeSet<>()).add(e  );
       }
   }
 
 
   /**
-   * Is this ca call to `effect.instate0` that instates effect with clazz id `ecl`?
+   * Is this ca call to {@code effect.instate0} that instates effect with clazz id {@code ecl}?
    *
    * @param ecl clazz id for an effect
    *
-   * @return true iff this is `effect.instate0` and this instates an effect of
-   * type `ecl`.
+   * @return true iff this is {@code effect.instate0} and this instates an effect of
+   * type {@code ecl}.
    */
   private boolean instates(int ecl)
   {
@@ -274,7 +249,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
   /**
    * Record the fact that this CallGroup (and all its targets and callers)
-   * uses the instated effect type `ecl`.
+   * uses the instated effect type {@code ecl}.
    *
    * @param ecl clazz id for an effect.
    */
@@ -290,7 +265,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
                            }
                        });
 
-        _dfa.wasChanged(() -> "needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this);
+        _dfa.wasChanged(() -> "needs effect "+_dfa._fuir.clazzName(ecl)+" for "+this);
         for (var f : _from)
           {
             f.usesEffect(ecl);
@@ -300,8 +275,8 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
 
   /**
-   * Record the fact that this CallGroup is called from `from`.  Propagate all
-   * used effects to `from` and may have effects from `from`.
+   * Record the fact that this CallGroup is called from {@code from}.  Propagate all
+   * used effects to {@code from} and may have effects from {@code from}.
    *
    * @param from CallGroup of a caller to this.
    */
@@ -313,12 +288,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
           {
             from.usesEffect(ecl);
           }
-
-        from._to.add(this);
-        for (var ecl : from._mayHaveEffects)
-          {
-            mayHaveEffect(ecl);
-          }
       }
   }
 
@@ -329,7 +298,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   String clazzesAsString(java.util.Set<Integer> s)
   {
     return s == null ? "{}" :
-      s.stream().map(_dfa._fuir::clazzAsString).collect(Collectors.joining(","));
+      s.stream().map(_dfa._fuir::clazzName).collect(Collectors.joining(","));
   }
 
 
@@ -357,7 +326,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   @Override
   public String toString()
   {
-    return "CALLGROUP to "+_dfa._fuir.clazzAsString(_cc)+" at "+_dfa._fuir.siteAsString(_site)+" effects: "+
+    return "CALLGROUP to "+_dfa._fuir.clazzName(_cc)+" at "+_dfa._fuir.siteAsString(_site)+" effects: "+
       (_dfa._real
        ? usedEffectsAsString()
        : requiredEffectsAsString());

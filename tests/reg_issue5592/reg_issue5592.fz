@@ -1,0 +1,73 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5592
+#
+# -----------------------------------------------------------------------
+
+reg_issue5592 =>
+  f is
+
+    h(U : Any)
+      pre U : f.this
+    =>
+      say U
+
+    i(U : Any)
+    =>
+      if U : f.this
+        say U
+      else
+        say "constraint not satisfied"
+
+    j(U : option f.this) =>
+      say U
+
+    k(U : Any)
+      pre U : (Sequence f.this)->f.this
+    =>
+      say U
+
+    l(U : Any)
+    =>
+      if U : (f.this, array f.this)
+        say U
+      else
+        say "constraint not satisfied"
+
+  f.h f
+  f.i f
+  f.j (option f)
+  f.k (Sequence f)->f
+  f.l (f, array f)
+
+
+  ff : f is
+
+  ff.h ff
+  # does not satisfy the constraint
+  ff.i f
+  # while this does
+  ff.i ff
+  ff.j (option ff)
+  ff.k (Sequence ff)->ff
+  # does not satisfy the constraint
+  ff.l (f, array f)
+  # while this does
+  ff.l (ff, array ff)

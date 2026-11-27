@@ -31,7 +31,7 @@ package dev.flang.be.interpreter;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public interface BackendCallable
+interface BackendCallable
 {
 
   default int inner() { return -1; }

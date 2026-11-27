@@ -6,6 +6,6 @@ hello
 A
 true
 hello
-[[instance[tuple String String]]]
+[[(hello, world)]]
 world
 [hello]

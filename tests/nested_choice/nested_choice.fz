@@ -26,19 +26,19 @@ nested_choice =>
   issue492 =>
 
     simple =>
-      the_choice : choice i32 f64 is
-        public redef as_string =>
+      the_choice : choice i64 f64 is
+        public redef as_string String =>
           match the_choice.this
-            n i32 => $n
+            n i64 => $n
             f f64 => $f
 
       map_res : choice the_choice String is
-        public redef as_string =>
+        public redef as_string String =>
           match map_res.this
             t the_choice => $t
             s String => s
 
-      map (n i32) map_res =>
+      map (n i64) map_res =>
         n
 
       say (map 2)
@@ -48,10 +48,10 @@ nested_choice =>
     assign_choice_to_nested_choice =>
       bool_or_u64 : choice u64 bool is
 
-      tripel_nested_choice : choice i32 bool_or_u64 is
-        public redef as_string =>
-          match tripel_nested_choice.this
-            i i32 => $i
+      triple_nested_choice : choice i64 bool_or_u64 is
+        public redef as_string String =>
+          match triple_nested_choice.this
+            i i64 => $i
             b1 bool_or_u64 =>
               match b1
                 u u64 => $u
@@ -60,11 +60,11 @@ nested_choice =>
 
       bool_or_num_bool bool_or_u64 := false
       bool_or_num_num bool_or_u64 := u64 9
-      b tripel_nested_choice := true
-      n4 tripel_nested_choice := i32 -1
-      n8 tripel_nested_choice := u64 1
-      c1 tripel_nested_choice := bool_or_num_bool
-      c2 tripel_nested_choice := bool_or_num_num
+      b triple_nested_choice := true
+      n4 triple_nested_choice := i64 -1
+      n8 triple_nested_choice := u64 1
+      c1 triple_nested_choice := bool_or_num_bool
+      c2 triple_nested_choice := bool_or_num_num
 
       say b
       say n4
@@ -76,19 +76,19 @@ nested_choice =>
 
     only_references =>
       My_Ref1 ref is
-        public redef as_string => "ref1"
+        public redef as_string String => "ref1"
       My_Ref2 ref is
-        public redef as_string => "ref2"
+        public redef as_string String => "ref2"
       My_Ref3 ref is
-        public redef as_string => "ref3"
+        public redef as_string String => "ref3"
 
       only_ref : choice My_Ref1 My_Ref2 is
-        public redef as_string =>
+        public redef as_string String =>
           match only_ref.this
             mr1 My_Ref1 => $mr1
             mr2 My_Ref2 => $mr2
       only_ref_nested : choice My_Ref3 only_ref is
-        public redef as_string =>
+        public redef as_string String =>
           match only_ref_nested.this
             mr3 My_Ref3 => $mr3
             or only_ref => $or
@@ -110,10 +110,10 @@ nested_choice =>
 
 
     mix_ref_and_non_ref =>
-      choice_mixed : choice i32 (choice String u64) is
-        public redef as_string =>
+      choice_mixed : choice i64 (choice String u64) is
+        public redef as_string String =>
           match choice_mixed.this
-            n i32 => $n
+            n i64 => $n
             c1 choice String u64 =>
               match c1
                 str String => $str
@@ -145,14 +145,14 @@ nested_choice =>
 
     c := [a,b]
 
-    match (c.nth 0)
+    match c.nth 0
       s some_choice_including_nil =>
         match s
           nil    => say "n2"
           String => say "s"
       nil => say "n1"
 
-    match (c.nth 1)
+    match c.nth 1
       s some_choice_including_nil =>
         match s
           nil    => say "n2"
@@ -164,7 +164,7 @@ nested_choice =>
 
   issue562 =>
     my_choice : choice (choice nil String) nil is
-      public redef as_string =>
+      public redef as_string String =>
         match my_choice.this
           choice choice nil String =>
             match choice
@@ -179,7 +179,7 @@ nested_choice =>
     say b
 
     my_choice2 : choice (choice nil String) (choice nil unit) is
-      public redef as_string =>
+      public redef as_string String =>
         match my_choice2.this
           choice choice nil String =>
             match choice
@@ -190,7 +190,7 @@ nested_choice =>
               nil  => "inner nil"
               unit => "unit"
 
-    # the following flags an error, ambigous assignment to choice
+    # the following flags an error, ambiguous assignment to choice
     # tested in choice_negative, nested_choice_negative
     # c my_choice2 := nil
     d my_choice2 := "st"

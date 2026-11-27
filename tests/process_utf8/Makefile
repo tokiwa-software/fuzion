@@ -34,6 +34,8 @@ jvm: compile_unicode_feature
 
 c:   compile_unicode_feature
 
+fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+
 int: compile_unicode_feature
 
 effect: compile_unicode_feature

@@ -61,6 +61,9 @@ public class C extends ANY
   /*-----------------------------  classes  -----------------------------*/
 
 
+  public int _maxTagNum = 0;
+
+
   /**
    * Expression processor used with AbstractInterpreter to generate C code.
    */
@@ -91,20 +94,24 @@ public class C extends ANY
     }
 
 
-    /**
-     * Called before each expression is processed. May be used to, e.g., produce
-     * tracing code for debugging or a comment.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt expressionHeader(int s)
     {
-      return comment(String.format("%4d: %s", s, _fuir.codeAtAsString(s)));
+      var comment = comment(String.format("%4d: %s", s, _fuir.codeAtAsString(s)));
+      var pos = _fuir.sitePos(s);
+      return pos == null || pos.isBuiltIn()
+            ? comment
+            : CStmnt.seq(
+              comment,
+              CStmnt
+                // NYI: UNDER DEVELOPMENT: re-replace "{base.fum}/" etc. in sourceFile?
+                .directive("line " + pos.line() + " \"" + pos._sourceFile._fileName.toString().replace("\\", "/") + "\"")
+              );
     }
 
 
-    /**
-     * A comment, adds human readable information
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt comment(String s)
     {
@@ -112,11 +119,16 @@ public class C extends ANY
     }
 
 
-    /**
-     * no operation, like comment, but without giving any comment.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt nop()
+    {
+      return CStmnt.EMPTY;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override public CStmnt drop(CExpr v, int type)
     {
       return CStmnt.EMPTY;
     }
@@ -143,16 +155,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Perform an assignment of a value to a field in tvalue. The type of tvalue
-     * might be dynamic (a reference). See FUIR.access*().
-     *
-     * @param s site of the assignment
-     *
-     * @param tvalue the target instance
-     *
-     * @param avalue the new value to be assigned to the field.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt assign(int s, CExpr tvalue, CExpr avalue)
     {
@@ -160,14 +163,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Perform a call of a feature with target instance tvalue with given
-     * arguments.  The type of tvalue might be dynamic (a reference). See
-     * FUIR.access*().
-     *
-     * Result.v0() may be null to indicate that code generation should stop here
-     * (due to an error or tail recursion optimization).
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args)
     {
@@ -176,23 +172,19 @@ public class C extends ANY
     }
 
 
-    /**
-     * For a given value v of value type vc create a boxed ref value of type rc.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> box(int s, CExpr val, int vc, int rc)
     {
       var t = _names.newTemp();
-      var o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
+      var o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzName(vc)),
                          declareAllocAndInitClazzId(rc, t),
                          C.this.assign(fields(t, rc), val, vc));
       return new Pair<>(t, o);
     }
 
 
-    /**
-     * Get the current instance
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> current(int s)
     {
@@ -216,20 +208,16 @@ public class C extends ANY
     }
 
 
-    /**
-     * Get the argument #i
-     */
+    /** {@inheritDoc} */
     @Override
     public CExpr arg(int s, int i) { return CIdent.arg(i); }
 
 
-    /**
-     * Get a constant value of type constCl with given byte data d.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> constData(int s, int constCl, byte[] d)
     {
-      return constData(constCl, d, true);
+      return constData(constCl, d);
     }
 
 
@@ -247,11 +235,10 @@ public class C extends ANY
      *               it was created in.
      * @return
      */
-    private Pair<CExpr, CStmnt> constData(int constCl, byte[] d, boolean onHeap /* NYI: UNDER DEVELOPMENT: init "(larger)" constants only once, globally. */)
+    private Pair<CExpr, CStmnt> constData(int constCl, byte[] d)
     {
       return switch (_fuir.getSpecialClazz(constCl))
         {
-          case c_bool -> new Pair<>(primitiveExpression(SpecialClazzes.c_bool, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_i8,   ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i16,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
@@ -271,14 +258,7 @@ public class C extends ANY
               ? constArray(constCl, d)
               : constValue(constCl, d);
 
-            // NYI: UNDER DEVELOPMENT: without this heap clone tests ternary and unary are failing.
-            yield onHeap
-              ? new Pair<>(CExpr
-                              .call(CNames.HEAP_CLONE._name, new List<>(result.adrOf(), result.sizeOfExpr()))
-                              .castTo(_types.clazz(constCl) + " *")
-                              .deref(),
-                             CStmnt.EMPTY)
-              : new Pair<>(result, CStmnt.EMPTY);
+            yield new Pair<>(result, CStmnt.EMPTY);
           }
         };
     }
@@ -302,15 +282,22 @@ public class C extends ANY
         {
           var arg = _fuir.clazzArg(constCl, i);
           var fr = _fuir.clazzArgClazz(constCl, i);
-          var bytes = _fuir.deserializeConst(fr, bb);
-          sb.append("." + _names.fieldName(arg).code());
-          sb.append(" = ");
-          var cd = constData(_fuir.clazzResultClazz(arg), bytes, false);
-          l.add(cd.v1());
-          sb.append(cd.v0().code());
-          if (i + 1 != argCount)
+          // NYI: CLEANUP: would be better if clazzArg would not return unit type args
+          if (!_fuir.clazzIsUnitType(fr))
             {
-              sb.append(",");
+              var bytes = _fuir.deserializeConst(fr, bb);
+              if (_types.fieldExists(arg))
+                {
+                  sb.append("." + _names.fieldName(arg).code());
+                  sb.append(" = ");
+                  var cd = constData(_fuir.clazzResultClazz(arg), bytes);
+                  l.add(cd.v1());
+                  sb.append(cd.v0().code());
+                  if (i + 1 != argCount)
+                    {
+                      sb.append(",");
+                    }
+                }
             }
         }
 
@@ -328,10 +315,10 @@ public class C extends ANY
     private CExpr constArray(int constCl, byte[] d)
     {
       var elementType      = _fuir.inlineArrayElementClazz(constCl);
-      var c_internal_array = _fuir.lookup_array_internal_array(constCl);
+      var c_internal_array = _fuir.clazzArg(constCl, 0);
       var c_sys_array      = _fuir.clazzResultClazz(c_internal_array);
-      var c_data           = _fuir.lookup_fuzion_sys_internal_array_data(c_sys_array);
-      var c_length         = _fuir.lookup_fuzion_sys_internal_array_length(c_sys_array);
+      var c_data           = _fuir.clazzArg(c_sys_array, 0);
+      var c_length         = _fuir.clazzArg(c_sys_array, 1);
       var internal_array   = _names.fieldName(c_internal_array);
       var data             = _names.fieldName(c_data);
       var length           = _names.fieldName(c_length);
@@ -349,7 +336,7 @@ public class C extends ANY
         }
       sb.append("." + length.code());
       sb.append(" = ");
-      sb.append(CExpr.int32const(elCount).code());
+      sb.append(CExpr.int64const(elCount).code());
       var ia = CExpr.compoundLiteral(_types.clazz(c_sys_array), sb.toString());
 
       sb = new StringBuilder();
@@ -393,7 +380,7 @@ public class C extends ANY
             {
               var b = _fuir.deserializeConst(elementType, bb);
 
-              constData(elementType, b, false)
+              constData(elementType, b)
                 .v0()
                 .code(sb);
 
@@ -410,9 +397,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Perform a match on value subv.
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt match(int s, AbstractInterpreter<CExpr, CStmnt> ai, CExpr sub)
     {
@@ -428,50 +413,57 @@ public class C extends ANY
       CStmnt tdefault = null;
       for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
         {
-          var ctags = new List<CExpr>();
-          var rtags = new List<CExpr>();
           var tags = _fuir.matchCaseTags(s, mc);
-          for (var tagNum : tags)
+          if (tags.length > 0)
             {
-              var tc = _fuir.clazzChoice(subjClazz, tagNum);
-              if (!hasTag && _fuir.clazzIsRef(tc))  // do we need to check the clazzId of a ref?
+              var ctagNums = new List<Integer>();
+              var rtags = new List<CExpr>();
+              for (var tagNum : tags)
                 {
-                  for (var h : _fuir.clazzInstantiatedHeirs(tc))
+                  var tc = _fuir.clazzChoice(subjClazz, tagNum);
+                  if (!hasTag && _fuir.clazzIsRef(tc))  // NYI: CLEANUP: do we need to check the clazzId of a ref?
                     {
-                      rtags.add(_names.clazzId(h).comment(_fuir.clazzAsString(h)));
+                      for (var h : _fuir.clazzInstantiatedHeirs(tc))
+                        {
+                          rtags.add(_names.clazzId(h).comment(_fuir.clazzName(h)));
+                        }
+                    }
+                  else if (!_fuir.clazzIsVoidType(tc))
+                    {
+                      ctagNums.add(tagNum);
+                      if (CHECKS) check
+                                    (hasTag || !_fuir.hasData(tc));
                     }
                 }
-              else if (!_fuir.clazzIsVoidType(tc))
+              var sl = new List<CStmnt>();
+              var field = _fuir.matchCaseField(s, mc);
+              if (field != NO_CLAZZ)
                 {
-                  ctags.add(CExpr.int32const(tagNum).comment(_fuir.clazzAsString(tc)));
+                  var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
+
                   if (CHECKS) check
-                    (hasTag || !_fuir.hasData(tc));
+                    (_fuir.clazzIsRef(fclazz) || ctagNums.size() == 1); // for a field, there can only be one tag
+
+                  var cl     = _fuir.clazzAt(s);
+                  var f      = field(cl, C.this.current(s), field);
+                  var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
+                               _fuir.hasData(fclazz)    ? uniyon.field(CIdent.choiceEntry(ctagNums.get(0)))
+                                                        : CExpr.UNIT;
+                  sl.add(C.this.assign(f, entry, fclazz));
+                }
+              sl.add(ai.processCode(_fuir.matchCaseCode(s, mc)).v1());
+              sl.add(CStmnt.BREAK);
+              var cazecode = CStmnt.seq(sl);
+              var ctags = ctagNums.map2(i -> CExpr
+                .int32const(i)
+                .comment(_fuir.clazzName(_fuir.clazzChoice(subjClazz,i))));
+              tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
+              if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
+                {
+                  rcases.add(CStmnt.caze(rtags, cazecode));
+                  tdefault = cazecode;
                 }
             }
-          if (tags.length > 0)
-             {
-               var sl = new List<CStmnt>();
-               var field = _fuir.matchCaseField(s, mc);
-               if (field != NO_CLAZZ)
-                 {
-                   var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-                   var cl     = _fuir.clazzAt(s);
-                   var f      = field(cl, C.this.current(s), field);
-                   var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
-                                _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(CNames.CHOICE_ENTRY_NAME + tags[0]))
-                                                         : CExpr.UNIT;
-                   sl.add(C.this.assign(f, entry, fclazz));
-                 }
-               sl.add(ai.processCode(_fuir.matchCaseCode(s, mc)).v1());
-               sl.add(CStmnt.BREAK);
-               var cazecode = CStmnt.seq(sl);
-               tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
-               if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
-                 {
-                   rcases.add(CStmnt.caze(rtags, cazecode));
-                   tdefault = cazecode;
-                 }
-             }
         }
       if (rcases.size() >= 2)
         { // more than two reference cases: we have to create separate switch of clazzIds for refs
@@ -483,9 +475,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Create a tagged value of type newcl from an untagged value for type valuecl.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> tag(int s, CExpr value, int newcl, int tagNum)
     {
@@ -498,12 +488,7 @@ public class C extends ANY
         {// replace unit-type values by 0, 1, 2, 3,... cast to ref Object
           if (CHECKS) check
             (value == CExpr.UNIT);
-          if (tagNum >= CConstants.PAGE_SIZE)
-            {
-              Errors.error("Number of tags for choice type exceeds page size.",
-                           "While creating code for '" + _fuir.siteAsString(s) + "'\n" +
-                           "Found in choice type '" + _fuir.clazzAsString(newcl)+ "'\n");
-            }
+          _maxTagNum = Integer.max(tagNum, _maxTagNum);
           value = CExpr.int32const(tagNum);
           valuecl = _fuir.clazzAny();
         }
@@ -511,8 +496,8 @@ public class C extends ANY
         {
           value = value.castTo(_types.clazz(_fuir.clazzAny()));
         }
-      var o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzAsString(newcl) +
-                                            " static value type " + _fuir.clazzAsString(valuecl)),
+      var o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzName(newcl) +
+                                            " static value type " + _fuir.clazzName(valuecl)),
                          CStmnt.decl(_types.clazz(newcl), res),
                          _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
                          C.this.assign(entry, value, valuecl));
@@ -521,11 +506,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Generate code to terminate the execution immediately.
-     *
-     * @param msg a message explaining the illegal state
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt reportErrorInCode(String msg)
     {
@@ -541,7 +522,7 @@ public class C extends ANY
   /*
    * If you want the c-backend to link the JVM,
    * set this environment variable to e.g.:
-   * JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+   * JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
    */
   static final String JAVA_HOME = System.getenv("JAVA_HOME");
 
@@ -725,6 +706,11 @@ public class C extends ANY
         command.add("--target=" + cTarget.get());
       }
 
+    if (_options._debugBuild)
+      {
+        command.add("-g");
+      }
+
     /*
      * "Generate code to catch integer overflow errors.
      *  Signed integer overflow is undefined in C. With this flag,
@@ -736,7 +722,7 @@ public class C extends ANY
     // NYI: UNDER DEVELOPMENT: enable this once we have gotten rid of implicit conversions
     // command.add("-Wconversion");
 
-    if(_options._cFlags != null)
+    if (_options._cFlags != null)
       {
         command.addAll(_options._cFlags.split(" "));
       }
@@ -757,7 +743,10 @@ public class C extends ANY
           "-Wmissing-include-dirs"
           );
 
-        command.addAll("-O3");
+        if (!_options._debugBuild && !_options.fuzionDebug())
+          {
+            command.addAll("-O3", "-DNDEBUG");
+          }
       }
 
     command.addAll(
@@ -783,7 +772,11 @@ public class C extends ANY
         // allow infinite recursion
         "-Wno-infinite-recursion",
         // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
-        "-Wno-incompatible-function-pointer-types"
+        "-Wno-incompatible-function-pointer-types",
+        // NYI: UNDER DEVELOPMENT: happens currently in e.g. in reg_issue1188.fz
+        "-Wno-uninitialized",
+        // NYI: UNDER DEVELOPMENT: must chunk strings, fails in test mod_nom_parser_xml
+        "-Wno-overlength-strings"
         );
 
     if (_options._cCompiler == null && clangVersion >= 13)
@@ -791,19 +784,22 @@ public class C extends ANY
         command.addAll("-Wno-unused-but-set-variable");
       }
 
-    if(_options._useBoehmGC)
+    if (_options._useBoehmGC)
       {
-        command.addAll("-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
+        command.add("-DGC_THREADS");
+        if (isWindows())
+          {
+            command.add( "-DGC_WIN32_THREADS");
+          }
+        else
+          {
+            command.add( "-DGC_PTHREADS");
+          }
       }
 
     if (linkJVM())
       {
         command.addAll("-DFUZION_LINK_JVM");
-      }
-
-    if (usesThreads())
-      {
-        command.addAll("-DFUZION_ENABLE_THREADS");
       }
 
     // disable trigraphs:
@@ -816,13 +812,13 @@ public class C extends ANY
     // https://lobste.rs/s/avrfxz/ubuntu_24_04_lts_will_enable_frame
     command.addAll("-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer");
 
-    if (linkLibMath())
-      {
-        command.add("-lm");
-      }
+    // select due to: dpkg-buildflags --get CFLAGS
+    // NYI: UNDER DEVELOPMENT: does not work for macOS/windows/arm64 without adjustments
+    // command.addAll("-fstack-protector-strong", "-fstack-clash-protection", "-fcf-protection");
 
-      // NYI: UNDER DEVELOPMENT: on windows link nothing
-    if (usesThreads())
+    command.add("-lm");
+
+    if (usesThreads() && !isWindows())
       {
         command.add("-lpthread");
       }
@@ -877,7 +873,7 @@ public class C extends ANY
           }
       }
 
-    if(_options._useBoehmGC)
+    if (_options._useBoehmGC)
       {
         command.addAll("-lgc");
       }
@@ -902,72 +898,11 @@ public class C extends ANY
   {
     return Stream.of("fuzion.sys.thread.spawn0",
                      "fuzion.sys.thread.join0",
-                     "concur.atomic.compare_and_swap0",
-                     "concur.atomic.compare_and_set0",
-                     "concur.atomic.racy_accesses_supported",
-                     "concur.atomic.read0",
-                     "concur.atomic.write0")
-      .anyMatch(_intrinsics._usedIntrinsics::contains);
-  }
-
-
-  /*
-   * Do we have to link libmath?
-   */
-  private boolean linkLibMath()
-  {
-    return Stream.of("f32.prefix -",
-                     "f32.infix +",
-                     "f32.infix -",
-                     "f32.infix *",
-                     "f32.infix /",
-                     "f32.infix %",
-                     "f32.infix **",
-                     "f32.type.equal",
-                     "f32.type.lower_than_or_equal",
-                     "f64.type.equal",
-                     "f64.type.lower_than_or_equal",
-                     "f32.as_f64",
-                     "f64.as_f32",
-                     "f64.as_i64_lax",
-                     "f32.cast_to_u32",
-                     "f64.cast_to_u64",
-                     "f32.is_NaN",
-                     "f64.is_NaN",
-                     "f32.square_root",
-                     "f64.square_root",
-                     "f32.exp",
-                     "f64.exp",
-                     "f32.log",
-                     "f64.log",
-                     "f32.sin",
-                     "f64.sin",
-                     "f32.cos",
-                     "f64.cos",
-                     "f32.tan",
-                     "f64.tan",
-                     "f32.asin",
-                     "f64.asin",
-                     "f32.acos",
-                     "f64.acos",
-                     "f32.atan",
-                     "f64.atan",
-                     "f32.sinh",
-                     "f64.sinh",
-                     "f32.cosh",
-                     "f64.cosh",
-                     "f32.tanh",
-                     "f64.tanh",
-                     "f32.type.min_exp",
-                     "f32.type.max_exp",
-                     "f32.type.min_positive",
-                     "f32.type.max",
-                     "f32.type.epsilon",
-                     "f64.type.min_exp",
-                     "f64.type.max_exp",
-                     "f64.type.min_positive",
-                     "f64.type.max",
-                     "f64.type.epsilon")
+                     "mutate.atomic_access_supported",
+                     "mutate.var.compare_and_swap0",
+                     "mutate.var.compare_and_set0",
+                     "mutate.var.atomic_read0",
+                     "mutate.var.atomic_write0")
       .anyMatch(_intrinsics._usedIntrinsics::contains);
   }
 
@@ -1118,17 +1053,25 @@ public class C extends ANY
 
     cf.print(threadStartRoutine(true));
 
-    cf.println("int main(int argc, char **argv) { ");
+    cf.println("\nvoid __main__()\n{ ");
+    cf.indent();
+    // for choice of only refs and unit types, tag nums are cast to pointers. Legal pointers
+    // should not refer to the first page, so the values do not overlap.
+    cf.println("if ("+ _maxTagNum + " >= fzE_page_size()) { fprintf(stderr, \"*** number of choice tags exceed page size!\"); exit(EXIT_FAILURE); }");
+    cf.print(CStmnt.seq(
+      initializeEffectsEnvironment(),
+      CExpr.call(_names.function(_fuir.mainClazz()), new List<>())));
+    cf.unindent();
+    cf.println("}");
 
-    cf.print(initializeEffectsEnvironment());
 
-    var cl = _fuir.mainClazz();
+    cf.println("\nint main(int argc, char **argv)\n{ ");
+    cf.indent();
 
     cf.print(CStmnt.seq(CNames.GLOBAL_ARGC.assign(new CIdent("argc")),
                         CNames.GLOBAL_ARGV.assign(new CIdent("argv")),
-                        CExpr.call(_names.function(cl), new List<>())
-                        ));
-
+                        CExpr.call("fzE_thread_join", new List<>(CExpr.call("fzE_thread_create", new List<>(new CIdent("__main__"), CNames.NULL))))));
+    cf.unindent();
     cf.println("}");
   }
 
@@ -1194,7 +1137,7 @@ public class C extends ANY
     cf.println("#include \"" + fzH + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
 
-    if (_options._cLink != null)
+    if (_options._cInclude != null)
       {
         Arrays
           .stream(_options._cInclude.split(" "))
@@ -1259,7 +1202,7 @@ public class C extends ANY
             .filter(cl -> _fuir.clazzNeedsCode(cl) && _fuir.isEffectIntrinsic(cl))
             .mapToInt(cl -> _fuir.effectTypeFromIntrinsic(cl))
             .distinct()
-            .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(new CIdent("false")))
+            .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(CIdent.FALSE))
             .iterator()))
     );
   }
@@ -1279,10 +1222,7 @@ public class C extends ANY
   {
     var msg2 = "*** %s:%d: " + msg + "\n";
     var args2 = new List<CExpr>(CIdent.FILE, CIdent.LINE);
-    for (var a : args)
-      {
-        args2.add(a);
-      }
+    args2.addAll(args);
     return CStmnt.seq(CExpr.fprintfstderr(msg2, args2.toArray(new CExpr[args2.size()])),
                       CExpr.exit(1));
   }
@@ -1315,7 +1255,7 @@ public class C extends ANY
         if (isCall && (_fuir.hasData(rt) || _fuir.clazzIsVoidType(rt)))
           {
             ol.add(reportErrorInCode0("no targets for access of `%s` within %s",
-                                      CExpr.string(_fuir.clazzAsString(cc0)),
+                                      CExpr.string(_fuir.clazzName(cc0)),
                                       CExpr.string(_fuir.siteAsString(s))));
             res = null;
           }
@@ -1328,7 +1268,7 @@ public class C extends ANY
       {
         if (_fuir.hasData(tc) && _fuir.accessIsDynamic(s) && ccs.length > 2)
           {
-            ol.add(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
+            ol.add(CStmnt.lineComment("Dynamic access of " + _fuir.clazzName(cc0)));
             var tvar = _names.newTemp();
             var tt0 = _types.clazz(tc);
             ol.add(CStmnt.decl(tt0, tvar, tvalue));
@@ -1379,7 +1319,7 @@ public class C extends ANY
                       {
                         rv = rv.castTo(_types.clazz(rt));
                       }
-                    acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
+                    acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzName(cc) + " target: " + _fuir.clazzName(tt) + ":"),
                                      acc,
                                      assign(res, callsResultEscapes ? rv.adrOf() : rv, rt));
                   }
@@ -1397,7 +1337,7 @@ public class C extends ANY
             acc = CStmnt.suitch(id, cazes,
                                 reportErrorInCode0("unhandled dynamic target %d in access of `%s` within %s",
                                                    id,
-                                                   CExpr.string(_fuir.clazzAsString(cc0)),
+                                                   CExpr.string(_fuir.clazzName(cc0)),
                                                    CExpr.string(_fuir.siteAsString(s))));
           }
         ol.add(acc);
@@ -1485,7 +1425,6 @@ public class C extends ANY
   {
     return switch (sc)
       {
-      case c_bool -> 1;
       case c_u8   -> 1;
       case c_u16  -> 2;
       case c_u32  -> 4;
@@ -1558,7 +1497,7 @@ public class C extends ANY
    */
   CExpr boxedConstString(byte[] bytes)
   {
-    return boxedConstString(CExpr.string(bytes), CExpr.int32const(bytes.length));
+    return boxedConstString(CExpr.string(bytes), CExpr.int64const(bytes.length));
   }
 
 
@@ -1585,26 +1524,26 @@ public class C extends ANY
    */
   CExpr boxedConstString(CExpr str, CExpr len)
   {
-    var data           = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
-    var length         = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
-    var internal_array = _names.fieldName(_fuir.lookup_array_internal_array(_fuir.clazz_array_u8()));
-    var utf8_data      = _names.fieldName(_fuir.clazz_const_string_utf8_data());
+    var data           = _names.fieldName(_fuir.clazzFuzionSysArrayU8Data());
+    var length         = _names.fieldName(_fuir.clazzFuzionSysArrayU8Length());
+    var internal_array = _names.fieldName(_fuir.clazzArg(_fuir.clazzArrayU8(), 0));
+    var utf8_data      = _names.fieldName(_fuir.clazzConstStringUTF8Data());
 
     var sysArray = CExpr.compoundLiteral(
-        _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_fuzionSysArray_u8())),
+        _types.clazz(_fuir.clazzResultClazz(_fuir.clazzFuzionSysArrayU8())),
         "." + data.code() + " = " + str.castTo("void *").code() +  "," +
           "." + length.code() + " = " + len.code());
 
     var array = CExpr.compoundLiteral(
-        _types.clazz(_fuir.clazz_array_u8()),
+        _types.clazz(_fuir.clazzArrayU8()),
         "." + internal_array.code() + " = " + sysArray.code());
 
     var constStr = CExpr
       .compoundLiteral(
-        _types.clazz(_fuir.clazz_const_string()),
+        _types.clazz(_fuir.clazzConstString()),
         "." + utf8_data.code() + " = " + array.code());
 
-    var refConstStr = _fuir.clazz_ref_const_string();
+    var refConstStr = _fuir.clazzRefConstString();
     var res = CExpr
       .compoundLiteral(
         _names.struct(refConstStr),
@@ -1613,6 +1552,74 @@ public class C extends ANY
 
     return heapClone(res, _fuir.clazz(SpecialClazzes.c_String));
   }
+
+
+  /**
+   * From a value of choice type, obtain the tag.  The tag corresponds to the
+   * source position, i.e, `id (choice void void void unit nil void) unit .tag`
+   * is `3` even though this choice would never contain `void`.
+   *
+   * @param sub the choice value
+   *
+   * @param cl the clazz we are creating code for, must be the `choice.tag` intrinsic
+   *
+   * @return the code to obtain the tag integer
+   */
+  public CStmnt getTag(CExpr sub, int cl)
+  {
+    var subjClazz = _fuir.clazzOuterClazz(cl);
+    var uniyon    = sub.field(CNames.CHOICE_UNION_NAME);
+    var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
+    var refEntry  = uniyon.field(CNames.CHOICE_REF_ENTRY_NAME);
+    var tag       = hasTag ? sub.field(CNames.TAG_NAME) : uniyon.field(CNames.CHOICE_REF_ENTRY_NAME).castTo("int64_t");
+    var nonRefTags = new List<CExpr>();
+    var rcases    = new List<CStmnt>(); // cases depending on clazzId of ref type
+    var singleRefTag = -1;
+    var res    = _names.newTemp();
+    var tag_cnt = _fuir.clazzChoiceCount(subjClazz);
+    for (var tagNum = 0; tagNum < tag_cnt; tagNum++)
+      {
+        var tc = _fuir.clazzChoice(subjClazz, tagNum);
+        if (!hasTag && _fuir.clazzIsRef(tc))
+          {
+            var rtags = new List<CExpr>();
+            for (var h : _fuir.clazzInstantiatedHeirs(tc))
+              {
+                rtags.add(_names.clazzId(h).comment(_fuir.clazzName(h)));
+              }
+            if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
+              {
+                singleRefTag = singleRefTag < 0 ? tagNum : Integer.MAX_VALUE;
+                rcases.add(CStmnt.caze(rtags, CStmnt.seq(res.assign(CExpr.int32const(tagNum)),
+                                                         CStmnt.BREAK)));
+              }
+          }
+        else if (!_fuir.clazzIsVoidType(tc))
+          {
+            nonRefTags.add(CExpr.int32const(tagNum));
+            if (CHECKS) check
+              (hasTag || !_fuir.hasData(tc));
+          }
+      }
+    if (rcases.size() > 0)
+      {
+        var id = refEntry.deref().field(CNames.CLAZZ_ID);
+        var notFound = reportErrorInCode0("unexpected reference type %d found in match", id);
+        var tdefault = rcases.size() > 1
+          ? CStmnt.suitch(id, rcases, notFound) // more than two reference cases: we have to create separate switch of clazzIds for refs
+          : CStmnt.seq(res.assign(CExpr.int32const(singleRefTag)));          // all refs have the same tag
+        return CStmnt.seq(CStmnt.decl(CTypes.scalar(SpecialClazzes.c_i32), res, tag),
+                          CStmnt.suitch(res,
+                                        new List<>(CStmnt.caze(nonRefTags, CStmnt.seq(CStmnt.BREAK))),
+                                        tdefault),
+                                        res.ret());
+      }
+    else
+      {
+        return tag.ret();
+      }
+    }
+
 
 
   /**
@@ -1691,7 +1698,7 @@ public class C extends ANY
       {
       case Abstract :
         Errors.error("Call to abstract feature encountered.",
-                     "Found call to  " + _fuir.clazzAsString(cc));
+                     "Found call to  " + _fuir.clazzName(cc));
         break;
       case Routine  :
       case Intrinsic:
@@ -1703,7 +1710,7 @@ public class C extends ANY
               var cl = _fuir.clazzAt(s);
 
               if (cc == cl &&  // calling myself
-                  _tailCall.callIsTailCall(cl, s)
+                  _tailCall.callIsTailCall(s)
                 )
                 { // then we can do tail recursion optimization!
                   var tc = _fuir.clazzOuterClazz(cc);
@@ -1724,7 +1731,7 @@ public class C extends ANY
                         {
                           var tmp2 = _names.newTemp();
                           heapClone = CStmnt.seq(CStmnt.decl(_types.clazz(rt)+"*", tmp2),
-                                                 tmp2.assign(CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr())).castTo(_types.clazz(rt)+"*")));
+                                                 tmp2.assign(heapClone(res).castTo(_types.clazz(rt)+"*")));
                           res = tmp2.deref();
                         }
                       result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
@@ -1883,9 +1890,8 @@ public class C extends ANY
       {
         switch (_fuir.clazzKind(cl))
           {
-          case Routine  :
-          case Intrinsic:
-          case Native   : l.add(cFunctionDecl(cl, null));
+          case Routine, Intrinsic, Native ->
+            l.add(cFunctionDecl(cl, null));
           }
       }
     return CStmnt.seq(l);
@@ -1897,7 +1903,7 @@ public class C extends ANY
    *
    * @param cl id of clazz to compile
    *
-   * @return C statements with the forward declarations required for cl.
+   * @return C statement with the actual code of cl.
    */
   public CStmnt code(int cl)
   {
@@ -1915,7 +1921,7 @@ public class C extends ANY
         if (decl != null)
           {
             res = CStmnt.seq
-              (CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"),
+              (CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzName(cl)+":"),
                decl);
           }
       }
@@ -1935,27 +1941,42 @@ public class C extends ANY
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
     var l = new List<CStmnt>();
+
+    if (_fuir.hasData(cl))
+      {
+        l.add(declareCurrent(cl));
+      }
+
     l.add(_ai.processClazz(cl).v1());
+
     var res = _fuir.clazzResultClazz(cl);
     if (_fuir.hasData(res))
       {
         l.add(_fuir.isConstructor(cl)
                 ? current(_fuir.clazzCode(cl)).ret()                                                      // a constructor, return current instance
+                : _fuir.clazzResultField(cl) == FUIR.NO_CLAZZ
+                ? reportErrorInCode0("unreachable code, unused result field.")
                 : current(_fuir.clazzCode(cl)).field(_names.fieldName(_fuir.clazzResultField(cl))).ret()  // a routine, return result field
               );
       }
-    var allocCurrent = switch (_fuir.lifeTime(cl))
+
+    return CStmnt.seq(l).label("start");
+  }
+
+
+  /**
+   * declare current, allocate on heap if current may escape
+   */
+  private CStmnt declareCurrent(int cl)
+  {
+    return switch (_fuir.lifeTime(cl))
       {
       case Call      -> CStmnt.seq(
           CStmnt.lineComment("cur does not escape, alloc on stack"),
-          CStmnt.decl(_names.struct(cl), CNames.CURRENT),
-          // this fixes "variable 'fzCur' is uninitialized when used here" in e.g. reg_issue1188
-          CExpr.call("fzE_mem_zero_secure", new List<>(CNames.CURRENT.adrOf(), CNames.CURRENT.sizeOfExpr())));
+          CStmnt.decl(_names.struct(cl), CNames.CURRENT));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
-    return CStmnt.seq(allocCurrent,
-                      CStmnt.seq(l)).label("start");
   }
 
 
@@ -2088,7 +2109,7 @@ public class C extends ANY
           // 2. pass as ref
           ? CIdent.arg(i).castTo("void *")
           // 3. pass as value
-          : (_fuir.clazzIsArray(at)
+          : (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at)
               // 3.1 array, we need to get field internal_array.data
               ? getFieldInternalArrayData(i, at)
               // 3.2 plain value
@@ -2176,20 +2197,15 @@ public class C extends ANY
       {
         var at = _fuir.clazzArgClazz(cl, i);
         var c = _fuir.lookupCall(at);
-        var isComplexValue = c != NO_CLAZZ
+        var isComplexValue =
           // 1. pass as function pointer
-          ? false
-          : _fuir.clazzIsRef(at)
+          c == NO_CLAZZ &&
           // 2. pass as ref
-          ? false
-          // 3. pass as value
-          : (_fuir.clazzIsArray(at)
-              // 3.1 array, we need to get field internal_array.data
-              ? false
-              // 3.2 plain value
-              : _fuir.getSpecialClazz(at) != SpecialClazzes.c_NOT_FOUND
-                ? false
-                : true);
+          !_fuir.clazzIsRef(at) &&
+          // 3. array, we need to get field internal_array.data
+          !_fuir.clazzIsArray(at) && !_fuir.clazzIsMutateArray(at) &&
+          // 4. plain value
+          _fuir.getSpecialClazz(at) == SpecialClazzes.c_NOT_FOUND;
         if (isComplexValue)
           {
             complexValues.add(at);
@@ -2218,12 +2234,12 @@ public class C extends ANY
 
   private CExpr getFieldInternalArrayData(int i, int at)
   {
-    var ia = _fuir.lookup_array_internal_array(at);
+    var ia = _fuir.clazzArg(at, 0);
 
     return CIdent
       .arg(i)
       .field(_names.fieldName(ia))
-      .field(_names.fieldName(_fuir.lookup_fuzion_sys_internal_array_data(_fuir.clazzResultClazz(ia))))
+      .field(_names.fieldName(_fuir.clazzArg(_fuir.clazzResultClazz(ia), 0)))
       .castTo("void *");
   }
 
@@ -2266,8 +2282,7 @@ public class C extends ANY
     if (PRECONDITIONS) require
       (_fuir.clazzIsRef(rc));
 
-    return CExpr
-      .call(CNames.HEAP_CLONE._name, new List<>(valueExpr.adrOf(), valueExpr.sizeOfExpr()))
+    return heapClone(valueExpr)
       .castTo(_types.clazz(rc));
   }
 
@@ -2356,7 +2371,7 @@ public class C extends ANY
     var jv = complexResult
                            ? expr
                              .field(CNames.CHOICE_UNION_NAME)
-                             .field(new CIdent("v0"))
+                             .field(CIdent.choiceEntry(0))
                            : expr;
 
     /*
@@ -2412,9 +2427,10 @@ public class C extends ANY
                 returnOutcome(
                   _fuir.clazzChoice(cl, 1),
                     jStringToError(
+                      _fuir.clazzChoice(cl, 1),
                       tmp
                         .field(CNames.CHOICE_UNION_NAME)
-                        .field(new CIdent("v1"))
+                        .field(CIdent.choiceEntry(1))
                     ),
                   cl,
                   1))
@@ -2422,17 +2438,15 @@ public class C extends ANY
           : val.ret();
 
         return CExpr.seq(sideEffect, result);
-      case c_unit :
-        return expr;
-      case c_String :
-      case c_false_ :
-      case c_true_ :
-      case c_Array :
-      case c_u32 :
-      case c_u64 :
-      case c_u8 :
       default:
-        throw new Error("misuse of Java intrinsic?" + _fuir.clazzAsString(cl));
+        if (_fuir.clazzIsUnitType(cl))
+          {
+            return expr;
+          }
+        else
+          {
+            throw new Error("misuse of Java intrinsic?" + _fuir.clazzName(cl));
+          }
       }
   }
 
@@ -2445,7 +2459,7 @@ public class C extends ANY
    */
   private CExpr javaValue2Fuzion(boolean complexResult, CLocal tmp, int cl)
   {
-    var successResult = (complexResult ? tmp.field(CNames.CHOICE_UNION_NAME).field(new CIdent("v0")) : tmp);
+    var successResult = (complexResult ? tmp.field(CNames.CHOICE_UNION_NAME).field(CIdent.choiceEntry(0)) : tmp);
     return switch (_fuir.getSpecialClazz(cl))
       {
         case c_i8 -> successResult.field(new CIdent("b")).castTo(_types.scalar(cl));
@@ -2456,9 +2470,17 @@ public class C extends ANY
         case c_f32 -> successResult.field(new CIdent("f")).castTo(_types.scalar(cl));
         case c_f64 -> successResult.field(new CIdent("d")).castTo(_types.scalar(cl));
         case c_bool -> successResult.field(new CIdent("z")).cond(_names.FZ_TRUE, _names.FZ_FALSE);
-        case c_unit -> successResult;
-        case c_NOT_FOUND -> asJava_Object(cl, successResult);
-        default -> throw new Error("error in implementation.");
+        case c_NOT_FOUND -> _fuir.clazzIsUnitType(cl) ? successResult : asJava_Object(cl, successResult);
+        default -> {
+          if (_fuir.clazzIsUnitType(cl))
+            {
+              yield successResult;
+            }
+          else
+            {
+              throw new Error("error in implementation.");
+            }
+        }
       };
   }
 
@@ -2488,8 +2510,21 @@ public class C extends ANY
         "." + CNames.CLAZZ_ID.code() + " = " + _names.clazzId(cl).code() + ", " +
           "." + CNames.FIELDS_IN_REF_CLAZZ.code() + " = " + obj.code());
 
-    val = CExpr.call(CNames.HEAP_CLONE._name, new List<>(val.adrOf(), val.sizeOfExpr()));
-    return val;
+    return heapClone(val);
+  }
+
+
+  /**
+   * generate a heap clone call for this CExpr
+   *
+   * @param val
+   * @return
+   */
+  CExpr heapClone(CExpr val)
+  {
+    return val == CExpr.UNIT
+      ? CNames.NULL
+      : CExpr.call(CNames.HEAP_CLONE._name, new List<>(val.adrOf(), val.sizeOfExpr()));
   }
 
 
@@ -2498,9 +2533,9 @@ public class C extends ANY
    *
    * @return a c expression that creates a fuzion const string.
    */
-  private CExpr jStringToError(CExpr field)
+  private CExpr jStringToError(int clErr, CExpr field)
   {
-    return error(boxedConstString(
+    return error(clErr, boxedConstString(
         CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)),
         CExpr.call("strlen", new List<>(
             CExpr.call("fzE_java_string_to_utf8_bytes",
@@ -2516,13 +2551,15 @@ public class C extends ANY
    * @param str
    * @return
    */
-  public CExpr error(CExpr str)
+  public CExpr error(int clErr, CExpr str)
   {
+    var nil = CExpr.compoundLiteral(
+                      _types.clazz(_fuir.clazzResultClazz(_fuir.clazzArg(clErr, 1))),
+                      "." + CNames.TAG_NAME.code() + " = " + CExpr.int32const(1).code()).code();
     return CExpr.compoundLiteral(
-      _names.struct(_fuir.clazz_error()),
-      "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +
-        str.code()
-      );
+      _names.struct(clErr),
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 0)).code() + " = " + str.code() + ", " +
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 1)).code() + " = " + nil);
   }
 
 
@@ -2539,7 +2576,7 @@ public class C extends ANY
     return _fuir.clazzIsRef(valuecl) ||
       _fuir.clazzIsChoiceOfOnlyRefs(choiceCl)
                                               ? CNames.CHOICE_REF_ENTRY_NAME
-                                              : new CIdent(CNames.CHOICE_ENTRY_NAME + tagNum);
+                                              : CIdent.choiceEntry(tagNum);
   }
 
 
@@ -2573,7 +2610,7 @@ public class C extends ANY
    */
   private String clazzInQuotes(int c)
   {
-    return "`" + _fuir.clazzAsString(c) + "`";
+    return "`" + _fuir.clazzName(c) + "`";
   }
 
 

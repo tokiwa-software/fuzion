@@ -61,7 +61,7 @@ public class Assign extends AbstractAssign
 
 
   /**
-   * Constructor used be the parser
+   * Constructor used by the parser
    *
    * @param pos the sourcecode position, used for error messages.
    *
@@ -127,6 +127,7 @@ public class Assign extends AbstractAssign
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _pos;
@@ -181,6 +182,7 @@ public class Assign extends AbstractAssign
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _name == null ? super.toString() : toString(_name);

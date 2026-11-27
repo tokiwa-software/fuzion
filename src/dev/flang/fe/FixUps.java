@@ -221,7 +221,7 @@ class FixUps extends DataOut
    * source code, the offset will be the offset in the currently written module
    * file.
    *
-   * Otherwise, g is an instance of LibraryFeature and and the result is the
+   * Otherwise, g is an instance of LibraryFeature and the result is the
    * offset of g in its module file plus that module's base.
    *
    * @param g a feature referenced within the written module.
@@ -306,14 +306,12 @@ class FixUps extends DataOut
 
 
   /**
-   * Get sorted list of all the library modules that that are referenced by any
+   * Get sorted list of all the library modules that are referenced by any
    * features written for this module.
    */
   List<LibraryModule> referencedModules()
   {
-    var l = new List<LibraryModule>();
-    l.addAll(_referencedModules.keySet());
-    return l;
+    return new List<LibraryModule>(_referencedModules.keySet().iterator());
   }
 
 }

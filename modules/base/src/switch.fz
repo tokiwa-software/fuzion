@@ -26,75 +26,47 @@
 # e.g.    option  (something/nil)
 #      or outcome (something/error)
 #
-public switch(A type, B type /* NYI: B should be open generic */) :
-  choice A B,
-  monad A switch.this
+public switch(A : Any, B : Any /* NYI: B should be open generic */)
+  : choice A B,
+    monad A,
+    Sequence A
 is
 
-  # NYI: CLEANUP: decide name: exists/ok, get/val?
-
   # Does this switch contain a value of type A?
   #
-  public exists bool => (switch.this ? A => true
-                                     | B => false)
+  public ok bool =>
+    match switch.this
+      A => true
+      B => false
 
 
-  # Does this switch contain a value of type A?
+  # shorthand postfix operator for 'ok'
+  # NYI: UNDER DEVELOPMENT: rename to just one question mark
   #
-  public ok bool => exists
+  public postfix ?? bool => ok
 
 
-  # short-hand postfix operator for 'exists'
+  # shorthand postfix operator for 'or_panic'
   #
-  public postfix ?? bool => exists
+  public postfix ! A ! panic => or_panic
 
 
-  # short-hand postfix operator for '!exists'
+  # shorthand prefix operator for '!ok'
   #
-  public postfix !! bool => !exists
+  public prefix ! bool => !ok
 
 
-  # short-hand prefix operator for '!exists'
+  # monadic operator for bool result, false for B
   #
-  public prefix ! bool => !exists
-
-
-  # unwraps a switch that is known to contain a value
-  #
-  # this can only be called in cases where it is known for sure that this switch
-  # is not nil.  A runtime error will be created otherwise.
-  #
-  public get A
-  pre
-    safety: switch.this??
+  public infix >>? (f A -> bool) bool
   =>
-    switch.this ? a A => a
-                | B   => fuzion.std.panic "switch.get called on B. Enable `safety` to obtain a precondition failure for debugging."
-
-
-  # unwrap value or get default
-  #
-  public get (default Lazy A) A =>
-    switch.this ? a A => a
-                | B => default
-
-
-  # value of a switch that is known to contain a value
-  #
-  # This can only be called in cases where it is known for sure that this
-  # switch is not a B.  A runtime error will be created otherwise.
-  #
-  public val A
-    pre
-      safety: switch.this??
-  =>
-    switch.this ? a A => a
-                | B   => panic "switch.val called on B. Enable `safety` to obtain a precondition failure for debugging."
+    switch.this ? a A => f a
+                | _ B => false
 
 
   # value of a switch or default if switch contains B
   #
-  public val(default A) A
+  public or_default(default A) A
   =>
     switch.this ? a A => a
                 | B   => default
@@ -108,16 +80,16 @@ is
       b B => b
 
 
-  # returns o if outcome is ok, otherwise return the outcome's own
-  # error.
+  # returns o if switch is of type A, otherwise return the
+  # switches B.
   #
-  public and (O type, o switch.this) switch.this =>
+  public and (O : Any, o switch.this) switch.this =>
     match switch.this
       A   => o
       b B => b
 
 
-  # if this switch is nil return the result of f
+  # if this switch is a B return the result of f
   # otherwise just return this switch.
   #
   public or (f Lazy switch.this) switch.this =>
@@ -126,7 +98,7 @@ is
       B   => f()
 
 
-  # unwraps an switch if it exists, returns default value otherwise.
+  # unwraps a switch if it exists, returns default value otherwise.
   #
   public or_else(default Lazy A) A =>
     switch.this ? v A => v
@@ -134,10 +106,28 @@ is
 
 
 
-  # converts switch into a list of either a single element in case
-  # switch.this.exists or `nil`otherwise
+  # value of a switch, or, if this switch contains a `B`, the
+  # result of `f` applied to that `B`.
   #
-  public as_list list A
+  # in contrast to `or_else`, `f` receives the `B` value, so this can be
+  # used to handle a failure without a `match`, e.g. to log an error
+  # that cannot be propagated:
+  #
+  # example:
+  #
+  #     (fuzion.sys.fileio.close fd)
+  #       .otherwise Ignored_Failure.env.register_failure
+  #
+  public otherwise(f B -> A) A =>
+    match switch.this
+      a A => a
+      b B => f b
+
+
+  # converts switch into a list of either a single element in case
+  # switch.this?? or `nil` otherwise
+  #
+  public redef as_list list A
   =>
     switch.this ? a A => a : nil
                 | B => nil
@@ -156,7 +146,7 @@ is
   public as_outcome outcome A
   =>
     switch.this ? a A => a
-                | B => error "switch.as_outcome: no error message provided"
+                | B => error "converted to outcome from '$(switch.this.type.name)' with no error message provided"
 
 
   # convert this switch to an outcome
@@ -176,61 +166,61 @@ is
 
   # return function
   #
-  # NYI: BUG:
-  #
-  # ./build/modules/base/src/switch.fz:180:21: error 1: Wrong result type in redefined feature
-  #   public redef type.return (a A) => a
-  #
-  # In 'switch.type.return' that redefines 'monad.type.return'
-  # result type is       : 'switch.type.A'
-  # result type should be: 'switch.this switch.type.A switch.type.B' (from 'monad.type.MA')
-  #
-  #
-  # public redef type.return (a A) switch.this => a
-
-
-  # this switch as an equatable_switch
-  #
-  public as_equatable equatable_switch A B
-  pre
-    A : property.equatable
-  =>
-    match switch.this
-      a A => a
-      b B => b
+  public redef fixed type.return (a A) switch A B => a
 
 
   # get A or cause an `exception T`
   #
-  public or_cause(T type, e B->error) A =>
+  public or_cause(T : flow.exception_tag, e B->error) A ! flow.exception T =>
     match switch.this
       a A => a
-      b B => (exception T).env.cause (e b)
+      b B => (flow.exception T).env.cause (e b)
+
+
+  # get A or panic with `B.as_string`
+  #
+  public or_panic A =>
+    or_panic b->"'or_panic' called on '$(switch.this.type.name)' that is '$b'"
+
+
+  # get A or panic with result of `msg`
+  #
+  public or_panic(msg B->String) A =>
+    match switch.this
+      a A => a
+      b B => panic (msg b)
+
+
+  # fold this choice to new type `C`.
+  #
+  # this is useful when you don't want to break
+  # fluent-style code.
+  #
+  # example:
+  #
+  #     "haystack"
+  #       .find "needle"
+  #       .fold (idx -> "found needle at {idx}") (_ -> "could not find needle")
+  #
+  #
+  public fold(C : Any, fa A->C, fb B->C) C =>
+    match switch.this
+      a A => fa a
+      b B => fb b
 
 
   # converts switch to a string
   #
-  public redef as_string String =>
-    match switch.this
-      a A => a.as_string
-      b B => b.as_string
+  public redef as_string String
+  =>
+    choice_as_string
 
 
-# Wrapper type to make a `switch` of an equatable elements itself equatable.
-#
-public equatable_switch(A type : property.equatable,
-                        B type)
-  : switch A B,
-    property.equatable
-is
-
-  # equality implementation
+  # generic equality implementation for switch
   #
-  # result is only true if both x and y or
-  # of choice type A and x.A = y.A
+  # a switch is only equal if x and y wrap the same type and
+  # the wrapped values are themselves equal
   #
-  public fixed redef type.equality(x, y equatable_switch A B) bool =>
-    x ? xa A =>
-        y ? ya A => xa = ya
-          | _  B => false
-      | _  B => false
+  public redef type.equality(x, y switch.this) bool
+  =>
+    choice_equality x y

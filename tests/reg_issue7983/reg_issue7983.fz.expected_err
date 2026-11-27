@@ -1,0 +1,15 @@
+
+reg_issue7983.fz:25:9: error 1: Could not find called feature
+p := io.path.or "/bla/ex.fz" .basename.as_string
+--------^^^^
+Feature not found: 'path' (no arguments)
+Target feature: 'io'
+In call: 'path'
+
+
+reg_issue7983.fz:26:8: error 2: Expression produces result of type 'String' but result is not used.
+"asdf".replace x p
+-------^^^^^^^
+To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'String' from constructor to routine by replacing 'is' by '=>'.
+
+2 errors.

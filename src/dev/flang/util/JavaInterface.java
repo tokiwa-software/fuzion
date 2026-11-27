@@ -36,9 +36,9 @@ public class JavaInterface {
    *
    * @return a new parameter type array.
    */
-  public static Class[] getPars(String sig)
+  public static Class<?>[] getPars(String sig)
   {
-    Class[] result;
+    Class<?>[] result;
 
     /* count parameters: */
     int cnt = 0;
@@ -54,7 +54,7 @@ public class JavaInterface {
         i = e;
       }
 
-    result = new Class[cnt];
+    result = new Class<?>[cnt];
 
     /* get parameters: */
     cnt = 0;
@@ -77,21 +77,21 @@ public class JavaInterface {
    *
    * @return the type, e.g. Boolean.TYPE, String.class, etc.
    */
-  private static Class str2type(String str) {
-    switch (str.charAt(0)) {
-    case 'Z': return Boolean.TYPE;
-    case 'B': return Byte.TYPE;
-    case 'C': return Character.TYPE;
-    case 'S': return Short.TYPE;
-    case 'I': return Integer.TYPE;
-    case 'J': return Long.TYPE;
-    case 'F': return Float.TYPE;
-    case 'D': return Double.TYPE;
-    case 'V': return Void.TYPE;
-    case '[': return forName(str                            .replace('/','.'));
-    case 'L': return forName(str.substring(1,str.length()-1).replace('/','.'));
-    }
-    return null;
+  private static Class<?> str2type(String str) {
+    return switch (str.charAt(0)) {
+      case 'Z' -> Boolean.TYPE;
+      case 'B' -> Byte.TYPE;
+      case 'C' -> Character.TYPE;
+      case 'S' -> Short.TYPE;
+      case 'I' -> Integer.TYPE;
+      case 'J' -> Long.TYPE;
+      case 'F' -> Float.TYPE;
+      case 'D' -> Double.TYPE;
+      case 'V' -> Void.TYPE;
+      case '[' -> forName(str                            .replace('/','.'));
+      case 'L' -> forName(str.substring(1,str.length()-1).replace('/','.'));
+      default -> null;
+    };
   }
 
 
@@ -104,9 +104,9 @@ public class JavaInterface {
    *
    * @return the loaded class.
    */
-  private static Class forName(String name)
+  private static Class<?> forName(String name)
   {
-    Class result;
+    Class<?> result;
     try
       {
         result = Class.forName(name);

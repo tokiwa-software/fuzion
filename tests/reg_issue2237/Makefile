@@ -26,6 +26,8 @@ FUZION = ../../bin/fz $(FUZION_OPTIONS)
 
 all: jvm c int
 
+fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+
 int: mod
 	$(FUZION) -modules=mod -moduleDirs=mod -interpreter $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
@@ -36,8 +38,11 @@ c: mod
 	($(FUZION) -modules=mod -moduleDirs=mod -c -o=testbin $(NAME) && ./testbin) 2>err.txt || (export RC=$$? && cat err.txt && exit $$RC)
 
 .PHONY: mod
-mod:
+mod: clean
 	mkdir -p mod
 	$(FUZION) -sourceDirs=mod -saveModule=mod/mod.fum
+
+clean:
+	rm -rf mod/mod.fum *~ */*~ */*/*~ *.fum *.fuir
 
 effect:

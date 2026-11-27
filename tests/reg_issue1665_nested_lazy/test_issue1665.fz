@@ -29,20 +29,20 @@
 test_issue1665 is
 
   h(z Lazy String) is
-    show(n i32) =>
+    show(n i64) =>
       if n > 2
         say "h received '$z'"
       else
         say "h called, but not using z"
 
   g(y Lazy h) is
-    show(n i32) =>
+    show(n i64) =>
       if n > 1
         y.show n
       else
         say "g called, but not using y"
 
-  f(n i32, x Lazy g) is
+  f(n i64, x Lazy g) is
     if n > 0
       x.show n
     else
@@ -61,7 +61,7 @@ test_issue1665 is
 
   say "------ testing assignments: ------"
 
-  l1 Lazy i32 := ({say "*** using lazy l1 ***"; 4711})
+  l1 Lazy i64 := ({say "*** using lazy l1 ***"; 4711})
   say "created l1"
   say "used l1: $l1"
 
@@ -69,10 +69,10 @@ test_issue1665 is
   say "created l2"
   say "used l2: $l2"
 
-  l3 Lazy i32 := ({say "*** using lazy l3 ***"; 32168})
+  l3 Lazy i64 := ({say "*** using lazy l3 ***"; 32168})
   say "created l3"
-  _ Lazy i32 := l3
+  _ Lazy i64 := l3
   say "assigned to l3a"
   l3b := l3
   say "used l3 and assigned result to l3b"
-  say "using l3b: $l3b {type_of l3b}"
+  say "using l3b: $l3b $(type_of l3b)"

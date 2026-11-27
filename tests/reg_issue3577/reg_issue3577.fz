@@ -21,14 +21,14 @@
 #
 # -----------------------------------------------------------------------
 
-x(T type, v T)    => say "x1 $T $v"
-x(T type, v, w T) => say "x2 $T $v $w"
+x(T : Any, v T)    => say "x1 $T $v"
+x(T : Any, v, w T) => say "x2 $T $v $w"
 
 a => 42
 b => 42
 
-x i32 a
+x i64 a
 x a
 
-x i32 a b
+x i64 a b
 x _ a b   # could work, but does not

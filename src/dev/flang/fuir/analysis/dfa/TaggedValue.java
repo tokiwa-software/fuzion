@@ -32,7 +32,7 @@ package dev.flang.fuir.analysis.dfa;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class TaggedValue extends Value implements Comparable<TaggedValue>
+class TaggedValue extends Value implements Comparable<TaggedValue>
 {
 
 
@@ -96,6 +96,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   /**
    * Compare this to another TaggedValue.
    */
+  @Override
   public int compareTo(TaggedValue other)
   {
     return
@@ -106,9 +107,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   }
 
 
-  /**
-   * Does this Value cover the values in other?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean contains(Value other)
   {
@@ -119,17 +118,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   }
 
 
-  /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   *
-   * @param dfa the current analysis context.
-   *
-   * @param v the value this value should be joined with.
-   *
-   * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
-   */
+  /** {@inheritDoc} */
   @Override
   public Value joinInstances(DFA dfa, Value v, int clazz)
   {
@@ -168,9 +157,10 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   /**
    * Create human-readable string from this value.
    */
+  @Override
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz) + "[tag:" + _tag + ",val:" + _original + "]";
+    return _dfa._fuir.clazzName(_clazz) + "[tag:" + _tag + ",val:" + _original + "]";
   }
 
 }

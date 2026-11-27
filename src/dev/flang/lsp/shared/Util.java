@@ -117,16 +117,13 @@ public class Util
       });
   }
 
+  @SafeVarargs
+  @SuppressWarnings("varargs")
   public static <T> Stream<T> concatStreams(Stream<T>... streams)
   {
     return Stream.of(streams)
       .reduce(Stream::concat)
       .orElseGet(Stream::empty);
-  }
-
-  public static <T> T lastOrDefault(Stream<T> s, T t)
-  {
-    return s.reduce((a, b) -> b).orElse(t);
   }
 
   /*
@@ -146,14 +143,4 @@ public class Util
   {
     return text.codePoints().map(cp -> Character.charCount(cp)).sum();
   }
-
-  public static String addParens(String str)
-  {
-    if (str.contains(" "))
-      {
-        return "(" + str + ")";
-      }
-    return str;
-  }
-
 }

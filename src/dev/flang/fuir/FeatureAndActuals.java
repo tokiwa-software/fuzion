@@ -26,8 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
-import dev.flang.ast.AbstractCall; // NYI: remove dependency!
-import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
+import dev.flang.fe.FuirFeature;
+import dev.flang.fe.LibraryCall;
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
@@ -35,7 +35,7 @@ import dev.flang.util.List;
 
 
 /**
- * FeatureAndActuals represents a tuple consisting of an AbstractFeature
+ * FeatureAndActuals represents a tuple consisting of an FuirFeature
  * combined with a list of actual type parameters for that feature.
  *
  * Instances of this are used as the key for the set of inner clazzes in a Clazz
@@ -44,7 +44,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActuals>
+class FeatureAndActuals extends ANY implements Comparable<FeatureAndActuals>
 {
 
 
@@ -54,7 +54,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   /**
    * The feature part of this triplet.
    */
-  public final AbstractFeature _f;
+  public final FuirFeature _f;
 
 
   /**
@@ -65,14 +65,6 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    */
   public final List<AbstractType> _tp;
 
-
-  /**
-   * in case _tp is null, this selects if this instance should be less (false)
-   * or more (true) than all instances of the same feature.
-   * This is used to extract a subset - containing all FeatureAndActuals having
-   * the same feature - from a Set of FeatureAndActuals.
-   */
-  public final boolean _max;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -85,7 +77,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    *
    * @param tp the actual type parameters, never null.
    */
-  public FeatureAndActuals(AbstractFeature f, List<AbstractType> tp)
+  public FeatureAndActuals(FuirFeature f, List<AbstractType> tp)
   {
     if (PRECONDITIONS) require
       (f != null,
@@ -93,8 +85,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
        f.generics().sizeMatches(tp));
 
     _f = f;
-    _tp = tp;
-    _max = false; /* unused */
+    _tp = tp.freeze();
   }
 
 
@@ -103,25 +94,9 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    *
    * @param f the underlying feature, must not be null
    */
-  public FeatureAndActuals(AbstractFeature f)
+  public FeatureAndActuals(FuirFeature f)
   {
-    this(f, AbstractCall.NO_GENERICS);
-  }
-
-
-  /**
-   * Create a dummy tuple for given feature that is less or larger than the given feature.
-   *
-   * @param f the underlying feature, must not be null
-   *
-   * @param max false iff this should be less than instances of the same
-   * feature, false for this to be larger.
-   */
-  public FeatureAndActuals(AbstractFeature f, boolean max)
-  {
-    _f = f;
-    _tp = null;
-    _max = max;
+    this(f, LibraryCall.NO_GENERICS);
   }
 
 
@@ -135,17 +110,12 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    *
    * @return -1, 0, or +1
    */
+  @Override
   public int compareTo(FeatureAndActuals oo)
   {
-    var o = (FeatureAndActuals) oo;
+    var o = oo;
     var r = _f.compareTo(o._f);
-    if (r == 0 && (_tp == null || o._tp == null))
-      { // special handling for min / max:
-        r = _tp == null && o._tp == null && _max == o._max ? 0  :
-            _tp == null ? (  _max ? +1 : -1)
-                        : (o._max ? -1 : +1);
-      }
-    else if (r == 0)
+    if (r == 0)
       {
         var sz1 = _tp.size();
         var sz2 = o._tp.size();
@@ -172,12 +142,10 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   /**
    * Convert this to a string for debugging:
    */
+  @Override
   public String toString()
   {
-    return
-      (_f == null ? "--" : _f.qualifiedName()) +
-      (_tp != null ? _tp.toString(t -> " " + t.toStringWrapped(true))
-                   : (_max ? " MAX" : " MIN"));
+    return _f.qualifiedNameHuman() + _tp.toString(t -> " " + t.toStringWrapped(true));
   }
 
 }

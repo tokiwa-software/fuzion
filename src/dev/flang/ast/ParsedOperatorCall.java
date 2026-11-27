@@ -117,10 +117,10 @@ public class ParsedOperatorCall extends ParsedCall
    * For a given feature name, check if it is an operator call that has to be
    * looked up under different actual names. If so, return all the actual names.
    *
-   * This is used for infix operators that might be `infix` or `infix_right` and
-   * for unary operators that might be `prefix` or `postfix`.
+   * This is used for infix operators that might be {@code infix} or {@code infix_right} and
+   * for unary operators that might be {@code prefix} or {@code postfix}.
    *
-   * @return a non-empty list containing either just `name` or the list of
+   * @return a non-empty list containing either just {@code name} or the list of
    * possible names that would match the given operator name.
    */
   public static List<String> lookupNames(String name)
@@ -155,6 +155,7 @@ public class ParsedOperatorCall extends ParsedCall
    * @param parenthesesAllowed true if an operator call in parentheses is still
    * ok.  {@code (+x)}.
    */
+  @Override
   boolean isOperatorCall(boolean parenthesesAllowed)
   {
     return parenthesesAllowed || !_inParentheses;
@@ -171,31 +172,13 @@ public class ParsedOperatorCall extends ParsedCall
   }
 
 
-  /**
-   * In case this is a parsed infix operator call, fix the associativity: the
-   * parser produces and AST assuming all infix operators are right associative
-   * (which is wrong for most operators).  This call rotates the operators
-   * accordingly if needed, i.e., changing
-   *
-   *    a - «b + c»
-   *
-   * into
-   *
-   *    «a - b» + c
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this Call is used
-   *
-   * @return null in case nothing was done, otherwise the fully resolved new
-   * call with fixed associativity.
-   */
+  /** {@inheritDoc} */
   @Override
   Call fixAssociativity(Resolution res, Context context)
   {
     Call result = null;
     if (isOperatorCall(true) && // outer may be in parentheses `(a - «b + c»)`
-        _calledFeature.featureName().baseName().startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX) &&
+        _calledFeature.baseName().startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX) &&
         (_actuals.size() == 1 || _actuals.size() == 2) &&
         _actuals.get(_actuals.size()-1) instanceof ParsedOperatorCall b_plus_c &&
         b_plus_c.isOperatorCall(false) && // next may not be in parentheses `a - (b + c)` should stay unchanged while `a - «b + c»` should become `(a - b) + c`.
@@ -223,12 +206,11 @@ public class ParsedOperatorCall extends ParsedCall
   void forceFreshResolve()
   {
     _resolvedFor = null;
-    _actualsResolvedFor = null;
     _calledFeature = null;
     _type = null;
-    _pendingError = null; // original attempt to resolve might have caused an
-                          // error that might be fixed in new attempt, see #5467
-                          // or tests/reg_issue5467
+    suspendPendingNotFound(); // original attempt to resolve might have caused an
+                              // error that might be fixed in new attempt, see #5467
+                              // or tests/reg_issue5467
   }
 
 }

@@ -28,14 +28,13 @@ package dev.flang.fuir.analysis.dfa;
 
 import java.util.Comparator;
 
-import dev.flang.fuir.FUIR;
 
 /**
  * Instance represents the result of fuzion.sys.array.alloc
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class SysArray extends Value
+class SysArray extends Value
 {
 
 
@@ -75,15 +74,18 @@ public class SysArray extends Value
    *
    * @param el the element values, null if not initialized
    *
-   * @param ec the type of the array elements
+   * @param ac the type of the array
    */
-  public SysArray(DFA dfa, Value el, int ec)
+  public SysArray(DFA dfa, Value el, int ac)
   {
-    super(FUIR.NO_CLAZZ);
+    super(ac);
+
+    if (PRECONDITIONS) require
+      (dfa._fuir.clazzIsArrayRef(ac));
 
     _dfa = dfa;
     _elements = el;
-    _elementClazz = ec;
+    _elementClazz = dfa._fuir.clazzActualGeneric(ac, 0);
   }
 
 
@@ -124,23 +126,14 @@ public class SysArray extends Value
   /**
    * Create human-readable string from this instance.
    */
+  @Override
   public String toString()
   {
-    return "--sys array of type " + _dfa._fuir.clazzAsString(_elementClazz) + "--";
+    return "--sys array of type " + _dfa._fuir.clazzName(_elementClazz) + "--";
   }
 
 
-  /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   *
-   * @param dfa the current analysis context.
-   *
-   * @param v the value this value should be joined with.
-   *
-   * @param cl the clazz of the resulting value. This is usually the same as
-   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
-   */
+  /** {@inheritDoc} */
   @Override
   public Value joinInstances(DFA dfa, Value v, int cl)
   {
@@ -149,7 +142,7 @@ public class SysArray extends Value
         Value ne =
           _elements == null ? sv._elements :
           sv._elements == null ? _elements : _elements.join(dfa, sv._elements, _elementClazz);
-        return _dfa.newSysArray(ne, _elementClazz);
+        return _dfa.newSysArray(ne, _clazz);
       }
     else
       {

@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
@@ -43,7 +45,6 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.TypeKind;
 import dev.flang.ast.UnresolvedType;
-import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
 import dev.flang.mir.MIR;
@@ -57,6 +58,7 @@ import dev.flang.util.FuzionOptions;
 import static dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
@@ -69,7 +71,7 @@ import dev.flang.util.Version;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LibraryModule extends Module implements MirModule
+public class LibraryModule extends Module implements MirModule, RedefinitionLookup
 {
 
 
@@ -80,20 +82,24 @@ public class LibraryModule extends Module implements MirModule
    * As long as source position is not part of the .fum/MIR file, use this
    * constant as a place holder.
    */
-  static SourcePosition DUMMY_POS = SourcePosition.builtIn;
+  static final SourcePosition DUMMY_POS = SourcePosition.builtIn;
 
 
   /**
    * NYI: Instead of using env var, create a new tool "fzdump" or similar to
    * dump intermediate files.
+   *
+   * To enable, use fz with:
+   *
+   *   dev_flang_fe_FUZION_DUMP_MODULE_FILE=true
    */
-  static final boolean DUMP = FuzionOptions.boolPropertyOrEnv("FUZION_DUMP_MODULE_FILE");
+  static final boolean DUMP = FuzionOptions.boolPropertyOrEnv("dev.flang.fe.FUZION_DUMP_MODULE_FILE");
 
 
   /**
    * Pre-allocated empty array
    */
-  static byte[] NO_BYTES = new byte[0];
+  static final byte[] NO_BYTES = new byte[0];
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -143,7 +149,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Cache for innerFeatures created from given index
    */
-  private final Map<Integer, List<AbstractFeature>> _innerFeatures = new TreeMap<>();
+  private final Map<Integer, List<LibraryFeature>> _innerFeatures = new TreeMap<>();
 
 
   /**
@@ -164,6 +170,12 @@ public class LibraryModule extends Module implements MirModule
   private final ModuleRef[] _modules;
 
 
+  /**
+   * cache for source file start positions
+   */
+  int[] _sourceFileStartPositions;
+
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -171,7 +183,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, Function<AbstractFeature, LibraryModule[]> loadDependsOn, AbstractFeature universe)
+  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, AbstractFeature universe)
   {
     super(null /* set later, we need correct universe first */);
 
@@ -193,15 +205,13 @@ public class LibraryModule extends Module implements MirModule
     if (CHECKS) check
       (_universe.isUniverse());
 
-    _dependsOn = loadDependsOn.apply(universe());
-    if (CHECKS)
-      check(_dependsOn != null);
-
+    _dependsOn = new LibraryModule[mrc];
     for (int i = 0; i < mrc; i++)
       {
         var n = moduleRefName(p);
         var v = moduleRefHash(p);
         var m = fe.loadModule(n, universe());
+        _dependsOn[i] = m;
         var mv = m.hash();
         if (!Arrays.equals(v, mv))
           {
@@ -295,14 +305,15 @@ public class LibraryModule extends Module implements MirModule
   {
     if (_mir == null)
       {
-        var d = main == null
-          ? universe()
-          : lookupFeature(universe(), FeatureName.get(main, 0));
-
+        var d = effectiveMain(universe(), main);
         if (CHECKS) check
           (d != null);
 
-        _mir = createMIR(this, universe(), d);
+        _mir = new MIR(universe(), d, this);
+        if (!Errors.any())
+          {
+            new DFA(_mir).check();
+          }
 
         Errors.showAndExit();
       }
@@ -316,7 +327,25 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param outer the declaring feature
    */
-  public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
+  @Override
+  public SortedMap<FeatureName, AbstractFeature> declaredFeatures(AbstractFeature outer)
+  {
+    var result = declaredFeaturesShallow(outer);
+    for (Module d : _dependsOn)
+      {
+        result.putAll(d.declaredFeatures(outer));  // NYI: handle equally named features from different modules
+      }
+    return result;
+  }
+
+
+  /**
+   * Get declared features for given outer Feature as seen from outside of this module.
+   * Result is null if outer has no declared features in this module.
+   *
+   * @param outer the declaring feature
+   */
+  public SortedMap<FeatureName, AbstractFeature> declaredFeaturesShallow(AbstractFeature outer)
   {
     var result = new TreeMap<FeatureName, AbstractFeature>();
     if (outer instanceof LibraryFeature lf)
@@ -330,10 +359,6 @@ public class LibraryModule extends Module implements MirModule
       {
         result.put(d.featureName(), d);  // NYI: handle equally named features from different modules
       }
-    for (Module d : _dependsOn)
-      {
-        result.putAll(d.declaredFeatures(outer));  // NYI: handle equally named features from different modules
-      }
     return result;
   }
 
@@ -345,7 +370,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @return the feature declared at offset in this module.
    */
-  AbstractFeature libraryFeature(int offset)
+  LibraryFeature libraryFeature(int offset)
   {
     if (offset >= 0 && offset <= _data.limit())
       {
@@ -361,11 +386,10 @@ public class LibraryModule extends Module implements MirModule
       {
         var mr = moduleRef(offset);
         if (CHECKS) check
-          (mr != null);
+          (mr != null,
+           mr._module != null);
 
-        return mr._module != null
-                ? mr._module.libraryFeature(offset - mr._offset)
-                : Types.f_ERROR;
+        return mr._module.libraryFeature(offset - mr._offset);
       }
   }
 
@@ -397,7 +421,7 @@ public class LibraryModule extends Module implements MirModule
    * @return list of inner features of outer that are declared by this library
    * module.
    */
-  List<AbstractFeature> features(AbstractFeature outer)
+  List<LibraryFeature> features(AbstractFeature outer)
   {
     if (outer.isUniverse())
       {
@@ -426,7 +450,7 @@ public class LibraryModule extends Module implements MirModule
    */
   public LibraryFeature libraryUniverse()
   {
-    return (LibraryFeature)innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
+    return innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
   }
 
 
@@ -435,12 +459,12 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param at the index of an InnerFeatures block.
    */
-  List<AbstractFeature> innerFeatures(int at)
+  List<LibraryFeature> innerFeatures(int at)
   {
     var result = _innerFeatures.get(at);
     if (result == null)
       {
-        result = new List<AbstractFeature>();
+        result = new List<LibraryFeature>();
         var is = innerFeaturesSize(at);
         var ip = innerFeaturesFeaturesPos(at);
         for (var i = ip; i < ip+is; i = featureNextPos(i))
@@ -458,7 +482,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param offset the offset of the Generic
    */
-  AbstractFeature genericArgument(int offset)
+  AbstractFeature typeParameter(int offset)
   {
     var tp = feature(offset);
     var o = tp.outer();
@@ -499,7 +523,7 @@ public class LibraryModule extends Module implements MirModule
           }
         else if (k == -1)
           {
-            result = new GenericType(this, at, genericArgument(typeTypeParameter(at)));
+            result = new ParametricType(this, at, typeParameter(typeTypeParameter(at)));
           }
         else
           {
@@ -567,7 +591,7 @@ Module File
 
               | 1      | Name          | module name
 
-              | 1      | u128          | module hash
+              | 1      | u256          | module hash, cryptographically strong, generated by JDKs SecureRandom()
 
               | 1      | int           | number of modules this module depends on n
 
@@ -583,27 +607,27 @@ Module File
 --asciidoc--
 
 
-   *   +---------------------------------------------------------------------------------+
-   *   | Module File                                                                     |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte[4]       | MIR_FILE_MAGIC                                |
-   *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | Name          | module name                                   |
-   *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module hash                                   |
-   *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | int           | number of modules this module depends on n    |
-   *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | n      | ModuleRef     | reference to another module                   |
-   *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | int           | number of DeclFeatures entries m              |
-   *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | m      | DeclFeatures  | features declared in this module              |
-   *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | SourceFiles   | source code files                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
+   *   +-----------------------------------------------------------------------------------------------------------+
+   *   | Module File                                                                                               |
+   *   +--------+--------+---------------+-------------------------------------------------------------------------+
+   *   | cond.  | repeat | type          | what                                                                    |
+   *   +--------+--------+---------------+-------------------------------------------------------------------------+
+   *   | true   | 1      | byte[4]       | MIR_FILE_MAGIC                                                          |
+   *   +        +--------+---------------+-------------------------------------------------------------------------+
+   *   |        | 1      | Name          | module name                                                             |
+   *   +        +--------+---------------+-------------------------------------------------------------------------+
+   *   |        | 1      | u256          | module hash, cryptographically strong, generated by JDKs SecureRandom() |
+   *   +        +--------+---------------+-------------------------------------------------------------------------+
+   *   |        | 1      | int           | number of modules this module depends on n                              |
+   *   +        +--------+---------------+-------------------------------------------------------------------------+
+   *   |        | n      | ModuleRef     | reference to another module                                             |
+   *   +        +--------+---------------+-------------------------------------------------------------------------+
+   *   |        | 1      | int           | number of DeclFeatures entries m                                        |
+   *   +        +--------+---------------+-------------------------------------------------------------------------+
+   *   |        | m      | DeclFeatures  | features declared in this module                                        |
+   *   +        +--------+---------------+-------------------------------------------------------------------------+
+   *   |        | 1      | SourceFiles   | source code files                                                       |
+   *   +--------+--------+---------------+-------------------------------------------------------------------------+
    */
 
   int startPos()
@@ -614,6 +638,7 @@ Module File
   {
     return startPos();
   }
+  @Override
   public String name()
   {
     return name(namePos());
@@ -628,7 +653,7 @@ Module File
   }
   byte[] hash(int at)
   {
-    var r = new byte[16];
+    var r = new byte[32];
     for (int i = 0; i<r.length; i++)
       {
         r[i] = _data.get(at);
@@ -642,7 +667,7 @@ Module File
   }
   int hashNextPos()
   {
-    return hashPos() + 16;
+    return hashPos() + 32;
   }
   int moduleRefsCountPos()
   {
@@ -678,16 +703,21 @@ Module File
   {
     return moduleNumDeclFeaturesPos() + 4;
   }
+  int _moduleSourceFilesPos = -1;
   int moduleSourceFilesPos()
   {
-    var n = moduleNumDeclFeatures();
-    var at = moduleDeclFeaturesPos();
-    while (n > 0)
+    if (_moduleSourceFilesPos < 0)
       {
-        n--;
-        at = declFeaturesNextPos(at);
+        var n = moduleNumDeclFeatures();
+        var at = moduleDeclFeaturesPos();
+        while (n > 0)
+          {
+            n--;
+            at = declFeaturesNextPos(at);
+          }
+        _moduleSourceFilesPos = at;
       }
-    return at;
+    return _moduleSourceFilesPos;
   }
 
 
@@ -703,7 +733,7 @@ ModuleRef
 
 .2+| true     | 1      | Name          | module name
 
-              | 1      | u128          | module hash
+              | 1      | u256          | module hash
 |====
 
 --asciidoc--
@@ -715,7 +745,7 @@ ModuleRef
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module hash                                   |
+   *   |        | 1      | u256          | module hash                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    *
    */
@@ -742,7 +772,7 @@ ModuleRef
   }
   int moduleRefHashNextPos(int at)
   {
-    return moduleRefHashPos(at) + 16;
+    return moduleRefHashPos(at) + 32;
   }
   int moduleRefNextPos(int at)
   {
@@ -870,7 +900,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | short         | 0000REvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature
+.6+| true  .6+| 1      | short         | 000OREvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature, O = hasValuesAsOpenTypeFeature
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -879,8 +909,10 @@ Feature
    | Y=1      | 1      | Feature       | the cotype
    | C=1      | 1      | Feature       | the cotype origin
    | hasRT    | 1      | Type          | optional result type,
-                                       hasRT = !isConstructor && !isChoice
-.2+| true NYI! !isField? !isIntrinsc
+                                         hasRT = !isConstructor && !isChoice && !isTypeParameter
+   | O=1      | 1      | int           | open type Feature index,
+   | isTypeParameter | 1 | Type        | constraint of (open) type parameters
+.2+| true NYI! !isField? !isIntrinsic
               | 1      | int           | inherits count i
               | i      | Code          | inherits calls
 .2+| R        | 1      | int           | feature offset of precondition feature
@@ -900,7 +932,7 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
+   *   | true   | 1      | short         | 000OREvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is cotype                       |
@@ -908,6 +940,7 @@ Feature
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
+   *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -919,18 +952,26 @@ Feature
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==null      |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | Y=1    | 1      | int           | type feature index                            |
+   *   | Y=1    | 1      | int           | cotype index                                  |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | C=1    | 1      | int           | cotype index                                  |
+   *   | C=1    | 1      | int           | cotypeorigin index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | O=1    | 1      | int           | open type Feature index                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |
    *   | !isFiel+--------+---------------+-----------------------------------------------+
    *   | d? !isI| i      | Code          | inherits calls                                |
-   *   | ntrinsc|        |               |                                               |
+   *   | ntrinsi|        |               |                                               |
+   *   | c      |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | R      | 1      | int           | feature offset of precondition feature        |
    *   |        |        +---------------+-----------------------------------------------+
@@ -959,15 +1000,12 @@ Feature
   }
   int featureKind(int at)
   {
-    var ko = data().getShort(featureKindPos(at));
-    return ko;
+    return data().getShort(featureKindPos(at));
   }
   AbstractFeature.Kind featureKindEnum(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return featureIsConstructor(at)
-      ? AbstractFeature.Kind.Routine
-      : AbstractFeature.Kind.from(k);
+    return AbstractFeature.Kind.from(k);
   }
   Visi featureVisibilityEnum(int at)
   {
@@ -976,22 +1014,13 @@ Feature
   }
   boolean featureIsConstructor(int at)
   {
-    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return switch (k)
-      {
-        case FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE,
-             FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF -> true;
-        default                                            -> false;
-      };
+    var fke = featureKindEnum(at);
+    return fke == AbstractFeature.Kind.Constructor ||
+           fke == AbstractFeature.Kind.RefConstructor;
   }
   boolean featureIsRoutine(int at)
   {
-    return featureKindEnum(at) == AbstractFeature.Kind.Routine;
-  }
-  boolean featureIsRef(int at)
-  {
-    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
+    return featureKindEnum(at).isRoutine();
   }
   boolean featureHasCotype(int at)
   {
@@ -1005,16 +1034,22 @@ Feature
   {
     return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_FIXED) != 0);
   }
+  boolean featureHasOpenTypeFeature(int at)
+  {
+    var res = ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE) != 0);
+    if (CHECKS) check
+      (true ||  // checking this would cause endless recursion
+       res == (featureHasResultType(at) && libraryFeature(at).resultType().isOpenGeneric() ||
+               (featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK) == AbstractFeature.Kind.OpenTypeParameter.ordinal()));
+    return res;
+  }
   int featureNamePos(int at)
   {
-    var i = featureKindPos(at) + 2;
-    return i;
+    return featureKindPos(at) + 2;
   }
   int featureNameLength(int at)
   {
-    var i = featureNamePos(at);
-    var l = data().getInt(i);
-    return l;
+    return data().getInt(featureNamePos(at));
   }
   byte[] featureName(int at)
   {
@@ -1107,15 +1142,41 @@ Feature
   boolean featureHasResultType(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return
-      (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF   &&
-       k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE &&
-       k != AbstractFeature.Kind.Choice.ordinal());
+    return switch (AbstractFeature.Kind.from(k))
+      {
+        case Abstract, Field, Function, Intrinsic, Native -> true;
+        default -> false;
+      };
   }
-  int featureInheritsCountPos(int at)
+  int featureValuesAsOpenTypeFeaturePos(int at)
   {
     var i = featureResultTypePos(at);
     if (featureHasResultType(at))
+      {
+        i = typeNextPos(i);
+      }
+    return i;
+  }
+  AbstractFeature featureValuesAsOpenTypeFeature(int at)
+  {
+    return feature(data().getInt(featureValuesAsOpenTypeFeaturePos(at)));
+  }
+  int featureConstraintPos(int at)
+  {
+    return featureValuesAsOpenTypeFeaturePos(at) + (featureHasOpenTypeFeature(at) ? 4 : 0);
+  }
+  boolean featureHasConstraint(int at)
+  {
+    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
+    return
+      (k == AbstractFeature.Kind.ExplicitTypeParameter.ordinal() ||
+       k == AbstractFeature.Kind.FreeTypeParameter    .ordinal() ||
+       k == AbstractFeature.Kind.OpenTypeParameter    .ordinal()    );
+  }
+  int featureInheritsCountPos(int at)
+  {
+    var i = featureConstraintPos(at);
+    if (featureHasConstraint(at))
       {
         i = typeNextPos(i);
       }
@@ -1335,13 +1396,6 @@ Type
   {
     return data().getInt(at);
   }
-  int typeAddressPos(int at)
-  {
-    if (PRECONDITIONS) require
-      (typeKind(at) == -4);
-
-    return at+4;
-  }
   int typeUniversePos(int at)
   {
     if (PRECONDITIONS) require
@@ -1429,11 +1483,7 @@ Type
   int typeNextPos(int at)
   {
     var k = typeKind(at);
-    if (k == -4)
-      {
-        return typeAddressPos(at) + 0;
-      }
-    else if (k == -3)
+    if (k == -3)
       {
         return typeUniversePos(at) + 0;
       }
@@ -1606,12 +1656,10 @@ Expression
     return switch (k)
       {
       case Assign      -> assignNextPos(eAt);
-      case Box         -> boxNextPos  (eAt);
       case Const       -> constNextPos(eAt);
       case Current     -> eAt;
       case Match       -> matchNextPos(eAt);
       case Call        -> callNextPos (eAt);
-      case Tag         -> tagNextPos  (eAt);
       case Pop         -> eAt;
       case Unit        -> eAt;
       case InlineArray -> inlineArrayNextPos(eAt);
@@ -1666,55 +1714,6 @@ Assign
 
     return assignFieldPos(at) + 4;
   }
-
-
-  /*
---asciidoc--
-
-Box
-^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | box result type
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Box                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | box result type                               |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int boxTypePos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return at;
-  }
-  AbstractType boxType(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return type(boxTypePos(at));
-  }
-  int boxNextPos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return typeNextPos(boxTypePos(at));
-  }
-
 
   /*
 --asciidoc--
@@ -2141,44 +2140,6 @@ Case
 
 --asciidoc--
 
-Tag
-^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | resulting tagged union type
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Tag                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | resulting tagged union type                   |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int tagTypePos(int at)
-  {
-    return at;
-  }
-  AbstractType tagType(int at)
-  {
-    return type(tagTypePos(at));
-  }
-  int tagNextPos(int at)
-  {
-    return typeNextPos(tagTypePos(at));
-  }
-
-
-
-  /*
-
---asciidoc--
-
 InlineArray
 ^^^^^^^^^^^^
 
@@ -2359,28 +2320,105 @@ SourceFile
       }
     else
       {
-        var at = sourceFilesFirstSourceFilePos();
-        if (CHECKS) check
-          (pos > at);
-        var i = 0;
-        while (pos > sourceFileNextPos(at))
-          {
-            at = sourceFileNextPos(at);
-            i++;
-            if (CHECKS) check
-              (i < sourceFilesCount());
-          }
+        var i = sourceFileIndex(pos);
+        var at = sourceFileStartPositions()[i];
         var sf = _sourceFiles.get(i);
         if (sf == null)
           {
             var bb = sourceFileBytes(at);
             var ba = new byte[bb.limit()]; // NYI: Would be better if SourceFile could use bb directly.
             bb.get(0, ba);
-            sf = new SourceFile(Path.of("{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}").resolve(Path.of(sourceFileName(at))), ba);
+            // "main" is the implicit module name for code compiled by the user
+            // therefore it should not be included in the source file path, which gets printed in error messages
+            var srcPath = Path.of(name().equals(FuzionConstants.MAIN_MODULE_NAME) ? "" : "{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}")
+                              .resolve(Path.of(sourceFileName(at)));
+            sf = new SourceFile(srcPath, ba);
             _sourceFiles.set(i, sf);
           }
-        return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
+        return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at))
+          {
+            @Override
+            public Pair<String, Long> globalPos()
+            {
+              return new Pair<>(name(), ((long)pos)<<32 | ((long)posEnd));
+            }
+          };
       }
+  }
+
+
+
+  /**
+   * For pos get the index in the sourcefiles
+   */
+  private int sourceFileIndex(int pos)
+  {
+    sourceFileStartPositions();
+    var x = Arrays.binarySearch(sourceFileStartPositions(), pos);
+    return x<0
+      ? -x-2 // when binarySearch returns negative: (-(insertion point) - 1).
+      : x;
+  }
+
+
+
+  /**
+   * get sourceFileStartPositionsArray
+   */
+  private int[] sourceFileStartPositions()
+  {
+    if (_sourceFileStartPositions == null)
+      {
+        var c = sourceFilesCount();
+        var at = sourceFilesFirstSourceFilePos();
+        _sourceFileStartPositions = new int[c];
+        for (var i = 0; i<c; i++)
+          {
+            _sourceFileStartPositions[i] = at;
+            at = sourceFileNextPos(at);
+          }
+      }
+    return _sourceFileStartPositions;
+  }
+
+
+  /**
+   * recursive helper to create stream of all modules
+   */
+  Stream<LibraryModule> flatten(LibraryModule m)
+  {
+    return Stream.concat(
+      Stream.of(m),
+      Arrays
+        .stream(m._modules)
+        .flatMap(x -> flatten(x._module)));
+  }
+
+
+  // cache field for all modules
+  Map<String, LibraryModule> _flattenedModules;
+
+  /**
+   * get sourcePosition
+   *
+   * @param module the module name the SourcePosition is from
+   *
+   * @param pos 32-bit pos and 32-bit posEnd packed into a long value
+   *
+   * @return
+   */
+  public SourcePosition pos(String module, long pos)
+  {
+    if (_flattenedModules == null)
+      {
+        _flattenedModules = flatten(this)
+          .distinct()
+          .collect(Collectors.toUnmodifiableMap(LibraryModule::name, x->x));
+      }
+    int bytePos = (int)(pos >> 32);
+    int byteEndPos = (int)(pos & 0xffffffff);
+    return _flattenedModules.get(module)
+      .pos(bytePos, byteEndPos);
   }
 
 
@@ -2426,14 +2464,13 @@ SourceFile
    *
    * @param fs the features to annotate.
    */
-  private void dump(HexDump hd, List<AbstractFeature> fs)
+  private void dump(HexDump hd, List<LibraryFeature> fs)
   {
     for (var f: fs)
       {
-        var lf = (LibraryFeature) f;
-        var li = lf._index;
+        var li = f._index;
         hd.mark(li, featureKindEnum(li).toString());
-        hd.mark(featureNamePos(li), f.qualifiedName());
+        hd.mark(featureNamePos(li), f.qualifiedNameHuman());
         if (featureIsRoutine(li))
           {
             hd.mark(featureCodePos(li), "code");
@@ -2446,6 +2483,7 @@ SourceFile
   /**
    * Create String representation for debugging.
    */
+  @Override
   public String toString()
   {
     return "LibraryModule for '" + name() + "'";
@@ -2464,13 +2502,6 @@ SourceFile
   }
 
 
-  @Override
-  public ByteBuffer data(String name)
-  {
-    throw new UnsupportedOperationException("Unimplemented method 'data'");
-  }
-
-
   /**
    * Is this module the same as the provided one or does this module depend on the provided one?
    *
@@ -2480,6 +2511,58 @@ SourceFile
   public boolean sameOrDependent(LibraryModule lm)
   {
     return lm == this || Arrays.asList(_modules).stream().map(r->r._module).anyMatch(x->x==lm);
+  }
+
+
+  /**
+   * Find the redefinition of feature f within heir.
+   *
+   * For fixed features, this performs a lookup by name since fixed features
+   * are not inherited and a call to a fixed feature must be bound to the
+   * feature with the same name in the actual outer type.
+   *
+   * For all other features, this does not perform a lookup by name, but uses
+   * the redefinition relation, so features in heir that have the same name as
+   * f but do not redefine f are ignored.
+   *
+   * @param heir a feature that inherits from f.outer(), directly or
+   *             indirectly.
+   *
+   * @param f    a feature declared in or inherited by f.outer()
+   *
+   * @return the feature in heir that redefines f, or f itself if f is not
+   *         redefined in heir.
+   */
+  @Override
+  public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
+    // NYI: BUG: #8187 Must not use name lookup; redefinitions should be found in
+    // `d._redefinitions`. If they are not there, we should find out why and fix that.
+    if (f.isFixed() && !f.isTypeParameter())
+      {
+        var sameName = declaredOrInheritedFeatures(heir, f.featureName()).getFirstOrNull();
+        if (sameName != null && sameName.isFixed())
+          {
+            return (LibraryFeature)sameName;
+          }
+      }
+    var d = data(heir);
+    var m = d._redefinitions;
+    if (m == null)
+      {
+        var res = new TreeMap<AbstractFeature, AbstractFeature>();
+        forEachDeclaredOrInheritedFeature(heir, g ->
+          {
+            for (var o : g.redefinesFull())
+              {
+                var prev = res.put(o, g);
+                if (CHECKS)
+                  check(prev == null || prev == g || Errors.any());
+              }
+          });
+        m = res;
+        d._redefinitions = m;
+      }
+    return m.getOrDefault(f, f);
   }
 
 }

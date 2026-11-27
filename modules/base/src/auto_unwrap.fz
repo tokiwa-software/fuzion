@@ -23,7 +23,7 @@
 
 # auto_unwrap adds compiler support for automatic unwrapping.
 #
-# this is used by e.g. concur.atomic, mutate.new
+# this is used by e.g. concur.atomic, mutate.var
 #
 # example:
 #
@@ -31,5 +31,11 @@
 #     a <- 4 + a   # no need to write a.get, compiler does this automatically.
 #
 #
-public auto_unwrap(T type, E type... : effect) is
+public auto_unwrap(T : Any, E... : effect) is
+
+  # the feature that is called to
+  # unwrap the value
+  #
+  # must be implemented by inheriting features
+  #
   public unwrap T => abstract

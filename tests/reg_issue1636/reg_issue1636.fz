@@ -22,6 +22,6 @@
 # -----------------------------------------------------------------------
 
 reg_issue1636 is
-  x (T type, data Sequence T) unit => unit
+  x (T : Any, data Sequence T) unit => unit
 
   x 0..100

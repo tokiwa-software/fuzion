@@ -1,0 +1,55 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test encodings_html
+#
+# -----------------------------------------------------------------------
+
+encodings_html =>
+  test_cases =>
+    [
+      ("<div>", "&lt;div&gt;"),
+      ("Tom & Jerry", "Tom &amp; Jerry"),
+      ("\"Hello\"", "&quot;Hello&quot;"),
+      ("'Single quotes'", "&#39;Single quotes&#39;"),
+      ("<a href=\"#\">Link</a>", "&lt;a href=&quot;#&quot;&gt;Link&lt;&#x2F;a&gt;"),
+      ("😊 <3 & \"fun\"", "😊 &lt;3 &amp; &quot;fun&quot;"),
+      ("こんにちは <世界>", "こんにちは &lt;世界&gt;"),
+      ("Résumé & café", "Résumé &amp; café"),
+      ("<img src=x onerror=alert(1)>", "&lt;img src=x onerror=alert(1)&gt;"),
+      ("<svg><script>alert('x')</script></svg>", "&lt;svg&gt;&lt;script&gt;alert(&#39;x&#39;)&lt;&#x2F;script&gt;&lt;&#x2F;svg&gt;"),
+      ("<body onload=alert(document.cookie)>", "&lt;body onload=alert(document.cookie)&gt;")
+    ]
+
+  for test_case in test_cases do
+    encoded := encodings.html.encode test_case.0 false
+    if encoded = test_case.1
+      say "PASSED: $(test_case)"
+    else
+      say "FAILED: $(test_case) got $(encoded)"
+
+    decoded := encodings.html.decode encoded
+    if decoded = test_case.0
+      say "PASSED decode: $(decoded)"
+    else
+      say "FAILED decode: $(encoded) got $(decoded)"
+
+
+  say <| encodings.html.decode "&#9881;&#65039; \n&#9881;&#65038; \n&#128104;&#8205;&#128187; \n&#1114111;"
+  say <| encodings.html.decode "&#1114112;"

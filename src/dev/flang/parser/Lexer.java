@@ -81,6 +81,7 @@ public class Lexer extends SourceFile
       _detail = d;
     }
 
+    @Override
     public String toString()
     {
       return
@@ -156,22 +157,22 @@ public class Lexer extends SourceFile
                    //   x is $'   in
                    // '"""
                    //   x is $x."""'
-    t_stringQB,    // '"a+b is {' in "a+b is {a+b}."
+    t_stringQP,    // '"a+b is $(' in "a+b is $(a+b)."
                    // OR multiline string
                    // '"""
-                   //   a+b is {' in
+                   //   a+b is $(' in
                    // '"""
-                   //   a+b is {a+b}."""'
-    t_StringDQ,    // '+-*"'      in "abc$x+-*"
+                   //   a+b is $(a+b)."""'
+    t_stringDQ,    // '+-*"'      in "abc$x+-*"
                    //     ^--- fat quotations (""") instead of single
                    //          quotation if part of multiline string
-    t_StringDD,    // '+-*$'      in "abc$x+-*$x.".
-    t_StringDB,    // '+-*{'      in "abc$x+-*{a+b}."
-    t_stringBQ,    // '}+-*"'     in "abc{x}+-*"
+    t_stringDD,    // '+-*$'      in "abc$x+-*$x.".
+    t_stringDP,    // '+-*$('     in "abc$x+-*$(a+b)."
+    t_stringPQ,    // ')+-*"'     in "abc$(x)+-*"
                    //      ^--- fat quotations (""") instead of single
                    //           quotation if part of multiline string
-    t_stringBD,    // '}+-*$'     in "abc{x}+-*$x.".
-    t_stringBB,    // '}+-*{'     in "abc{x}+-*{a+b}."
+    t_stringPD,    // ')+-*$'     in "abc$(x)+-*$x.".
+    t_stringPP,    // ')+-*$('    in "abc$(x)+-*$(a+b)."
     t_this("this"),
     t_env("env"),
     t_check("check"),
@@ -192,13 +193,10 @@ public class Lexer extends SourceFile
     t_variant("variant"),
     t_pre("pre"),
     t_post("post"),
-    t_inv("inv"),
-    t_var("var"),
+    t_invariant("invariant"),
     t_match("match"),
-    t_value("value"),
     t_ref("ref"),
     t_redef("redef"),
-    t_const("const"),                 // unused
     t_leaf("leaf"),                   // unused
     t_infix("infix"),
     t_infix_right("infix_right"),
@@ -274,7 +272,7 @@ public class Lexer extends SourceFile
     /**
      * Sorted array of all the keyword tokens
      */
-    public static Token[] _keywords = Stream.of(Token.class.getEnumConstants())
+    public static final Token[] _keywords = Stream.of(Token.class.getEnumConstants())
       .filter((t) -> t.isKeyword())
       .sorted((t1, t2) -> t1.keyword().compareTo(t2.keyword()))
       .toArray(Token[]::new);
@@ -282,7 +280,7 @@ public class Lexer extends SourceFile
     /**
      * maximum length of the keywords.
      */
-    public static int _maxKeywordLength = Stream.of(_keywords)
+    public static final int _maxKeywordLength = Stream.of(_keywords)
       .mapToInt(k -> k.keyword().length())
       .max()
       .orElseThrow();
@@ -291,7 +289,7 @@ public class Lexer extends SourceFile
      * Array of sorted arrays of keywords of equal length.  Used to reduce
      * effort to find keyword by checking only those with a correct length.
      */
-    public static Token[][] _keywordsOfLength = IntStream.range(0, _maxKeywordLength+1)
+    public static final Token[][] _keywordsOfLength = IntStream.range(0, _maxKeywordLength+1)
     .mapToObj(i -> Stream.of(_keywords)
               .filter(k -> k.keyword().length() == i)
               .toArray(Token[]::new))
@@ -300,6 +298,7 @@ public class Lexer extends SourceFile
     /**
      * String representation for debugging.
      */
+    @Override
     public String toString()
     {
       String result;
@@ -309,33 +308,32 @@ public class Lexer extends SourceFile
         }
       else
         {
-          switch (this)
-            {
-            case t_op                : result = "operator"                                   ; break;
-            case t_comma             : result = "comma ','"                                  ; break;
-            case t_period            : result = "period '.'"                                 ; break;
-            case t_lparen            : result = "left parenthesis '('"                       ; break;
-            case t_rparen            : result = "right parenthesis ')'"                      ; break;
-            case t_lbrace            : result = "left curly brace '{'"                       ; break;
-            case t_rbrace            : result = "right curly brace '}'"                      ; break;
-            case t_lbracket          : result = "left bracket '['"                           ; break;
-            case t_rbracket          : result = "right bracket ']'"                          ; break;
-            case t_semicolon         : result = "semicolon ';'"                              ; break;
-            case t_question          : result = "question mark '?'"                          ; break;
-            case t_numliteral        : result = "numeric literal"                            ; break;
-            case t_ident             : result = "identifier"                                 ; break;
-            case t_stringQQ          : result = "string constant"                            ; break;
-            case t_stringQD          : result = "string constant ending in $"                ; break;
-            case t_stringQB          : result = "string constant ending in {"                ; break;
-            case t_StringDQ          : result = "string constant after $<id>"                ; break;
-            case t_StringDD          : result = "string constant after $<id> ending in $"    ; break;
-            case t_StringDB          : result = "string constant after $<id> ending in {"    ; break;
-            case t_stringBQ          : result = "string constant after {<expr>}"             ; break;
-            case t_stringBD          : result = "string constant after {<expr>} ending in $" ; break;
-            case t_stringBB          : result = "string constant after {<expr>} ending in {" ; break;
-            case t_eof               : result = "end-of-file"                                ; break;
-            default                  : result = super.toString()                             ; break;
-            }
+          result = switch (this) {
+              case t_op         -> "operator";
+              case t_comma      -> "comma ','";
+              case t_period     -> "period '.'";
+              case t_lparen     -> "left parenthesis '('";
+              case t_rparen     -> "right parenthesis ')'";
+              case t_lbrace     -> "left curly brace '{'";
+              case t_rbrace     -> "right curly brace '}'";
+              case t_lbracket   -> "left bracket '['";
+              case t_rbracket   -> "right bracket ']'";
+              case t_semicolon  -> "semicolon ';'";
+              case t_question   -> "question mark '?'";
+              case t_numliteral -> "numeric literal";
+              case t_ident      -> "identifier";
+              case t_stringQQ   -> "string constant";
+              case t_stringQD   -> "string constant ending in $";
+              case t_stringQP   -> "string constant ending in $(";
+              case t_stringDQ   -> "string constant after $<id>";
+              case t_stringDD   -> "string constant after $<id> ending in $";
+              case t_stringDP   -> "string constant after $<id> ending in $(";
+              case t_stringPQ   -> "string constant after $(<expr>)";
+              case t_stringPD   -> "string constant after $(<expr>) ending in $";
+              case t_stringPP   -> "string constant after $(<expr>) ending in $(";
+              case t_eof        -> "end-of-file";
+              default           -> super.toString();
+          };
         }
       return result;
     }
@@ -380,7 +378,7 @@ public class Lexer extends SourceFile
   /**
    * Code point classes for ASCII codepoints
    */
-  private static byte[] _asciiKind = new byte[]
+  private static final byte[] _asciiKind = new byte[]
   {
     // 0…
     K_UNKNOWN /* NUL */, K_UNKNOWN /* SOH */, K_UNKNOWN /* STX */, K_UNKNOWN /* ETX */,
@@ -428,7 +426,7 @@ public class Lexer extends SourceFile
   /**
    * ASCII control sequence names or null if normal ASCII char.
    */
-  private static String[] _asciiControlName = new String[]
+  private static final String[] _asciiControlName = new String[]
   {
     // 0…
     "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS ", "HT ", "LF ", "VT ", "FF ", "CR ", "SO ", "SI ",
@@ -558,10 +556,10 @@ public class Lexer extends SourceFile
          else if (x.equals("-stringLiteralEscapes"))
            {
              say("""
-[options=\"header\",cols=\"1,1\"]
-|====
-   | escape sequence | resulting code point
-                                """);
+                 [options=\"header\",cols=\"1,1\"]
+                 |====
+                    | escape sequence | resulting code point
+                 """);
              for (int i = 0; i < StringLexer.escapeChars.length; i++)
                {
                  var c      = StringLexer.escapeChars[i][0];
@@ -672,6 +670,22 @@ public class Lexer extends SourceFile
    */
   private boolean _endAtBar = false;
 
+
+  /**
+   * In case there is a surrounding {@code if} statement, this gives the start position. This is used
+   * to detect ambiguous {@code else} statements.
+   */
+  private SourcePosition _surroundingIf = null;
+
+
+  /**
+   * In case there is a surrounding loop statement, this gives the start position. This is used
+   * to detect ambiguous {@code else} statements.
+   */
+  private SourcePosition _surroundingLoop = null;
+
+
+
   private SemiState _atSemicolon = SemiState.CONTINUE;
 
 
@@ -718,6 +732,8 @@ public class Lexer extends SourceFile
     _endAtComma = original._endAtComma;
     _endAtColon = original._endAtColon;
     _endAtBar = original._endAtBar;
+    _surroundingIf = original._surroundingIf;
+    _surroundingLoop = original._surroundingLoop;
     _atSemicolon = original._atSemicolon;
     _ignoredTokenBefore = original._ignoredTokenBefore;
     _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
@@ -728,7 +744,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Is the given token ignored?  This is usually the case for t_erro, t_ws and
+   * Is the given token ignored?  This is usually the case for t_error, t_ws and
    * t_comment, but it might be different for tools like the pretty printer that
    * want to know about white space and comments.
    *
@@ -943,6 +959,50 @@ public class Lexer extends SourceFile
     return result;
   }
 
+
+  /**
+   * Remember that we are parsing in {@code if} statement. This will be reset
+   * automatically on relaxLineAndSpaceLimit.
+   */
+  SourcePosition surroundingIf(SourcePosition pos)
+  {
+    var result = _surroundingIf;
+    _surroundingIf = pos;
+
+    return result;
+  }
+
+
+  /**
+   * The {@code if} statement that we are currently parsing.
+   */
+  SourcePosition surroundingIf()
+  {
+    return _surroundingIf;
+  }
+
+  /**
+   * Remember that we are parsing a loop statement. This will be reset
+   * automatically on relaxLineAndSpaceLimit.
+   */
+  SourcePosition surroundingLoop(SourcePosition pos)
+  {
+    var result = _surroundingLoop;
+    _surroundingLoop = pos;
+
+    return result;
+  }
+
+
+  /**
+   * The loop statement that we are currently parsing.
+   */
+  SourcePosition surroundingLoop()
+  {
+    return _surroundingLoop;
+  }
+
+
   /**
    * Increases the semicolon state, which is used to detect ambiguous semicolons
    * e.g. when blocks are nested in one line.
@@ -995,6 +1055,8 @@ public class Lexer extends SourceFile
     var oldEAc = endAtComma(false);
     var oldEAC = endAtColon(false);
     var oldEAB = endAtBar(false);
+    var oldIf  = surroundingIf(null);
+    var oldLoop  = surroundingLoop(null);
     var oldSemiSt = semiState(SemiState.CONTINUE);
     V result = c.get();
     sameLine(oldLine);
@@ -1002,13 +1064,15 @@ public class Lexer extends SourceFile
     endAtComma(oldEAc);
     endAtColon(oldEAC);
     endAtBar(oldEAB);
+    surroundingIf(oldIf);
+    surroundingLoop(oldLoop);
     semiState(oldSemiSt);
     return result;
   }
 
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
+   * shorthand for bracketTermWithNLs with c==def.
    */
   <V> V optionalBrackets(Parens brackets, String rule, Supplier<V> c)
   {
@@ -1018,7 +1082,7 @@ public class Lexer extends SourceFile
   }
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
+   * shorthand for bracketTermWithNLs with c==def.
    */
   <V> V bracketTermWithNLs(Parens brackets, String rule, Supplier<V> c)
   {
@@ -1060,16 +1124,23 @@ public class Lexer extends SourceFile
     var nl = line();
     relaxLineAndSpaceLimit(() ->
                            {
-                            if (current(true) != end._token)
+                            var hasIndentProblem = current(true) != end._token;
+                            var tsp = tokenSourcePos();
+                            if (hasIndentProblem)
                               {
                                 // if indentation decreases before closing bracket, discard everything until closing bracket
-                                Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(indentRef), Parser.parserDetail(rule));
                                 while (current(true) != end._token && current(true) != Token.t_eof)
                                   {
                                       next();
                                   }
                               }
+                            var errCount = Errors.count();
                             match(true, end, rule);
+                            // emit indent problem only if no other problems are encountered
+                            if (hasIndentProblem && errCount == Errors.count())
+                              {
+                                Errors.indentationProblemEncountered(tsp, sourcePos(indentRef), Parser.parserDetail(rule));
+                              }
                             return Void.TYPE; // is there a better unit type in Java?
                            });
     var sl = sameLine(-1);
@@ -2038,14 +2109,9 @@ PLUSMINUS   : "+"
      */
     BigInteger mantissaValue()
     {
-      if (_hasError)
-        {
-          return BigInteger.valueOf(0);
-        }
-      else
-        {
-          return _mantissa.absValue();
-        }
+      return _hasError
+        ? BigInteger.valueOf(0)
+        : _mantissa.absValue();
     }
 
     /**
@@ -2558,10 +2624,10 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
                                                                       sourcePos(_minIndentStartPos),
                                                                       detail);
       case t_lineLimit        -> Errors.lineBreakNotAllowedHere (sourcePos(lineEndPos(_sameLine)), detail);
-      case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
-      case t_commaLimit       -> Errors.commaNotAllowedHere     (sourcePos(tokenPos()), detail);
-      case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(tokenPos()), detail);
-      case t_barLimit         -> Errors.barPartOfCase           (sourcePos(tokenPos()), detail);
+      case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(tokenSourceRange(), detail);
+      case t_commaLimit       -> Errors.commaNotAllowedHere     (tokenSourceRange(), detail);
+      case t_colonLimit       -> Errors.colonPartOfTernary      (tokenSourceRange(), detail);
+      case t_barLimit         -> Errors.barPartOfCase           (tokenSourceRange(), detail);
       case t_ambiguousSemi    -> Errors.ambiguousSemicolon(sourcePos(pos));
       default                 -> Errors.syntax(sourcePos(pos), expected, currentAsString(), detail);
       }
@@ -2782,10 +2848,14 @@ PIPE        : "|"
    * This is useful, e.g., to parse nested generics lists such as
    * {@code Stack<List<i32>>}, where the last token is seen by the lexer as a single
    * operator {@code >>}, while the parser prefers to see two consecutive operators {@code >}.
+   *
+   * @return true if the current operator is {@code op}, independent of whether it was split off or
+   * not.
    */
-  void splitOperator(String op)
+  boolean splitOperator(String op)
   {
-    if (current() == Token.t_op && operator().startsWith(op))
+    var result = current() == Token.t_op && operator().startsWith(op);
+    if (result)
       {
         setPos(_tokenPos);
         for (int i = 0; i < op.length(); i++)
@@ -2797,6 +2867,7 @@ PIPE        : "|"
         if (CHECKS) check
           (isOperator(op));
       }
+    return result;
   }
 
 
@@ -2883,7 +2954,7 @@ PIPE        : "|"
   private enum StringState
   {
     IDENT_EXPECTED,   // parsing an identifier in a string as in "xyz is $xyz."
-    EXPR_EXPECTED,    // parsing an expression in a string as in "expr is {q.f(fun f(x i32) -> { x * 5 })}."
+    EXPR_EXPECTED,    // parsing an expression in a string as in "expr is $(q.f(fun f(x i32) -> { x * 5 }))."
     CONTINUED,        // parsing the string following an identifier in a string as in "abc+$x-def" when parsing -def"
   }
 
@@ -2895,7 +2966,7 @@ PIPE        : "|"
   {
     QUOTE,   // A string starting with '"' or '"""' as in "normal string...
     DOLLAR,  // Following '$<id>' as " dollar string..." in "previous $ident dollar string...
-    BRACE;   // Following '{<expr>}' as " rbrace string..." in "previous {a+b} rbrace string...
+    PAREN;   // Following '$(<expr>)' as " rparen string..." in "previous $(a+b) rparen string...
 
     /**
      * Get the partial string token for a string starting with this and ending with end.
@@ -2904,13 +2975,13 @@ PIPE        : "|"
     {
       if      (this == StringEnd.QUOTE  && end == StringEnd.QUOTE ) { return Token.t_stringQQ; }
       else if (this == StringEnd.QUOTE  && end == StringEnd.DOLLAR) { return Token.t_stringQD; }
-      else if (this == StringEnd.QUOTE  && end == StringEnd.BRACE ) { return Token.t_stringQB; }
-      else if (this == StringEnd.DOLLAR && end == StringEnd.QUOTE ) { return Token.t_StringDQ; }
-      else if (this == StringEnd.DOLLAR && end == StringEnd.DOLLAR) { return Token.t_StringDD; }
-      else if (this == StringEnd.DOLLAR && end == StringEnd.BRACE ) { return Token.t_StringDB; }
-      else if (this == StringEnd.BRACE  && end == StringEnd.QUOTE ) { return Token.t_stringBQ; }
-      else if (this == StringEnd.BRACE  && end == StringEnd.DOLLAR) { return Token.t_stringBD; }
-      else if (this == StringEnd.BRACE  && end == StringEnd.BRACE ) { return Token.t_stringBB; }
+      else if (this == StringEnd.QUOTE  && end == StringEnd.PAREN ) { return Token.t_stringQP; }
+      else if (this == StringEnd.DOLLAR && end == StringEnd.QUOTE ) { return Token.t_stringDQ; }
+      else if (this == StringEnd.DOLLAR && end == StringEnd.DOLLAR) { return Token.t_stringDD; }
+      else if (this == StringEnd.DOLLAR && end == StringEnd.PAREN ) { return Token.t_stringDP; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.QUOTE ) { return Token.t_stringPQ; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.DOLLAR) { return Token.t_stringPD; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.PAREN ) { return Token.t_stringPP; }
       throw new Error("impossible StringEnd.token combination "+this+" and "+end);
     }
   }
@@ -2918,7 +2989,7 @@ PIPE        : "|"
 
   /**
    * For a given string token, return if that string starts with {@code "} or follows
-   * an embedded {@code $<id>} or {@code {<expr>}}.
+   * an embedded {@code $<id>} or {@code $(<expr>)}.
    */
   StringEnd beginning(Token t)
   {
@@ -2929,13 +3000,13 @@ PIPE        : "|"
       {
       case t_stringQQ:
       case t_stringQD:
-      case t_stringQB: return StringEnd.QUOTE;
-      case t_StringDQ:
-      case t_StringDD:
-      case t_StringDB: return StringEnd.DOLLAR;
-      case t_stringBQ:
-      case t_stringBD:
-      case t_stringBB: return StringEnd.BRACE;
+      case t_stringQP: return StringEnd.QUOTE;
+      case t_stringDQ:
+      case t_stringDD:
+      case t_stringDP: return StringEnd.DOLLAR;
+      case t_stringPQ:
+      case t_stringPD:
+      case t_stringPP: return StringEnd.PAREN;
       default        : throw new Error();
 
       }
@@ -2944,7 +3015,7 @@ PIPE        : "|"
 
   /**
    * For a given string token, return if that string ends with {@code "} or with an
-   * embedded {@code $<id>} or {@code {<expr>}}.
+   * embedded {@code $<id>} or {@code $(<expr>)}.
    */
   StringEnd end(Token t)
   {
@@ -2954,14 +3025,14 @@ PIPE        : "|"
     switch (t)
       {
       case t_stringQQ:
-      case t_StringDQ:
-      case t_stringBQ: return StringEnd.QUOTE;
+      case t_stringDQ:
+      case t_stringPQ: return StringEnd.QUOTE;
       case t_stringQD:
-      case t_StringDD:
-      case t_stringBD: return StringEnd.DOLLAR;
-      case t_stringQB:
-      case t_StringDB:
-      case t_stringBB: return StringEnd.BRACE;
+      case t_stringDD:
+      case t_stringPD: return StringEnd.DOLLAR;
+      case t_stringQP:
+      case t_stringDP:
+      case t_stringPP: return StringEnd.PAREN;
       default        : throw new Error();
 
       }
@@ -2975,7 +3046,7 @@ PIPE        : "|"
   {
     /**
      * The original string that started with {@code "}, i.e., disregarding any partial
-     * strings following {@code $<id>} or {@code {<expr>}}.  Used for proper error messages.
+     * strings following {@code $<id>} or {@code $(<expr>)}.  Used for proper error messages.
      */
     final int _stringStart;
 
@@ -2986,7 +3057,7 @@ PIPE        : "|"
      */
     final Optional<Integer> _pos;
 
-    int _braceCount;
+    int _parensCount = 0;
 
     /**
      * In case of nested string lexers, this is the outer lexer.
@@ -2994,7 +3065,7 @@ PIPE        : "|"
     StringLexer _outer;
 
     /**
-     * One of t_stringQQ. t_stringQD or t_stringQB to identify the
+     * One of QUOTE, DOLLAR or BRACE to identify the
      * beginning of this partial string.
      */
     StringEnd _beginning;
@@ -3009,7 +3080,7 @@ PIPE        : "|"
      * If this is changed, https://fuzion-lang.dev/tutorial/string_constants
      * must be changed as well.
      */
-    static int[][] escapeChars = new int[][] {
+    static final int[][] escapeChars = new int[][] {
         { 'b', '\b'  },  // BS 0x08
         { 't', '\t'  },  // HT 0x09
         { 'n', '\n'  },  // LF 0x0a
@@ -3019,10 +3090,9 @@ PIPE        : "|"
         { '\"', '\"' },  // "  0x22
         { '$',  '$'  },  // $  0x24
         { '\\', '\\' },  // \  0x5c
-        { '{',  '{'  },  // {  0x7b
-        { '}',  '}'  },  // }  0x7d
         { '\n', -1   },
         { '\r', -1   },
+        { '0', '\0'  },  // NUL 0x00
       };
 
 
@@ -3079,7 +3149,7 @@ PIPE        : "|"
 
       this._stringStart = original._stringStart;
       this._pos = original._pos;
-      this._braceCount = original._braceCount;
+      this._parensCount = original._parensCount;
       this._beginning = original._beginning;
       this._state = original._state;
       this._outer = original._outer == null ? null : new StringLexer(original._outer);
@@ -3104,7 +3174,7 @@ PIPE        : "|"
     private Token iterateCodePoints(StringBuilder sb)
     {
       var t = Token.t_undefined;
-      var pos = startOfStringContent();
+      var pos = startOfStringContent(sb);
 
       var escaped = false;
       while (t == Token.t_undefined)
@@ -3114,7 +3184,7 @@ PIPE        : "|"
           if (p == END_OF_FILE)
             {
               Errors.unterminatedString(sourcePos(), Lexer.this.sourcePos(_stringStart));
-              t = Token.t_error;
+              t = Token.t_stringQQ;
             }
           else if (
                 p < _asciiControlName.length
@@ -3123,7 +3193,7 @@ PIPE        : "|"
           )
             {
               Errors.unexpectedControlCodeInString(sourcePos(), _asciiControlName[p], p, sourcePos(_stringStart));
-              t = Token.t_error;
+              t = Token.t_stringQQ;
             }
           else
             {
@@ -3131,13 +3201,13 @@ PIPE        : "|"
               if (escaped)
                 {
                   var i = 0;
-                  while (i < escapeChars.length && p != (int) escapeChars[i][0])
+                  while (i < escapeChars.length && p != escapeChars[i][0])
                     {
                       i++;
                     }
                   if (i < escapeChars.length)
                     {
-                      c = (int) escapeChars[i][1];
+                      c = escapeChars[i][1];
                     }
                   else
                     {
@@ -3163,8 +3233,10 @@ PIPE        : "|"
                 {
                   t = _beginning.token(StringEnd.QUOTE);
                 }
-              else if (p == '$') { t = _beginning.token(StringEnd.DOLLAR); }
-              else if (p == '{') { t = _beginning.token(StringEnd.BRACE);  }
+              else if (p == '$')
+                {
+                  t = _beginning.token(StringEnd.DOLLAR);
+                }
               else if (!skipped(pos))
                 {
                   c = p;
@@ -3180,6 +3252,12 @@ PIPE        : "|"
                 }
               pos = advance(pos, 1);
               p = raw(pos);
+              if (isString(t) && end(t)==StringEnd.DOLLAR && p == '(')
+                {
+                  t = _beginning.token(StringEnd.PAREN);
+                  pos = advance(pos, 1);
+                  p = raw(pos);
+                }
             }
           if (c >= 0 && sb != null)
             {
@@ -3246,7 +3324,7 @@ PIPE        : "|"
      * NYI: CLEANUP: don't set multiLineIndentation here... but in constructor
      * @return
      */
-    private Optional<Integer> startOfStringContent()
+    private Optional<Integer> startOfStringContent(StringBuilder sb)
     {
       var pos = _pos;
       if (atMultiLineStringDelimiter(getPos(pos) - 1) && _multiLineIndentation.isEmpty())
@@ -3260,9 +3338,14 @@ PIPE        : "|"
             {
               Errors.unterminatedString(sourcePos(), Lexer.this.sourcePos(_stringStart));
             }
-          if (lineNum(getPos(pos)) != lineNum(_stringStart) + 1)
+          if (lineNum(getPos(pos)) == lineNum(_stringStart))
             {
               Errors.expectedIndentedStringInFirstLineAfterFatQuotation(sourcePos(_stringStart), sourcePos(getPos(pos)));
+            }
+          var empty_lines = lineNum(getPos(pos)) - (lineNum(_stringStart) + 1);
+          if (sb != null && empty_lines > 0)
+            {
+              sb.append("\n".repeat(empty_lines));
             }
           _multiLineIndentation = Optional.of(column(pos));
         }
@@ -3368,16 +3451,18 @@ PIPE        : "|"
         case EXPR_EXPECTED:
           switch (kind(p))
             {
-            case K_LBRACE:
-              _braceCount++;
+            case K_LPAREN:
+              _parensCount++;
               return Token.t_undefined;
-            case K_RBRACE:
-              _braceCount--;
-              if (_stringLexer._braceCount > 0)
+            case K_RPAREN:
+              if (_parensCount > 0)
                 {
-                  return Token.t_rbrace;
+                  _parensCount--;
+                  // we (stringlexer) took note of the bracecount,
+                  // let normal lexer continue.
+                  return Token.t_undefined;
                 }
-              _beginning = StringEnd.BRACE;
+              _beginning = StringEnd.PAREN;
               break;
             default:
               return Token.t_undefined;
@@ -3418,11 +3503,13 @@ PIPE        : "|"
           // push this onto the stack of string lexers:
           _outer = _stringLexer;
           _stringLexer = this;
+          if (CHECKS) check
+            (_stringLexer._parensCount >= 0);
           switch (end(t))
             {
-            case DOLLAR: _state = StringState.IDENT_EXPECTED; break;
-            case BRACE : _state = StringState.EXPR_EXPECTED; break;
-            default    : throw new Error("default:");
+            case DOLLAR -> _state = StringState.IDENT_EXPECTED;
+            case PAREN  -> _state = StringState.EXPR_EXPECTED;
+            default     -> throw new Error("default:");
             }
         }
       return t;
@@ -3445,13 +3532,13 @@ PIPE        : "|"
       {
       case t_stringQQ:
       case t_stringQD:
-      case t_stringQB:
-      case t_StringDQ:
-      case t_StringDD:
-      case t_StringDB:
-      case t_stringBQ:
-      case t_stringBD:
-      case t_stringBB: return true;
+      case t_stringQP:
+      case t_stringDQ:
+      case t_stringDD:
+      case t_stringDP:
+      case t_stringPQ:
+      case t_stringPD:
+      case t_stringPP: return true;
       default        : return false;
       }
   }
@@ -3459,7 +3546,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is started, i.e., it is not
-   * preceded by an embedded identifier {@code $id} or expression {@code {expr}}.
+   * preceded by an embedded identifier {@code $id} or expression {@code $(expr)}.
    *
    * @param t a token
    *
@@ -3473,7 +3560,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is completed, i.e., it is not
-   * followed by an embedded identifier {@code $id} or expression {@code {expr}}.
+   * followed by an embedded identifier {@code $id} or expression {@code $(expr)}.
    *
    * @param t a token
    *
@@ -3502,7 +3589,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is following an embedded
-   * identifier or expression, i.e., any of the t_stringD* or t_stringB*
+   * identifier or expression, i.e., any of the t_stringD* or t_stringP*
    * variants of constant strings.
    *
    * @param t a token

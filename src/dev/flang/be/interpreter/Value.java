@@ -44,7 +44,7 @@ public abstract class Value extends FUIRContext
    * Dummy value to be returned by Expr.execute for the case that the
    * expression does not produce a value
    */
-  public static Value NO_VALUE = new Value() {
+  public static final Value VOID = new Value() {
     @Override
     public String toString()
     {
@@ -56,7 +56,7 @@ public abstract class Value extends FUIRContext
   /**
    * Dummy value to be returned by intrinsic features that return an empty self.
    */
-  public static Value EMPTY_VALUE = new Value()
+  public static final Value UNIT = new Value()
     {
       void storeNonRef(LValue slot, int size)
       {
@@ -66,7 +66,7 @@ public abstract class Value extends FUIRContext
       @Override
       public String toString()
       {
-        return "EMPTY_VALUE";
+        return "unit";
       }
     };
 
@@ -100,6 +100,7 @@ public abstract class Value extends FUIRContext
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "UNKNOWN VALUE";
@@ -267,20 +268,6 @@ public abstract class Value extends FUIRContext
   boolean equalsBitWise(LValue slot, int size)
   {
     throw new Error("value "+ this + " not allowed for equalsBitWise");
-  }
-
-
-  /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  void checkStaticClazz(int expected)
-  {
-    throw new Error("value " + this + " not allowed for clazz "+ expected);
   }
 
 

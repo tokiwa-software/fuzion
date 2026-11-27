@@ -38,7 +38,7 @@ import dev.flang.util.HasSourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class DfaErrors extends ANY
+class DfaErrors extends ANY
 {
 
 
@@ -65,11 +65,6 @@ public class DfaErrors extends ANY
     Errors.error(pos.pos(),
                  "reading uninitialized field " + sqn(field) + " from instance of " + code(clazz),
                  "Callchain that lead to this point:\n\n" + why.contextString());
-  }
-
-  public static void fatal(String msg)
-  {
-    Errors.fatal(msg);
   }
 
 }

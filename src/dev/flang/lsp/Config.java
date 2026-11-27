@@ -46,7 +46,6 @@ import dev.flang.util.FuzionOptions;
 public class Config
 {
 
-  public static final boolean ComputeAsync = true;
   public static final long DIAGNOSTICS_DEBOUNCE_DELAY_MS = 1000;
   private static LanguageClient _languageClient;
   private static Transport _transport;
@@ -92,33 +91,16 @@ public class Config
     _transport = transport;
   }
 
-  public static boolean DEBUG()
-  {
-    var debug = System.getenv("DEBUG");
-    if (debug == null)
-      {
-        return false;
-      }
-    return debug.toLowerCase().equals("true");
-  }
-
   public static void setConfiguration(List<Object> configuration)
   {
     var json = (JsonObject) configuration.get(0);
 
     Context.logger.info("[Config] received: " + json);
 
-    setJavaModules(json);
+    setModules(json);
     setFuzionOptions(json);
     setCodeLensOptions(json);
-    setFuirEnabled(json);
   }
-
-  private static void setFuirEnabled(JsonObject json)
-  {
-    Context.middleEndEnabled = ErrorHandling.resultOrDefault(() -> json.get("middle_end_enabled").getAsBoolean(), false);
-  }
-
 
   private static void setCodeLensOptions(JsonObject json)
   {
@@ -151,7 +133,6 @@ public class Config
           ErrorHandling.resultOrDefault(() -> options.get("verbosity").getAsInt(), 0),
           ErrorHandling.resultOrDefault(() -> options.get("debugLevel").getAsInt(), 0),
           ErrorHandling.resultOrDefault(() -> options.get("safety").getAsBoolean(), true),
-          ErrorHandling.resultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true),
           SourceText.fuzionHome, null)
           {
             @Override
@@ -170,35 +151,29 @@ public class Config
       }
   }
 
-  private static void setJavaModules(JsonObject json)
+  private static void setModules(JsonObject json)
   {
     try
       {
         var modules = json
-          .getAsJsonObject("java")
           .getAsJsonArray("modules");
 
         var result = Util.streamOf(modules.iterator())
           .map(x -> x.getAsString())
           .collect(Collectors.toUnmodifiableList());
 
-        Context.logger.log("[Config] Java modules: " + result.stream().collect(Collectors.joining(", ")));
-        ParserTool.setJavaModules(result);
+        Context.logger.log("[Config] modules: " + result.stream().collect(Collectors.joining(", ")));
+        ParserTool.setModules(result);
       }
     catch (Exception e)
       {
-        Context.logger.error("[Config] parsing of java modules failed.");
+        Context.logger.error("[Config] parsing of modules failed.");
       }
   }
 
   public static void setTrace(String value)
   {
     _trace = value;
-  }
-
-  public static String getTrace()
-  {
-    return _trace;
   }
 
   public static void setClientCapabilities(ClientCapabilities capabilities)

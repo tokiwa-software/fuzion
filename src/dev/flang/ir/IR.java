@@ -26,20 +26,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ir;
 
+import java.util.ArrayDeque;
 import java.util.stream.Collectors;
 
-import dev.flang.ast.AbstractAssign; // NYI: remove dependency
-import dev.flang.ast.AbstractBlock; // NYI: remove dependency
-import dev.flang.ast.AbstractCall; // NYI: remove dependency
-import dev.flang.ast.Constant; // NYI: remove dependency
-import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
-import dev.flang.ast.AbstractMatch; // NYI: remove dependency
+import dev.flang.ast.AbstractAssign; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.AbstractBlock; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.AbstractCall; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.Constant; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.AbstractCurrent; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.AbstractMatch; // NYI: CLEANUP: remove dependency
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.InlineArray; // NYI: remove dependency
-import dev.flang.ast.NumLiteral; // NYI: remove dependency
-import dev.flang.ast.Nop; // NYI: remove dependency
-import dev.flang.ast.Universe; // NYI: remove dependency
+import dev.flang.ast.Expr; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.InlineArray; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.Types;
+import dev.flang.ast.Universe; // NYI: CLEANUP: remove dependency
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -84,11 +84,8 @@ public abstract class IR extends ANY
 
   /**
    * Special clazz index value for not-existing clazz.
-   *
-   * NYI: CLEANUP: This should better be {@code CLAZZ_BASE-1} and it should be used
-   * instead of {@code -1} in FUIR.java.
    */
-  public static final int NO_CLAZZ = -1;
+  public static final int NO_CLAZZ = CLAZZ_BASE-1;
 
 
   /**
@@ -108,7 +105,15 @@ public abstract class IR extends ANY
     Intrinsic,
     Abstract,
     Choice,
-    Native;
+    Native,
+    /**
+     * A type parameter should always be a unit type and
+     * not need any code to be created. Furthermore it
+     * should only be used during DFA/monomorphization for compile time type
+     * casts via e.g. `if T :  String`. later these should
+     * not be necessary anymore.
+     */
+    TypeParameter;
 
 
     /**
@@ -131,7 +136,10 @@ public abstract class IR extends ANY
     Const,
     Match,
     Tag,
-    Pop;
+    Pop,
+    MatchCaseIndex;
+
+    public boolean isCallOrAssign() { return ExprKind.this == Call || ExprKind.this == Assign; }
   }
 
 
@@ -178,10 +186,7 @@ public abstract class IR extends ANY
   protected int addCode(List<Object> code)
   {
     var result = _allCode.size() + SITE_BASE;
-    for (var c : code)
-      {
-        _allCode.add(c);
-      }
+    _allCode.addAll(code);
     _allCode.add(null);
     return result;
   }
@@ -203,21 +208,6 @@ public abstract class IR extends ANY
   /*--------------------------  stack handling  -------------------------*/
 
 
-  /**
-   * Create list of ExprKind from the given expression (and its nested
-   * expressions).
-   *
-   * @param e a expression.
-   *
-   * @return list of ExprKind created from s.
-   */
-  private List<Object> toStack(Expr e)
-  {
-    List<Object> result = new List<>();
-    toStack(result, e);
-    return result;
-  }
-
 
   /**
    * Add entries of type ExprKind created from the given expression (and its
@@ -229,7 +219,7 @@ public abstract class IR extends ANY
    */
   protected void toStack(List<Object> l, Expr e)
   {
-    toStack(l, e, false);
+    toStack(l, e, false, false);
   }
 
 
@@ -243,33 +233,85 @@ public abstract class IR extends ANY
    *
    * @param dumpResult flag indicating that we are not interested in the result.
    */
-  protected void toStack(List<Object> l, Expr e, boolean dumpResult)
+  protected void toStack(List<Object> l, Expr e, boolean dumpResult, boolean useIRtoStack)
   {
     if (PRECONDITIONS) require
       (l != null,
        e != null);
 
+    var stack = new ArrayDeque<Runnable>();
+    if (useIRtoStack)
+      {
+        stack.push(() -> toStackIR(stack, l, e, dumpResult));
+      }
+    else
+      {
+        stack.push(() -> toStack(stack, l, e, dumpResult));
+      }
+    while (!stack.isEmpty())
+      {
+        stack.pop().run();
+      }
+  }
+
+
+  /**
+   * Helper for {@code toStack}: add the code for the given expression (and its
+   * nested expressions) to list l, the nested expressions are scheduled on work
+   * stack tasks.  pop the result in case dumpResult==true.
+   *
+   * This method is called for each expression and may be overridden in heirs,
+   * e.g., to replace an expression by the code that implements it.
+   *
+   * @param tasks the work stack for the nested expressions.
+   *
+   * @param l list of ExprKind that should be extended by e's expressions
+   *
+   * @param e a expression.
+   *
+   * @param dumpResult flag indicating that we are not interested in the result.
+   */
+  protected void toStack(ArrayDeque<Runnable> tasks, List<Object> l, Expr e, boolean dumpResult)
+  {
+    toStackIR(tasks, l, e, dumpResult);
+  }
+
+
+  /**
+   * IR's implementation of {@code toStack}.
+   *
+   * @param stack the work stack for the nested expressions.
+   *
+   * @param l list of ExprKind that should be extended by e's expressions
+   *
+   * @param e a expression.
+   *
+   * @param dumpResult flag indicating that we are not interested in the result.
+   */
+  private void toStackIR(ArrayDeque<Runnable> stack, List<Object> l, Expr e, boolean dumpResult)
+  {
     if (e instanceof AbstractAssign a)
       {
-        toStack(l, boxAndTag(a._value, a._assignedField.resultType()));
-        toStack(l, a._target);
-        l.add(a);
+        stack.push(() -> l.add(a));
+        stack.push(() -> toStack(stack, l, a._target, false));
+        stack.push(() -> toStack(stack, l, boxAndTag(a._value, a._assignedField.resultType()), false));
       }
     else if (e instanceof Box b)
       {
-        toStack(l, b._value, dumpResult);
         if (!dumpResult)
           {
-            l.add(b);
+            stack.push(() -> l.add(b));
           }
+        stack.push(() -> toStack(stack, l, b._value, dumpResult));
       }
     else if (e instanceof AbstractBlock b)
       {
         // for (var expr : b.expressions_)  -- not possible since we need index i
-        for (int i=0; i<b._expressions.size(); i++)
+        for (int i=b._expressions.size()-1; i>=0; i--)
           {
             var expr = b._expressions.get(i);
-            toStack(l, expr, dumpResult || i < b._expressions.size()-1);
+            var dump = dumpResult || i < b._expressions.size()-1;
+            stack.push(() -> toStack(stack, l, expr, dump));
           }
       }
     else if (e instanceof Constant)
@@ -283,10 +325,7 @@ public abstract class IR extends ANY
       {
         // in FUIR this inline array might be added
         //  to stack as a compile time constant.
-        if (!dumpResult)
-        {
-          toStack(l, ia.code(), dumpResult);
-        }
+        stack.push(() -> toStack(stack, l, ia.code(), dumpResult));
       }
     else if (e instanceof AbstractCurrent)
       {
@@ -295,40 +334,56 @@ public abstract class IR extends ANY
             l.add(ExprKind.Current);
           }
       }
+    else if (e instanceof AbstractCall c && (c.calledFeature() == Types.resolved.f_type_as_value || c.calledFeature().isUnitTypeWithoutSideEffect()))
+      {
+      }
     else if (e instanceof AbstractCall c)
       {
-        toStack(l, c.target());
-        var fat = c.formalArgumentTypes();
-        for (int i = 0; i < c.actuals().size(); i++)
+        // NYI: CLEANUP: we may be able to remove type parameter
+        // calls even earlier
+        if (!c.calledFeature().isTypeParameter())
           {
-            toStack(l, boxAndTag(c.actuals().get(i), fat[i]));
+            if (dumpResult)
+              {
+                stack.push(() -> l.add(ExprKind.Pop));
+              }
+            stack.push(() -> l.add(c));
+            var fat = c.formalArgumentTypes();
+            for (int i = c.actuals().size()-1; i>=0; i--)
+              {
+                var actual = boxAndTag(c.actuals().get(i), fat[i]);
+                stack.push(() -> toStack(stack, l, actual, false));
+              }
+            stack.push(() -> toStack(stack, l, c.target(), false));
           }
-        l.add(c);
-        if (dumpResult)
+        else
           {
-            l.add(ExprKind.Pop);
+            // target is still needed for its side effects
+            stack.push(() -> toStack(stack, l, c.target(), true));
           }
       }
     else if (e instanceof AbstractMatch m)
       {
-        toStack(l, m.subject());
-        l.add(m);
-        for (var c : m.cases())
+        // the code of each case is added as a separate code block, the site of
+        // this code block is added to l after the code for the match itself
+        var cases = m.cases();
+        for (int i=cases.size()-1; i>=0; i--)
           {
-            var caseCode = toStack(c.code());
-            l.add(new NumLiteral(addCode(caseCode)));
+            var caseCode = new List<Object>();
+            stack.push(() -> l.add(new MatchCaseIndex(addCode(caseCode))));
+            var j = i;
+            stack.push(() -> toStack(stack, caseCode, cases.get(j).code(), false));
           }
+        stack.push(() -> l.add(m));
+        stack.push(() -> toStack(stack, l, m.subject(), false));
       }
     else if (e instanceof Tag t)
       {
-        toStack(l, t._value, dumpResult);
         if (!dumpResult)
           {
-            l.add(t);
+            stack.push(() -> l.add(t));
           }
-      }
-    else if (e instanceof Nop)
-      {
+        stack.push(() -> toStack(stack, l, t._value, dumpResult));
       }
     else if (e instanceof Universe)
       {
@@ -365,11 +420,12 @@ public abstract class IR extends ANY
           {
             result = new Box(result, rt);
           }
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(result.type()).yes())
+        var choiceT = frmlT.relayTypeAsThisType();
+        if (choiceT.isChoice() && choiceT.isAssignableFrom(result.type()).yes() && frmlT.isAssignableFromWithoutTagging(expr.type()).no())
           {
-            result = tag(result, frmlT);
+            result = tag(result, choiceT);
             if (CHECKS) check
-              (result.needsBoxing(frmlT) == null);
+              (choiceT.isThisType() || result.needsBoxing(choiceT) == null);
           }
       }
     /**
@@ -390,7 +446,7 @@ public abstract class IR extends ANY
      */
     // NYI: ugly special case: currently needed for code like
     // because isAssignableFrom does not return yes without correct Context...
-    else if (t.isGenericArgument() && frmlT.isRef())
+    else if (t.isParametricType() && frmlT.isRef())
       {
         var rt = expr.needsBoxing(frmlT);
         if (rt != null)
@@ -402,7 +458,7 @@ public abstract class IR extends ANY
     if (POSTCONDITIONS) ensure
       (Errors.any()
         || t.isVoid()
-        || frmlT.isGenericArgument()
+        || frmlT.isParametricType()
         || frmlT.isThisType()
         || result.needsBoxing(frmlT) == null
         || frmlT.isAssignableFrom(t).no());
@@ -422,17 +478,13 @@ public abstract class IR extends ANY
    */
   private static Expr tag(Expr expr, AbstractType frmlT)
   {
-    if(PRECONDITIONS) require
+    if (PRECONDITIONS) require
       (frmlT.isChoice());
 
+    var actual = expr.type();
+
     // Case 1: types are equal, no tagging necessary
-    if (frmlT.compareTo(expr.type()) == 0)
-      {
-        return expr;
-      }
-    // Case 1.1: types are equal, no tagging necessary
-    // NYI: BUG: soundness issue? see also isAssignableFrom
-    else if(expr.type().isChoice() && (frmlT.isThisType() || expr.type().isThisType()) && frmlT.asThis().compareTo(expr.type().asThis()) == 0)
+    if (frmlT.compareTo(actual) == 0)
       {
         return expr;
       }
@@ -448,7 +500,7 @@ public abstract class IR extends ANY
     else if (frmlT
              .choiceGenerics()
              .stream()
-             .filter(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes())
+             .filter(cg -> cg.isAssignableFromWithoutTagging(actual).yes())
              .count() > 1)
       {
         Errors.fatal("Ambiguous assignment to choice, should have been caught in frontend.");
@@ -460,7 +512,7 @@ public abstract class IR extends ANY
     else if (frmlT
              .choiceGenerics()
              .stream()
-             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes()))
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(actual).yes()))
       {
         return new Tag(expr, frmlT);
       }
@@ -474,16 +526,14 @@ public abstract class IR extends ANY
         var cgs = frmlT
           .choiceGenerics()
           .stream()
-          .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(expr.type()).yes())
+          .filter(cg -> cg.relayTypeAsThisType().isChoice() && cg.relayTypeAsThisType().isAssignableFromWithoutBoxing(actual).yes())
           .collect(Collectors.toList());
 
-        if (cgs.size() > 1)
+        if (cgs.size() != 1)
           {
-            Errors.fatal("Ambiguous assignment to choice, should have been caught in frontend.");
+            Errors.fatal("Ambiguous or incompatible assignment to choice, should have been caught in frontend.");
+            return Expr.NO_VALUE;
           }
-
-        if (CHECKS) check
-          (Errors.any() || cgs.size() == 1);
 
         return tag(tag(expr, cgs.get(0)), frmlT);
       }
@@ -584,6 +634,10 @@ public abstract class IR extends ANY
     else if (e instanceof Constant)
       {
         result = ExprKind.Const;
+      }
+    else if (e instanceof MatchCaseIndex)
+      {
+        result = ExprKind.MatchCaseIndex;
       }
     else if (e instanceof InlineArray)
       {

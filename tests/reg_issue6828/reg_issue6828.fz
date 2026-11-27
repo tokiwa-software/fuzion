@@ -1,0 +1,60 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue6828
+#
+# -----------------------------------------------------------------------
+
+# resulted in a verify error because in Clazz.handDown
+# outers of fields (Y in this case) were not considered to be ref.
+#
+# error 1: java.lang.VerifyError: Bad type on operand stack
+# Exception Details:
+#   Location:
+#     fzC_Stack.fzRoutine()LfzC_Stack; @22: putfield
+#   Reason:
+#     Type 'fzC_Stack__2Node' (current frame, stack[1]) is not assignable to 'fzC_Stack__2Node_2'
+#   Current Frame:
+#     bci: @22
+#     flags: { }
+#     locals: { 'fzC_Stack' }
+#     stack: { 'fzC_Stack', 'fzC_Stack__2Node' }
+#   Bytecode:
+#     0000000: bb00 0259 b700 104b b800 152a 2a00 0000
+#     0000010: 1216 01b8 001b b500 1f2a b0
+#   Stackmap Table:
+#     full_frame(@0,{},{})
+#
+#         at fzC_universe.fzRoutine(--builtin--:38)
+#         at fzC_universe.fz_run(--builtin--)
+#         at dev.flang.be.jvm.runtime.FuzionThread.lambda$new$1(FuzionThread.java:120)
+#         at dev.flang.util.Errors.runAndExit(Errors.java:912)
+#         at dev.flang.be.jvm.runtime.FuzionThread.lambda$new$2(FuzionThread.java:132)
+#         at java.base/java.lang.Thread.run(Thread.java:1474)
+
+Stack ref is
+
+  Node(data i32, next option Node) ref is
+
+  top Node := Node 32 nil
+
+  push (e T) unit =>
+    _ := top
+
+Stack.push 1

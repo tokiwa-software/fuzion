@@ -1,0 +1,127 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.Clock
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# time.Clock -- class of effects that implement a clock
+#
+# This is a `ref` feature such that code that requires an arbitrary `Clock`
+# effect could be written in a way that permits its execution using different
+# actual `Clock` implementations like `time.Nano` that provides high
+# precision with low accuracy or a different clock that provides higher accuracy.
+#
+public Clock ref : effect is
+
+
+  # in case this clock corresponds to a POSIX 1003.1 clock, give that clock's id.
+  #
+  # This might be `nil` for `Clock`s that do not correspond to a POSIX clock.
+  #
+  # NYI: BUG: 7400: would be nicer to have this as a normal feature, not
+  # a type feature, and then call it via Clock.env.posix_id.  This currently
+  # fails to verify that the default effect is instated, because effect dependencies
+  # are not checked for the order in the big bang singularity.
+  #
+  public type.posix_id option posix.clockid_t
+  =>
+    nil
+
+
+  # read the time of this clock
+  #
+  public read time.instant => abstract
+
+
+  # halt the current thread until the given instant. In case `t` is in the past,
+  # return immediately.
+  #
+  public sleep_until(# the instant we should wait for
+                     t time.instant
+                     ) unit
+  =>
+    sleep_until t read
+
+
+  # internal helper to implement `sleep_until` if the current time has already been
+  # read and is passed as `just_now`.
+  #
+  sleep_until(# the instant we should wait for
+              t,
+
+              # the current instant that has just been `read`.
+              just_now time.instant)
+  =>
+    if just_now < t
+      sleep t-just_now
+
+
+  # halt the current thread during the given period of time
+  #
+  public sleep(d time.duration) unit => abstract
+
+
+  # default implementation of Clock using default_nano_time.
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option time.Clock =>
+    Nano.default_value.bind (x -> id time.Clock x)
+
+
+  # run the given `code` periodically at time `first+p*0`, `first+p*1`, `first+p*2`,
+  # etc. until this clock has reached the time `last`.
+  #
+  # In case any of the instants `first+p*0`, `first+p*1`, `first+p*2`, etc. happen to
+  # be in the past when this is called or after the previous execution of `code`,
+  # respectively, do not run `code` for that instant.
+  #
+  # In case `period.is_infinity`, run `code` once unless `first > last`.
+  #
+  public run_periodic(P : time.period,
+                      first time.instant,
+                      p P,
+                      last time.instant,
+                      code ()->unit) unit
+  pre
+    debug: p.is_infinity || p.as_duration > time.duration.ns 0
+  =>
+    if p.is_infinity
+      just_now := read
+      if first <= last
+        sleep_until first just_now
+        code()
+    else
+      for
+        cnt := u64 0, cnt + 1
+        just_now := read
+        next1 := first + p * cnt
+        skipped :=
+          if just_now > next1
+          then
+            (just_now - next1) / p.as_duration + 1
+          else
+            0
+        next := first + p * (cnt + skipped)
+      while next <= last
+        sleep_until next just_now
+        code()

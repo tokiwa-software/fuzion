@@ -1,0 +1,130 @@
+
+reg_issue37.fz:29:11: error 1: Ambiguous type
+    b : a b is                     # 1. should flag an error: `b` found in `reg_issue37.a.b` and in `reg_issue37.a`
+----------^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'b'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.a.b' found 'reg_issue37.a.b' defined at reg_issue37.fz:29:5
+    b : a b is                     # 1. should flag an error: `b` found in `reg_issue37.a.b` and in `reg_issue37.a`
+----^
+and in 'reg_issue37.a' found 'reg_issue37.a.b' defined at reg_issue37.fz:29:5
+    b : a b is                     # 1. should flag an error: `b` found in `reg_issue37.a.b` and in `reg_issue37.a`
+----^
+
+To solve this, qualify the type using 'reg_issue37.a.b.this.b' or 'reg_issue37.a.this.b'.
+
+
+reg_issue37.fz:38:15: error 2: Ambiguous type
+    b2 : a2 S b2 is                # 2. should flag an error: `b2` found in `reg_issue37.a2.b2` and in `reg_issue37.a2`
+--------------^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'b2'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.a2.b2' found 'reg_issue37.a2.b2' defined at reg_issue37.fz:38:5
+    b2 : a2 S b2 is                # 2. should flag an error: `b2` found in `reg_issue37.a2.b2` and in `reg_issue37.a2`
+----^^
+and in 'reg_issue37.a2' found 'reg_issue37.a2.b2' defined at reg_issue37.fz:38:5
+    b2 : a2 S b2 is                # 2. should flag an error: `b2` found in `reg_issue37.a2.b2` and in `reg_issue37.a2`
+----^^
+
+To solve this, qualify the type using 'reg_issue37.a2.b2.this.b2' or 'reg_issue37.a2.this.b2'.
+
+
+reg_issue37.fz:42:19: error 3: Ambiguous type
+    d : c (option d) is            # 3. should flag an error: `d` found in `reg_issue37.c.d` and in `reg_issue37.c`
+------------------^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'd'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.c.d' found 'reg_issue37.c.d' defined at reg_issue37.fz:42:5
+    d : c (option d) is            # 3. should flag an error: `d` found in `reg_issue37.c.d` and in `reg_issue37.c`
+----^
+and in 'reg_issue37.c' found 'reg_issue37.c.d' defined at reg_issue37.fz:42:5
+    d : c (option d) is            # 3. should flag an error: `d` found in `reg_issue37.c.d` and in `reg_issue37.c`
+----^
+
+To solve this, qualify the type using 'reg_issue37.c.d.this.d' or 'reg_issue37.c.this.d'.
+
+
+reg_issue37.fz:33:11: error 4: Ambiguous type
+      f(v z) => say "f"            # 4. should flag an error: `z` found in `reg_issue37.x.y` and in `reg_issue37.x`
+----------^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'z'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.x.y' found 'reg_issue37.x.z' defined at reg_issue37.fz:34:5
+    z is
+----^
+and in 'reg_issue37.x' found 'reg_issue37.x.z' defined at reg_issue37.fz:34:5
+    z is
+----^
+
+To solve this, qualify the type using 'reg_issue37.x.y.this.z' or 'reg_issue37.x.this.z'.
+
+
+reg_issue37.fz:48:13: error 5: Ambiguous type
+        f(v l) => say "f"          # 5. should flag an error: `l` found in `reg_issue37.m.n.o` and in `reg_issue37.m.n`
+------------^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'l'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.m.n.o' found 'reg_issue37.m.n.l' defined at reg_issue37.fz:49:7
+      l is
+------^
+and in 'reg_issue37.m.n' found 'reg_issue37.m.n.l' defined at reg_issue37.fz:49:7
+      l is
+------^
+
+To solve this, qualify the type using 'reg_issue37.m.n.o.this.l' or 'reg_issue37.m.n.this.l'.
+
+
+reg_issue37.fz:55:13: error 6: Ambiguous type
+        f(v e) => say "f"          # 6. should flag an error: `e` found in `reg_issue37.s.t.w`, `reg_issue37.s.t` and `reg_issue37.s`
+------------^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'e'
+The same feature was found at different levels of outer features, resulting in different types:
+in 'reg_issue37.s.t.w' found 'reg_issue37.s.e' defined at reg_issue37.fz:56:5
+    e is
+----^
+and in 'reg_issue37.s.t' found 'reg_issue37.s.e' defined at reg_issue37.fz:56:5
+    e is
+----^
+and in 'reg_issue37.s' found 'reg_issue37.s.e' defined at reg_issue37.fz:56:5
+    e is
+----^
+
+To solve this, qualify the type using 'reg_issue37.s.t.w.this.e' or 'reg_issue37.s.t.this.e' or 'reg_issue37.s.this.e'.
+
+
+reg_issue37.fz:107:9: error 7: Incompatible types when passing argument in a call
+  u.v.g u.k                        # 7. should flag an error: expected `u.v.k`, found `u.k`
+--------^^^
+Actual type for argument #1 'w' does not match expected type.
+In call to          : 'reg_issue37.u.v.g'
+expected formal type: 'reg_issue37.this.u.v.k'
+actual type found   : 'reg_issue37.this.u.k'
+assignable to       : 'reg_issue37.this.u.k'
+for value assigned  : 'u.k'
+To solve this you could:
+  • make  'reg_issue37.this.u.v.k' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'w' to 'reg_issue37.this.u.k', or
+  • convert the type of the assigned value to 'reg_issue37.this.u.v.k'.
+
+
+reg_issue37.fz:108:9: error 8: Incompatible types when passing argument in a call
+  u.v.h u.v.k                      # 8. should flag an error: expected `u.k`, found `u.v.k`
+--------^^^^^
+Actual type for argument #1 'w' does not match expected type.
+In call to          : 'reg_issue37.u.v.h'
+expected formal type: 'reg_issue37.this.u.k'
+actual type found   : 'reg_issue37.this.u.v.k'
+assignable to       : 'reg_issue37.this.u.v.k'
+for value assigned  : 'u.v.k'
+To solve this you could:
+  • make  'reg_issue37.this.u.k' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'w' to 'reg_issue37.this.u.v.k', or
+  • convert the type of the assigned value to 'reg_issue37.this.u.k'.
+
+8 errors.

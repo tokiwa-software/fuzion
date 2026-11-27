@@ -49,8 +49,7 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-public outcome(public T type) : switch T error
-is
+public outcome(T : Any) : switch T error is
 
   # Does this outcome contain an error
   #
@@ -64,20 +63,10 @@ is
   #
   public err error
     pre
-      safety: outcome.this!!
+      safety: !outcome.this
   =>
     outcome.this ? T       => panic "outcome.err called on successful outcome. Enable `safety` to obtain a precondition failure for debugging."
                  | e error => e
-
-
-  # converts outcome to a string
-  #
-  # returns the result of T.as_string for a successful outcome, or
-  # "--$e--" for e error.
-  #
-  public redef as_string String =>
-    outcome.this ? v T     => v.as_string
-                 | e error => "--$e--"
 
 
   # monadic operator
@@ -97,7 +86,7 @@ is
   #       fd i64 =>
   #         # read 42 bytes from example file
   #         match read fd 42
-  #           content array u8 => strings.from_bytes content
+  #           content array u8 => String.from content
   #           re error => re
   #       oe error => oe
   #
@@ -105,7 +94,7 @@ is
   #
   #     (open "example.txt").bind (fd->read fd 42)
   #
-  public fixed bind(B type, f T -> outcome B) outcome B =>
+  public fixed bind(B : Any, f T -> outcome B) outcome B =>
     outcome.this ? v T => f v
                  | e error => e
 
@@ -114,13 +103,13 @@ is
   #
   # this is essentially a no-op.
   #
-  public redef as_outcome outcome T
+  public redef fixed as_outcome outcome T
   =>
     outcome.this
 
 
 
-# outcome with 1 argument provides an short-hand to wrap a value into a
+# outcome with 1 argument provides an shorthand to wrap a value into a
 # outcome
 #
 # Using this enables to write
@@ -131,4 +120,4 @@ is
 #
 #     o outcome TypeOfX := x
 #
-public outcome(T type, o outcome T) outcome T => o
+public outcome(T : Any, o outcome T) outcome T => o

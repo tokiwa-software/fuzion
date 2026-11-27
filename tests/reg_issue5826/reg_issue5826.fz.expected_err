@@ -1,0 +1,39 @@
+
+reg_issue5826.fz:28:8: error 1: Failed to infer actual type parameters
+    if x ∈ squares
+-------^^^^^^^^^^^
+In call to 'infix ∈', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+reg_issue5826.fz:27:11: error 2: Could not find called feature
+  (1..10).for_each x ->
+----------^^^^^^^^^^^^^
+    if x ∈ squares
+----^^^^^^^^^^^^^^
+      say "$x in squares"
+------^^^^^^^^^^^^^^^^^^^
+    else
+----^^^^
+      say "$x not in squares"
+------^^^^^^^^^^^^^^^^^^^^^^^
+Feature not found: 'infix/infix_right ->' (one argument)
+Target feature: 'unit'
+In call: 
+(1..10).for_each x ->
+    if x ∈ squares
+      say "$x in squares"
+    else
+      say "$x not in squares"
+
+
+
+reg_issue5826.fz:27:20: error 3: Could not find called feature
+  (1..10).for_each x ->
+-------------------^
+Feature not found: 'x' (no arguments)
+Target feature: 'example'
+In call: 'x'
+
+3 errors.

@@ -1,0 +1,83 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue3508_dangling_else
+#
+# -----------------------------------------------------------------------
+
+reg_issue3508_dangling_else =>
+
+  # CORRECT
+
+  if false then else if false then unit else say "ok"
+
+  if true then if true then if true then
+
+  if true then unit else unit; if false then unit else unit; if true then unit else unit
+
+  if false then else if false then else if false then else
+
+  # disambguate using multiple lines
+  if true then say "hi"
+               if false then say "ho" else say "ha"
+  else say "he"
+
+  # disambguate using `{`/`}`
+  if true then {if false then} else {if false then else}
+
+  # disambguate using `(`/`)`
+  if true then say (if false then say "ho" else say "ha")
+
+  # disambguate using `[`/`]`
+  a := [0,1]
+  if true then say a[if false then 0 else 1] else
+
+  if false then if false then unit else say "dangling"   # 1. should flag an error: dangling else
+
+  if true then if true then if true then else            # 2. should flag an error: dangling else
+
+  if true then {if false then if false then else} else   # 3. should flag an error: dangling else
+
+  if true then say "hi"; if true then say "ho" else say "ha" else say "he"  # 4. should flag an error: dangling else
+
+  if (false) then if false then unit else say "dangling"   # 5. should flag an error: dangling else
+
+  if (true) then if true then if true then else            # 6. should flag an error: dangling else
+
+  if (true) then {if false then if false then else} else   # 7. should flag an error: dangling else
+
+  if (true) then say "hi"; if true then say "ho" else say "ha" else say "he"  # 8. should flag an error: dangling else
+
+  while false if false then else        # 9. should flag an error: ambiguous else
+
+  do while false if true then else      # 10. should flag an error: 2x: nested loop and ambiguous else
+
+  while (false) if false then else      # 11. should flag an error: ambiguous else
+
+  do while (false) if true then else    # 12. should flag an error: 2x: nested loop and ambiguous else
+
+  if true then while false else                           # 13. should flag an error: ambiguous else
+
+  if true then while false do else                        # 14. should flag an error: ambiguous else
+
+  if true then while false do until false else            # 15. should flag an error: ambiguous else
+
+  if true then while false until false else               # 16. should flag an error: ambiguous else
+
+  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else

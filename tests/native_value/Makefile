@@ -23,6 +23,10 @@
 
 override NAME = native_value
 
+# NYI: UNDER DEVELOPMENT: workaround for libLLVM overriding jvm signal handlers
+LD_PRELOAD=$(JAVA_HOME)/lib/server/libjsig.so
+DYLD_INSERT_LIBRARIES=$(JAVA_HOME)/lib/server/libjsig.dylib
+
 # NYI: CLEANUP: use generic include paths
 CLANG_VERSION = $(shell clang --version | head -n 1 | awk '{print $$4}' | cut -d. -f1)
 export C_INCLUDE_PATH = /usr/lib/llvm-$(CLANG_VERSION)/include:/opt/homebrew/opt/llvm/include:/opt/homebrew/Cellar/llvm@15/15.0.7/include/

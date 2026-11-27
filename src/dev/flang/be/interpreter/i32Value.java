@@ -26,14 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.SpecialClazzes;
 
 /**
  * i32Value is a value of type i32
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class i32Value extends Value
+class i32Value extends Value
 {
 
 
@@ -66,53 +65,29 @@ public class i32Value extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return Integer.toString(_val);
   }
 
 
-  /**
-   * For a value of type i32, return the value.
-   *
-   * @return the i32 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public int i32Value()
   {
     return _val;
   }
 
 
-  /**
-   * Store this value in a field
-   *
-   * @param slot the slot that addresses the field this should be stored in.
-   *
-   * @param size the size of the data to be stored
-   */
+  /** {@inheritDoc} */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require
       (size == 1);
 
     slot.container.nonrefs[slot.offset] = _val;
-  }
-
-
-  /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  void checkStaticClazz(int expected)
-  {
-    if (expected != fuir().clazz(SpecialClazzes.c_i32))
-      {
-        throw new Error("i32 value not allowed for clazz " + expected);
-      }
   }
 
 

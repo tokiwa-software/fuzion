@@ -1,1 +1,3 @@
-NYI: UNDER DEVELOPMENT: need to figure out how to install wolf.dll and headers on windows
+# NYI: UNDER DEVELOPMENT:
+on windows wolfssl does not use default certificate store automatically
+thus cert validation fails

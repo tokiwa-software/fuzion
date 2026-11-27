@@ -1,0 +1,59 @@
+----
+
+case1: expecting 'i32 unit f64' and `...#Open_Types<n>`
+[i32, unit, f64]
+(call_open_type_parameter.case1.x i32 unit f64)._
+----
+
+case2: expecting 'i32 unit f64' and `...#Open_Types<n>`
+[i32, unit, f64]
+(call_open_type_parameter.case2.x i32 unit f64)._
+----
+
+case3: expecting 'u16' and `Type`
+u16
+Type
+----
+
+case4: expecting 4 numerics and 3 strings
+4 numeric and 3 String types
+----
+
+case5: i64 [bool unit]
+A: i64
+Type
+[bool, unit]
+(call_open_type_parameter.case5.a i64 bool unit)._
+a.q: i64 [bool, unit]
+case5: u32 [f32]
+A: u32
+Type
+[f32]
+(call_open_type_parameter.case5.a u32 f32)._
+a.q: u32 [f32]
+case5: u8 []
+A: u8
+Type
+[]
+(call_open_type_parameter.case5.a u8)._
+a.q: u8 []
+----
+
+
+case6: a.r.s.t.u []
+[]
+
+case6: a.r.s.t.u [String codepoint bool unit (Sequence (i64,f64))]
+[String, codepoint, bool, unit, Sequence (tuple i64 f64)]
+
+case6: a.f.g [u32 bool unit]
+[u32, bool, unit]
+[u32, bool, unit]
+[u32, bool, unit] (call_open_type_parameter.case6.a u32 bool unit)._  ——internal value type of `B`
+[u32, bool, unit] Open_Types  ——boxed `Open_Types` value
+
+case6: b.f.g [i64 unit bool]
+[i64, unit, bool]
+[i64, unit, bool]
+[i64, unit, bool] call_open_type_parameter.case6.b._  ——internal value type of `B`
+[i64, unit, bool] Open_Types  ——boxed `Open_Types` value

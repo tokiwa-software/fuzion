@@ -26,11 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ir;
 
-import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
-import dev.flang.ast.ExpressionVisitor;
-import dev.flang.ast.FeatureVisitor;
 import dev.flang.util.SourcePosition;
 
 
@@ -50,7 +47,7 @@ public class Box extends Expr
   /**
    * the original value instance.
    */
-  public Expr _value;
+  public final Expr _value;
 
 
   /**
@@ -73,8 +70,9 @@ public class Box extends Expr
   {
     if (PRECONDITIONS) require
       (value != null,
-       !frmlT.containsUndefined(false),
-       frmlT.isGenericArgument() || frmlT.isThisType() || !value.type().isRef() || value.isCallToOuterRef(),
+       !frmlT.containsUndefined(),
+       frmlT.isParametricType() || frmlT.isThisType() || frmlT.isRef(),
+       !value.type().isRef(),
        !(value instanceof Box));
 
     this._value = value;
@@ -88,6 +86,7 @@ public class Box extends Expr
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _value.pos();
@@ -101,32 +100,12 @@ public class Box extends Expr
   }
 
 
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visit'");
-  }
-
-
-  /**
-   * visit all the expressions within this Box.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    super.visitExpressions(v);
-    _value.visitExpressions(v);
-  }
-
-
   /**
    * toString
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "box(" + _value + ")";

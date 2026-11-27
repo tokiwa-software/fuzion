@@ -64,7 +64,7 @@ public class HexDump
   /**
    * Highlight colors
    */
-  static String[] HIGHLIGHTS = USE_HIGHLIGHTS ?
+  static final String[] HIGHLIGHTS = USE_HIGHLIGHTS ?
     new String[]
     {
       Terminal.RED                      ,
@@ -93,7 +93,7 @@ public class HexDump
   /**
    * Reset to default color
    */
-  static String RESET = USE_HIGHLIGHTS ? Terminal.RESET : "";
+  static final String RESET = USE_HIGHLIGHTS ? Terminal.RESET : "";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -225,6 +225,7 @@ public class HexDump
   /**
    * Create the HexDump from data and the marked positions
    */
+  @Override
   public String toString()
   {
     var out = new StringBuilder();

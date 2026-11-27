@@ -31,7 +31,7 @@ import java.nio.ByteBuffer;
 import java.util.TreeSet;
 import java.util.TreeMap;
 
-import java.security.SecureRandom;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import dev.flang.ast.AbstractAssign;
@@ -44,9 +44,7 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Nop;
 import dev.flang.ast.ResolvedType;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
@@ -113,7 +111,7 @@ class LibraryOut extends ANY
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module version                                |
+   *   |        | 1      | u256          | module hash                                   |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | int           | number of modules this module depends on n    |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -133,52 +131,40 @@ class LibraryOut extends ANY
     _data = null;
 
     // now that we know the referenced modules, we start over:
-    var v = version();
-    if (v != null)
+    _data = new FixUps();
+    _data.writeBytes(FuzionConstants.MIR_FILE_MAGIC);
+    _data.writeString(name);
+    var hashOffset = _data.offset();
+    _data.writeBytes(new byte[32]);
+    _data.writeInt(rm.size());
+    for (var m : rm)
       {
-        _data = new FixUps();
-        _data.writeBytes(FuzionConstants.MIR_FILE_MAGIC);
-        _data.writeString(name);
-        _data.writeBytes(v);
-        _data.writeInt(rm.size());
-        for (var m : rm)
-          {
-            moduleRef(m);
-          }
-        allDeclFeatures(sm);
-        sourceFiles();
-        _data.fixUps(this);
-        sm._options.verbosePrintln(2, "" +
-                                   _data.featureCount() + " features " +
-                                   _data.typeCount() + " types and " +
-                                   _sourceFiles.size() + " source files included in fum file.");
+        moduleRef(m);
       }
+    allDeclFeatures(sm);
+    sourceFiles();
+    _data.fixUps(this);
+    MessageDigest md;
+    try
+      {
+        md = MessageDigest.getInstance("SHA3-256");
+        byte[] digest = md.digest(_data.buffer().array());
+        check(digest.length == 32);
+        _data.writeAt(hashOffset, digest);
+      }
+    catch (NoSuchAlgorithmException e)
+      {
+        Errors.fatal("SHA3-256 missing?");
+      }
+
+    sm._options.verbosePrintln(2, "" +
+                                _data.featureCount() + " features " +
+                                _data.typeCount() + " types and " +
+                                _sourceFiles.size() + " source files included in fum file.");
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Create a version number of this module file.  Currently, the version is
-   * just a cryptographically strong random number.
-   */
-  byte[] version()
-  {
-    var alg = "DRBG"; // or "SHA1PRNG"? NYI: Choose best algorithm here!
-    try
-      {
-        var result = new byte[16];
-        var r = SecureRandom.getInstance(alg);
-        r.nextBytes(result);
-        return result;
-      }
-    catch (NoSuchAlgorithmException e)
-      {
-        Errors.error("failed to produce secure random using algorithm '" + alg + "': " + e);
-        return null;
-      }
-  }
 
 
   /**
@@ -204,7 +190,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module hash                                   |
+   *   |        | 1      | u256          | module hash                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    * </pre>
    */
@@ -393,7 +379,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
+   *   | true   | 1      | short         | 000OREvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is cotype                       |
@@ -401,6 +387,8 @@ class LibraryOut extends ANY
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
+   *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
+   *   |        |        |               |               || isOpenTypeParameter          |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -418,12 +406,20 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | O=1    | 1      | int           | open type Feature index                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |
    *   | !isFiel+--------+---------------+-----------------------------------------------+
    *   | d? !isI| i      | Code          | inherits calls                                |
-   *   | ntrinsc|        |               |                                               |
+   *   | ntrinsi|        |               |                                               |
+   *   | c      |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | R      | 1      | int           | feature offset of precondition feature        |
    *   |        |        +---------------+-----------------------------------------------+
@@ -453,9 +449,7 @@ class LibraryOut extends ANY
 
     _data.add(f);
     int k = f.visibility().ordinal() << 7;
-    k = k | (!f.isConstructor() ? f.kind().ordinal() :
-              f.isRef()         ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
-                                : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
+    k = k | f.kind().ordinal();
     if (CHECKS) check
       (k >= 0,
        Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.isNative() || f.typeArguments().isEmpty());
@@ -467,7 +461,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_COTYPE;
       }
-    if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
+    if (f.isFixed())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }
@@ -487,6 +481,12 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
+    if (f.hasValuesAsOpenTypeFeature() || f.isOpenTypeParameter())
+      {
+        if (CHECKS) check
+          (f.hasValuesAsOpenTypeFeature() != f.isOpenTypeParameter()); //  only one of these two holds
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE;
+      }
     var n = f.featureName();
     _data.writeShort(k);
     var bn = n.baseName();
@@ -495,7 +495,7 @@ class LibraryOut extends ANY
         bn = "";
       }
     _data.writeString(bn);
-    var argCount = n.argCount() + f.freeTypesCount();
+    var argCount = f.arguments().size();
     _data.writeInt (argCount);      // NYI: use better integer encoding
     _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());
@@ -512,9 +512,25 @@ class LibraryOut extends ANY
       }
     if (CHECKS) check
       (f.arguments().size() == argCount);
-    if (!f.isConstructor() && !f.isChoice())
+    if (!f.isConstructor() && !f.isChoice() && !f.isTypeParameter())
       {
         type(f.resultType());
+      }
+    if (f.hasValuesAsOpenTypeFeature())
+      {
+        _data.writeOffset(f.valuesAsOpenTypeFeature());
+      }
+    else if (f.isOpenTypeParameter())
+      {
+        if (CHECKS) check
+          (!f.hasValuesAsOpenTypeFeature(),
+           f.openTypesFeature() != null,
+           (k & FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE) != 0);
+        _data.writeOffset(f.openTypesFeature());
+      }
+    if (f.isTypeParameter())
+      {
+        type(f.constraint());
       }
     // NYI: Suppress output of inherits for fields, intrinsics, etc.?
     var i = f.inherits();
@@ -574,9 +590,9 @@ class LibraryOut extends ANY
   void type(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null, t != Types.t_ERROR, t != Types.t_UNDEFINED, t instanceof ResolvedType);
+      (t != null, !t.isArtificialType(), t instanceof ResolvedType);
 
-    // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefor typekind written _twice_
+    // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefore typekind written _twice_
     // clean this up and merge the two type kinds?
 
     var off = _data.offset(t);
@@ -585,32 +601,36 @@ class LibraryOut extends ANY
         _data.writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
         _data.writeInt(off);
       }
-    else if (!t.isGenericArgument() && t.feature().isUniverse())
+    else if (!t.isParametricType() && t.feature().isUniverse())
       {
         _data.writeInt(-3);
       }
     else
       {
         _data.addOffset(t, _data.offset());
-        if (t.isGenericArgument())
+        switch (t.kind())
           {
-            _data.writeInt(-1);
-            _data.writeOffset(t.genericArgument());
-          }
-        else
-          {
-            _data.writeInt(t.isNormalType() ? t.generics().size() : 0);
-            _data.writeOffset(t.feature());
-            _data.writeByte(t.kind().num);
-            if (t.isNormalType())
-              {
-                for (var gt : t.generics())
-                  {
-                    type(gt);
-                  }
-              }
-            type(t.outer());
-          }
+          case ParametricType ->
+            {
+              _data.writeInt(-1);
+              _data.writeOffset(t.typeParameter());
+            }
+          case RefType, ValueType, ThisType ->
+            {
+              _data.writeInt(t.isPlainType() ? t.generics().size() : 0);
+              _data.writeOffset(t.feature());
+              _data.writeByte(t.kind().num);
+              if (t.isPlainType())
+                {
+                  for (var gt : t.generics())
+                    {
+                      type(gt);
+                    }
+                }
+              // NYI: CLEANUP: do not write outer for this types.
+              type(t.isThisType() ? Types.resolved.universe.selfType() : t.outer());
+            }
+          };
       }
   }
 
@@ -898,8 +918,9 @@ class LibraryOut extends ANY
             code(cc);
           }
       }
-    else if (e instanceof Nop)
+    else if (e instanceof Feature)
       {
+        // ignore Feature definition in expressions
       }
     else if (e instanceof Universe)
       {
@@ -956,7 +977,7 @@ class LibraryOut extends ANY
   String fileName(SourceFile sf)
   {
     var sp = _sourceModule._options.sourcePaths();
-    var sd = sp.length == 1 ? sp[0] : null;
+    var sd = sp.length == 1 ? sp[0].normalize() : null;
     var sfp = sf._fileName;
     if (sd != null && sfp.startsWith(sd))
       {

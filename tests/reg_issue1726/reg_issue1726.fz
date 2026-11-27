@@ -21,6 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-show_type_of(T type, v Lazy T) => say T
+show_type_of(T : Any, v Lazy T) => say T
 
 show_type_of (say "Hello!")

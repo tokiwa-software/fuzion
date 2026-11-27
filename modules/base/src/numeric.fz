@@ -27,9 +27,6 @@
 #
 public numeric : property.hashable, property.orderable is
 
-  public is_zero bool => numeric.this = numeric.this.zero
-  public is_one  bool => numeric.this = numeric.this.one
-
   # basic operations: 'prefix +' (identity)
   public prefix + numeric.this
     pre
@@ -121,7 +118,7 @@ public numeric : property.hashable, property.orderable is
   # sign function resulting in `-1`/`0`/`+1` depending on whether `numeric.this`
   # is less than, equal or greater than zero
   #
-  public sign i32 =>
+  public sign i64 =>
     if      numeric.this = numeric.this.zero then  0
     else if numeric.this > numeric.this.zero then  1
     else                                          -1
@@ -154,19 +151,6 @@ public numeric : property.hashable, property.orderable is
       "*** numeric.postfix |, requires corresponding prefix | for abs value ***"
 
 
-  # does this numeric value fit into an u8? This is redefined by children
-  # of numeric that support `as_u8`.
-  #
-  public fits_in_u8 bool => false
-
-
-  # this numeric value as an u8
-  public as_u8 u8
-    pre
-      debug: fits_in_u8
-  => abstract
-
-
   # find the highest power of b that is less or equal than numeric.this.
   #
   module highest(b numeric.this) numeric.this
@@ -184,6 +168,8 @@ public numeric : property.hashable, property.orderable is
     for
       bs := numeric.this.one, bs * b
     while numeric.this / b ≥ bs
+    else
+      bs
 
 
   # -----------------------------------------------------------------------
@@ -201,19 +187,28 @@ public numeric : property.hashable, property.orderable is
   public type.one  numeric.this => abstract
 
 
-  # the value corresponding to v in whatever integer implementation we have,
-  # maximum in case of overflow
+  # the value corresponding to v in whatever integer implementation we have
+  #
+  # we use a less *obvious* algorithm than induction via v-1 here to
+  # reduce complexity to O(log(v)).
   #
   public type.from_u32(v u32) numeric.this =>
-    if v = 0 zero else (from_u32 v-1) +^ one
+    from_u32_rec v zero one
 
 
-  # the constant '2' in whatever integer implementation we have, maximum in case of overflow
+  type.from_u32_rec(v u32, partial numeric.this, bit numeric.this) numeric.this =>
+    p2 := if v%2 = 0 then partial else partial+bit
+    h := v / 2
+    if h = 0 then p2
+             else from_u32_rec h p2 bit+bit
+
+
+  # the constant '2' in whatever integer implementation we have
   #
   public type.two numeric.this => from_u32 2
 
 
-  # the constant '10' in whatever integer implementation we have, maximum in case of overflow
+  # the constant '10' in whatever integer implementation we have
   #
   public type.ten numeric.this => from_u32 10
 
@@ -222,7 +217,7 @@ public numeric : property.hashable, property.orderable is
   # is applied to.
   #
   public type.sum Monoid numeric.this =>
-    ref : Monoid numeric.this is
+    _ : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) numeric.this => a + b
       public redef e numeric.this => zero
 
@@ -231,7 +226,7 @@ public numeric : property.hashable, property.orderable is
   # it is applied to.
   #
   public type.product Monoid numeric.this =>
-    ref : Monoid numeric.this is
+    _ : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) numeric.this => a * b
       public redef e numeric.this => one
 
@@ -240,7 +235,7 @@ public numeric : property.hashable, property.orderable is
   # is applied to, stopping at max/min value in case of overflow.
   #
   public type.sum_saturating Monoid (numeric.this) =>
-    ref : Monoid numeric.this is
+    _ : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) numeric.this => a +^ b
       public redef e numeric.this => zero
 
@@ -249,6 +244,6 @@ public numeric : property.hashable, property.orderable is
   # it is applied to, stopping at max/min value in case of overflow.
   #
   public type.product_saturating Monoid (numeric.this) =>
-    ref : Monoid numeric.this is
+    _ : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) numeric.this => a *^ b
       public redef e numeric.this => one

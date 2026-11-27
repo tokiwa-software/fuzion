@@ -28,11 +28,11 @@ test_hash_map is
   say a
 
   # init a hash map without duplicate keys
-  b := container.hash_map [0,1,2,3] ["a","b","c","d"]
+  b := container.hash_map i64 codepoint .of [0,1,2,3] ["a","b","c","d"]
   say b
 
   # init a hash map with one duplicate key
-  c := container.hash_map [0,1,2,3,0] ["a","b","c","d","e"]
+  c := container.hash_map i64 codepoint .of [0,1,2,3,0] ["a","b","c","d","e"]
   say c
 
 

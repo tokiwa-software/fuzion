@@ -42,11 +42,11 @@ class CIdent extends CExpr
   /**
    * Predefined frequently used identifiers:
    */
-  final static CIdent STDERR = new CIdent("stderr");
-  final static CIdent FILE = new CIdent("__FILE__");
-  final static CIdent LINE = new CIdent("__LINE__");
-  final static CIdent TRUE = new CIdent("true");
-  final static CIdent FALSE = new CIdent("false");
+  static final CIdent STDERR = new CIdent("stderr");
+  static final CIdent FILE = new CIdent("__FILE__");
+  static final CIdent LINE = new CIdent("__LINE__");
+  static final CIdent TRUE = new CIdent("true");
+  static final CIdent FALSE = new CIdent("false");
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -100,6 +100,7 @@ class CIdent extends CExpr
    *
    * @param sb will be used to append the code to
    */
+  @Override
   void code(CString sb) { sb.append(_name); }
 
 
@@ -108,6 +109,7 @@ class CIdent extends CExpr
    *
    * @return 0
    */
+  @Override
   int precedence() { return 0; }
 
 
@@ -124,6 +126,20 @@ class CIdent extends CExpr
       int precedence() { return ident.precedence(); }
       void code(CString sb) { sb.append("++");ident.code(sb); }
     };
+  }
+
+
+  /**
+   * create identifier for choice entry.
+   *
+   * @param tagNum The tag number 0..
+   */
+  public static CIdent choiceEntry(int tagNum)
+  {
+    if (PRECONDITIONS) require
+      (tagNum >= 0);
+
+    return new CIdent(CNames.CHOICE_ENTRY_NAME + tagNum);
   }
 
 }

@@ -42,6 +42,7 @@ import dev.flang.be.jvm.runtime.Intrinsics;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Profiler;
 
 
 /**
@@ -270,8 +271,7 @@ public class Names extends ANY implements ClassFileConstants
    * Get the data for the resource Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME that
    * holds a map from Java class names to human readable fuzion class names.
    *
-   * The resource consists of lines separated by "\n" that consist of `java_name
-   * + "\" + fuzion_clazz_name`.
+    * The resource consists of lines separated by "\n" that consist of {@code java_name + "\" + fuzion_clazz_name}.
    */
   String methodNameToFuzionClazzNames()
   {
@@ -285,7 +285,7 @@ public class Names extends ANY implements ClassFileConstants
             result
               .append(j)
               .append("\t")
-              .append(_fuir.clazzAsStringHuman(cl))
+              .append(_fuir.clazzNameHuman(cl))
               .append("\n");
           }
       }
@@ -410,6 +410,7 @@ public class Names extends ANY implements ClassFileConstants
               res = nres;
             }
           _cache.set(num, res);
+          Profiler.addMangledName(res, _fuir.clazzNameHuman(cl));
           if (_existing != null)
             {
               _existing.put(res, 1);
@@ -548,11 +549,10 @@ public class Names extends ANY implements ClassFileConstants
         else if ('°' == cp) { sb.append("DEGREE"); }
         else if ('[' == cp) { }  // convert "index []" just into "index "
         else if (']' == cp) { }
-        else if ('#' == cp &&
-                 off < length &&
-                 s.codePointAt(off + Character.charCount(cp)) == '^')
-                            { sb.append("OUTER_"); off++; }  // join #^ used for outer refs
-        else if ('#' == cp) { sb.append("INTERN_"); }
+        else if ('#' == cp)
+          if      (off + Character.charCount(cp) >= length)             { sb.append("_INTERN"); }
+          else if (s.codePointAt(off + Character.charCount(cp)) == '^') { sb.append("OUTER_"); off += Character.charCount('^' ); }  // join #^ used for outer refs
+          else                                                          { sb.append("INTERN_"); }
         else
           {
             sb.append("_U").append(Integer.toHexString(cp)).append("_");
@@ -571,8 +571,7 @@ public class Names extends ANY implements ClassFileConstants
    */
   String javaClass(int cl)
   {
-    var res = _classNames.get(cl);
-    return res;
+    return _classNames.get(cl);
   }
 
 

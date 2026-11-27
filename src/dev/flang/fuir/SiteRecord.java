@@ -34,7 +34,7 @@ import dev.flang.ir.IR.ExprKind;
  * NYI: UNDER DEVELOPMENT:
  * remove this once we have custom serialization of FUIR
  */
-public record SiteRecord(
+record SiteRecord(
   int clazzAt,
   boolean alwaysResultsInVoid,
   boolean doesResultEscape,
@@ -56,11 +56,8 @@ public record SiteRecord(
   int tagTagNum,
   int[] matchCaseField,
   boolean accessIsDynamic,
-  String path,
-  int line,
-  int column,
-  // NYI: UNDER DEVELOPMENT: remove
-  String show
+  String module,
+  long bytePos
 ) implements Serializable
 {
   private static final long serialVersionUID = 1L;

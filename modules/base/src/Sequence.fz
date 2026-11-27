@@ -33,7 +33,104 @@
 #
 # Heirs of Sequence must implement 'as_list'.
 #
-public Sequence(public T type) ref : property.countable is
+public Sequence(T : Any) ref
+  : property.countable,
+    property.orderable,
+    property.hashable
+is
+
+
+  # equality of two Sequences is true iff both a element-wise equal and have
+  # the same `count`.
+  #
+  # This works as long as one of the Sequences is finite, it will diverge if
+  # both are equal and infinite.  A `check` will fail if `debug` is enabled and
+  # both `a.finite.is_no` and `b.infinite.is_no`.
+  #
+  # This is defined only if T : property.equatable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.equality(a, b Sequence T /* NYI: UNDER DEVELOPMENT: Sequence.this causes error */
+                                  ) bool
+  =>
+    check
+      debug: !(a.finite.is_no && b.finite.is_no)
+
+    if T : property.equatable
+      (a.zip b (=) ∀ id) && count_order a b = equal
+    else
+      compile_time_panic  # Sequence is not equatable since element type is not
+
+
+  # A total order for Sequences is defined by element-wise comparison. The first
+  # pair of elements that differ define the order.
+  #
+  # This works as long as one of the Sequences is finite, it will diverge if
+  # both are equal and infinite.  A `check` will fail if `debug` is enabled and
+  # both `a.finite.is_no` and `b.infinite.is_no`.
+  #
+  # This is defined only if T : property.orderable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.lteq(a, b Sequence T /* NYI: UNDER DEVELOPMENT: Sequence.this causes error */
+                              ) bool
+  =>
+    check
+      debug: !(a.finite.is_no && b.finite.is_no)
+
+    if T : property.orderable
+      a.zip b (<>)
+       .filter (!=equal)
+       .first
+       .or_else (count_order a b) != greater
+    else
+      compile_time_panic  # Sequence is not orderable since element type is not
+
+
+  # The total order for Sequences defined only by `i32.lteq` applied to their
+  # element count.
+  #
+  # This works as long as one of the Sequences is finite, it will diverge if
+  # both are equal and infinite.  A `check` will fail if `debug` is enabled and
+  # both `a.finite.is_no` and `b.infinite.is_no`.
+  #
+  public type.count_order(a, b Sequence T /* NYI: UNDER DEVELOPMENT: Sequence.this causes error */
+                         ) order
+  =>
+    check
+      debug: !(a.finite.is_no && b.finite.is_no)
+
+    l := a.zip b _,_->unit .count
+    al := a.drop l .take 1
+    bl := b.drop l .take 1
+    al.count <> bl.count
+
+
+  # create hash code for this Sequence
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  # This will result in a compile-time `panic` in case T : property.hashable does not hold.
+  #
+  # The algorithm used here is a variation of (XXXHash)[https://xxhash.com] as used in
+  # (Python's tuple)[https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305]:
+  #
+  #   we start with a constant `hash_prime1`
+  #   for each value:
+  #     we take its hash code * `hash_prime2` and add it
+  #     then we rotate by `hash_rotate`
+  #     and multiply by `hash_prime3`
+  #
+  public redef fixed type.hash_code(a Sequence T) u64
+  =>
+    if T : property.hashable then
+      h0 := xxh_next xxh_first 0x9a632220e62c17c8  # created using https://cryptotools.dev/
+      a.map (T.hash_code)
+       .foldf h0 xxh_next
+    else
+      compile_time_panic  # Sequence is not hashable since element type is not
 
 
   # create a list from this Sequence.
@@ -48,11 +145,11 @@ public Sequence(public T type) ref : property.countable is
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  # TRUE  = known finite
-  # FALSE = known infinite
-  # nil   = unknown
+  # trit.yes       = known finite
+  # trit.no        = known infinite
+  # trit.unknown   = unknown
   #
-  public redef finite trit => nil
+  public redef finite trit => trit.unknown
 
 
   # is this Sequence known to be array backed? If so, this means that operations
@@ -63,7 +160,10 @@ public Sequence(public T type) ref : property.countable is
 
   # is this Sequence empty?
   #
-  public is_empty bool => as_list.is_empty
+  public is_empty bool
+    post debug : !finite.is_no || result = false
+  =>
+    finite.is_no ? false : as_list.is_empty
 
 
   # count the number of elements in this Sequence.  Note that this typically
@@ -71,15 +171,15 @@ public Sequence(public T type) ref : property.countable is
   #
   # For Sequences that are not array backed, this might require time in O(count).
   #
-  public redef count i32
-  => (map i32 (_ -> 1)).fold i32.sum
+  public redef count i64
+  => (map _->1).fold i64.sum
 
 
   # count the number of elements in this Sequence that match the
   # given predicate. Note that this typically
   # runs forever if executed on an endless Sequence.
   #
-  public count(f T->bool) i32 =>
+  public count(f T->bool) i64 =>
     (filter f).count
 
 
@@ -93,7 +193,7 @@ public Sequence(public T type) ref : property.countable is
   #
   public first(default T) T
   =>
-    first.val default
+    first.or_default default
 
 
   # get the last element of this Sequence
@@ -109,14 +209,14 @@ public Sequence(public T type) ref : property.countable is
   #
   public last(default T) T
   =>
-    last.val default
+    last.or_default default
 
 
   # collect the contents of this Sequence into an array
   #
   public as_array array T =>
     if is_array_backed
-      array count (i -> Sequence.this[i])
+      array count.as_i64 (i -> Sequence.this[i])
     else
       as_list.as_array
 
@@ -158,7 +258,11 @@ public Sequence(public T type) ref : property.countable is
   #       .peek say
   #       .drop_while <10
   #
-  public peek (f T -> unit) Sequence T =>
+  public peek (f T -> unit) Sequence T
+    post
+      debug: finite = result.finite
+      debug: finite.is_no_or_unknown || count = result.count
+  =>
     map x->
       f x
       x
@@ -181,7 +285,12 @@ public Sequence(public T type) ref : property.countable is
   # filter elements using predicate f
   # values for which f is false are dropped
   #
-  public filter   (f T -> bool) Sequence T => as_list.filter f
+  public filter   (f T -> bool) Sequence T
+    # NYI: BUG: count >= result.count sometimes recursive
+    # post
+      # NYI: BUG: debug: finite = result.finite
+      # NYI: BUG: debug: finite.is_no_or_unknown || count >= result.count
+  => as_list.filter f
 
 
   # check if predicate f holds for all elements
@@ -197,12 +306,23 @@ public Sequence(public T type) ref : property.countable is
   # create a Sequence that consists only of the first n elements of this
   # Sequence, fewer if this Sequence has fewer elements
   #
-  public take (n i32) Sequence T => as_list.take n
+  # NOTE: for negative n an empty Sequence is returned
+  #
+  public take (I : integer, n I) Sequence T
+    # NYI: BUG: breaks tail call optimization
+    # post debug: n>0 || result.is_empty
+  => as_list.take n
 
 
   # reverse the order of the elements in this Sequence
   #
-  public reverse Sequence T => as_list.reverse_list
+  public reverse Sequence T
+    pre
+      debug: finite.is_yes_or_unknown
+    post
+      debug: finite = result.finite
+      debug: count = result.count
+  => as_list.reverse_list
 
 
   # create a Sequence that consists of the elements of this Sequence except the first
@@ -210,50 +330,99 @@ public Sequence(public T type) ref : property.countable is
   #
   # NOTE: this may have performance in O(n) unless it is backed by an immutable array.
   #
+  # NOTE: for negative n the Sequence is returned as is
   #
-  public drop (n i32) Sequence T => as_list.drop n
+  public drop (I : integer, n I) Sequence T
+    # NYI: BUG: breaks tail call optimization
+    # post debug: n>0 || count=result.count
+  => as_list.drop n
 
 
   # get a function that, given an index, returns the element at that index
   #
-  public index [] () i32 -> T => n -> Sequence.this[n]
+  public index [] () integer -> T => n -> Sequence.this[n]
 
 
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(from, to i32) Sequence T
+  public slice(I : integer, from, to I) Sequence T
     pre
-      debug: from ≥ 0
-      debug: to = 0 || is_valid_index to-1
-      debug: from <= to
+      debug : from ≥ 0
+      debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
+      debug : from <= to
+    post
+      debug: result.finite.is_yes_or_unknown
+      debug: result.count = (to-from).as_i64
   =>
-    drop(from).take to-from
+    drop from
+      .take to-from
 
 
-  # create a tuple of two Sequences by splitting this at the given index, i.e.,
-  # a Sequence of length 'at' and one of length 'count-at'.
+  # create a tuple of two Sequences by splitting this at
   #
-  # at may be <= 0 or >= count, in which case the resulting tuple will be the
-  # (empty list, Sequence.this.as_list) or (Sequence.this.as_list, empty list), resp.
+  # either
   #
-  public split_at(at i32) tuple (Sequence T) (Sequence T) => ((take at), (drop at))
+  #    the given index,
+  #    i.e., a Sequence of length 'at' and one of length 'count-at'.
+  #    at may be <= 0 or >= count, in which case the resulting tuple will be the
+  #    (empty list, Sequence.this.as_list) or (Sequence.this.as_list, empty list), resp.
+  #
+  # or
+  #
+  #    at first result of condition function
+  #
+  public split_at(c i64 | T->bool) tuple (Sequence T) (Sequence T) =>
+    match c
+      at i64 => ((take at), (drop at))
+      cond T->bool =>
+        split_at (first_index_of cond)
+
+
+  # returns the index of the first element
+  # where `cond` is true.
+  # If never true returns `count`
+  #
+  # NYI: UNDER DEVELOPMENT: do we want this public?
+  #
+  first_index_of(F : T->bool, cond F) i64
+  =>
+    for i:=0, i+1
+        el in Sequence.this
+    while !cond el
+    else
+      i
+
 
   # Lazily take the first elements of this Sequence for which predicate 'p' holds.
   #
-  public take_while (p T -> bool) Sequence T => as_list.take_while p
+  public take_while (p T -> bool) Sequence T
+    post
+      analysis: result ∀ p
+      analysis: {
+        n := nth result.count
+        !n || !(p n.or_panic)
+      }
+  => as_list.take_while p
 
 
   # Lazily drop the first elements of this Sequence for which predicate 'p' holds.
   #
-  public drop_while (p T -> bool) Sequence T => as_list.drop_while p
+  public drop_while (p T -> bool) Sequence T
+    post
+      analysis: result ∀ (x -> !(p x))
+      analysis: {
+        n := nth result.count
+        !n || p n.or_panic
+      }
+  => as_list.drop_while p
 
 
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
   # General case: This will perform `as_list.concat_list` in case one of
-  # `Sequence.this` or `s`is not known to be finite (`finite != trit.yet`) or
+  # `Sequence.this` or `s`is not known to be finite (`finite.is_no_or_unknown`) or
   # `s.count` is larger than `count`.
   #
   # Otherwise, if `Sequence.this` or `s` is empty, the result will be `s` or
@@ -275,19 +444,31 @@ public Sequence(public T type) ref : property.countable is
   # in `O(n²)` performance for the concatenations.
   #
   public concat (s Sequence T) Sequence T =>
-    c1 :=   finite != trit.yes ? -1 :   count
-    c2 := s.finite != trit.yes ? -1 : s.count
-    if c1 < 0 || c2 < 0 || max 1 c1 < c2 then
-      as_list.concat_list s.as_list
-    else if c1 = 0
+    if is_empty
       s
-    else if c2 = 0
+    #
+    # if this sequence is infinite,
+    # no need to concat s
+    #
+    else if s.is_empty || finite.is_no
       Sequence.this
+    #
+    # if s is infinite we use list concat
+    # otherwise we would hang forever
+    #
+    else if s.finite.is_no
+      as_list.concat_list s.as_list
     else
-      for ea := container.expanding_array T .empty, ea.add e1
-          e1 in Sequence.this
-      else
-        ea.concat s
+      container.Finger_Tree T .empty
+        .concat Sequence.this
+        .concat s
+
+
+  # return this Sequence as a Finger_Tree
+  # or nil if Sequence is not (yet) a Finger_Tree
+  #
+  module as_finger_tree option (container.Finger_Tree T) => nil
+
 
   # infix operand synonym for concat
   #
@@ -297,17 +478,22 @@ public Sequence(public T type) ref : property.countable is
   # create a Sequence that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
-  public cycle Sequence T => as_list.cycle
+  public cycle Sequence T
+   post debug: is_empty.as_trit = result.finite
+  => as_list.cycle
 
 
   # create a Sequence that repeats the current Sequence `n` times.
   #
-  public infix *(n i32)
+  public infix *(n i64) Sequence T
     pre
       debug: n >= 0
   =>
-    if n <= 0 || is_empty then (Sequence T).empty
-                          else Sequence.this ++ Sequence.this * (n-1)
+    for i   := n                , i-1
+        res := Sequence T .empty, res ++ Sequence.this
+    while i > 0
+    else
+      res
 
 
   # create a lazy list of all the tails of this Sequence, including the complete Sequence
@@ -327,10 +513,21 @@ public Sequence(public T type) ref : property.countable is
   #
   # To force printing of all elements of a finite `Sequence` for which `finite` is
   # false (which may be the case since a Sequence in general might not know that it
-  # if finite), you may use `as_string_all`.
+  # is finite), you may use `as_string_all`.
   #
   public redef as_string String =>
-    if finite = trit.yes
+    sequence_as_string
+
+
+  # Implementation of `Sequence.as_string` but under a different name such that
+  # we can use it if multiple inheritance results in clashing `as_string`
+  # implementations.
+  #
+  # NYI: UNDER DEVELOPMENT: #5801 this could be done if renaming was possible
+  # during inheritance.
+  #
+  module sequence_as_string =>
+    if finite.is_yes
       as_string_all
     else
       max0 := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
@@ -344,7 +541,7 @@ public Sequence(public T type) ref : property.countable is
   # NOTE: In case this Sequence is not finite, this will attempt to create an
   # infinitely long string resulting in failure due to resource exhaustion.
   #
-  public as_string_all String => "[{as_string ", "}]"
+  public as_string_all String => "[$(as_string ", ")]"
 
 
   # create a string representation of this Sequence including all the string
@@ -358,7 +555,7 @@ public Sequence(public T type) ref : property.countable is
 
   # call 'as_string' on the elements
   #
-  public as_strings Sequence String => map c->c.as_string
+  public as_strings Sequence String => map ($)
 
 
   # map the Sequence to a new Sequence applying function f to all elements
@@ -366,7 +563,12 @@ public Sequence(public T type) ref : property.countable is
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
-  public map(B type, f T->B) Sequence B =>
+  public map(B : Any, f _ : T->B) Sequence B
+    # NYI: BUG: count = result.count sometimes recursive
+    # post
+      # NYI: BUG: debug: finite = result.finite
+      # NYI: BUG: debug: finite.is_no_or_unknown || count = result.count
+  =>
     as_list.map_to_list f
 
 
@@ -388,14 +590,14 @@ public Sequence(public T type) ref : property.countable is
   #
   # will print the elements since `for_each` is not lazy.
   #
-  public infix | (B type, f T->B) Sequence B => map f
+  public infix | (B : Any, f T->B) Sequence B => map f
 
 
   # map each element of this Sequence to Sequence
   # Then flatten the result by one level,
   # essentially combining all the sequences.
   #
-  public flat_map(B type, f T -> Sequence B) Sequence B =>
+  public flat_map(B : Any, f T -> Sequence B) Sequence B =>
     as_list.flat_map_to_list f
 
 
@@ -411,7 +613,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # results in `[1,2,2,4,2,4,2,4,6]`
   #
-  public map_pairs(B type, f (T,T)->B) Sequence B =>
+  public map_pairs(B : Any, f (T,T)->B) Sequence B =>
     zip (drop 1) f
 
 
@@ -440,7 +642,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # e.g., to find the product of a Sequence of i32, use `s.foldf (*) 1`
   #
-  public foldf (B type, e B, f (B,T)->B) B
+  public foldf (B : Any, e B, f (B,T)->B) B
   =>
     as_list.foldf e f
 
@@ -461,7 +663,7 @@ public Sequence(public T type) ref : property.countable is
 
   # fold the elements of this non-empty Sequence using the given function right-to-left
   #
-  # e.g., to concat the elements of a non-empty Sequence of Sequeces, use `foldr1 (++)`
+  # e.g., to concat the elements of a non-empty Sequence of Sequences, use `foldr1 (++)`
   #
   public foldr1 (f (T,T)->T) T => as_list.foldr1 f
 
@@ -470,7 +672,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # e.g., to concat the elements of a Sequence of Sequences, use `foldrf [] (++)`
   #
-  public foldrf (B type, e B, f (T,B)->B) B => as_list.foldrf e f
+  public foldrf (B : Any, e B, f (T,B)->B) B => as_list.foldrf e f
 
 
   # map this Sequence to a list that contains the result of folding
@@ -479,7 +681,7 @@ public Sequence(public T type) ref : property.countable is
   # e.g., for a Sequence of i32 s, s.scan i32.sum creates a list of
   # partial sums (0..).map x->(s.take x).fold i32.sum
   #
-  public scan (m Monoid T) list T => as_list.scan m.e m
+  public scan (m Monoid T) Sequence T => as_list.scan_list m
 
 
   # map this Sequence to a Sequence that contains the result of folding
@@ -488,7 +690,7 @@ public Sequence(public T type) ref : property.countable is
   # e.g., for a Sequence s `[3,8,10]`, `s.scan 0 (+)` creates a Sequence of
   # partial sums `[0, 3, 11, 21]`
   #
-  public scan (R type, a R, f (R,T)->R) Sequence R => as_list.scan R a f
+  public scan (R : Any, a R, f (R,T)->R) Sequence R => as_list.scan R a f
 
 
   # scan1 works like its counterpart with an initial value, except
@@ -506,7 +708,7 @@ public Sequence(public T type) ref : property.countable is
   # the reduction is finished once f yields abort or
   # if the end of the sequence is reached.
   #
-  public reduce(R type, init R, f (R,T) -> R | abort R) R =>
+  public reduce(R : Any, init R, f (R,T) -> R | abort R) R =>
     match as_list
       nil => init
       c Cons =>
@@ -520,7 +722,7 @@ public Sequence(public T type) ref : property.countable is
   # the reduction is finished once `f` yields `abort` or
   # if the end of the sequence is reached.
   #
-  public reduce_or_error(R type, init R, f (R,T) -> R | abort (outcome R)) outcome R =>
+  public reduce_or_error(R : Any, init R, f (R,T) -> R | abort (outcome R)) outcome R =>
     match as_list
       nil => init
       c Cons =>
@@ -531,34 +733,23 @@ public Sequence(public T type) ref : property.countable is
 
   # insert element v at position at
   #
-  public insert(at i32, v T) Sequence T
+  public insert(I : integer, at I, v T) Sequence T
   pre
     debug: at ≥ 0
   =>
     take at ++ [v] ++ drop at
 
 
-  # sort this Sequence using the order defined by less_or_equal
+  # sort this Sequence using `by` to map elements to an orderable type.
   #
-  public sort_by(less_or_equal (T, T) -> bool) container.sorted_array T => container.sorted_array Sequence.this less_or_equal
-
-
-  # sort this Sequence
-  #
-  public sort container.sorted_array T
-  pre
-    T : property.orderable
-  post
-    result.map_pairs (<=)
-          .reduce true (&&)
-  =>
-    sort_by (<=)
+  public sort_by(O : property.orderable, by T->O) container.sorted_array T =>
+    container.sorted_array Sequence.this ((a,b)->(by a) <= (by b))
 
 
   # create a new Sequence from the result of applying 'f' to the
   # elements of this Sequence and 'b' in order.
   #
-  public zip(U,V type, b Sequence U, f (T,U)->V) Sequence V => as_list.zip b f
+  public zip(U,V : Any, b Sequence U, f (T,U)->V) Sequence V => as_list.zip b f
 
 
   # create a new Sequence from the result of applying 'f' to the
@@ -576,7 +767,7 @@ public Sequence(public T type) ref : property.countable is
   #     ...               , ...
   #     Sequence.this.last, b.last
   #
-  public combine(U, V type, b Sequence U, f (T,U)->V) Sequence V =>
+  public combine(U, V : Any, b Sequence U, f (T,U)->V) Sequence V =>
     flat_map x->
       b.map y->(f x y)
 
@@ -596,13 +787,13 @@ public Sequence(public T type) ref : property.countable is
   #     (...               , ...   )
   #     (Sequence.this.last, b.last)
   #
-  public pairs(U type, b Sequence U) Sequence ((T, U)) =>
-    combine b tuple2
+  public pairs(U : Any, b Sequence U) Sequence ((T, U)) =>
+    combine b tuple
 
 
   # takes a transducer xf, a reducer f and an initial value
   # returns the result of applying the reducer xf f to the Sequence
-  public transduce(TA,U type, xf transducer TA U T, rf (TA,U) -> TA, init TA) TA =>
+  public transduce(TA,U : Any, xf transducer TA U T, rf (TA,U) -> TA, init TA) TA =>
     red := xf.call rf
     for
       res := init, red.call res el
@@ -619,10 +810,10 @@ public Sequence(public T type) ref : property.countable is
   # gt_ten := filter (Sequence i32) i32 (x -> x > 10)
   # xf := ages ∘ gt_ten
   # say ([human 4, human 12, human 30].into xf) # [12,30]
-  public into(TA type, xf transducer (Sequence TA) TA T) Sequence TA =>
+  public into(TA : Any, xf transducer (Sequence TA) TA T) Sequence TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res (list TA) := (list TA).empty , (red.call res el).as_list
+      res := (Sequence TA).empty, (red.call res el)
       el in Sequence.this do
     else
       res
@@ -633,7 +824,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # Complexity: if Sequence is array backed O(1) otherwise O(n)
   #
-  public nth(n i32) option T
+  public nth(n i64) option T
     pre
       debug: n ≥ 0
   =>
@@ -648,38 +839,38 @@ public Sequence(public T type) ref : property.countable is
   # Note that this may have a performance in O(i) unless this
   # Sequence is_array_backed.
   #
-  public is_valid_index(i i32) bool =>
-    (0 ≤ i && (if is_array_backed then i ≤ count
-                                  else !(drop i-1).is_empty))
+  public is_valid_index(I : integer, i I) bool =>
+    (0 ≤ i && (if is_array_backed then i.as_i64 ≤ count
+                                  else !(drop i).is_empty))
 
 
   # the nth element in the sequence, must exist
   #
-  public index [] (i i32) T
+  public index [] (I : integer, i I) T
     pre
       debug: is_valid_index i
   =>
-    (nth i).get
+    (nth i.as_i64).or_panic
 
 
   # adds the corresponding index to
   # every element in the sequence
   #
-  public indexed Sequence (tuple i32 T) =>
+  public indexed Sequence (tuple i64 T) =>
     indexed 0
 
 
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  public indexed(I type : has_interval, start_idx I) Sequence (tuple I T) =>
+  public indexed(I : property.interval, start_idx I) Sequence (tuple I T) =>
     zip (start_idx..) (a,b -> (b, a))
 
 
   # chop this Sequence into chunks of `chunk_size`.
   # the last chunk may be smaller than `chunk_size`.
   #
-  public chunk(chunk_size i32) Sequence (Sequence T)
+  public chunk(chunk_size i64) Sequence (Sequence T)
   pre debug: chunk_size > 0
   =>
     if is_empty
@@ -795,8 +986,8 @@ public Sequence(public T type) ref : property.countable is
       c1 Cons =>
         match c1.tail
           c2 Cons => (c1.head, c2.head)
-          nil => panic "as_tuple called on single element Sequence"
-      nil => panic "as_tuple called on empty Sequence"
+          nil => panic "as_tuple called on single element $(Sequence.this.type.name)"
+      nil => panic "as_tuple called on empty $(Sequence.this.type.name)"
 
 
   # convert a Sequence's head into a 3-tuple.
@@ -822,7 +1013,7 @@ public Sequence(public T type) ref : property.countable is
                                     nil => nil
                                 nil => nil
                             nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 4-tuple.
@@ -852,7 +1043,7 @@ public Sequence(public T type) ref : property.countable is
                                        nil => nil
                                    nil => nil
                                nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 5-tuple.
@@ -885,7 +1076,7 @@ public Sequence(public T type) ref : property.countable is
                                           nil => nil
                                       nil => nil
                                   nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 6-tuple.
@@ -921,339 +1112,204 @@ public Sequence(public T type) ref : property.countable is
                                              nil => nil
                                          nil => nil
                                      nil => nil
-    r.val
+    r.or_panic
 
 
-  # does this sequence start with l?
+  # convert this Sequence to a Map
+  # via mapping all elements to key value pairs
   #
-  public starts_with(l Sequence T) bool
-    pre
-      T : property.equatable
-  =>
-    match l.as_list
-      nil     => true
-      c1 Cons =>
-        match as_list
-          nil     => false
-          c2 Cons => c2.head = c1.head && c2.tail.starts_with c1.tail # tail recursion
-
-
-  # determine the index of element x within this list.  0 if x is at the
-  # head of the list, 1 if it comes directly after head, etc. nil if x is
-  # not in the list.
-  #
-  public index_of(x T) option i32
-    pre
-      T : property.equatable
-  =>
-    find [x]
-
-
-  # does the Sequence contain element x?
-  #
-  public contains(x T) bool
-    pre
-      T : property.equatable
-  =>
-    (find [x]).exists
-
-
-  # get the index of pattern within this Sequence or nil if it does not exist
-  #
-  # uses the Knuth-Morris-Pratt algorithm
-  # port of racket code from this paper:
-  # https://www.cambridge.org/core/services/aop-cambridge-core/content/view/8EFA77D663D585B68630E372BCE1EBA4/S0956796824000017a.pdf/knuth-morris-pratt-illustrated.pdf
-  #
-  # worst-case performance: O( seq_length ) + O( pattern_length )
-  # worst-case space complexity: O( pattern_length )
-  #
-  public find(pattern Sequence T) option i32
-    pre
-      T : property.equatable
-  =>
-
-    find_lm ! ()->
-
-      make(t Sequence T, r option (Node T)) =>
-        n option (Node T) =>
-          if t.is_empty then nil else make (t.drop 1) (step r t[0])
-        r_star =>
-          if t.is_empty
-            r
-          else if is_match r t[0]
-            r.get.rest
-          else
-            r
-        Node t (once find_lm (option (Node T)) ()->n) r_star
-
-      init := make pattern nil
-
-      step(acc option (Node T), x T) =>
-        match acc
-          nil => init
-          n Node => if is_match acc x then n.next.get else step n.rest x
-
-      is_done (option (Node T))->bool => (acc)->
-        match acc
-          nil => false
-          n Node => n.top.is_empty
-
-      is_match(acc option (Node T), x T) =>
-        match acc
-          nil => false
-          n Node => !n.top.is_empty && n.top[0] = x
-
-      fold_until(acc option (Node T), step (option (Node T), T)->option (Node T), data Sequence T) option i32 =>
-        if is_done acc
-          Sequence.this.count - data.count - pattern.count
-        else if data.is_empty
-          nil
-        else
-          acc_star =>
-            fold_until.this.step acc data[0]
-          fold_until acc_star fold_until.this.step (data.drop 1)
-
-      fold_until init step Sequence.this
-
-
-
-  # replace all occurrences of old by new
-  #
-  public replace(old, new Sequence T) Sequence T
-    pre
-      T : property.equatable
-  =>
-    nil_list list T := nil
-    replace old new nil_list Sequence.this nil
-
-
-  # replace the first n occurrences of old by new
-  #
-  public replace (old, new Sequence T, n u64) Sequence T
-    pre
-      T : property.equatable
-  =>
-    nil_list list T := nil
-    replace old new nil_list Sequence.this n
-
-
-  # tail recursive helper for the replace features
-  #
-  replace(old, new,
-          already_replaced,          # the head part with old already replaced by new
-          to_be_replaced Sequence T, # the tail that still needs to be searched for old
-          limit option u64
-         )
-    pre
-      T : property.equatable
-  =>
-    match to_be_replaced.find old
-      nil   => already_replaced ++ to_be_replaced
-      n i32 =>
-        if limit.as_equatable = 0
-          already_replaced ++ to_be_replaced
-        else
-          a := already_replaced ++ (to_be_replaced.take n) ++ new
-          b := to_be_replaced.drop (n + old.count)
-          replace old new a b (limit >>= (l -> l - 1))
-
-
-  # get the number of matches of l
-  #
-  public count_matches_overlapping(l Sequence T) i32
-    pre
-      T : property.equatable
-  =>
-    tails
-      .filter (.starts_with l)
-      .count
-
-
-  # get the number of non-overlapping matches of l within this
-  #
-  public count_matches(l Sequence T) i32
-    pre
-      T : property.equatable
-  =>
-    match as_list
-      nil     => 0
-      c1 Cons => if starts_with l then 1 + (drop l.count).count_matches l
-                                  else            c1.tail.count_matches l
-
-
-  # split sequence at s, if there is no limit, otherwise if limit is an integer n,
-  # for at most n occurrences of s
-  #
-  # if split_after is true, all but the last element of the resulting list include
-  # the separator
-  #
-  # helper feature which unifies the code of the different split features in one
-  #
-  module split0(s Sequence T, limit option u32, split_after bool) list (Sequence T)
-    pre
-      T : property.equatable
-      debug: !s.is_empty
-      debug: match limit
-              nil => true
-              n u32 => n > 0
-    =>
-      match (find s)
-        nil     => (id (Sequence T) Sequence.this) : nil  # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
-        idx i32 =>
-          ref : Cons (Sequence T) (list (Sequence T)) is
-            public redef head Sequence T := take (if split_after then idx + s.count else idx)
-            public redef tail list (Sequence T) =>
-              rest := drop (idx + s.count)
-
-              match limit
-                nil => rest.split0 s nil split_after
-                n u32 =>
-                  if n > 1
-                    rest.split0 s (n - 1) split_after
-                  else
-                    res Sequence T := rest
-                    res : nil
-
-
-  # filter out consecutive duplicate elements.
-  #
-  # Keep the order of elements unchanged.
-  #
-  # ex.
-  #
-  #     [1,2,2,3,2,2,2,4].dedup = [1,2,3,2,4]
-  #
-  public dedup Sequence T
-    pre
-      T : property.equatable
-    =>
-      as_list.dedup_list
-
-
-  # filter out consecutive duplicate elements using the
-  # given relation.
-  #
-  # Keep the order of elements unchanged.
-  #
-  # ex.
-  #
-  #     [4,2,2,6,2,1,2,4].dedup (a,b -> a%2=b%2) = [4,1,2]
-  #     [4,2,2,6,2,1,2,4].dedup (<=) = [4,2,1]
-  #
-  public dedup(by (T,T) -> bool) Sequence T
-    pre
-      T : property.equatable
-    =>
-      as_list.dedup_list by
-
-
-  # filter out duplicate elements.
-  #
-  # Keep the order of elements unchanged.
-  #
-  # Other languages call this 'distinct' (eg., Java, C# or Kotlin)
-  # or `nub` (Haskell).
-  #
-  # ex.
-  #
-  #     [4,1,2,2,3,2,2,2,4].unique = [4, 1, 2, 3]
-  #
-  public unique Sequence T
-    pre
-      T : property.orderable
-    =>
-      as_list.unique_list
-
-
-  # the arithmetic mean of the sequence
-  # https://en.wikipedia.org/wiki/Arithmetic_mean
-  public average option T
-    pre
-      T : numeric
-  =>
-    if is_empty
-      nil
+  public as_map(KEY : property.equatable,
+                VALUE : Any,
+                mapper T -> (KEY,VALUE)) container.Map KEY VALUE =>
+    if KEY : property.orderable
+      as_map KEY VALUE (container.ps_map KEY VALUE) mapper
+    else if KEY : property.hashable
+      as_map KEY VALUE (container.hash_map KEY VALUE) mapper
     else
-      cnt := (map _->T.one).sum
-      sum / cnt
+      compile_time_panic
 
 
-  # the variance of the sequence
-  # https://en.wikipedia.org/wiki/Variance
-  public variance option T
-    pre
-      T : numeric
-  =>
-    average.bind avg->
-      cnt := (map (_ -> T.one           )).sum
-      ssd := (map (x -> (x - avg)**T.two)).sum # sum of squared deviations
-      ssd / cnt
-
-
-  # minimum value in the sequence
-  public min option T
-    pre
-      T : property.orderable
-  =>
-    match first
-      nil => nil
-      v T => reduce v ((r,t) -> if r ≤ t then r else t)
-
-
-  # maximum value in the sequence
-  public max option T
-    pre
-      T : property.orderable
-  =>
-    match first
-      nil => nil
-      v T => reduce v ((r,t) -> if r ≤ t then t else r)
-
-
-  # the median of the sequence
-  # https://en.wikipedia.org/wiki/Median
-  public median option T
-    pre
-      T : numeric
-  =>
-    if is_empty
-      nil
-    else
-      sorted := sort
-      if sorted.length % 2 = 1
-        sorted[sorted.length / 2]
-      else
-        (sorted[(sorted.length / 2) - 1] + sorted[(sorted.length / 2)]) / (T.two)
-
-
-
-  # the standard deviation of the sequence
-  # https://en.wikipedia.org/wiki/Standard_deviation
-  public std_dev option T
-    pre
-      T : float
-  =>
-    variance.and_then (.sqrt)
-
-
-  # the euclidean norm of this sequence
-  # i.e. the square of the sum of squares of this sequence
+  # convert this Sequence to a Map of type M
+  # via mapping all elements to key value pairs
   #
-  public euclidean_norm T
-    pre
-      T : float
+  # example, creating a map of squares:
+  #
+  #     say <| (1..10).as_map _ _ (container.ps_map i64 i64) (x -> (x, x*x))
+  #
+  public as_map(KEY : property.equatable,
+                VALUE : Any,
+                M : container.Map KEY VALUE,
+                mapper T -> (KEY,VALUE)) M
   =>
-    ((map x->x**T.two).fold T.sum).sqrt
+
+    kvs :=
+      reduce (Sequence (KEY, VALUE)).empty (r,t)->
+        mapper t ||> k,v->(r++[(k,v)])
+
+    M.of kvs
 
 
-  # sliding window with step size one
+  # sliding window of tuple pairs
+  #
+  # example:
+  #
+  #     (0..5).pairwise
+  #
+  # results in
+  #
+  #     [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)]
+  #
+  public pairwise Sequence (T,T) =>
+    zip (drop 1) tuple
+
+
+  # sliding window of 3-tuple triplets
+  #
+  # example:
+  #
+  #     (0..5).tripletwise
+  #
+  # results in
+  #
+  #     [(0, 1, 2), (1, 2, 3), (2, 3, 4), (3, 4, 5)]
+  #
+  public tripletwise Sequence (T, T, T) =>
+    sliding 3 .map (.as_3tuple)
+
+
+  # sliding window of 4-tuple quads
+  #
+  # example:
+  #
+  #     (0..5).quadwise
+  #
+  # results in
+  #
+  #     [(0, 1, 2, 3), (1, 2, 3, 4), (2, 3, 4, 5)]
+  #
+  public quadwise Sequence (T, T, T, T) =>
+    sliding 4 .map (.as_4tuple)
+
+
+  # sliding window of 5-tuple quints
+  #
+  # example:
+  #
+  #     (0..5).quintwise
+  #
+  # results in
+  #
+  #     [(0, 1, 2, 3, 4), (1, 2, 3, 4, 5)]
+  #
+  public quintwise Sequence (T, T, T, T, T) =>
+    sliding 5 .map (.as_5tuple)
+
+
+  # sliding window of 6-tuple sextets
+  #
+  # example:
+  #
+  #     (0..5).sextetwise
+  #
+  # results in
+  #
+  #     [(0, 1, 2, 3, 4, 5)]
+  #
+  public sextetwise Sequence (T, T, T, T, T, T) =>
+    sliding 6 .map (.as_6tuple)
+
+
+  # apply f to sliding window of pairs
+  #
+  # example:
+  #
+  #     (0..5).pairwise f
+  #
+  # results in
+  #
+  #     [f 0 1, f 1 2, f 2 3, f 3 4, f 4 5]
+  #
+  # example: difference of squares
+  #
+  #     (1..).map **2
+  #          .pairwise (-)
+  #
+  # results in increasing negative odd numbers
+  #
+  #     [-3, -5, -7, -9, -11, -13, -15, -17, -19, -21, …]
+  #
+  public pairwise(B : Any, f _ : (T,T)->B) Sequence B =>
+    pairwise.map ||>f
+
+
+  # apply f to sliding window of triplets
+  #
+  # example:
+  #
+  #     (0..5).tripletwise f
+  #
+  # results in
+  #
+  #     [f 0 1 2, f 1 2 3, f 2 3 4, f 3 4 5]
+  #
+  public tripletwise(B : Any, f _ : (T,T,T)->B) Sequence B =>
+    tripletwise.map |||>f
+
+
+  # apply f to sliding window of quads
+  #
+  # example:
+  #
+  #     (0..5).quadwise f
+  #
+  # results in
+  #
+  #     [f 0 1 2 3, f 1 2 3 4, f 2 3 4 5]
+  #
+  public quadwise(B : Any, f _ : (T,T,T,T)->B) Sequence B =>
+    quadwise.map ||||>f
+
+
+  # apply f to sliding window of quints
+  #
+  # example:
+  #
+  #     (0..5).quintwise f
+  #
+  # results in
+  #
+  #     [f 0 1 2 3 4, f 1 2 3 4 5]
+  #
+  public quintwise(B : Any, f _ : (T,T,T,T,T)->B) Sequence B =>
+    quintwise.map |||||>f
+
+
+  # apply f to sliding window of sextets
+  #
+  # example:
+  #
+  #     (0..5).sextetwise f
+  #
+  # results in
+  #
+  #     [f 1 2 3 4 5]
+  #
+  public sextetwise(B : Any, f _ : (T,T,T,T,T,T)->B) Sequence B =>
+    sextetwise.map ||||||>f
+
+
+  # sliding window
   # blocks of size elements, each is offset by one element to the previous one
   #
   # example:
-  # `(0..5).sliding 3`
-  # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
   #
-  public sliding (size i32) Sequence (Sequence T) =>
+  #    (0..5).sliding 3
+  #
+  # results in
+  #
+  #    [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]
+  #
+  public sliding (size i64) Sequence (Sequence T) =>
     sliding size 1
 
 
@@ -1261,13 +1317,22 @@ public Sequence(public T type) ref : property.countable is
   # blocks of size elements, each is offset by step elements to the previous one
   #
   # examples:
-  # `(0..5).sliding 3 1`
-  # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
   #
-  # `(0..9).sliding 3 2`
-  # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
+  #     (0..5).sliding 3 1
   #
-  public sliding (size i32, step i32) Sequence (Sequence T)
+  # results in
+  #
+  #     [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]
+  #
+  # and
+  #
+  #     (0..9).sliding 3 2
+  #
+  # results in
+  #
+  #     [[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]
+  #
+  public sliding (size i64, step i64) Sequence (Sequence T)
     pre
       debug: size > 0
       debug: step > 0
@@ -1280,21 +1345,24 @@ public Sequence(public T type) ref : property.countable is
   #
   # example: sum even and odd numbers individually
   #
-  #    (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
+  #     (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
   #
   # => {(even => 30), (odd => 25)}
   #
   public group_reduce (
     # type of the keys
-    K type : property.orderable,
+    K : property.orderable,
+
+    # the type of the map to create
+    M : container.Map K T,
 
     # function to generate the key
     key_f T->K,
 
     # function to reduce the elements
-    reduce_f (T,T)->T) container.Map K T
+    reduce_f (T,T)->T) M
   =>
-    group_map_reduce K T key_f id reduce_f
+    group_map_reduce K T M key_f id reduce_f
 
 
   # group elements using key_f and
@@ -1312,10 +1380,13 @@ public Sequence(public T type) ref : property.countable is
   #
   public group_map_reduce (
     # type of the keys
-    K type : property.orderable,
+    K : property.orderable,
 
     # type of the values in the result
-    B type,
+    B : Any,
+
+    # the type of the map to create
+    M : container.Map K B,
 
     # function to generate the keys
     key_f T->K,
@@ -1324,11 +1395,11 @@ public Sequence(public T type) ref : property.countable is
     f T->B,
 
     # function to reduce elements
-    reduce_f (B,B)->B) container.Map K B
+    reduce_f (B,B)->B) M
   =>
-    M : mutate is
-    M ! ()->
-      res := (container.mutable_tree_map M K B).empty
+    lm : mutate is
+    lm ! ()->
+      res := (container.Mutable_Tree_Map lm K B).empty
 
       for_each x->
         key := key_f x
@@ -1336,45 +1407,48 @@ public Sequence(public T type) ref : property.countable is
           nil => res.put key (f x)
           y B => res.put key (reduce_f y (f x))
 
-      res.as_map
+      res.as_map M
 
 
   # group the elements of this sequence by a key of type and applies function f to all elements
   #
   # example: group characters by category and add underscores around each character
   #
-  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #     values array codepoint := ["A", "1", "b", "?", "X", "4"]
   #
-  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+  #     classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
   #
-  #    values.group_map String String classify (x->"_{x}_")
+  #     values.group_map String String classify (x->"_$(x)_")
   #
   # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}
   #
   public group_map (
     # type of the keys
-    K type : property.orderable,
+    K : property.orderable,
 
     # type of the values in the result
-    B type,
+    B : Any,
+
+    # the type of the map to create
+    M : container.Map K (Sequence B),
 
     # function to generate the keys
     key_f T->K,
 
     # function applied to each element
-    f T->B) container.Map K (Sequence B)
+    f T->B) M
   =>
-    M : mutate is
-    M ! ()->
-      res := (container.mutable_tree_map M K (Sequence B)).empty
+    lm : mutate is
+    lm ! ()->
+      res := (container.Mutable_Tree_Map lm K (Sequence B)).empty
 
       for_each x->
         key := key_f x
         match res[key]
           nil => res.put key [(f x)]
-          y Sequence B => res.put key (y ++  [(f x)])
+          y Sequence => res.put key (y ++  [(f x)])
 
-      res.as_map
+      res.as_map M
 
 
   # group the elements of this sequence by a key of type K
@@ -1382,116 +1456,50 @@ public Sequence(public T type) ref : property.countable is
   #
   # f determines the key of an element
   #
-  public group_by_mutable_map(K type : property.equatable, M type : container.Mutable_Map K (Sequence T), f T -> K) container.Map K (Sequence T)
+  public group_by_mutable_map(K : property.equatable, MM : container.Mutable_Map K (Sequence T), M : container.Map K (Sequence T), f T -> K) M
   =>
-    res := M.empty
+    res := MM.empty
 
     for_each x->
       key := f x
       match res[key]
         nil => res.put key [x]
-        s Sequence T => res.put key s++[x]
+        s Sequence => res.put key s++[x]
 
-    res.as_map
+    res.as_map M
 
 
   # group the elements of this sequence by a key of type K
-  # using a mutable_tree_map
+  # using a Mutable_Tree_Map
   #
   # f determines the key of an element
   #
-  public group_by(K type : property.orderable, f T -> K) container.Map K (Sequence T) =>
+  public group_by(K : property.equatable, f T -> K) container.Map K (Sequence T) =>
     lm : mutate is
-    lm ! ()->
-      group_by_mutable_map K (container.mutable_tree_map lm K (Sequence T)) f
-
-
-  /* NYI: UNDER DEVELOPMENT: impl. restriction: Incompatible type parameter
-  # group the elements of this sequence
-  #
-  public group(M type : container.Mutable_Map T (Sequence T)) container.Map T (Sequence T)
-    pre T : property.equatable
-  =>
-    group_by T M id
-  */
-
-
-  # wrap this sequence into an orderable type.
-  #
-  # This requires the underlying element type to be orderable.
-  #
-  # An empty `Sequence` is always less or equal to any other `Sequence`. Two non
-  # empty `Sequence`s whose first elements are unequal are ordered by the
-  # order of those two elements. If those two elements are equal, the tail
-  # of both `Sequence`s will be used to find the order.
-  #
-  public as_orderable orderable_sequence T
-    pre
-      T : property.orderable
-  =>
-    orderable_sequence T Sequence.this
-
-
-  # wrap this sequence into an equatable type.
-  #
-  # This requires the underlying element type to be equatable.
-  #
-  public as_equatable equatable_sequence T
-    pre
-      T : property.equatable
-  =>
-    equatable_sequence T Sequence.this
-
-
-  # generic sum of the elements of a Sequence of numeric.
-  #
-  # This allows summing the elements of a list, as in
-  #
-  #     l := [1,2,3]
-  #     say <| l.sum     # '6'
-  #
-  #
-  public sum T
-    pre
-      T : numeric
-  => fold T.sum
-
-
-  # generic product of the elements of a Sequence of numeric.
-  #
-  # This allows multiplying the elements of a list, as in
-  #
-  #     l := [1,2,3]
-  #     say <| l.product     # '6'
-  #
-  #
-  public product T
-    pre
-      T : numeric
-  => fold T.product
-
-
-  # is this Sequence sorted?
-  #
-  public is_sorted bool
-    pre
-      T : property.orderable
-  =>
-    zip (drop 1) (T.lteq)
-      .fold bool.all
+    lm.instate_self (container.Map K (Sequence T)) ()->
+      if K : property.orderable
+        group_by_mutable_map K (container.Mutable_Tree_Map lm K (Sequence T)) (container.ps_map K (Sequence T)) f
+      else if K : property.hashable
+        group_by_mutable_map K (container.Mutable_Hash_Map lm K (Sequence T)) (container.hash_map K (Sequence T)) f
+      else
+        compile_time_panic
 
 
   # create an empty Sequence
   #
-  public fixed type.empty Sequence T =>
-    (list T).type.empty
+  public fixed type.empty Sequence T
+    post
+      result.finite.is_yes_or_unknown
+      result.count = 0
+  =>
+    []
 
 
   # monoid of Sequences with infix concatenation operation.
   #
   public type.concat_monoid Monoid (Sequence T) =>
 
-    ref : Monoid (Sequence T) is
+    _ : Monoid (Sequence T) is
 
       # associative operation
       #
@@ -1500,83 +1508,26 @@ public Sequence(public T type) ref : property.countable is
       # identity element
       #
       public redef e Sequence T =>
-        (list T).empty
+        []
 
 
-  # Maximum number of elements shown for on a call to `as_string` for a non-finite
-  # Sequence.
+  # Maximum number of elements shown for a non-finite Sequence in
+  # the result of a call to `as_string`.
   #
-  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i32 => 10
+  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i64 => 10
 
 
-
-# helper features for knuth morris pratt algorithm
-#
-find_lm : mutate is
-Node(T type, top Sequence T, next once find_lm (option (Node T)), rest option (Node T)) ref is
-
-
-# Wrapper type to make a `Sequence` of an orderable element type itself orderable.
-#
-public orderable_sequence(# the element type of the Sequence we are wrapping
-                          #
-                          public T type : property.orderable,
-
-                          # the wrapped Sequence
-                          #
-                          public unwrap Sequence T)
-
-                          : property.orderable
-is
-
-  # does `a` come before `b` or is equal to `b`?
+  # force evaluation of all elements of this (lazy) Sequence, and discard the
+  # results
   #
-  public redef type.lteq(a, b orderable_sequence.this) bool
+  public consume unit
   =>
-    unwrapped_lteq a.unwrap b.unwrap
+    for_each ignore
 
 
-  # does `a` come before `b` or is equal to `b`?
+  # force evaluation of all elements of this Sequence, and turn the list of
+  # results into a non-lazy Sequence
   #
-  type.unwrapped_lteq(a, b Sequence T) bool
+  public force Sequence T
   =>
-    match a.as_list
-      nil     => true
-      ac Cons => match b.as_list
-                   nil     => false
-                   bc Cons => ac.head <= bc.head && (!(ac.head >= bc.head) || unwrapped_lteq ac.tail bc.tail)
-
-
-
-# Wrapper type to make a `Sequence` of an equatable element type itself equatable.
-#
-public equatable_sequence(# the element type of the Sequence we are wrapping
-                          #
-                          public T type : property.equatable,
-
-                          # the wrapped Sequence
-                          #
-                          public unwrap Sequence T)
-
-                          : property.equatable
-is
-
-  # equality
-  #
-  public redef type.equality(a, b equatable_sequence.this) bool =>
-    equality0(a1, b1 equatable_sequence.this) =>
-      (a1.unwrap.zip b1.unwrap x,y->x=y) ∀ id
-
-    au := a.unwrap
-    bu := b.unwrap
-
-    if au.finite=trit.yes && bu.finite=trit.yes
-      au.count = bu.count && equality0 a b
-    else if au.finite=trit.yes
-      au.count = (bu.take (au.count+1)).count && equality0 a b
-    else if bu.finite=trit.yes
-      bu.count = (au.take (bu.count+1)).count && equality0 a b
-    else
-      equality0 a b &&
-        {zip_count := (au.zip bu x,y->unit).count
-         (au.drop zip_count).is_empty && (bu.drop zip_count).is_empty}
+    as_array

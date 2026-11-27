@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 
@@ -38,7 +37,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Site extends ANY implements Comparable<Site>
+class Site extends ANY implements Comparable<Site>
 {
 
 
@@ -49,12 +48,6 @@ public class Site extends ANY implements Comparable<Site>
    * The site's site.
    */
   final int _s;
-
-
-  /**
-   * set of features accessed at this site.
-   */
-  final TreeSet<Integer> _accesses = new TreeSet<>();
 
 
   /**
@@ -101,6 +94,7 @@ public class Site extends ANY implements Comparable<Site>
   /**
    * Define total order over two call sites.
    */
+  @Override
   public int compareTo(Site cs)
   {
     return Integer.compare(_s, cs._s);

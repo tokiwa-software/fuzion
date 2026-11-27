@@ -21,12 +21,14 @@
 #
 # -----------------------------------------------------------------------
 
-test(T type : property.equatable, a T) =>
-  a1 := concur.atomic a
+test(T : property.equatable, a T) =>
+  a1 := concur.atomic T .new a
   _ := a1.read = a
 
   on is
   off is
   my_switch : choice on off is
-    type.equality(a, b my_switch.this) => true
+    public redef type.equality(a, b my_switch.this) bool => true
   test my_switch on
+
+_ := test 42

@@ -1,3 +1,3 @@
 failed with: debug: fits_in_u8
-failed with: debug: val ≥ (i64 0)
-failed with: debug: val ≥ 0
+failed with: debug: fits_in_u32
+failed with: debug: fits_in_u32

@@ -26,22 +26,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Env represents the set of effects installed in a given environment
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Env extends ANY implements Comparable<Env>
+class Env extends ANY implements Comparable<Env>
 {
 
 
@@ -191,19 +188,19 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * Compare two environoments by looking only at those effect values of effects
+   * Compare two environments by looking only at those effect values of effects
    * in the given set of effect types
    *
-   * NOTE: iterating the elements of `which` must be deterministic!
+   * NOTE: iterating the elements of {@code which} must be deterministic!
    *
    * @param which set of clazz ids of effect types to compare
    *
-   * @param a first environemnt
+   * @param a first environment
    *
    * @param b second environment
    *
-   * @return -1/0/+1 defining a total order while ingoring effects not in
-   * `which`.
+   * @return -1/0/+1 defining a total order while ignoring effects not in
+   * {@code which}.
    */
   static int compare(Set<Integer> which, Env a, Env b)
   {
@@ -232,6 +229,8 @@ public class Env extends ANY implements Comparable<Env>
               }
 
           }
+        if (CHECKS)
+          check(a != null || b != null || res == 0);
       }
     return res;
   }
@@ -283,15 +282,15 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * Check the environment if it contains an effect of clazz `cl` instantiated at
-   * `site`.
+   * Check the environment if it contains an effect of clazz {@code cl} instantiated at
+   * {@code site}.
    *
    * @param cl a clazz
    *
-   * @param site a site that contains a constructor call to `cl`
+   * @param site a site that contains a constructor call to {@code cl}
    *
    * @return in case the context contains an environment with an instance of
-   * `cl` created at `site` instated, then return that existing instance.
+   * {@code cl} created at {@code site} instated, then return that existing instance.
    * Return null otherwise.
    */
   Instance find(int cl, int site)
@@ -330,14 +329,16 @@ public class Env extends ANY implements Comparable<Env>
   static int compare(Env a, Env b)
   {
     return
-      a == null ? -1 :
-      b == null ? +1 : Integer.compare(a._id, b._id);
+      a == null && b == null ? 0  :
+      a == null              ? -1 :
+      b == null              ? +1 : Integer.compare(a._id, b._id);
   }
 
 
   /**
    * Compare this env to another Env.
    */
+  @Override
   public int compareTo(Env other)
   {
     // The _types are ordered
@@ -369,6 +370,7 @@ public class Env extends ANY implements Comparable<Env>
   /**
    * Create human-readable string from this Env.
    */
+  @Override
   public String toString()
   {
     var sb = new StringBuilder();
@@ -376,7 +378,7 @@ public class Env extends ANY implements Comparable<Env>
     for (var et : _types)
       {
         sb.append(sep)
-          .append(_dfa._fuir.clazzAsString(et))
+          .append(_dfa._fuir.clazzName(et))
           .append("->")
           .append(getActualEffectValues(et));
         sep = ", ";
@@ -395,7 +397,7 @@ public class Env extends ANY implements Comparable<Env>
     for (var et : _types)
       {
         sb.append(sep)
-          .append(_dfa._fuir.clazzAsStringHuman(et));
+          .append(_dfa._fuir.clazzNameHuman(et));
         sep = ", ";
       }
     return sb.toString();
@@ -413,7 +415,7 @@ public class Env extends ANY implements Comparable<Env>
    */
   Value getActualEffectValues(int ecl)
   {
-    if (DFA.DO_NOT_TRACE_ENVS)
+    if (!DFA.TRACE_ENVS)
       {
         return _dfa._allValuesForEnv.get(ecl);
       }
@@ -463,7 +465,7 @@ public class Env extends ANY implements Comparable<Env>
         if (Value.compare(oe, ne) != 0)
           {
             _actualEffectValues = ne;
-            _dfa.wasChanged(() -> "effect.replace called: "+_dfa._fuir.clazzAsString(ecl));
+            _dfa.wasChanged(() -> "effect.replace called: "+_dfa._fuir.clazzName(ecl));
           }
       }
     else if (_outer != null)
@@ -513,7 +515,7 @@ public class Env extends ANY implements Comparable<Env>
         if (!_isAborted)
           {
             _isAborted = true;
-            _dfa.wasChanged(() -> "effect.abort0 called: "+_dfa._fuir.clazzAsString(ecl));
+            _dfa.wasChanged(() -> "effect.abort0 called: "+_dfa._fuir.clazzName(ecl));
           }
       }
     else if (_outer != null)
@@ -522,7 +524,7 @@ public class Env extends ANY implements Comparable<Env>
       }
     else
       {
-        throw new Error("DFA: Aborted effect `" + _dfa._fuir.clazzAsString(ecl) + "` not found in current environment");
+        throw new Error("DFA: Aborted effect `" + _dfa._fuir.clazzName(ecl) + "` not found in current environment");
       }
   }
 

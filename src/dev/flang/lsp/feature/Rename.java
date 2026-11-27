@@ -48,7 +48,6 @@ import dev.flang.lsp.shared.LexerTool;
 import dev.flang.lsp.shared.ParserTool;
 import dev.flang.lsp.shared.QueryAST;
 import dev.flang.lsp.shared.SourcePositionTool;
-import dev.flang.lsp.shared.TypeTool;
 import dev.flang.lsp.shared.Util;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.lsp.util.LSP4jUtils;
@@ -127,8 +126,12 @@ public class Rename extends ANY
 
     // positions where feature is used as type
     var typePositions = FeatureTool.selfAndDescendants(ParserTool.universe(Util.toURI(params.getTextDocument().getUri())))
-      .filter(f -> !f.equals(featureToRename) && !f.resultType().isGenericArgument()
-        && f.resultType().outer().equals(featureToRename))
+      .filter(f ->
+        !f.equals(featureToRename)
+        && !f.resultType().isParametricType()
+        && f.resultType().outer() != null
+        && f.resultType().outer().equals(featureToRename)
+      )
       .flatMap(f -> {
         var tokens = LexerTool.tokensFrom(f.pos()).skip(1).collect(Collectors.toList());
         var whitespace = tokens.get(0);
@@ -142,7 +145,7 @@ public class Rename extends ANY
           }
 
         return Stream.of(SourcePositionTool.byLineColumn(f.pos()._sourceFile, f.pos().line(),
-          f.pos().column() + Util.charCount(f.featureName().baseName()) + Util.codepointCount(whitespace.text())));
+          f.pos().column() + Util.charCount(f.baseName()) + Util.codepointCount(whitespace.text())));
       });
 
 
@@ -171,10 +174,10 @@ public class Rename extends ANY
       .filter(f -> f.resultType().isChoice())
       .filter(f -> {
         return f.resultType().choiceGenerics().stream().anyMatch(t -> {
-          return TypeTool.baseName(t).equals(featureToRename.featureName().baseName());
+          return t.selfOrConstraint().feature().featureName().baseName().equals(featureToRename.baseName());
         });
       })
-      .map(f -> positionOfChoiceGeneric(featureToRename.featureName().baseName(), f));
+      .map(f -> positionOfChoiceGeneric(featureToRename.baseName(), f));
 
     return Util.concatStreams(
       callsSourcePositions,
@@ -200,7 +203,7 @@ public class Rename extends ANY
 
   private static int lengthOfFeatureIdentifier(AbstractFeature feature)
   {
-    return Arrays.stream(feature.featureName().baseName().split(" "))
+    return Arrays.stream(feature.baseName().split(" "))
       .map(str -> Util.charCount(str))
       .reduce(0, (acc, item) -> item);
   }

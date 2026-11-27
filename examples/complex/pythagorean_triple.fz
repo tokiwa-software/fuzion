@@ -35,7 +35,7 @@
 #
 pythagorean_triple is
 
-  cₘₐₓ := 100    # max length of hypothenuse
+  cₘₐₓ := 100    # max length of hypotenuse
 
   # iterate over all interesting real/imag pairs while c<max
   for real in 1..cₘₐₓ do
@@ -52,4 +52,4 @@ pythagorean_triple is
       c := v .abs² / f
     while c < cₘₐₓ
       if real.gcd imag = 1  # filter duplicates
-        say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
+        say "$(a)² + $(b)² = $(c)² = $(a*a) + $(b*b) = $(c*c)"

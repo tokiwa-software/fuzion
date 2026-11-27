@@ -1,0 +1,9 @@
+
+reg_issue5366.fz:26:83: error 1: Unexpected control sequence in constant string.
+  say "hi  # should flag an error: Unexpected control sequence in constant string.
+----------------------------------------------------------------------------------^
+Found unexpected control sequence 'LF ' (0xa) in constant string starting at reg_issue5366.fz:26:7
+  say "hi  # should flag an error: Unexpected control sequence in constant string.
+------^
+
+one error.

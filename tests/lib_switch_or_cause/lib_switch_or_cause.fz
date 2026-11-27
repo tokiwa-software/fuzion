@@ -23,32 +23,42 @@
 
 lib_switch_or_cause =>
 
-  res := exception unit _ ()->
-    "GET 200 ..."
-      .split
-      .nth 1
-      .or_cause unit x->(error "first line of response malformed $x")
-      .parse_i32
-      .or_cause unit x->(error "status not a number? $x")
+  # type used only to identify the exception used in this test
+  #
+  status_exception : flow.exception_tag is
+
+  res := flow.exception status_exception
+    .try _ ()->
+      "GET 200 ..."
+        .split
+        .nth 1
+        .or_cause status_exception x->(error "first line of response malformed $x")
+        .parse_i32
+        .or_cause status_exception x->(error "status not a number? $x")
+    .or_outcome
 
   say res
 
-  res2 := exception unit _ ()->
-    "GET200.."
-      .split
-      .nth 1
-      .or_cause unit x->(error "first line of response malformed $x")
-      .parse_i32
-      .or_cause unit x->(error "status not a number? $x")
+  res2 := flow.exception status_exception
+    .try _ ()->
+      "GET200.."
+        .split
+        .nth 1
+        .or_cause status_exception x->(error "first line of response malformed $x")
+        .parse_i32
+        .or_cause status_exception x->(error "status not a number? $x")
+    .or_outcome
 
   say res2
 
-  res3 := exception unit _ ()->
-    "GET ME .."
-      .split
-      .nth 1
-      .or_cause unit x->(error "first line of response malformed $x")
-      .parse_i32
-      .or_cause unit x->(error "status not a number? $x")
+  res3 := flow.exception status_exception
+    .try _ ()->
+      "GET ME .."
+        .split
+        .nth 1
+        .or_cause status_exception x->(error "first line of response malformed $x")
+        .parse_i32
+        .or_cause status_exception x->(error "status not a number? $x")
+    .or_outcome
 
   say res3

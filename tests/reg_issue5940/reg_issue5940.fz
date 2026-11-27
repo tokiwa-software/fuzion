@@ -1,0 +1,35 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5940
+#
+# -----------------------------------------------------------------------
+
+# error was:
+
+# error 2: java.lang.Error: check-condition2 failed: Function.java:535 "(Errors.any() || _inheritsCall == inheritsCall2, _type == null || _type.isAssignableFromDirectly(_call.type()).yes());"
+#   at dev.flang.util.ANY.check(ANY.java:498)
+#   at dev.flang.ast.Function.resolveTypes(Function.java:535)
+#   at dev.flang.ast.Expr.wrapInLazy(Expr.java:455)
+#   at dev.flang.ast.NumLiteral.wrapInLazy(NumLiteral.java:869)
+#   at dev.flang.ast.Call.lambda$wrapActualsInLazy$32(Call.java:2795)
+#   at dev.flang.ast.Call.applyToActualsAndFormalTypes(Call.java:2832)
+
+a(v,w Lazy T) => v
+_ := a (u32 1) 1

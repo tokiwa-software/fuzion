@@ -26,15 +26,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools.docs;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,26 +50,37 @@ import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
+import dev.flang.tools.FuzionHome;
 import dev.flang.tools.Tool;
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
-public class Html extends ANY
+class Html extends ANY
 {
   final DocsOptions config;
-  private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
+
+  /**
+   * Features selected for documentation pages, mapped to the declared and
+   * inherited members shown on each page, grouped by feature kind.
+   */
+  private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> documentedFeatures;
+
   private final String navigationBareHTML;
+
   private final LibraryModule lm;
+
   private final List<LibraryModule> libModules;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm, List<LibraryModule> libModules)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> documentedFeatures, AbstractFeature universe, LibraryModule lm, List<LibraryModule> libModules)
   {
     this.config = config;
-    this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
+    this.documentedFeatures = documentedFeatures;
     this.lm = lm;
     this.libModules = libModules;
 
@@ -75,26 +91,58 @@ public class Html extends ANY
 
   /*----------------------------  constants  ----------------------------*/
 
+  private static final Pattern TEMPLATE_TOKEN = Pattern.compile("##([A-Za-z_0-9]+)##");
+
   static final String RUNCODE_BOX_HTML = """
     <div class="runcode-wrapper">
       <i class="far fa-spinner fa-spin"></i>
-      <div class="mb-15 runcode" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;">
+      <div class="mb-15 runcode">
         <div class="position-relative">
-          <form id="##ID##">
-            <textarea class="codeinput" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
-            <div class="position-absolute runbuttons">
-              <input type="button" onclick="runit('##ID##')" class="runbutton" name="run" value="Run!" />
-              <input type="button" onclick="runiteff('##ID##')" class="runbutton" name="run" value="Effects!" />
+          <form id="##id##">
+            <label for="##id##.code" class="visually-hidden">Code input</label>
+            <textarea class="code-input" required="required" maxlength="4096"
+                      id="##id##.code" name="code" rows="##rows##" spellcheck="false">##code##</textarea>
+            <div class="position-absolute run-buttons">
+              <input type="button" onclick="runit('##id##')" class="run-button" value="Run!" />
+              <input type="button" onclick="runiteff('##id##')" class="run-button" value="Effects!" />
               <a href="/tutorial/effects.html"><i>What are effects?</i></a>
             </div>
           </form>
         </div>
-        <div class="computeroutput" id="##ID##.result"></div>
+        <div class="computer-output" id="##id##.result"></div>
       </div>
     </div>""";
 
 
   /*-----------------------------  private methods  -----------------------------*/
+
+  /**
+   * Replace ##name## placeholders in the original template only. Inserted values
+   * are literal, even if they contain placeholders, dollar signs or backslashes.
+   * Callers must escape values for their HTML context before substitution.
+   *
+   * @throws IllegalArgumentException when a replacement is missing or null
+   */
+  private static String fillTemplate(String template, Map<String, String> values)
+  {
+    var matcher = TEMPLATE_TOKEN.matcher(template);
+    var result = new StringBuilder(template.length());
+    var end = 0;
+    while (matcher.find())
+      {
+        var name = matcher.group(1);
+        var value = values.get(name);
+        if (value == null)
+          {
+            throw new IllegalArgumentException("Missing template value: " + name);
+          }
+        result.append(template, end, matcher.start());
+        result.append(value);
+        end = matcher.end();
+      }
+    result.append(template, end, template.length());
+    return result.toString();
+  }
 
 
 
@@ -113,31 +161,35 @@ public class Html extends ANY
    */
   private String inherited(AbstractFeature af, AbstractFeature relativeTo)
   {
-    if (af.inherits().isEmpty() || signatureWithArrow(af)) // don't show inheritance for function features
+    if (signatureWithArrow(af)) // inheritance does not make sense for function features since no instance can be obtained
       {
         return "";
       }
-    else if (af.kind() == AbstractFeature.Kind.TypeParameter || af.kind() == AbstractFeature.Kind.OpenTypeParameter)
+    else if (af.isTypeParameter())
       {
-        var constraint = af.resultType().feature();
-        return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
-          .replace("$1", featureRelativeURL(constraint, relativeTo))
-          .replace("$2", htmlEncodedQualifiedName(constraint));
+        var constraintType = af.constraint();
+        var constraint = constraintType.feature();
+        return fillTemplate("<span class='fd-keyword mx-5'>:</span><a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
+          "url", featureRelativeURL(constraint, relativeTo),
+          "name", htmlEncodeNbsp(constraintType.toString(true))));
       }
     else
       {
-        return "<div class='fd-keyword mx-5'>:</div>" + af.inherits()
+        var parents = af.inherits()
           .stream()
+          .filter(c -> canReference(c.calledFeature()))
           .<String>map(c -> {
             var f = c.calledFeature();
-            return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureRelativeURL(f, relativeTo))
-              + htmlEncodedBasename(f)
-              + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
-              + c.actualTypeParameters().stream()
-                 .map(at -> htmlEncodeNbsp(at.toString(false, af)))
-                 .collect(Collectors.joining(", ")) + "</a>";
+            return fillTemplate("<a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
+              "url", featureRelativeURL(f, relativeTo),
+              "name", htmlEncodedBasename(f)
+                      + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
+                      +  c.actualTypeParameters().stream()
+                          .map(at -> htmlEncodeNbsp(at.toString(true)))
+                          .collect(Collectors.joining(", "))));
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
+        return parents.isEmpty() ? "" : "<span class='fd-keyword mx-5'>:</span>" + parents;
       }
   }
 
@@ -151,13 +203,14 @@ public class Html extends ANY
   private String anchorType(AbstractFeature af, AbstractFeature context, AbstractFeature relativeTo)
   {
     var at = af.resultType();
-    if (at.isGenericArgument())
+    if (at.isParametricType())
       {
-        return htmlEncodeNbsp(at.toString(false, context))
+        return htmlEncodeNbsp(at.toString(true))
                + (at.isOpenGeneric() ? "..." : "");
       }
-    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(false, context)))
-      .replace("$2", featureRelativeURL(at.feature(), relativeTo));
+    return fillTemplate("<a class='fd-type' href='##url##'>##name##</a>", Map.of(
+      "url", featureRelativeURL(at.feature(), relativeTo),
+      "name", htmlEncodeNbsp(at.toString(true))));
   }
 
 
@@ -177,8 +230,9 @@ public class Html extends ANY
         return Stream.empty();
       }
     return Stream.concat(anchorTags0(f.outer(), relativeTo),
-      Stream.of(typePrfx(f) + "<a class='fd-feature font-weight-600' href='$2'>$1</a>".replace("$1", htmlEncodedBasename(f))
-        .replace("$2", featureRelativeURL(f, relativeTo))));
+      Stream.of(typePrfx(f) + fillTemplate("<a class='fd-feature font-weight-600' href='##url##'>##name##</a>", Map.of(
+        "url", featureRelativeURL(f, relativeTo),
+        "name", htmlEncodedBasename(f)))));
   }
 
 
@@ -189,8 +243,10 @@ public class Html extends ANY
    */
   private String typePrfx(AbstractFeature af)
   {
-    // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
-    return af.outer() != null && (af.outer().isCotype() || af.outer().compareTo(Types.resolved.f_Type) == 0) && !af.isCotype() ? "<span class=\"fd-keyword\">type</span>." : "";
+    // NYI: BUG: does not show features that `Type` inherits but does not redefine as type features, see #3913
+    return af.outer() != null && (af.outer().isCotype() || af.outer() == Types.resolved.f_Type) && !af.isCotype()
+            ? "<span class=\"fd-keyword\">type</span>."
+            : "";
   }
 
 
@@ -214,30 +270,78 @@ public class Html extends ANY
     AbstractFeature relativeTo = outer != null ? outer : af;
 
     return
-      "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
-        + "<div class='d-flex flex-wrap word-break-break-word'>"
-          + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
-            + anchor(af, relativeTo)
-            + arguments(af, (outer != null ? outer : af))
-            + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
-            + inherited(af, relativeTo)
-            + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchorType(af, af, relativeTo)
-               : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
-               : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
-                                      : "")
-            + annotateInherited(af, outer)
-            + annotateRedef(af, outer)
-            + annotateAbstract(af)
-            + annotateContainsAbstract(af)
-            + annotatePrivateConstructor(af)
-            + annotateModule(af)
-            + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>¶</a>"
-            // fills remaining space
-            + "<div class='flex-grow-1'></div>"
-          + "</div>"
-        + "</div>"
+      "<span class='fd-summary'>"
+        + "<span class='overflow-wrap-break-word fz-code fd-signature'>"
+          + signature(af, outer, relativeTo)
+        + "</span>"
         + source(af)
-      + "</div>";
+      + "</span>";
+  }
+
+
+  /**
+   * The signature of a feature, i.e. its name, arguments and result type.
+   *
+   * Features with arguments use a three column layout: the feature name
+   * including the opening parenthesis, the arguments, and the closing
+   * parenthesis followed by the result type. Features without arguments are
+   * kept in a single line.
+   *
+   * @param af the feature whose signature is rendered
+   * @param outer the feature in whose context af is used
+   * @param relativeTo the feature to which links should be relative to
+   * @return HTML for the feature signature
+   */
+  private String signature(AbstractFeature af, AbstractFeature outer, AbstractFeature relativeTo)
+  {
+    var args = arguments(af, relativeTo);
+    var tail =
+      (af.isRef() ? "<span class='fd-keyword'>&nbsp;ref</span>" : "")
+      + inherited(af, relativeTo)
+      + (signatureWithArrow(af) ? "<span class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</span>" + anchorType(af, af, relativeTo)
+         : af.isConstructor()   ? "<span class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</span>"
+         : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo)
+                                : "")
+      + annotateUnitType(af)
+      + annotateInherited(af, outer)
+      + annotateRedef(af, outer)
+      + annotateAbstract(af)
+      + annotateContainsAbstract(af)
+      + annotatePrivateConstructor(af)
+      + annotateModule(af)
+      + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>¶</a>";
+
+    if (args.isEmpty())
+      {
+        return anchor(af, relativeTo) + tail;
+      }
+
+    return "<span class='fd-signature-col1'>" + anchor(af, relativeTo) + "(" + "</span>"
+      + "<span class='fd-signature-col2'>"
+      + java.util.stream.IntStream.range(0, args.size())
+        .mapToObj(i -> "<span class='fd-signature-arg'>" + args.get(i)
+                       + (i < args.size() - 1 ? "," : "") + "</span>")
+        .collect(Collectors.joining())
+      + "</span>"
+      + "<span class='fd-signature-col3'>)" + tail + "</span>";
+  }
+
+  /**
+   * Returns an HTML-formatted annotation for features the frontend knows
+   * to be unit types
+   *
+   * This only works for features directly in universe, as all inner features have an outer reference
+   *
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a unit type feature
+   */
+  private String annotateUnitType(AbstractFeature af)
+  {
+    return af.isUnitTypeWithoutSideEffect()
+      ? "<span class='fd-parent ml-10' title='This feature is guaranteed to be a unit type, "
+        + "it does not have any internal state and might serve as a namespace.\n\n"
+        + "Note that features without this annotation might still be unit types.'>[Unit Type]</span>" // NYI: replace title attribute with proper tooltip
+      : "";
   }
 
   /**
@@ -248,17 +352,22 @@ public class Html extends ANY
    */
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
-    if (isDeclared(af, outer))
+    // This annotation links to the declaring type, not to the inherited member.
+    if (isDeclared(af, outer)
+        || af.outer().isUniverse() // applicable universe features are not inherited
+        || !canReference(af.outer()))
       {
         return ""; // not inherited, nothing to display
       }
     else
       {
         AbstractFeature relativeTo = outer != null ? outer : af;
-        String anchorParent = "<a class='' href='" + featureRelativeURL(af.outer(), relativeTo) + "'>"
-                              + htmlEncodedBasename(af.outer()) + "</a>";
-        return "<div class='fd-parent ml-10'>[Inherited from&nbsp; <span class=fz-code>$0</span>]</div>"
-          .replace("$0", anchorParent);
+        return fillTemplate("""
+          <span class='fd-parent ml-10'>[Inherited from&nbsp; \
+          <span class=fz-code><a class='' href='##url##'>##name##</a></span>]</span>""", Map.of(
+          "url", featureRelativeURL(af.outer(), relativeTo),
+          "name", htmlEncodedBasename(af.outer())));
+
       }
   }
 
@@ -272,7 +381,7 @@ public class Html extends ANY
   {
     return (af == null || outer == null || af.outer() == outer
                // type features have their own chain of parents internally, avoid annotation in this case
-            || af.outer().featureName().baseNameHuman().equals(outer.featureName().baseNameHuman()));
+            || af.outer().baseNameHuman().equals(outer.baseNameHuman()));
   }
 
 
@@ -289,16 +398,38 @@ public class Html extends ANY
         return "";
       }
 
-    var redefs = af.redefines();
+    var redefs = new TreeSet<>(af.redefines());
+
+    // Public targets can be referenced even when their declaring type is private.
+    redefs.removeIf(f -> !canReference(f));
 
     AbstractFeature relativeTo = outer != null ? outer : af;
     return redefs.isEmpty()
             ? ""
-            : "<div class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</div>"
-              .replace("$0", (redefs.stream()
-                                    .map(f->"<a class='' href='" + featureRelativeURL(f, relativeTo) + "'>" +
-                                              htmlEncodedQualifiedName(f) + "</a>")
-                                    .collect(Collectors.joining(",&nbsp;")) ));
+            : "<span class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>"
+              + redefs.stream()
+                      .map(f->relativeAnchor(f, relativeTo))
+                      .collect(Collectors.joining(",&nbsp;")) + "</span>]</span>";
+  }
+
+
+  private String relativeAnchor(AbstractFeature f, AbstractFeature relativeTo)
+  {
+    return fillTemplate("<a href=\"##url##\">##name##</a>", Map.of(
+      "url", featureRelativeURL(f, relativeTo),
+      "name", htmlEncodedQualifiedName(f)));
+  }
+
+  /**
+   * May this target be referenced in the selected documentation mode?
+   * Check the target's own visibility, not its ordinary private enclosing
+   * scopes. Internal implementations remain excluded in every mode.
+   */
+  private boolean canReference(AbstractFeature f)
+  {
+    var target = f.isCotype() ? f.cotypeOrigin() : f;
+    return !Util.isInternalFeature(target)
+      && (config.ignoreVisibility() || Util.isVisible(target));
   }
 
 
@@ -310,8 +441,8 @@ public class Html extends ANY
   private String annotateAbstract(AbstractFeature af)
   {
     return af.isAbstract()
-             ? "<div class='fd-parent ml-10' title='An abstract feature is a feature declared using ⇒ abstract. " +
-               "To be able to call it, it needs to be implemented (redefined) in an heir.'>[Abstract feature]</div>"
+             ? "<span class='fd-parent ml-10' title='An abstract feature is a feature declared using ⇒ abstract. " +
+               "To be able to call it, it needs to be implemented (redefined) in an heir.'>[Abstract feature]</span>"
              : "";
   }
 
@@ -324,8 +455,8 @@ public class Html extends ANY
   private String annotatePrivateConstructor(AbstractFeature af)
   {
     return af.visibility().eraseTypeVisibility() != Visi.PUB && af.isConstructor()
-             ? "<div class='fd-parent ml-10' title='This feature can not be called to construct a new instance of itself, " +
-               "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
+             ? "<span class='fd-parent ml-10' title='This feature can not be called to construct a new instance of itself, " +
+               "only the type it defines is visible.'>[Private constructor]</span>" // NYI: replace title attribute with proper tooltip
              : "";
   }
 
@@ -339,13 +470,12 @@ public class Html extends ANY
   {
     var allInner = new List<AbstractFeature>();
     lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
-
     return allInner.stream()
-        .filter(f->isVisible(f))
+        .filter(this::isVisible)
         .filter(f->f instanceof LibraryFeature lf && lm.sameOrDependent(lf._libModule))
         .anyMatch(f->f.isAbstract())
-             ? "<div class='fd-parent ml-10' title='This feature contains inner or inherited features " +
-               "which are abstract.'>[Contains abstract features]</div>" // NYI: replace title attribute with proper tooltip
+             ? "<span class='fd-parent ml-10' title='This feature contains inner or inherited features " +
+               "which are abstract.'>[Contains abstract features]</span>" // NYI: replace title attribute with proper tooltip
              : "";
   }
 
@@ -360,32 +490,30 @@ public class Html extends ANY
     var afModule = libModule(af);
 
     // don't add annotation for features of own module
-    return afModule == lm ? "" : "<div class='fd-parent ml-10'>[Module " + afModule.name() + "]</div>";
+    return afModule == lm ? "" : "<span class='fd-parent ml-10'>[Module " + afModule.name() + "]</span>";
   }
 
   private boolean isVisible(AbstractFeature af)
   {
-    return af.visibility().typeVisibility() == Visi.PUB;
+    return af.visibility().typeVisibility() == Visi.PUB && !Util.isInternalFeature(af);
   }
 
 
   private String anchor(AbstractFeature af, AbstractFeature relativeTo) {
-    return "<div class='font-weight-600 ml-2'>"
-            + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureRelativeURL(af, lm, relativeTo) + "'>")
+    return (!hasDocumentationPage(af) ? "<span class='font-weight-600 ml-2'>"
+                              : "<a class='fd-feature font-weight-600 ml-2' href='" + featureRelativeURL(af, lm, relativeTo) + "'>")
             + typePrfx(af) + htmlEncodedBasename(af)
-            + (noFeatureLink(af) ? "" : "</a>")
-            + "</div>";
+            + (!hasDocumentationPage(af) ? "</span>" : "</a>");
   }
 
   /**
-   * Should a hyperlink be created for feature af?
-   * Fields and type parameters don't have their own page in the docs.
+   * Does this feature have a documentation page?
    * @param af the feature which should be checked
-   * @return true iff there is no doc page for this feature and no hyperlink should be created
+   * @return true iff the feature is selected for page generation
    */
-  private boolean noFeatureLink(AbstractFeature af)
+  private boolean hasDocumentationPage(AbstractFeature af)
   {
-    return af.isArgument() || af.isTypeParameter() || af.isOpenTypeParameter();
+    return documentedFeatures.containsKey(af);
   }
 
 
@@ -396,14 +524,9 @@ public class Html extends ANY
    */
   private String redefines(AbstractFeature af, AbstractFeature relativeTo)
   {
-    var result = "";
-
-    if (!af.redefines().isEmpty())
-      {
-        result = "<div class='fd-redefines'><br />redefines: <br /><ul>" + redefines0(af, relativeTo) + "</ul><br /></div>";
-      }
-
-    return result;
+    var entries = redefines0(af, relativeTo);
+    return entries.isEmpty() ? ""
+      : "<div class='fd-redefines'><br />redefines: <br /><ul>" + entries + "</ul><br /></div>";
   }
 
 
@@ -420,10 +543,10 @@ public class Html extends ANY
     return af
       .redefines()
       .stream()
-      .map(f -> """
-        <li><a href="$1">$2</a></li>$3
-      """.replace("$1", featureRelativeURL(f, relativeTo)).replace("$2", htmlEncodeNbsp(f.qualifiedName())).replace("$3", redefines0(f, relativeTo)))
-      .collect(Collectors.joining(System.lineSeparator()));
+      .filter(this::canReference)
+      .map(f -> "<li>" + relativeAnchor(f, relativeTo) + "</li>"
+        + redefines0(f, relativeTo))
+      .collect(Collectors.joining());
   }
 
 
@@ -437,9 +560,19 @@ public class Html extends ANY
   {
     // Type Parameters
     var typeParameters = new List<AbstractFeature>();
-    typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.TypeParameter, new TreeSet<AbstractFeature>()));
+    typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.ExplicitTypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.OpenTypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(outer.typeArguments());
+
+    var explicitTypeParameters = typeParameters.stream()
+                                               .filter(AbstractFeature::isExplicitTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+    var openTypeParameters     = typeParameters.stream()
+                                               .filter(AbstractFeature::isOpenTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
+    var freeTypeParameters     = typeParameters.stream()
+                                               .filter(AbstractFeature::isFreeTypeParameter)
+                                               .collect(Collectors.toCollection(List::new));
 
     // Fields
     var fields =  new List<AbstractFeature>();
@@ -447,15 +580,20 @@ public class Html extends ANY
     if (!signatureWithArrow(outer))
       {
         fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
-        var normalArguments = outer.arguments().clone();
-        normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
-        fields.addAll(normalArguments);
       }
+
+    // Value arguments of function features
+    // List them independent of visibility, they can not be called,
+    // but they might contain a comment which otherwise is not shown..
+    var functionArguments = signatureWithArrow(outer)
+                              ? outer.valueArguments().clone()
+                              : new List<AbstractFeature>();
+
 
     // Constructors
     var allConstructors =  new TreeSet<AbstractFeature>();
-    allConstructors.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-    allConstructors.removeIf(f->!f.isConstructor());
+    allConstructors.addAll(map.getOrDefault(AbstractFeature.Kind.Constructor, new TreeSet<AbstractFeature>()));
+    allConstructors.addAll(map.getOrDefault(AbstractFeature.Kind.RefConstructor, new TreeSet<AbstractFeature>()));
 
     var normalConstructors = allConstructors.stream().filter(f->!f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
     var typeConstructors   = allConstructors.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
@@ -465,42 +603,69 @@ public class Html extends ANY
     // it's not possible to get an instance of a function feature, so no features can be called on it
     if (!signatureWithArrow(outer))
       {
-        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-        allFunctions.removeIf(f->f.isConstructor());
+        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Function, new TreeSet<AbstractFeature>()));
         allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
         allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
         allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
       }
 
     var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
-    var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
+    var typeFeatures    = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
 
     // Choice Types
     var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
 
-    return mainSection0("Type Parameters",   typeParameters,     outer, false)
-         + mainSection0("Fields",            fields,             outer, false)
-         + mainSection0("Constructors",      normalConstructors, outer, true)
-         + mainSection0("Type Constructors", typeConstructors,   outer, true)
-         + mainSection0("Functions",         normalFunctions,    outer, true)
-         + mainSection0("Type Functions",    typeFunctions,      outer, true)
-         + mainSection0("Choice Types",      choices,            outer, true);
+    // Applicable universe features
+    var univFuncDesc = "These are features in universe, that have an argument with a type constraint "
+                      + "that matches this features type and can therefore be used with it.";
+
+    var universeFunctions = new TreeSet<AbstractFeature>();
+
+    if (!signatureWithArrow(outer) && !outer.isUniverse())
+      {
+        var allUniverseFeat = documentedFeatures.get(lm.universe());
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Function, new TreeSet<AbstractFeature>()));
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+
+        // only keep features that have a matching type parameter with a type other than Any
+        universeFunctions.removeIf(
+          af->af.typeArguments().isEmpty()
+          || af.typeArguments().stream().noneMatch(typeParam->typeParam.constraint().compareTo(Types.resolved.t_Any ) != 0
+                                                              && typeParam.constraint().constraintSatisfiedBy(outer.resultType())));
+      }
+
+    return mainSection0("Type Parameters",              null,         explicitTypeParameters, outer, false)
+         + mainSection0("Open Type Parameter",          null,         openTypeParameters,     outer, false)
+         + mainSection0("Free Type Parameters",         null,         freeTypeParameters,     outer, false)
+         + mainSection0("Arguments",                    null,         functionArguments,      outer, false)
+         + mainSection0("Fields",                       null,         fields,                 outer, false)
+         + mainSection0("Constructors",                 null,         normalConstructors,     outer, true)
+         + mainSection0("Type Constructors",            null,         typeConstructors,       outer, true)
+         + mainSection0("Functions",                    null,         normalFunctions,        outer, true)
+         + mainSection0("Type Features",                null,         typeFeatures,           outer, true)
+         + mainSection0("Choice Types",                 null,         choices,                outer, true)
+         + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,      outer, true);
   }
 
 
   /**
    * The summaries and the comments of the features
+   *
    * @param heading the title for this section
+   * @param description text block shown under the headline, can be null
    * @param set the features to be included in the summary
    * @param outer the outer feature of the features in the summary
    * @param filterAndSort should features from other modules (including not having a module) be removed and the list sorted?
    * @return
    */
-  private String mainSection0(String heading, Collection<AbstractFeature> set, AbstractFeature outer, boolean filterAndSort)
+  private String mainSection0(String heading, String description, Collection<AbstractFeature> set, AbstractFeature outer, boolean filterAndSort)
   {
     if (set == null) { return ""; }
 
-    heading = "<h4>" + heading + "</h4>\n";
+    heading = "<h2 class=\"f-category\">" + heading + "</h2>\n";
+    description = (description != null && !description.isEmpty()) ? "<div>" + description + "</div>\n" : "";
     var features = set.stream();
 
     // e.g. don't filter or sort type parameters and fields
@@ -509,22 +674,27 @@ public class Html extends ANY
         features = features
                     // filter out features of other modules which do not need to be shown for this module
                     .filter(af -> (af instanceof LibraryFeature lf ? lf.showInMod(lm) : false))
-                    .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()));
+                    .sorted((af1, af2) -> af1.baseName().compareToIgnoreCase(af2.baseName()));
       }
 
     var content = features.map(af ->
-      // NYI: UNDER DEVELOPMENT: summary tag must not contain div
-      "<details id='" + htmlID(af)
-      + "' $0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
+      fillTemplate("""
+        <details id='##id##' ##attributes##>
+          <summary>##summary##</summary>
+          <div class='fd-comment'>##comment##</div>
+          ##redefines##
+        </details>
+        """, Map.of(
+        "id", htmlID(af),
         // NYI: UNDER DEVELOPMENT: rename fd-private?
-        .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-        .replace("$1", summary(af, outer))
-        .replace("$2", Util.commentOf(af))
-        .replace("$3", redefines(af, (outer != null ? outer : af)))
+        "attributes", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'",
+        "summary", summary(af, outer),
+        "comment", commentOf(af),
+        "redefines", redefines(af, (outer != null ? outer : af))))
     )
     .collect(Collectors.joining(System.lineSeparator()));
 
-    return content.equals("") ? "" : heading + content;
+    return content.equals("") ? "" : heading + description + content;
   }
 
 
@@ -535,15 +705,207 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return "$0<h1 class='$1'>$2</h1><h2>$3</h2><div class='heading-summary'>$4</div><div class='fd-comment'>$5</div>$6"
-      .replace("$0", f.isUniverse() ? "<h1 hidden>" + lm.name() + "</h1>" : "") // short version of title for navtitle
-      .replace("$1", f.isUniverse() ? "": "d-none")
-      .replace("$2", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
-      .replace("$3", anchorTags(f))
-      .replace("$4", f.isUniverse() ? "": summary(f))
-      .replace("$5", Util.commentOf(f))
-      .replace("$6", redefines(f, f));
+    return fillTemplate("""
+      <h1 hidden>##title##</h1>
+      <h1>##heading##</h1>
+      <div class='heading-summary'>##summary##</div>
+      <div class='fd-comment'>##comment##</div>
+      <div class='fd-contract'>##contract##</div>
+      ##redefines##
+      """, Map.of(
+      "title",     f.isUniverse() ? lm.name() : htmlEncodedBasename(f), // short version of title for nav-title
+      "heading",   f.isUniverse() ? """
+        API-Documentation: module \
+        <code class="fd-module-name">""" + lm.name() + "</code>"
+        : anchorTags(f),
+      "summary",   f.isUniverse() ? "" : summary(f),
+      "comment",   commentOf(f),
+      "contract",  contractOf(f),
+      "redefines", redefines(f, f)));
   }
+
+
+  /**
+   * The features pre- and postconditions in HTML
+   *
+   * @param af the feature for which to generate the HTML
+   * @return HTML showing the feature pre- and postconditions
+   */
+  private String contractOf(AbstractFeature af)
+  {
+    return contractFeatureSrc("Precondition" , "pre" , af, f->f.preFeature()) +
+           contractFeatureSrc("Postcondition", "post", af, f->f.postFeature());
+  }
+
+
+  /**
+   * Generate HTML for one type of a features contract, e.g. precondition
+   *
+   * @param contractType what the contract is called, e.g. "Precondition"
+   * @param af the feature for which to generate the HTML for
+   * @param contractFeature the function to obtain the contract feature from feature af
+   * @return HTML sowing the specified contract of the feature
+   */
+  private String contractFeatureSrc(String contractType, String keyword, AbstractFeature af, Function<AbstractFeature, AbstractFeature> contractFeature)
+  {
+    record Tuple(AbstractFeature fst, AbstractFeature snd) {}
+
+    // first tuple element is the feature from which the contract was inherited, second is the contract itself
+    var res = Stream.concat(Stream.of(new Tuple(null, contractFeature.apply(af))),
+                            af.redefinesFull().stream()
+                              .filter(f -> !Util.isInternalFeature(f))
+                              .map(f -> new Tuple(f, contractFeature.apply(f))))
+      .filter(t->t.snd != null && startsWithKeyword(keyword, t.snd.sourceText()))
+      // Keep applicable contracts even when their origins cannot be referenced.
+      .map(t->(t.fst != null && canReference(t.fst)
+                ? "<br>Inherited from <span class=fd-fname>" + relativeAnchor(t.fst, af) + "</span><br>" : "")
+                + "<div class=fz-code><pre>" + contractSrc(t.snd)
+                + "</pre></div>")
+      .collect(Collectors.joining());
+
+    return res.isBlank() ? "" : fillTemplate("""
+      <details class="cursor-pointer" open>
+        <summary><span class=fd-contract-title>##title##</span></summary>
+        ##content##
+      </details>
+      """, Map.of(
+      "title", contractType,
+      "content", res));
+  }
+
+  /**
+   * Does text start with keyword, ignoring whitespaces at the beginning
+   *
+   * NYI: OPTIMIZATION: This is a poor way to determine if a feature with a pre-/postcondition defines one itself or only
+   *                    inherits one. If a precondition is inherited but not defined {@code .preFeature().sourceText()}
+   *                    returns the source code of the feature itself, and not an empty string.
+   *                    So there seems to be no simple and good way to do this at the moment.
+   *
+   * @param keyword the keyword to look for
+   * @param text the text in which to look for the keyword
+   * @return true iff the first word in the text is the keyword
+   */
+  private boolean startsWithKeyword(String keyword, String text)
+  {
+    int i = 0;
+    int len = text.length();
+
+    while (i < len && Character.isWhitespace(text.charAt(i)))
+      {
+        i++;
+      }
+
+    return text.startsWith(keyword + " ", i) || text.startsWith(keyword + "\n", i);
+  }
+
+  /**
+   * Get the source of a contract feature from the beginning of the line instead of its byte start position
+   * and strip indentation (i.e. unindent block without changing relative indentation)
+   *
+   * @param cf the contract feature for which to return the source code
+   * @return source of the contract feature with relative indentation intact
+   */
+  private String contractSrc(AbstractFeature cf)
+  {
+    var sr = cf.sourceRange();
+    var sf = sr._sourceFile;
+    return sf.sourceRange(sf.lineStartPos(sr.line()), sr.byteEndPos()).sourceText().stripIndent();
+  }
+
+
+  /**
+   * the comment belonging to this feature in HTML.
+   * If the comment does not exist, the comment of a redefined feature.
+   */
+  String commentOf(AbstractFeature af)
+  {
+    // Redefinition targets come from the frontend and may include internal
+    // implementations, even though those were excluded from page collection.
+    if (Util.isInternalFeature(af))
+      {
+        return "";
+      }
+    if (af.isUniverse())
+      {
+        return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
+      }
+    // arguments that are defined on same line as feature have no comments.
+    if ((af.isArgument() || af.isTypeParameter()) && af.pos().line() == af.outer().pos().line())
+      {
+        return "";
+      }
+    var line = af.pos().line() - 1;
+    var commentLines = new ArrayList<String>();
+
+    // NYI: OPTIMIZATION: use lexer to retrieve comments
+    while (line > 0 && af.pos()._sourceFile.line(line).matches("(?s)^\\s*#.*"))
+      {
+        commentLines.add(af.pos()._sourceFile.line(line));
+        line = line - 1;
+      }
+
+    if (commentLines.stream().allMatch(l -> l.isBlank()))
+      {
+        if (!af.redefines().isEmpty())
+          {
+            return af.redefines().stream().flatMap(r ->
+              {
+                // Keep inherited content without naming an ineligible origin.
+                var c = commentOf(r);
+                return c.isBlank()
+                  ? Stream.empty()
+                  : !canReference(r) || c.startsWith("<details open>")
+                  ? Stream.of(c)
+                  : Stream.of(
+                    "<details class=\"cursor-pointer\" open><summary>Comment of <span class=fd-fname>" +
+                    relativeAnchor(r, af.outer())
+                    + "</span></summary>" + c + "</details>"
+                  );
+              }
+            )
+            .collect(Collectors.joining());
+          }
+        // NYI: UNDER DEVELOPMENT: need to find a way that does not spam the terminal with 2500 lines when just building the docs
+        // say_err("Warning: No comment found for " + af.qualifiedNameHuman());
+      }
+
+    Collections.reverse(commentLines);
+
+    var result = Html.processComment(af.qualifiedNameHuman() + af.featureName().argCount() + "_", commentLines
+      .stream()
+      .map(l -> l.trim())
+      .map(l -> l
+        .replaceAll("^#", "")
+        .replaceAll("^ ", ""))
+      .collect(Collectors.joining(System.lineSeparator())));
+    return result;
+  }
+
+
+
+  private static String universeComment()
+  {
+    var uri = FuzionHome._fuzionHome.normalize().toAbsolutePath().resolve("modules/base/src/universe.fz").toUri();
+    try
+      {
+        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
+          .stream()
+          .dropWhile(l -> !l.startsWith("# universe is the mother"))
+          .map(l -> l.trim())
+          .map(l -> l
+            .replaceAll("^#", "")
+            .replaceAll("^ ", ""))
+          .collect(Collectors.joining(System.lineSeparator()))
+          .trim();
+      }
+    catch (IOException e)
+      {
+        Errors.fatal("File universe.fz not found");
+        return "";
+      }
+  }
+
+
 
   /**
    * the html encoded basename of the feature af
@@ -553,7 +915,7 @@ public class Html extends ANY
    */
   private String htmlEncodedBasename(AbstractFeature af)
   {
-    return htmlEncodeNbsp(af.featureName().baseNameHuman());
+    return htmlEncodeNbsp(af.baseNameHuman());
   }
 
 
@@ -565,7 +927,7 @@ public class Html extends ANY
    */
   private String htmlEncodedQualifiedName(AbstractFeature af)
   {
-    return htmlEncodeNbsp(af.qualifiedName());
+    return htmlEncodeNbsp(af.qualifiedNameHuman());
   }
 
 
@@ -574,8 +936,7 @@ public class Html extends ANY
    */
   private String source(AbstractFeature feature)
   {
-    return "<div class='pl-5'><a href='$1'>[src]</a></div>"
-      .replace("$1", featureURL(feature));
+    return "<a class='fd-src-link ml-5' href='" + featureURL(feature) + "'>[src]</a>";
   }
 
 
@@ -651,7 +1012,10 @@ public class Html extends ANY
           .stream()
           .map(cl -> { return cl.replaceAll("^    ", ""); })
           .collect(Collectors.joining(System.lineSeparator()));
-        resultLines.add(RUNCODE_BOX_HTML.replace("##ID##", id).replace("##CODE##", code));
+        resultLines.add(fillTemplate(RUNCODE_BOX_HTML, Map.of(
+          "id", id,
+          "rows", Integer.toString(Math.max(3, codeLines.size())),
+          "code", code.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))));
         codeLines.clear();
         codeNo[0]++;
       }
@@ -663,7 +1027,7 @@ public class Html extends ANY
 
     Pattern p = Pattern.compile("(&|\"|'|<|>|\r|\n|\t|\\s)");
     Matcher m = p.matcher(s);
-    StringBuffer sb = new StringBuffer();
+    var sb = new StringBuilder();
     while (m.find())
       {
         switch (s.charAt(m.toMatchResult().start()))
@@ -718,31 +1082,32 @@ public class Html extends ANY
 
   /**
    * get full html with doctype, head and body
-   * @param qualifiedName
+   * @param qualifiedName the human-readable qualified name
    * @param bareHtml
+   * @param directoryDepth the output directory depth below the documentation root
    * @return
    */
-  private static String fullHtml(String qualifiedName, String bareHtml)
+  private static String fullHtml(String qualifiedName, String bareHtml, int directoryDepth)
   {
-    int upDirCorrection = qualifiedName.equals("Modules") || qualifiedName.endsWith(".universe") ? 0 : 1;
-
-    return ("""
+    var root = upDirs(directoryDepth);
+    return fillTemplate("""
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="utf-8" />
-        <title>$qualifiedName | Fuzion Docs</title>
-        <link rel="icon" sizes="32x32" href="$root32.png">
-        <link rel="stylesheet" type="text/css" href="$rootstyle.css" />
+        <title>##name## | Fuzion Docs</title>
+        <link rel="icon" sizes="32x32" href="##root##32.png">
+        <link rel="stylesheet" type="text/css" href="##root##style.css" />
+        <script defer src="##root##ace.js"></script>
+        <script defer src="##root##ace-mode-fuzion.js"></script>
+        <script defer src="##root##standalone.js"></script>
       </head>
-      <body>""" +
-      bareHtml
-      + """
-        </body>
-        </html>
-                    """)
-        .replace("$qualifiedName", String.join(" • ", java.util.List.of(qualifiedName.split("\\.")).reversed()))
-        .replace("$root", upDirs((int) qualifiedName.chars().filter(c -> c == '.').count() + upDirCorrection));
+      <body class="standalone-docs">##body##</body>
+      </html>
+      """, Map.of(
+        "name", String.join(" • ", java.util.List.of(qualifiedName.split("\\.")).reversed()),
+        "root", root,
+        "body", bareHtml));
   }
 
 
@@ -753,7 +1118,7 @@ public class Html extends ANY
    */
   private static String htmlID(AbstractFeature f)
   {
-    return urlEncode(f.qualifiedName() + "_" + f.arguments().size());
+    return urlEncode(f.qualifiedNameHuman() + "_" + f.arguments().size());
   }
 
 
@@ -909,48 +1274,41 @@ public class Html extends ANY
   }
 
   /**
-   * arguments of this feature
+   * arguments of this feature, rendered as a list of HTML strings
    * @param f
    * @return
    */
-  private String arguments(AbstractFeature f, AbstractFeature relativeTo)
+  private java.util.List<String> arguments(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.arguments()
-         .stream()
-         .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
-         .count() == 0)
-      {
-        return "";
-      }
-    return "(" + f.arguments()
+    // free type parameters are inferred from the type of the value argument
+    // they are used in, so they are not shown as separate arguments but
+    // directly after that argument.
+    var freeTypes = f.typeArguments()
+      .filter(AbstractFeature::isFreeTypeParameter);
+
+    return f.arguments()
       .stream()
+      .filter(a -> !freeTypes.contains(a))
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
-      .map(a ->
-        htmlEncodedBasename(a) + "&nbsp;"
-        + (a.isTypeParameter() ? typeArgAsString(a, relativeTo) : anchorType(a, f, relativeTo)))
-      .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
+      .map(a -> htmlEncodedBasename(a) + (a.isTypeParameter() ? "" : "&nbsp;") +
+        (a.isTypeParameter()             ? typeArgAsString(a, relativeTo) :
+        (a.resultType().isParametricType() &&
+         a.resultType().typeParameter() instanceof AbstractFeature freeType &&
+         freeType.isFreeTypeParameter()) ? htmlEncodedBasename(freeType) +
+                                           typeArgAsString(freeType, relativeTo)
+                                         : anchorType(a, f, relativeTo)))
+      .collect(Collectors.toList());
   }
 
 
   private String typeArgAsString(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.resultType().dependsOnGenerics())
-      {
-        return "<div class='fd-keyword'>type</div>"
-               + (f.isOpenTypeParameter() ? "..." : "")
-               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().toString(true));
-      }
-    else
-      {
-        var constraint = f.resultType().feature();
+    var constraint = f.constraint();
 
-        return "<div class='fd-keyword'>type</div>"
-                + (f.isOpenTypeParameter() ? "..." : "")
-                + (f.resultType().compareTo(Types.resolved.t_Any) == 0 ? "" :
-                    "<div class='mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
-                    .replace("$1", featureRelativeURL(constraint, relativeTo))
-                    .replace("$2", htmlEncodedQualifiedName(constraint)));
-      }
+    return (f.isOpenTypeParameter() ? "..." : "")
+           + fillTemplate("<span class='mx-5'>:</span><a class='fd-feature fd-inherited' href='##url##'>##name##</a>", Map.of(
+             "url", featureRelativeURL(constraint.feature(), relativeTo),
+             "name", htmlEncodeNbsp(constraint.toString(true))));
   }
 
 
@@ -963,17 +1321,17 @@ public class Html extends ANY
   {
     return config.bare() && navigationBareHTML != null
       ? navigationBareHTML  // cached navigation if absolute URLs are used
-      : navigationModules(relativeTo) + navigationFeatures(java.util.List.of(start), "", relativeTo);
+      : navigationModules(relativeTo) + "\n<ul class=\"fd-nav-tree white-space-no-wrap\">"
+        + navigationFeatures(java.util.List.of(start), relativeTo) + "\n</ul>";
   }
 
 
   /**
    * render the tree style list of (constructor)features for the navigation on the left side
    * @param features    features that should be contained in the same block
-   * @param outerPrefix prefix for the tree structure e.g. "│  │  "
    * @return rendered tree style block with sub blocks for inner features
    */
-  private String navigationFeatures(java.util.List<AbstractFeature> features, String outerPrefix, AbstractFeature relativeTo)
+  private String navigationFeatures(java.util.List<AbstractFeature> features, AbstractFeature relativeTo)
   {
     if (features.isEmpty())
       {
@@ -986,49 +1344,34 @@ public class Html extends ANY
       {
         var f = iter.next();
 
-        var innerFeatures = lm.declaredFeatures(f).values().stream()
+        var innerFeatures = lm.declaredFeaturesShallow(f).values().stream()
                               .filter(ft -> ft.definesType()
-                                            && ft.visibility().typeVisibility() == Visi.PUB)
-                              .sorted(Comparator.comparing(ft -> ft.featureName().baseName(), String.CASE_INSENSITIVE_ORDER))
+                                            && isVisible(ft))
+                              .sorted(Comparator.comparing(ft -> ft.baseName(), String.CASE_INSENSITIVE_ORDER))
                               .collect(Collectors.toList());
 
-        // addition to the tree structure prefix for current feature: universe / normal element / last element
-        var featPrfx = f.isUniverse() ? ""
-                                      : iter.hasNext() ? "├─<span class=space-1></span>"
-                                                       : "└─<span class=space-1></span>";
-
-        // addition to the tree structure prefix for inner features of current feature: universe / normal element / last element
-        var subPrfx  = f.isUniverse() ? ""
-                                      : iter.hasNext() ? "│<span class=space-2></span>"
-                                                       : "<span class=space-3></span>";
-
-        sb.append(
-          """
-
-          <li>$0$1</li>"""
-            .replace("$0", navFeatHtml(f, outerPrefix + featPrfx, relativeTo))
-            .replace("$1", navigationFeatures(innerFeatures, outerPrefix + subPrfx, relativeTo)));
+        sb.append(fillTemplate("\n<li>##feature####children##</li>", Map.of(
+          "feature", navFeatHtml(f, relativeTo),
+          "children", innerFeatures.isEmpty()
+            ? ""
+            : "\n<ul>" + navigationFeatures(innerFeatures, relativeTo) + "\n</ul>")));
       }
     while (iter.hasNext());
 
-    return """
-
-      <ul class="white-space-no-wrap">$0
-      </ul>"""
-        .replace("$0", sb.toString());
+    return sb.toString();
   }
 
   /**
    * generate html for a single feature in the tree style navigation on the left side
    * @param f feature for which to generate the html for
-   * @param prefix prefix of the tree style structure for this feature
    * @return rendered html for the feature f
    */
-  private String navFeatHtml(AbstractFeature f, String prefix, AbstractFeature relativeTo)
+  private String navFeatHtml(AbstractFeature f, AbstractFeature relativeTo)
   {
     var fName = htmlEncodedBasename(f) + (f.isUniverse() ? " (module " + lm.name() + ")" : "");
-    var fHTML = "<a href='" + featureRelativeURL(f, relativeTo) + "'>" + fName + args(f) + "</a>";
-    return "<div>" + prefix + fHTML + "</div>";
+    return fillTemplate("<a href='##url##'>##name##</a>", Map.of(
+      "url", featureRelativeURL(f, relativeTo),
+      "name", fName));
   }
 
 
@@ -1039,37 +1382,23 @@ public class Html extends ANY
   {
     String relativeToStr = relativeTo == null ? "" : featureAbsoluteURL(relativeTo);
 
-    return """
+    return fillTemplate("""
       <ul class="white-space-no-wrap">
         <li>
-          <div><a href=$0>Modules</a></div>
-            <ul style="list-style: disc inside">
-              $1
+          <div><a href=##root##>Modules</a></div>
+            <ul class="fd-module-list">
+              ##modules##
             </ul>
         </li>
       </ul>
-      """
-      .replace("$1", libModules.stream()
+      """, Map.of(
+      "modules", libModules.stream()
                                .map(m->m.name())
-                               .map(s->(config.bare()
-                                          ? ("<li><a href=" + config.docsRoot() + "/" + s + ">" + s + "</a></li>")
-                                          : ("<li><a href=" + relativePath("/" + s, relativeToStr) + ">" + s + "</a></li>")))
-                               .collect(Collectors.joining("\n")))
-      .replace("$0", config.bare() ? config.docsRoot() + "/" : relativePath("", relativeToStr));
-  }
-
-
-  private String args(AbstractFeature start)
-  {
-    if (start.valueArguments().size() == 0 || (start.isChoice() || start.visibility().eraseTypeVisibility() != Visi.PUB))
-      {
-        return "";
-      }
-    if (start.valueArguments().size() == 1)
-      {
-        return " <small>(" + start.valueArguments().size() + " arg)</small>";
-      }
-    return " <small>(" + start.valueArguments().size() + " args)</small>";
+                               .map(s->fillTemplate("<li><a href=##url##>##name##</a></li>", Map.of(
+                                 "url", config.bare() ? config.docsRoot() + "/" + s + "/" : relativePath("/" + s, relativeToStr),
+                                 "name", s)))
+                               .collect(Collectors.joining("\n")),
+      "root", config.bare() ? config.docsRoot() + "/" : relativePath("", relativeToStr)));
   }
 
 
@@ -1088,37 +1417,70 @@ public class Html extends ANY
 
   /**
    * the full content
+   * @param directoryDepth the output directory depth below the documentation root
    * @return
    */
-  String content(AbstractFeature af)
+  String content(AbstractFeature af, int directoryDepth)
   {
+    var main = mainSection(documentedFeatures.get(af), af);
+    var toggleFeatureDetails = main.isEmpty() ? "" : """
+      <button type="button" class="toggle-feature-details cursor-pointer" onclick="
+        const entries = this.parentElement.querySelectorAll(':scope > details');
+        const expand = this.textContent.trim() === 'Expand all';
+        entries.forEach(entry => entry.open = expand);
+        this.textContent = expand ? 'Collapse all' : 'Expand all';
+      ">Expand all</button>
+      """;
+
     var bareHtml =
-      """
+      fillTemplate("""
           <!-- GENERATED BY FZDOCS -->
           <div class='fd'>
-            <div class="sidenav">
-              <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none'); this.textContent = this.textContent === '»' ? '«' : '»';" class="toggle-nav cursor-pointer">»</div>
-              <nav style="display: none">$2</nav>
+            <div class="sidenav" id="sidenav">
+              <button
+                class="toggle-nav"
+                aria-expanded="false"
+                aria-controls="sidenav"
+                aria-label="Toggle navigation"
+                onclick="
+                  const nav = document.querySelector('.fd .sidenav nav');
+                  const hidden = nav.hidden;
+                  nav.hidden = !hidden;
+                  this.textContent = hidden ? '«' : '»';
+                  this.setAttribute('aria-expanded', hidden);
+                "
+              >
+                »
+              </button>
+              <nav hidden>##navigation##</nav>
             </div>
             <div class="container">
-              <section>$0</section>
-              <section>$1</section>
-              $3
+              <section>##heading##</section>
+              <section>
+                ##main##
+              </section>
+              ##expand_btn##
             </div>
           </div>
-          <div class=version-hash>$4</div>
-        """
-        .replace("$0", headingSection(af))
-        .replace("$1", mainSection(mapOfDeclaredFeatures.get(af), af))
-        .replace("$2", navigation(lm.universe(), af))
-        .replace("$3", config.ignoreVisibility() ? """
-          <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
-        """ : "")
-        .replace("$4", Tool.fullVersion());
+          <div class=version-hash>##version##</div>
+        """, Map.of(
+          "heading",    headingSection(af),
+          "main",       toggleFeatureDetails + main,
+          "navigation", navigation(lm.universe(), af),
+          "expand_btn", config.ignoreVisibility()
+                          ? """
+                            <button onclick="
+                              for (let element of document.getElementsByClassName('fd-private')) {
+                                element.hidden = !element.hidden;
+                              }
+                            ">Toggle hidden features</button>
+                            """
+                          : "",
+          "version", Tool.fullVersion()));
 
     return config.bare()
       ? bareHtml
-      : fullHtml(lm.name() + "." + af.qualifiedName(), bareHtml);
+      : fullHtml(lm.name() + "." + af.qualifiedNameHuman(), bareHtml, directoryDepth);
   }
 
   /**
@@ -1129,55 +1491,56 @@ public class Html extends ANY
   {
     // NYI: BUG: some things (e.g. html id or links) might break if there are spaces in a module name
     StringBuilder modPage = new StringBuilder();
-    modPage.append("""
-<!-- GENERATED BY FZDOCS -->
-<div class="fd">
-<div class="sidenav">
-  <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none'); this.textContent = this.textContent === '»' ? '«' : '»';" class="toggle-nav cursor-pointer">»</div>
-  <nav style="display: none">$0</nav>
-</div>
-<div class="container">
-  <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
-    <div class='fd-comment'></div>
-  </section>
-  <section>
-        """.replace("$0", navigationModules(null)));
+    modPage.append(fillTemplate("""
+      <!-- GENERATED BY FZDOCS -->
+      <div class="fd">
+      <div class="sidenav" id="sidenav">
+        <button
+        class="toggle-nav"
+        aria-expanded="false"
+        aria-controls="sidenav"
+        aria-label="Toggle navigation"
+        onclick="
+          const nav = document.querySelector('.fd .sidenav nav');
+          const hidden = nav.hidden;
+          nav.hidden = !hidden;
+          this.textContent = hidden ? '«' : '»';
+          this.setAttribute('aria-expanded', hidden);
+        "
+        >
+          »
+        </button>
+        <nav hidden>##navigation##</nav>
+      </div>
+      <div class="container">
+        <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
+          <div class='fd-comment'></div>
+        </section>
+        <section>
+      """, Map.of("navigation", navigationModules(null))));
 
     for (LibraryModule mod : libModules)
       {
-        modPage.append("""
-    <div class="cursor_pointer">
-      <details id='"$2"'$0>
-        <summary>
-          <div class="d-grid" style="grid-template-columns: 1fr min-content;">
-            <div class="d-flex flex-wrap word-break-break-word">
-              <div class="d-flex flex-wrap word-break-break-word fz-code">
-                <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
-                <div class="flex-grow-1"></div>
-                <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
-              </div>
-            </div>
-          </div>
-        </summary>
-      </details>
-    </div>
-            """.replace("$0", config.ignoreVisibility() ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-               .replace("$1", mod.name() + "/index.html")
-               .replace("$2", mod.name()));
+        modPage.append(fillTemplate("""
+          <details id="##name##" class="cursor-pointer">
+            <summary>
+              <span class="overflow-wrap-break-word fz-code fd-signature">
+                <a class="fd-feature font-weight-600 ml-2" href="##url##">##name##</a>
+                <a class="fd-anchor-sign mr-2" href="###name##">¶</a>
+              </span>
+            </summary>
+          </details>
+          """, Map.of("url",  mod.name() + "/index.html",
+                      "name", mod.name())));
       }
-    // modulePage += "</ul>";
 
     modPage.append("""
-  </section>
-  $3
-</div>
-</div>
-        """
-          .replace("$3", config.ignoreVisibility() ? """
-            <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
-          """ : ""));
+        </section>
+      </div>
+      </div>
+      """);
 
-    return config.bare() ? modPage.toString(): fullHtml("Modules", modPage.toString());
+    return config.bare() ? modPage.toString(): fullHtml("Modules", modPage.toString(), 0);
   }
 
 

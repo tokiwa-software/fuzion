@@ -23,4 +23,4 @@
 
 # unicode -- unit feature to group unicode related features
 #
-public unicode is
+module unicode is

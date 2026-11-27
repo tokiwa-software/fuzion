@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue2386.fz:24:6: error 1: Broken numeric literal, expected anything but a letter following a numeric literal.
+reg_issue2386.fz:24:6: error 1: Broken numeric literal, expected anything but a letter following a numeric literal.
 say 4abc
 -----^
 

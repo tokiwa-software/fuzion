@@ -27,8 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+import dev.flang.ir.IR.FeatureKind;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
@@ -162,9 +162,7 @@ class CodeGen
   }
 
 
-  /**
-   * A comment, adds human readable information
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr comment(String s)
   {
@@ -172,9 +170,7 @@ class CodeGen
   }
 
 
-  /**
-   * no operation, like comment, but without giving any comment.
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr nop()
   {
@@ -319,7 +315,7 @@ class CodeGen
     var isCall = _fuir.codeAt(si) == FUIR.ExprKind.Call;  // call or assignment?
     var cc0 = _fuir.accessedClazz  (si);
     var ccs = _fuir.accessedClazzes(si);
-    var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(SpecialClazzes.c_unit);
+    var rt = isCall ? _fuir.clazzResultClazz(cc0) : NO_CLAZZ;
     if (ccs.length == 0)
       {
         s = s.andThen(tvalue.drop());
@@ -346,7 +342,7 @@ class CodeGen
         var dynCall = args(true, tvalue, args, cc0, isCall ? _fuir.clazzArgCount(cc0) : 1)
           .andThen(Expr.comment("Dynamic access of " + clazzInQuotes(cc0)))
           .andThen(addDynamicFunctionAndStubs(si, cc0, ccs, isCall));
-        if (AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
+        if (!isCall || AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
           {
             s = dynCall;  // make sure we do not throw away the code even if it is of unit type
           }
@@ -537,7 +533,7 @@ class CodeGen
         // in case we access the value in a boxed target, unbox it first:
         tv = Expr
           .comment("UNBOXING , boxed type " + clazzInQuotes(tt) + " desired type " + clazzInQuotes(cco))
-          .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getfield works vor unit type (resulting in tv.drop()).
+          .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getFieldOrUnit works for unit type (resulting in tv.drop()).
                                      Names.BOXED_VALUE_FIELD_NAME,
                                      _types.javaType(cco)));
       }
@@ -575,34 +571,26 @@ class CodeGen
       case Native   :
         {
           if (CHECKS) check
-            (_types.clazzNeedsCode(cc),
+            (_fuir.clazzNeedsCode(cc),
              !(cc == _fuir.clazzAt(si) && // calling myself
-             _jvm._tailCall.callIsTailCall(_fuir.clazzAt(si), si)));
+             _jvm._tailCall.callIsTailCall(si)));
 
           res = makePair(callNative(si, args, cc, rt), rt);
           break;
         }
-      case Intrinsic:
+      case Routine, Intrinsic  :
         {
-          if (_fuir.clazzTypeParameterActualType(cc) != NO_CLAZZ)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
-            {
-              return new Pair<>(Expr.UNIT, tvalue.drop());
-            }
-          else if (!Intrinsix.inRuntime(_jvm, cc))
+          if (_fuir.clazzKind(cc) == FeatureKind.Intrinsic && !Intrinsix.inRuntime(_jvm, cc))
             {
               return Intrinsix.inlineCode(_jvm, si, cc, tvalue, args);
             }
-          // fall through!
-        }
-      case Routine  :
-        {
-          if (_types.clazzNeedsCode(cc))
+          if (_fuir.clazzNeedsCode(cc))
             {
               var cl = si == NO_SITE ? FUIR.NO_CLAZZ
                                      : _fuir.clazzAt(si);
 
               if (cc == cl && // calling myself
-                  _jvm._tailCall.callIsTailCall(cl, si))
+                  _jvm._tailCall.callIsTailCall(si))
                 { // then we can do tail recursion optimization!
 
                   // if present, store target to local #0
@@ -676,15 +664,18 @@ class CodeGen
       + ")"
       + nativeResultTypeDescriptor(rt).descriptor();
 
+    var argSlots = new List<Integer>();
     var localSlotsOfMemorySegments = new List<Integer>();
-    return Expr
-          .getstatic(_names.javaClass(cc),
-                     Names.METHOD_HANDLE_FIELD_NAME,
-                     Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                                   // MethodHandle
-          .andThen(convertArgumentsToMemorySegments(si, args, localSlotsOfMemorySegments, cc)) // MethodHandle, args...
+    return assignArgsToLocals(si, args, argSlots, cc)
+          .andThen(Expr
+            .getstatic(_names.javaClass(cc),
+                       Names.METHOD_HANDLE_FIELD_NAME,
+                       Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                                   // MethodHandle
+          )
+          .andThen(convertArgumentsToMemorySegments(si, argSlots, localSlotsOfMemorySegments, cc)) // MethodHandle, args...
           .andThen(invokeMethodHandle(rt, invokeDescr))                                        // rt
           .andThen(copyValueResultToFuzion(rt))                                                // rt
-          .andThen(copyMemorySegmentsToArrays(cc, args, localSlotsOfMemorySegments))           // rt
+          .andThen(copyMemorySegmentsToArrays(cc, argSlots, localSlotsOfMemorySegments))           // rt
           .is(_types.javaType(rt));
   }
 
@@ -769,18 +760,18 @@ class CodeGen
   /**
    * invoke memorySegment2Obj for any of the args that are not primitives
    */
-  private Expr copyMemorySegmentsToArrays(int cc, List<Expr> args, List<Integer> slotsOfMemorySegments)
+  private Expr copyMemorySegmentsToArrays(int cc, List<Integer> argsSlots, List<Integer> slotsOfMemorySegments)
   {
     var result = Expr.UNIT;
     var slot = 0;
-    for (int i = 0; i < args.size(); i++)
+    for (int i = 0; i < argsSlots.size(); i++)
       {
         var at = _fuir.clazzArgClazz(cc, i);
-        if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at))
+        if (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) || _fuir.clazzIsRef(at))
           {
             result = result
-                .andThen(args.get(i))
-                .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
+                .andThen(_types.javaType(at).load(argsSlots.get(i)))
+                .andThen(_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(Expr.aload(slotsOfMemorySegments.get(slot), Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
                 .andThen(invokeMemorySegment2Obj());
             slot++;
@@ -811,30 +802,30 @@ class CodeGen
    * the created MemorySegments are stored in locals and
    * the slot index is added to the slots list.
    */
-  private Expr convertArgumentsToMemorySegments(int si, List<Expr> args, List<Integer> slots, int cc)
+  private Expr convertArgumentsToMemorySegments(int si, List<Integer> argsSlots, List<Integer> slots, int cc)
   {
     var result = Expr.UNIT;
-    for (int i = 0; i < args.size(); i++)
+    for (int i = 0; i < argsSlots.size(); i++)
       {
         var at = _fuir.clazzArgClazz(cc, i);
         var call = _fuir.lookupCall(at);
         if (call != NO_CLAZZ)
           {
             result = result
-              .andThen(upcall(_fuir.clazzOuterRef(call) != NO_CLAZZ ? args.get(i) : Expr.ACONST_NULL, call));
+              .andThen(upcall(_fuir.clazzOuterRef(call) != NO_CLAZZ ? _types.javaType(at).load(argsSlots.get(i)) : Expr.ACONST_NULL, call));
           }
-        else if (args.get(i).type().isPrimitive())
+        else if (_types.javaType(at).isPrimitive())
           {
             result = result
-              .andThen(args.get(i));
+              .andThen(_types.javaType(at).load(argsSlots.get(i)));
           }
-        else if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at) /* this may mean: internal_array.data */)
+        else if (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) || _fuir.clazzIsRef(at) /* this may mean: internal_array.data */)
           {
             var slot = _jvm.allocLocal(si, 1);
             slots.addLast(slot);
             result = result
-                .andThen(args.get(i))
-                .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
+                .andThen(_types.javaType(at).load(argsSlots.get(i)))
+                .andThen(_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(invokeObj2MemorySegment())
                 .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
                 .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
@@ -842,9 +833,35 @@ class CodeGen
         else
           {
             result = result
-                .andThen(args.get(i))
+                .andThen(_types.javaType(at).load(argsSlots.get(i)))
                 .andThen(invokeObj2MemorySegment());
           }
+      }
+    return result;
+  }
+
+
+  /**
+   * Assign the list of argument expressions to locals
+   *
+   * @param si
+   * @param args
+   * @param slots
+   * @param cc
+   * @return
+   */
+  private Expr assignArgsToLocals(int si, List<Expr> args, List<Integer> slots, int cc)
+  {
+    var result = Expr.UNIT;
+    for (int i = 0; i < args.size(); i++)
+      {
+        var at = _fuir.clazzArgClazz(cc, i);
+        var jt = _types.javaType(at);
+        var slot = _jvm.allocLocal(si, jt.stackSlots());
+        slots.addLast(slot);
+        result = result
+          .andThen(args.get(i))
+          .andThen(jt.store(slot));
       }
     return result;
   }
@@ -855,8 +872,8 @@ class CodeGen
    */
   private Expr getArrayDataField(int at)
   {
-    var ia = _fuir.lookup_array_internal_array(at);
-    var iad = _fuir.lookup_fuzion_sys_internal_array_data(_fuir.clazzResultClazz(ia));
+    var ia = _fuir.clazzArg(at,0);
+    var iad = _fuir.clazzArg(_fuir.clazzResultClazz(ia), 0);
     return _jvm
       .getfield(ia)
       .andThen(_jvm.getfield(iad));
@@ -926,9 +943,7 @@ class CodeGen
   }
 
 
-  /**
-   * For a given value v of value type vc create a boxed ref value of type rc.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> box(int s, Expr val, int vc, int rc)
   {
@@ -938,7 +953,7 @@ class CodeGen
     var n = _names.javaClass(rc);
     var res = Expr
       .comment("box from " + clazzInQuotes(vc) + " to " + clazzInQuotes(rc))
-      .andThen(val)
+      .andThen(_jvm.cloneValue(s, val, vc, NO_CLAZZ))
       .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
                                   _types.boxSignature(rc),
                                   _types.javaType(rc)));
@@ -946,9 +961,7 @@ class CodeGen
   }
 
 
-  /**
-   * Get the current instance
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> current(int s)
   {
@@ -1032,9 +1045,7 @@ class CodeGen
   }
 
 
-  /**
-   * Get a constant value of type constCl with given byte data d.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> constData(int si, int constCl, byte[] d)
   {
@@ -1044,18 +1055,28 @@ class CodeGen
       case onEveryUse               -> c;  // create constant inline
       case onUniverseInitialization ->     // or create constant in universe' static initializer:
         {
-          var ucl = _types.classFile(_fuir.clazzUniverse());
-          var f = _names.preallocatedConstantField(constCl, d);
-          var jt = _types.resultType(constCl);
-          if (!ucl.hasField(f))
+          Pair<Expr,Expr> result = null;
+          // NYI: CLEANUP: AI/FUIR should not give us unit like consts
+          if (_fuir.clazzIsUnitType(constCl))
             {
-              ucl.field(ACC_STATIC | ACC_PUBLIC,
-                        f,
-                        jt.descriptor());
-              ucl.addToClInit(c.v1());
-              ucl.addToClInit(c.v0().andThen(Expr.putstatic(ucl._name, f, jt)));
+              result = new Pair<>(Expr.UNIT, Expr.UNIT);
             }
-          yield new Pair<Expr, Expr>(Expr.getstatic(ucl._name, f, jt), Expr.UNIT);
+          if (result == null)
+            {
+              var ucl = _types.classFile(_fuir.clazzUniverse());
+              var f = _names.preallocatedConstantField(constCl, d);
+              var jt = _types.resultType(constCl);
+              if (!ucl.hasField(f))
+                {
+                  ucl.field(ACC_STATIC | ACC_PUBLIC,
+                            f,
+                            jt.descriptor());
+                  ucl.addToClInit(c.v1());
+                  ucl.addToClInit(c.v0().andThen(Expr.putstatic(ucl._name, f, jt)));
+                }
+              result = new Pair<Expr, Expr>(Expr.getstatic(ucl._name, f, jt), Expr.UNIT);
+            }
+          yield result;
         }
       };
   }
@@ -1093,7 +1114,6 @@ class CodeGen
   {
     return switch (_fuir.getSpecialClazz(constCl))
       {
-      case c_bool         -> new Pair<>(Expr.iconst(d[0]                                                                             , _types.javaType(constCl)), Expr.UNIT);
       case c_i8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get     ()         , _types.javaType(constCl)), Expr.UNIT);
       case c_i16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort()         , _types.javaType(constCl)), Expr.UNIT);
       case c_i32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         , _types.javaType(constCl)), Expr.UNIT);
@@ -1133,6 +1153,10 @@ class CodeGen
                     .andThen(jt.xastore());                        // T[]
                 }
               yield _jvm.const_array(constCl, result, elCount);
+            }
+          else if (_fuir.clazzIsUnitType(constCl))
+            {
+              yield new Pair<>(Expr.UNIT, Expr.UNIT);
             }
           else if (!_fuir.clazzIsChoice(constCl))
             {
@@ -1232,15 +1256,11 @@ class CodeGen
    */
   private String clazzInQuotes(int c)
   {
-    return "`" + _fuir.clazzAsString(c) + "`";
+    return "`" + _fuir.clazzName(c) + "`";
   }
 
 
-  /**
-   * Generate code to terminate the execution immediately.
-   *
-   * @param msg a message explaining the illegal state
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr reportErrorInCode(String msg)
   {

@@ -1,0 +1,25 @@
+#!/usr/bin/make -f
+
+BUILD_DIR                 := $(CURDIR)/build
+DESTDIR                   := debian/tmp
+FUZION_REPRODUCIBLE_BUILD := true
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	make
+
+override_dh_auto_install:
+	mkdir -p $(DESTDIR)/usr/bin
+	mkdir -p $(DESTDIR)/usr/lib/fuzion
+	mkdir -p $(DESTDIR)/usr/share/fuzion/modules
+	cp $(BUILD_DIR)/bin/fz $(DESTDIR)/usr/bin/
+	cp $(BUILD_DIR)/bin/fzjava $(DESTDIR)/usr/bin/
+	cp $(BUILD_DIR)/bin/fuzion_language_server $(DESTDIR)/usr/bin/
+	cp $(BUILD_DIR)/lib/libfuzion_rt.so $(DESTDIR)/usr/lib/fuzion/
+	cp $(BUILD_DIR)/fuzion.jar $(DESTDIR)/usr/share/fuzion/
+	cp $(BUILD_DIR)/modules/*.fum $(DESTDIR)/usr/share/fuzion/modules
+	cp $(BUILD_DIR)/README.md $(DESTDIR)/usr/share/fuzion/
+	cp $(BUILD_DIR)/release_notes.md $(DESTDIR)/usr/share/fuzion/
+	install -D -m 644 debian/fuzion-env.sh $(DESTDIR)/etc/profile.d/fuzion-env.sh

@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Comparator;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -53,7 +54,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * Empty Expr list to be used for empty actual arguments lists.
    */
-  public static final List<Expr> NO_EXPRS = new List<Expr>();
+  public static final List<Expr> NO_EXPRS = new List<Expr>().freeze();
 
 
   /**
@@ -65,7 +66,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
     @Override public AbstractType type() { return Types.t_ERROR; }
     @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
-    @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
+    @Override protected Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
   };
 
 
@@ -90,23 +91,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * Source range of this Expr.  Note that this might be longer than the Expr
-   * itself, e.g., in a call
-   *
-   *    f (x.q y)
-   *
-   * The argument to f is the call {@code x.q y} whose position is
-   *
-   *    f (x.q y)
-   * --------^
-   *
-   * but the source range is
-   *
-   *    f (x.q y)
-   * -----^^^^^^^
-   *
-   */
+  /** {@inheritDoc} */
   @Override
   public SourcePosition sourceRange()
   {
@@ -128,6 +113,33 @@ public abstract class Expr extends ANY implements HasSourcePosition
        _range.byteEndPos() <= r.byteEndPos());
 
     _range = r;
+  }
+
+
+  /**
+   * If Expr.this is used as the target feature in an inheritance call, this gives the feature that
+   * should be used to lookup the parent. E.g., in code like
+   * <pre>{@code
+   *     xyz : abc.def.ghi is
+   *       ...
+   * }</pre>
+   * This is used on {@code abc.def} to determine the result type, which will be used as outer value
+   * for features inherited from `ghi`.
+   *
+   * Note that this is essentially the same as `type().feature()`, but we cannot determine `type()`
+   * at this point since this may result in cyclic resolution dependencies: An inheritance call may
+   * use types based the feature that is inheriting and that is not yet resolved.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used.  For a call {@code abc.def} in
+   * an inherits call {@code xyz : abc.def.ghi is}, {@code context.outerFeature()} is the feature
+   * {@code xyz}.
+   */
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    AstErrors.illegalInheritanceCallTarget(this);
+    return Types.f_ERROR;
   }
 
 
@@ -171,6 +183,16 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
+   * typeForInferencing variant that may return the constraint
+   * of the type based on the provided context
+   */
+  AbstractType typeForInferencing(Context context)
+  {
+    return typeForInferencing();
+  }
+
+
+  /**
    * typeForUnion returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
@@ -204,13 +226,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
     // Union of the types of the expressions
     // that are sure about their types.
     var foundType = false;
-    for (var e : exprs)
+    for (var e : choicesAndRefsFirstSorting(exprs, e->e.typeForUnion()))
       {
         var et = e.typeForUnion();
         if (et != null)
           {
             foundType = true;
-            t = t.union(et, context);
+            t = t.commonSupertype(et, context);
           }
       }
 
@@ -227,13 +249,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
     // Union of the types of the expressions
     AbstractType result = Types.resolved.t_void;
     foundType = false;
-    for (var e : exprs)
+    for (var e : choicesAndRefsFirstSorting(exprs, e->e.typeForInferencing()))
       {
         var et = e.typeForInferencing();
         if (et != null)
           {
             foundType = true;
-            result = result.union(et, context);
+            result = result.commonSupertype(et, context);
           }
       }
 
@@ -241,13 +263,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
     // In case we have not found any type yet, but we need one, force a type
     if (urgent && !foundType)
       {
-        for (var e : exprs)
+        for (var e : choicesAndRefsFirstSorting(exprs, e->e.type()))
           {
             var et = e.type();
             if (et != null)
               {
                 foundType = true;
-                result = result.union(et, context);
+                result = result.commonSupertype(et, context);
               }
           }
       }
@@ -259,6 +281,36 @@ public abstract class Expr extends ANY implements HasSourcePosition
        !urgent || !exprs.isEmpty() || result == Types.resolved.t_void);
 
     return result;
+  }
+
+
+  /**
+   * Sort the expressions by type, choices first, then refs, then all others.
+   *
+   * @param exprs the expressions to sort
+   *
+   * @param keyExtractor  the function to get the type from the expression
+   */
+  private static List<Expr> choicesAndRefsFirstSorting(List<Expr> exprs, java.util.function.Function<Expr, AbstractType> keyExtractor)
+  {
+    return exprs.stream()
+      .sorted(
+        Comparator.comparing(keyExtractor,
+          (t1,t2) -> t1 == null
+            ? +1
+            : t2 == null
+            ? -1
+            : t1.isChoice()
+            ? -1
+            : t2.isChoice()
+            ? +1
+            : t1.isRef()
+            ? -1
+            : t2.isRef()
+            ? +1
+            : 0)
+      )
+      .collect(List.collector());
   }
 
 
@@ -316,18 +368,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public abstract Expr visit(FeatureVisitor v, AbstractFeature outer);
-
-
-  /**
-   * visit all the expressions within this Expr.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
+  Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.action(this);
+    throw new UnsupportedOperationException("Unimplemented method 'visit' for " + Expr.this.getClass());
   }
 
 
@@ -349,7 +392,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr assignToField(Resolution res, Context context, Feature r)
   {
-    return new Assign(res, pos(), r, this, context);
+    var result = new Assign(res, pos(), r, this, context);
+    result.wrapValueInLazy(res, context);
+    result.unwrapValue  (res, context);
+    return result;
   }
 
 
@@ -377,7 +423,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * features. Produce an error otherwise.
    *
    * An expression used as a lazy value or a partially applied call must not
-   * contain any inner declarations.  There is is no fundamental problem, it
+   * contain any inner declarations.  There is no fundamental problem, it
    * just requires that the front end would not add the feature declarations
    * found in this expression to the outer feature eagerly, but only after
    * processing of lazy values and partial application was done.
@@ -499,18 +545,27 @@ public abstract class Expr extends ANY implements HasSourcePosition
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     Expr result = this;
-    if (t.isFunctionTypeExcludingLazy()         &&
-        !(this instanceof Call c && c._wasImplicitImmediateCall) &&
-        typeForInferencing() != Types.t_ERROR     &&
-        (typeForInferencing() == null || !typeForInferencing().isFunctionType()))
+    if (mayBePartial(res, t))
       {
         result = propagateExpectedTypeForPartial(res, context, t);
-        if (result != this)
-          {
-            result = result.propagateExpectedType(res, context, t, from);
-          }
+      }
+    if (result != this)
+      {
+        result = result.propagateExpectedType(res, context, t, from);
       }
     return result;
+  }
+
+
+  /**
+   * Is this type applicable for partial application?
+   */
+  private boolean mayBePartial(Resolution res, AbstractType t)
+  {
+    return t.isLambdaTargetButNotLazy(res)                       &&
+        !(this instanceof Call c && c._wasImplicitImmediateCall) &&
+        typeForInferencing() != Types.t_ERROR                    &&
+        (typeForInferencing() == null || !typeForInferencing().isFunctionLikeType());
   }
 
 
@@ -539,14 +594,14 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
-    return expectedType.isFunctionType() && expectedType.arity() == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType()
+    return expectedType.isLambdaTarget(res) && expectedType.arity(res) == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionLikeType()
       ? new Function(pos(), NO_EXPRS, reset())
       : this;
   }
 
 
   /**
-   * NYI: UNDER DEVELOPMENT: better throw away completly and reparse?
+   * NYI: UNDER DEVELOPMENT: better throw away completely and reparse?
    *
    * resets all features in this expression so that they can have _new_ outers.
    */
@@ -633,7 +688,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * Is this Expr a call to an outer ref?
    */
-  public boolean isCallToOuterRef()
+  boolean isCallToOuterRef()
   {
     return false;
   }
@@ -653,11 +708,11 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
-    var t = type();
-    return this != Call.ERROR && t != Types.t_ERROR
+    var t = typeForInferencing();
+    return this != Call.ERROR && t != null && !t.isArtificialType()
       && expectedType.isAssignableFromWithoutBoxing(t, context).no()
       && expectedType.compareTo(Types.resolved.t_Any) != 0
-      && !t.isGenericArgument()
+      && !t.isParametricType()
       && allInherited(t.feature())
           .stream()
           .anyMatch(c ->
@@ -670,13 +725,40 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
+   * Do automatic unwrapping of features inheriting {@code unwrap}
+   * if unwrapped type is a choice.
+   *
+   * @param res the resolution instance
+   *
+   * @param context the source code context where this Expr is used
+   *
+   * @return the unwrapped expression
+   */
+  Expr unwrapChoice(Resolution res, Context context)
+  {
+    var t = type();
+    return this != Call.ERROR && t != Types.t_ERROR
+      && !t.isChoice()
+      && !t.isParametricType()
+      && allInherited(t.feature())
+          .stream()
+          .anyMatch(c ->
+            c.calledFeature().equals(Types.resolved.f_auto_unwrap)
+            && !c.actualTypeParameters().isEmpty()
+                    && c.actualTypeParameters().get(0).applyTypePars(t).isChoice())
+      ? new ParsedCall(this, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context)
+      : this;
+  }
+
+
+  /**
    * @param f
    *
    * @return the whole tree of inherited features flattened to a list.
    */
   private List<AbstractCall> allInherited(AbstractFeature f)
   {
-    return f.inherits().flatMap(x -> new List<>(x, allInherited(x.calledFeature())));
+    return f.inherits().flatMap2(x -> new List<AbstractCall>(x, allInherited(x.calledFeature())));
   }
 
 
@@ -710,7 +792,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
   /**
    * Source text for this Expr. This is used in error message: It takes the
-   * source code at `sourceRange()`. Only for artifical expressions, this should
+   * source code at {@code sourceRange()}. Only for artificial expressions, this should
    * probably be redefined to create more useful text.
    */
   public String sourceText()
@@ -720,7 +802,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Is this expression a call to `type_as_value`?
+   * Is this expression a call to {@code type_as_value}?
    */
   boolean isTypeAsValueCall()
   {
@@ -731,7 +813,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   // NYI: CLEANUP: move this logic to isAssignableFrom?
   /**
    * check if assigning this expr to frmlT might
-   * be ambigous
+   * be ambiguous
    *
    * @param frmlT
    */
@@ -742,9 +824,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
       {
         var needsBoxing = needsBoxing(frmlT);
         var boxedType = needsBoxing == null ? type() : needsBoxing;
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(boxedType).yes())
+        var choiceT = frmlT.relayTypeAsThisType();
+        if (choiceT.isChoice() && choiceT.isAssignableFrom(boxedType).yes())
           {
-            checkTagging(this, boxedType, frmlT);
+            checkTagging(this, boxedType, choiceT);
           }
       }
   }
@@ -760,41 +843,61 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public AbstractType needsBoxing(AbstractType frmlT)
   {
     var t = type();
-    if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
-      { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
+    frmlT = frmlT.relayTypeAsThisType();
+    if (t.isRef())
+      {
+        return null;
+      }
+    else if (frmlT.isRef() || frmlT.isParametricType() || frmlT.isThisType() && !frmlT.isChoice())
+      {
+        /* Boxing needed when we assign to generic argument (so it
          * could be a ref) or frmlT is this type and the underlying feature is by
          * default a ref?
          */
         return frmlT;
       }
-    else if (t.isRef() && !isCallToOuterRef())
-      {
-        return null;
-      }
-    else if (frmlT.isRef())
-      {
-        return frmlT;
-      }
     else
       {
+        t = t.relayTypeAsThisType();
+
         if (frmlT.isChoice() &&
             frmlT.isAssignableFromWithoutBoxing(t).no() &&
             frmlT.isAssignableFrom(t).yes())
-          { // we do both, box and then tag:
-            for (var cg : frmlT.choiceGenerics())
-              {
-                if (cg.isAssignableFrom(t).yes())
-                  {
-                    return cg;
-                  }
-              }
-            throw new Error("Expr.needsBoxing confused for choice type "+frmlT+" which is assignable from "+t.asRef()+" but not from "+t);
+          {
+            // we do both, box and then tag:
+            return findAssignableChoiceGeneric(frmlT, t);
           }
         else
           {
             return null;
           }
       }
+  }
+
+
+  /**
+   * In a potentially nested choice find the choice generic
+   * that t is assignable to
+   *
+   * @param ct
+   * @param t
+   * @return
+   */
+  private AbstractType findAssignableChoiceGeneric(AbstractType ct, AbstractType t)
+  {
+    t = t.relayTypeAsThisType();
+    for (var cg : ct.choiceGenerics())
+      {
+        if (cg.isChoice() && cg.isAssignableFrom(t).yes())
+          {
+            return findAssignableChoiceGeneric(cg, t);
+          }
+        if (cg.isAssignableFromWithoutTagging(t).yes())
+          {
+            return cg;
+          }
+      }
+    throw new Error("Expr.needsBoxing confused for choice type "+ct+" which is assignable from "+t.asRef()+" but not from "+t);
   }
 
 
@@ -807,17 +910,11 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   private static void checkTagging(Expr expr, AbstractType at, AbstractType frmlT)
   {
-    if(PRECONDITIONS) require
+    if (PRECONDITIONS) require
       (frmlT.isChoice());
 
     // Case 1: types are equal, no tagging necessary
     if (frmlT.compareTo(at) == 0)
-      {
-        return;
-      }
-    // Case 1.1: types are equal, no tagging necessary
-    // NYI: BUG: soundness issue?
-    else if(at.isChoice() && frmlT.asThis().compareTo(at.asThis()) == 0)
       {
         return;
       }
@@ -882,6 +979,12 @@ public abstract class Expr extends ANY implements HasSourcePosition
   AbstractType asTypeParameterType()
   {
     return null;
+  }
+
+
+  public boolean isEmpty()
+  {
+    return false;
   }
 
 

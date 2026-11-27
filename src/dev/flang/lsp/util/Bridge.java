@@ -103,7 +103,7 @@ public class Bridge extends ANY
       {
         return SymbolKind.Enum;
       }
-    if (feature.isBuiltInPrimitive() && "bool".equals(feature.featureName().baseName()))
+    if (feature.isBuiltInPrimitive() && "bool".equals(feature.baseName()))
       {
         return SymbolKind.Boolean;
       }
@@ -124,11 +124,6 @@ public class Bridge extends ANY
         return SymbolKind.Function;
       }
     return SymbolKind.Class;
-  }
-
-  public static TextDocumentPositionParams toTextDocumentPosition(SourcePosition sourcePosition)
-  {
-    return LSP4jUtils.textDocumentPositionParams(ParserTool.getUri(sourcePosition), toPosition(sourcePosition));
   }
 
   public static SourcePosition toSourcePosition(TextDocumentPositionParams params)
@@ -178,11 +173,8 @@ public class Bridge extends ANY
     if (PRECONDITIONS)
       require(!uri.equals(SourceFile.STDIN.toUri()));
 
-    var filePath = Path.of(uri);
-    if (filePath.equals(SourcePosition.builtIn._sourceFile._fileName))
-      {
-        return SourcePosition.builtIn._sourceFile;
-      }
-    return new SourceFile(filePath, SourceText.getText(uri).getBytes());
+    return Path.of(uri).equals(SourcePosition.builtIn._sourceFile._fileName)
+      ? SourcePosition.builtIn._sourceFile
+      : SourceText.getSourceFile(uri);
   }
 }

@@ -34,6 +34,9 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.TreeMap;
+
+import java.util.concurrent.TimeUnit;
+
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -65,6 +68,16 @@ public class Intrinsics extends ANY
   }
 
 
+  /*-----------------------------  records  -----------------------------*/
+
+
+  /**
+   * A JvmCondition, we try to mimic a pthread condition connected to a clock
+   * with given clockid_t.
+   */
+  record JvmCondition(Condition cnd, int clockid) { }
+
+
   /*------------------------------  enums  ------------------------------*/
 
 
@@ -88,13 +101,12 @@ public class Intrinsics extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   * NYI: This will eventually be part of a Fuzion IR / BE Config class.
+  static final TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
+
+  /* NYI: UNDER DEVELOPMENT: Constants to be kept in sync with `modules/baser/src/posix.fz`, should be automated.
    */
-  public static Boolean ENABLE_UNSAFE_INTRINSICS = null;
-
-
-  static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
+  static final int CLOCK_REALTIME  = 0;
+  static final int CLOCK_MONOTONIC = 1;
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -106,20 +118,11 @@ public class Intrinsics extends ANY
 
 
   private static void put(String n, IntrinsicCode c) { _intrinsics_.put(n, c); }
-  private static void putUnsafe(String n, IntrinsicCode c) { _intrinsics_.put(n, (executor, innerClazz) -> args -> {
-    if (!ENABLE_UNSAFE_INTRINSICS)
-      {
-        Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-      }
-    return c.get(executor, innerClazz).call(args);
-  }); }
   private static void put(String n1, String n2, IntrinsicCode c) { put(n1, c); put(n2, c); }
-  private static void putUnsafe(String n1, String n2, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); }
   private static void put(String n1, String n2, String n3, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); }
-  private static void putUnsafe(String n1, String n2, String n3, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); putUnsafe(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
-  private static void putUnsafe(String n1, String n2, String n3, String n4, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); putUnsafe(n3, c); putUnsafe(n4, c); }
   private static void put(String n1, String n2, String n3, String n4, String n5, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); }
+  private static void put(String n1, String n2, String n3, String n4, String n5, String n6, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); put(n6, c); }
 
 
   /**
@@ -137,7 +140,7 @@ public class Intrinsics extends ANY
   private static String utf8ByteArrayDataToString(Value internalArray)
   {
     var strA = internalArray.arrayData();
-    var ba = (byte[]) strA._array;
+    var ba = (byte[]) strA._data;
     var l = 0;
     while (l < ba.length && ba[l] != 0)
       {
@@ -168,7 +171,7 @@ public class Intrinsics extends ANY
         Errors.fatal(executor.fuir().sitePos(site),
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + in);
-        result = (args) -> Value.NO_VALUE;
+        result = (args) -> Value.VOID;
       }
     return result;
   }
@@ -189,87 +192,94 @@ public class Intrinsics extends ANY
     put("Type.name"            , (executor, innerClazz) -> args ->
       Interpreter.boxedConstString(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
 
-    put("concur.atomic.compare_and_swap0",  (executor, innerClazz) -> args ->
+    put("mutate.var.compare_and_swap0",  (executor, innerClazz) -> args ->
         {
-          var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var nc = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupMutableValue(nc);
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              var res = Interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
-              if (Interpreter.compareField(f, a, thiz, expected))
+              var res = Interpreter.getField(f, nc, thiz, false); // NYI: HACK: We must clone this!
+              if (Interpreter.compareField(f, nc, thiz, expected))
                 {
                   res = expected;   // NYI: HACK: workaround since res was not cloned
-                  Interpreter.setField(f, a, thiz, new_value);
+                  Interpreter.setField(f, nc, thiz, new_value);
                 }
               return res;
             }
         });
-    put("concur.atomic.compare_and_set0",  (executor, innerClazz) -> args ->
+
+    put("mutate.var.compare_and_set0",  (executor, innerClazz) -> args ->
         {
-          var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var nc = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupMutableValue(nc);
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              if (Interpreter.compareField(f, a, thiz, expected))
+              if (Interpreter.compareField(f, nc, thiz, expected))
                 {
-                  Interpreter.setField(f, a, thiz, new_value);
+                  Interpreter.setField(f, nc, thiz, new_value);
                   return new boolValue(true);
                 }
               return new boolValue(false);
             }
         });
-    put("concur.atomic.racy_accesses_supported",  (executor, innerClazz) -> args ->
+
+    put("mutate.atomic_access_supported",  (executor, innerClazz) -> args ->
         {
-          var t = executor.fuir().clazzActualGeneric(executor.fuir().clazzOuterClazz(innerClazz), 0);
+          var t = executor.fuir().clazzActualGeneric(innerClazz, 0);
           return new boolValue
             (executor.fuir().clazzIsRef(t)                            ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i8  )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i16 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_i64 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u8  )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u16 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u32 )) ||
+             // (t == executor.fuir().clazz(SpecialClazzes.c_u64 )) ||  -- we split up 64-bit values to store them in an array of ints
              (t == executor.fuir().clazz(SpecialClazzes.c_f32 )) ||
+             // (t == executor.fuir().clazz(SpecialClazzes.c_f64 )) ||  -- we split up 64-bit values to store them in an array of ints
              (t == executor.fuir().clazz(SpecialClazzes.c_bool)));
         });
-    put("concur.atomic.read0",  (executor, innerClazz) -> args ->
+
+    put("mutate.var.atomic_read0",  (executor, innerClazz) -> args ->
         {
           var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var f = executor.fuir().lookupMutableValue(a);
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
               return Interpreter.getField(f, a, thiz, false);
             }
         });
-    put("concur.atomic.write0", (executor, innerClazz) -> args ->
+
+    put("mutate.var.atomic_write0",  (executor, innerClazz) -> args ->
         {
           var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var f = executor.fuir().lookupMutableValue(a);
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
               Interpreter.setField(f, a, thiz, args.get(1));
             }
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.UNIT;
         });
 
-    put("concur.util.load_fence",   (executor, innerClazz) -> args ->
+    put("mutate.read_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.UNIT;
         });
 
-    put("concur.util.store_fence",  (executor, innerClazz) -> args ->
+    put("mutate.write_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.UNIT;
         });
 
     put("fuzion.sys.args.count", (executor, innerClazz) -> args -> new i32Value(executor.options().getBackendArgs().size() + 1));
@@ -279,7 +289,7 @@ public class Intrinsics extends ANY
           var fuir = executor.fuir();
           if (i == 0)
             {
-              return  Interpreter.boxedConstString(fuir.clazzAsString(fuir.mainClazz()));
+              return  Interpreter.boxedConstString(fuir.clazzName(fuir.mainClazz()));
             }
           else
             {
@@ -291,22 +301,22 @@ public class Intrinsics extends ANY
         {
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
-                         executor.callStack(executor.fuir()));
-          return Value.EMPTY_VALUE;
+                         Executor.callStack());
+          return Value.UNIT;
         });
 
     put("fuzion.std.exit", (executor, innerClazz) -> args ->
         {
           int rc = args.get(1).i32Value();
           System.exit(rc);
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
     put("fuzion.jvm.is_null0", (executor, innerClazz) -> args ->
         {
           Object thiz = ((JavaRef)args.get(1))._javaRef;
           return new boolValue(thiz == null);
         });
-    putUnsafe("fuzion.jvm.get_static_field0",
+    put("fuzion.jvm.get_static_field0",
         "fuzion.jvm.get_field0"      , (executor, innerClazz) ->
         {
           String in = executor.fuir().clazzOriginalName(innerClazz);
@@ -320,7 +330,7 @@ public class Intrinsics extends ANY
               return JavaInterface.getField(clazz, thiz, field, resultClazz);
             };
         });
-    putUnsafe("fuzion.jvm.set_static_field0",
+    put("fuzion.jvm.set_static_field0",
         "fuzion.jvm.set_field0"      , (executor, innerClazz) ->
         {
           String in = executor.fuir().clazzOriginalName(innerClazz);
@@ -332,10 +342,10 @@ public class Intrinsics extends ANY
               String field = (String) ((JavaRef) args.get(2))._javaRef;
               Object val  = ((JavaRef) args.get(3))._javaRef;
               JavaInterface.setField(clazz, thiz, field, val);
-              return Value.EMPTY_VALUE;
+              return Value.UNIT;
             };
         });
-    putUnsafe("fuzion.jvm.call_v0",
+    put("fuzion.jvm.call_v0",
         "fuzion.jvm.call_s0",
         "fuzion.jvm.call_c0", (executor, innerClazz) ->
         {
@@ -353,7 +363,7 @@ public class Intrinsics extends ANY
 
               var argz = args.get(a); // of type fuzion.sys.internal_array<JavaObject>, we need to get field argz.data
               var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
-              var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
+              var argzData = Interpreter.getField(executor.fuir().clazzArg(sac, 0), sac, argz, false);
 
               String clName =                          (String) clNameI._javaRef;
               String name   = nameI   == null ? null : (String) nameI._javaRef;
@@ -362,17 +372,17 @@ public class Intrinsics extends ANY
               return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
             };
         });
-    putUnsafe("fuzion.jvm.cast0", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.cast0", (executor, innerClazz) -> args ->
         {
           var arg = ((JavaRef) args.get(1))._javaRef;
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(arg, null, resultClazz);
         });
-    putUnsafe("fuzion.jvm.array_length",  (executor, innerClazz) -> args ->
+    put("fuzion.jvm.array_length",  (executor, innerClazz) -> args ->
         {
           return new i32Value(Array.getLength(((JavaRef) args.get(1))._javaRef));
         });
-    putUnsafe("fuzion.jvm.array_get", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.array_get", (executor, innerClazz) -> args ->
         {
           var arr = ((JavaRef) args.get(1))._javaRef;
           var ix  = args.get(2).i32Value();
@@ -380,31 +390,31 @@ public class Intrinsics extends ANY
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(res, resultClazz);
         });
-    putUnsafe("fuzion.jvm.array_to_java_object0", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.array_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
           var res = Interpreter
-            .getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false)
+            .getField(executor.fuir().clazzArg(sac, 0), sac, argz, false)
             .arrayData()
-            ._array;
+            ._data;
           return new JavaRef(res);
         });
-    putUnsafe("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
-    putUnsafe("fuzion.jvm.destroy_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
-    putUnsafe("fuzion.jvm.string_to_java_object0", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> new i32Value(0));
+    put("fuzion.jvm.destroy_jvm", (executor, innerClazz) -> args -> Value.UNIT);
+    put("fuzion.jvm.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
-          var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
+          var argzData = Interpreter.getField(executor.fuir().clazzArg(sac, 0), sac, argz, false);
           return new JavaRef(utf8ByteArrayDataToString(argzData));
         });
-    putUnsafe("fuzion.jvm.java_string_to_string", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.java_string_to_string", (executor, innerClazz) -> args ->
         {
           var javaString = (String) ((JavaRef)args.get(1))._javaRef;
           return Interpreter.boxedConstString(javaString == null ? "--null--" : javaString);
         });
-    putUnsafe("fuzion.jvm.primitive_to_java_object", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.primitive_to_java_object", (executor, innerClazz) -> args ->
         {
           var res =  switch (executor.fuir().getSpecialClazz(executor.fuir().clazzActualGeneric(innerClazz, 0)))
           {
@@ -416,14 +426,15 @@ public class Intrinsics extends ANY
             case c_i64  -> Long     .valueOf(args.get(1).i64Value());
             case c_i8   -> Byte     .valueOf((byte)args.get(1).i8Value());
             case c_u16  -> Character.valueOf((char)args.get(1).u16Value());
-            default -> throw new Error("NYI");
+            default -> throw new Error("unexpected case: primitive_to_java_object not implemented for " + executor.fuir().clazzName(executor.fuir().clazzActualGeneric(innerClazz, 0)));
           };
           return new JavaRef(res);
         });
     put("fuzion.sys.type.alloc", (executor, innerClazz) -> args ->
         {
           var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
-          return ArrayData.alloc(/* size */ args.get(1).i32Value(),
+          return ArrayData.alloc(executor.fuir().clazzResultClazz(innerClazz),
+                                 /* size */ args.get(1).i32Value(),
                                  executor.fuir(),
                                  /* type */ et);
         });
@@ -443,18 +454,16 @@ public class Intrinsics extends ANY
                               /* value */ args.get(3),
                               executor.fuir(),
                               /* type  */ et);
-          return Value.EMPTY_VALUE;
-        });
-    put("fuzion.sys.internal_array.freeze", (executor, innerClazz) -> args ->
-        {
-          return Value.EMPTY_VALUE;
-        });
-    put("fuzion.sys.internal_array.ensure_not_frozen", (executor, innerClazz) -> args ->
-        {
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.boxedConstString(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    put("fuzion.sys.thread.current", (executor, innerClazz) -> args ->
+        {
+          // NYI: CLEANUP: should not use javaObjectToInstance
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
+          return JavaInterface.javaObjectToInstance(FuzionThread.current(), resultClazz);
+        });
     put("fuzion.sys.thread.spawn0", (executor, innerClazz) -> args ->
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);
@@ -484,12 +493,28 @@ public class Intrinsics extends ANY
                 }
             }
           while (!result);
-          return Value.EMPTY_VALUE;
+          return new i32Value(0);
+        });
+    put("fuzion.sys.thread.set_policy", (executor, innerClazz) -> args ->
+        {
+          return new i32Value(38 /* ENOSYS - Function not implemented */);
+        });
+    put("fuzion.sys.thread.set_affinity0", (executor, innerClazz) -> args ->
+        {
+          return new i32Value(38 /* ENOSYS - Function not implemented */);
+        });
+    put("fuzion.sys.thread.cpu_time0", (executor, innerClazz) -> args ->
+        {
+          var t = ((JavaRef) args.get(1))._javaRef;
+          // `fuzion.sys.thread.current` results in a FuzionThread, `spawn0` in a Java Thread
+          var thread = t instanceof FuzionThread ft ? ft._javaThread : (Thread) t;
+          return new i64Value(java.lang.management.ManagementFactory.getThreadMXBean().getThreadCpuTime(thread.threadId()));
         });
 
     put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));
     put("debug"                 , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionDebug()));
     put("debug_level"           , (executor, innerClazz) -> args -> new i32Value (executor.options().fuzionDebugLevel()));
+    put("choice.tag"            , (executor, innerClazz) -> args -> new i32Value (executor.tagAndVal(                       args.get(0)).v0()      ));
     put("i8.as_i32"             , (executor, innerClazz) -> args -> new i32Value (              (                           args.get(0).i8Value() )));
     put("i8.cast_to_u8"         , (executor, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).i8Value() )));
     put("i8.prefix -°"          , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (                       -   args.get(0).i8Value() )));
@@ -625,8 +650,6 @@ public class Intrinsics extends ANY
     put("f32.infix -"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() -  args.get(1).f32Value())));
     put("f32.infix *"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() *  args.get(1).f32Value())));
     put("f32.infix /"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() /  args.get(1).f32Value())));
-    put("f32.infix %"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() %  args.get(1).f32Value())));
-    put("f32.infix **"          , (executor, innerClazz) -> args -> new f32Value ((float) Math.pow(args.get(0).f32Value(),   args.get(1).f32Value())));
     put("f32.type.equal"        , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f32Value() == args.get(2).f32Value())));
     put("f32.type.lower_than_or_equal"
                                 , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f32Value() <= args.get(2).f32Value())));
@@ -637,55 +660,18 @@ public class Intrinsics extends ANY
     put("f64.infix -"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() -  args.get(1).f64Value())));
     put("f64.infix *"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() *  args.get(1).f64Value())));
     put("f64.infix /"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() /  args.get(1).f64Value())));
-    put("f64.infix %"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())));
-    put("f64.infix **"          , (executor, innerClazz) -> args -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())));
     put("f64.type.equal"        , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f64Value() == args.get(2).f64Value())));
     put("f64.type.lower_than_or_equal"
                                 , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f64Value() <= args.get(2).f64Value())));
     put("f64.as_i64_lax"        , (executor, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
     put("f64.as_f32"            , (executor, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.cast_to_u64"       , (executor, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
-    put("f32.is_NaN"            , (executor, innerClazz) -> args -> new boolValue(                               Float.isNaN(args.get(0).f32Value())));
-    put("f64.is_NaN"            , (executor, innerClazz) -> args -> new boolValue(                              Double.isNaN(args.get(0).f64Value())));
-    put("f32.acos"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.acos(               args.get(0).f32Value())));
-    put("f32.asin"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.asin(               args.get(0).f32Value())));
-    put("f32.atan"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.atan(               args.get(0).f32Value())));
-    put("f32.cos"               , (executor, innerClazz) -> args -> new f32Value ((float)           Math.cos(                args.get(0).f32Value())));
-    put("f32.cosh"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.cosh(               args.get(0).f32Value())));
-    put("f32.exp"               , (executor, innerClazz) -> args -> new f32Value ((float)           Math.exp(                args.get(0).f32Value())));
-    put("f32.log"               , (executor, innerClazz) -> args -> new f32Value ((float)           Math.log(                args.get(0).f32Value())));
-    put("f32.sin"               , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sin(                 args.get(0).f32Value())));
-    put("f32.sinh"              , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(0).f32Value())));
-    put("f32.square_root"       , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(0).f32Value())));
-    put("f32.tan"               , (executor, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(0).f32Value())));
-    put("f32.tanh"              , (executor, innerClazz) -> args -> new f32Value ((float)          Math.tanh(                args.get(0).f32Value())));
-    put("f64.acos"              , (executor, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(0).f64Value())));
-    put("f64.asin"              , (executor, innerClazz) -> args -> new f64Value (                 Math.asin(                args.get(0).f64Value())));
-    put("f64.atan"              , (executor, innerClazz) -> args -> new f64Value (                 Math.atan(                args.get(0).f64Value())));
-    put("f64.cos"               , (executor, innerClazz) -> args -> new f64Value (                 Math.cos(                 args.get(0).f64Value())));
-    put("f64.cosh"              , (executor, innerClazz) -> args -> new f64Value (                 Math.cosh(                args.get(0).f64Value())));
-    put("f64.exp"               , (executor, innerClazz) -> args -> new f64Value (                 Math.exp(                 args.get(0).f64Value())));
-    put("f64.log"               , (executor, innerClazz) -> args -> new f64Value (                 Math.log(                 args.get(0).f64Value())));
-    put("f64.sin"               , (executor, innerClazz) -> args -> new f64Value (                 Math.sin(                 args.get(0).f64Value())));
-    put("f64.sinh"              , (executor, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(0).f64Value())));
-    put("f64.square_root"       , (executor, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(0).f64Value())));
-    put("f64.tan"               , (executor, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(0).f64Value())));
-    put("f64.tanh"              , (executor, innerClazz) -> args -> new f64Value (                 Math.tanh(                args.get(0).f64Value())));
-    put("f32.type.epsilon"      , (executor, innerClazz) -> args -> new f32Value (                  Math.ulp(                (float)1)));
-    put("f32.type.max"          , (executor, innerClazz) -> args -> new f32Value (                                           Float.MAX_VALUE));
-    put("f32.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                           Float.MAX_EXPONENT));
-    put("f32.type.min_positive" , (executor, innerClazz) -> args -> new f32Value (                                           Float.MIN_NORMAL));
-    put("f32.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                           Float.MIN_EXPONENT));
-    put("f64.type.epsilon"      , (executor, innerClazz) -> args -> new f64Value (                 Math.ulp(                 (double)1)));
-    put("f64.type.max"          , (executor, innerClazz) -> args -> new f64Value (                                               Double.MAX_VALUE));
-    put("f64.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MAX_EXPONENT));
-    put("f64.type.min_positive" , (executor, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
-    put("f64.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
-    put("effect.type.abort0"      ,
-        "effect.type.default0"    ,
-        FuzionConstants.EFFECT_INSTATE_NAME,
-        "effect.type.is_instated0",
-        "effect.type.replace0"    , (executor, innerClazz) -> effect(executor, innerClazz));
+    put("effect.type.abort0"                 ,
+        "effect.type.instate_at_singularity0",
+        FuzionConstants.EFFECT_INSTATE_NAME  ,
+        "effect.type.is_instated0"           ,
+        "effect.type.set0"                   ,
+        "effect.type.remove0"                , (executor, innerClazz) -> effect(executor, innerClazz));
 
     put("effect.type.from_env",
         "effect.type.unsafe_from_env",
@@ -695,13 +681,15 @@ public class Intrinsics extends ANY
           var result = FuzionThread.current()._effects.get(ecl);
           if (result == null)
             {
-              Errors.fatal("No effect installed: " + executor.fuir().clazzAsStringHuman(ecl));
+              Errors.fatal("No effect installed: " + executor.fuir().clazzNameHuman(ecl));
             }
 
           if (POSTCONDITIONS) ensure
-            (executor.fuir().clazzIsUnitType(ecl) || result != Value.NO_VALUE);
+            (executor.fuir().clazzIsUnitType(ecl) || result != Value.VOID);
 
-          return result;
+          return executor.fuir().clazzIsRef(ecl)
+            ? result
+            : result.cloneValue(ecl);
         });
 
     /* NYI: UNDER DEVELOPMENT: abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
@@ -729,48 +717,72 @@ public class Intrinsics extends ANY
           return new boolValue(false);
         }
     });
-    put("concur.sync.mtx_destroy", (executor, innerClazz) -> args -> executor.unitValue());
+    put("concur.sync.mtx_destroy", (executor, innerClazz) -> args -> Value.UNIT);
 
     /* Condition */
     put("concur.sync.cnd_init", (executor, innerClazz) -> args -> {
       var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
       return JavaInterface.javaObjectToInstance(
-        ((ReentrantLock) ((JavaRef) args.get(1))._javaRef).newCondition(), resultClazz);
+        new JvmCondition(((ReentrantLock) ((JavaRef) args.get(1))._javaRef).newCondition(),
+                         args.get(2).i32Value()),
+        resultClazz);
     });
     put("concur.sync.cnd_signal", (executor, innerClazz) -> args -> {
       try
         {
-          ((Condition) ((JavaRef) args.get(1))._javaRef).signal();
-          return new boolValue(true);
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          jc.cnd.signal();
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
     put("concur.sync.cnd_broadcast", (executor, innerClazz) -> args -> {
       try
         {
-          ((Condition) ((JavaRef) args.get(1))._javaRef).signalAll();
-          return new boolValue(true);
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          jc.cnd.signalAll();
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
     put("concur.sync.cnd_wait", (executor, innerClazz) -> args -> {
       try
         {
-          ((Condition) ((JavaRef) args.get(1))._javaRef).await();
-          return new boolValue(true);
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          jc.cnd.await();
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
-    put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> executor.unitValue());
+    put("concur.sync.cnd_timedwait", (executor, innerClazz) -> args -> {
+      try
+        {
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          var timeout = args.get(3).i64Value();
+          var ns = switch (jc.clockid)
+            {
+            case CLOCK_REALTIME  -> timeout - System.currentTimeMillis() * 1000000L;
+            case CLOCK_MONOTONIC -> timeout - System.nanoTime();
+            default              -> { Errors.fatal("JVM backend unexpected POSIX clockid "+jc.clockid); throw new Error(); }
+            };
+          jc.cnd.await(ns, TimeUnit.NANOSECONDS);
+        }
+      catch (Exception e)
+        {
+          Errors.fatal(e);
+        }
+      return Value.UNIT;
+    });
+    put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> Value.UNIT);
     put("native_string_length", (executor, innerClazz) -> args -> {
       throw new UnsupportedOperationException("NYI: UNDER DEVELOPMENT: native_string_length");
     });
@@ -810,7 +822,13 @@ public class Intrinsics extends ANY
         switch (in)
           {
           case "effect.type.abort0"    : throw new Abort(ecl);
-          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev); } break;
+          case "effect.type.instate_at_singularity0":
+            {
+              check(effects.get(ecl) == null);
+              check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT);
+              effects.put(ecl, ev);
+              break;
+            }
           case FuzionConstants.EFFECT_INSTATE_NAME :
             {
               // save old and instate new effect value ev:
@@ -820,7 +838,7 @@ public class Intrinsics extends ANY
               // the callbacks to Fuzion for the code, fallback and finally:
               var call     = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 0));
               var call_def = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 1));
-              var finallie = fuir.lookup_static_finally(ecl);
+              var finallie = fuir.lookupStaticFinally(ecl);
 
               Abort aborted = null;
               try
@@ -847,11 +865,14 @@ public class Intrinsics extends ANY
                   ignore = executor.callOnNewInstance(NO_SITE, call_def, args.get(3), new List<>(final_ev));
                 }
             }
+            break;
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
-          case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev);   break;
+          case "effect.type.set0"        : check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT);
+                                           effects.put(ecl, ev);   break;
+          case "effect.type.remove0"     : effects.put(ecl, null); break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");
           }
-        return Value.EMPTY_VALUE;
+        return Value.UNIT;
       };
   }
 

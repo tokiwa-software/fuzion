@@ -58,6 +58,8 @@ class CheckIntrinsics extends ANY
     var all = new TreeSet<String>();
     getAll(all, fe, fe.baseModule().libraryUniverse());
 
+    all.removeAll(dev.flang.fuir.GeneratingFUIR.removedIntrinsics());
+
     var i = dev.flang.be.interpreter.Intrinsics.supportedIntrinsics();
     checkIntrinsics(all, true, i, "Interpreter backend", x->x);
     var c = dev.flang.be.c.Intrinsics.supportedIntrinsics();
@@ -79,8 +81,9 @@ class CheckIntrinsics extends ANY
         getAll(all, fe, f);
         if (f.isIntrinsic())
           {
-            all.add(f.qualifiedName());
-            fe._options.verbosePrintln(2, "base module intrinsic: " + f.qualifiedName());
+            var qn = f.qualifiedName();
+            all.add(qn);
+            fe._options.verbosePrintln(2, "base module intrinsic: " + qn);
           }
       }
   }

@@ -38,7 +38,6 @@ FUZION_C_BACKEND_OPTIONS ?=
 FUZION_DEPENDENCIES ?=
 FUZION ?= ../../bin/fz
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
-FILE = $(NAME).fz
 ENV = \
   $(if $(FUZION_HOME)               , FUZION_HOME="$(FUZION_HOME)"                              ,) \
   $(if $(FUZION_JAVA)               , FUZION_JAVA="$(FUZION_JAVA)"                              ,) \
@@ -51,12 +50,15 @@ ENV = \
 
 all: jvm int c
 
+fuir: # does nothing
+
 jvm:
 	NAME=$(NAME) $(ENV) make -f ../negative.mk jvm
 	NAME=$(NAME) $(ENV) make -f ../simple.mk jvm
 c:
 	NAME=$(NAME) $(ENV) make -f ../negative.mk c
 	NAME=$(NAME) $(ENV) make -f ../simple.mk c
+
 int:
 	NAME=$(NAME) $(ENV) make -f ../negative.mk int
 	NAME=$(NAME) $(ENV) make -f ../simple.mk int

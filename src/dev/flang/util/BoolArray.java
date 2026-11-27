@@ -34,7 +34,7 @@ import java.util.Arrays;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class BoolArray extends ANY
+class BoolArray extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -43,7 +43,7 @@ public class BoolArray extends ANY
   /**
    * pre-allocated empty array.
    */
-  private static boolean[] _EMPTY_ = new boolean[0];
+  private static final boolean[] _EMPTY_ = new boolean[0];
 
 
   /*----------------------------  variables  ----------------------------*/

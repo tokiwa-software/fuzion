@@ -21,11 +21,15 @@
 #
 # -----------------------------------------------------------------------
 
-ex =>
+test_issue1561 =>
+  read_line_exception : flow.exception_tag is
+
   read_line option String =>
 
-    (exception unit String ()->
-      ref : String is
-        public redef utf8 Sequence u8 =>
-          (list u8).empty
+    (flow.exception read_line_exception
+      .try String ()->
+        _ : String is
+          public redef utf8 Sequence u8 =>
+            (list u8).empty
+      .or_outcome
     ).as_option

@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.ListIterator;
 
 import dev.flang.util.List;
 
@@ -63,52 +62,7 @@ public abstract class AbstractBlock extends Expr
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  public AbstractBlock visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    ListIterator<Expr> i = _expressions.listIterator();
-    while (i.hasNext())
-      {
-        Expr e = i.next();
-        i.set(e.visit(v, outer));
-      }
-    return this;
-  }
-
-
-  /**
-   * visit all the expressions within this Block.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    var e = _expressions;
-    for (int i = 0; i < e.size(); i++)
-      {
-        e.get(i).visitExpressions(v);
-      }
-    super.visitExpressions(v);
-  }
-
-
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -119,13 +73,17 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
-   */
+  @Override
+  AbstractType typeForInferencing(Context context)
+  {
+    Expr resExpr = resultExpression();
+    return resExpr == null
+      ? Types.resolved.t_unit
+      : resExpr.typeForInferencing(context);
+  }
+
+
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {
@@ -147,66 +105,9 @@ public abstract class AbstractBlock extends Expr
   protected int resultExpressionIndex()
   {
     var i = _expressions.size() - 1;
-    while (i >= 0 && (_expressions.get(i) instanceof Nop))
-      {
-        i--;
-      }
     return i >= 0 && (_expressions.get(i).producesResult())
       ? i
       : -1;
-  }
-
-
-  /**
-   * Try to perform partial application such that this expression matches
-   * {@code expectedType}.  Note that this may happen twice:
-   *
-   * 1. during RESOLVING_DECLARATIONS phase of outer when resolving arguments to
-   *    a call such as {@code l.map +1}. In this case, expectedType may be a function
-   *    type {@code Function R A} with generic arguments not yet replaced by actual
-   *    arguments, in particular the result type {@code R} is unknown since it is the
-   *    result type of this expression.
-   *
-   * 2. during TYPES_INFERENCING phase when the target variable's type is fully
-   *    resolved and this gets propagated to this expression.
-   *
-   * Note that this does not perform resolveTypes on the results since that
-   * would be too early during 1. but it is required in 2.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param expectedType the expected type.
-   */
-  @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
-  {
-    var a = resultExpression();
-    return a == null
-      ? super.propagateExpectedTypeForPartial(res, context, expectedType)
-      : replacedResultExpression(a.propagateExpectedTypeForPartial(res, context, expectedType));
-  }
-
-
-  /**
-   * create a new block just like this but with a
-   * replaced result expression.
-   *
-   * @param newResultExpression
-   * @return
-   */
-  private Expr replacedResultExpression(Expr newResultExpression)
-  {
-    if (PRECONDITIONS) require
-      (this.resultExpressionIndex() >= 0);
-
-    var l = _expressions
-      .take(resultExpressionIndex());
-    l.add(newResultExpression);
-    return new Block(l);
-
   }
 
 
@@ -230,6 +131,7 @@ public abstract class AbstractBlock extends Expr
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
+  @Override
   public boolean containsOnlyDeclarations()
   {
     boolean result = true;
@@ -241,18 +143,15 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * Is this Expr a call to an outer ref?
-   */
-  public boolean isCallToOuterRef()
+  /** {@inheritDoc} */
+  @Override
+  boolean isCallToOuterRef()
   {
     return resultExpression() != null && resultExpression().isCallToOuterRef();
   }
 
 
-  /**
-   * This expression as a compile time constant.
-   */
+  /** {@inheritDoc} */
   @Override
   public Constant asCompileTimeConstant()
   {
@@ -260,12 +159,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * During type inference: Inform this expression that it is
-   * expected to result in the given type.
-   *
-   * @param t the expected type.
-   */
+  /** {@inheritDoc} */
   @Override
   protected void propagateExpectedType(AbstractType t)
   {
@@ -277,13 +171,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * typeForUnion returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForUnion()
   {
@@ -294,11 +182,22 @@ public abstract class AbstractBlock extends Expr
   }
 
 
+  @Override
+  public boolean isEmpty()
+  {
+    return _expressions
+      .stream()
+      // declarations are NOPs, hence allowed
+      .allMatch(x -> x instanceof AbstractFeature);
+  }
+
+
   /**
    * toString
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return new StringBuilder().append("{\n").append(toString("  ")).append("}").toString();

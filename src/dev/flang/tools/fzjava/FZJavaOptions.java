@@ -37,7 +37,7 @@ import java.nio.file.Path;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FZJavaOptions extends ANY
+class FZJavaOptions extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -45,7 +45,7 @@ public class FZJavaOptions extends ANY
 
   /**
    * Some public members in a Java module may return a result type or expect an
-   * argument that that is not public.  This flag enables warnings in this case.
+   * argument that is not public.  This flag enables warnings in this case.
    */
   static final boolean SHOW_WARNINGS_FOR_NON_PUBLIC_TYPES = false;
 

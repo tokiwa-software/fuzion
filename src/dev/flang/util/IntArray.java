@@ -43,7 +43,7 @@ public class IntArray extends ANY
   /**
    * pre-allocated empty array.
    */
-  private static int[] _EMPTY_ = new int[0];
+  private static final int[] _EMPTY_ = new int[0];
 
 
   /*----------------------------  variables  ----------------------------*/

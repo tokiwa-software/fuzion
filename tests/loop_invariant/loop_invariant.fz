@@ -24,11 +24,11 @@
 loop_invariant =>
 
   for i in 0..1
-  inv i < 2
+  invariant i < 2
   do
     say "iteration $i"
 
   for i in 0..1
-  inv i < 1
+  invariant i < 1
   do
     say "iteration $i"

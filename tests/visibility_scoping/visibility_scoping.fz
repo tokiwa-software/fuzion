@@ -41,11 +41,11 @@ visibility_scoping is
 
 
   test3 =>
-    _ := for ar := outcome unit
-         while false
+    for ar := outcome unit
+    while false
 
-    ref : Function unit is
-      public redef call =>
+    _ : Function unit is
+      public redef call unit =>
         say ar  #  2. should flag an error: feature not found
 
 
@@ -106,7 +106,7 @@ visibility_scoping is
       unit.y is
       b is
 
-      if envir.args.count > 2
+      if envir.Args.env.count > 2
 
         # `unit.z1`, `unit.z2`, `c1` and `c2` should be visible in this `if` clause only
         unit.z1 is

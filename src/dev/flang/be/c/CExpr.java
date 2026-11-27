@@ -55,7 +55,7 @@ abstract class CExpr extends CStmnt
    * Dummy value to be used for unit type values.  This cannot be used to create
    * code since C does not have a unit type.
    */
-  static CExpr UNIT = new CExpr()
+  static final CExpr UNIT = new CExpr()
     {
       void code(CString sb) { sb.append("/* UNIT VALUE */");  }
       int precedence() { return 0; }
@@ -215,7 +215,7 @@ abstract class CExpr extends CStmnt
 
 
   /**
-   * Create a C expression from a uint642_t constant
+   * Create a C expression from a uint64_t constant
    *
    * @return the resulting expression
    */
@@ -425,11 +425,7 @@ abstract class CExpr extends CStmnt
   {
     var l = new List<CExpr>(CIdent.STDERR,
                             string(msg));
-    for (var a : args)
-      {
-        l.add(a);
-      }
-
+    l.addAll(args);
     return call("fprintf", l);
   }
 
@@ -609,11 +605,13 @@ abstract class CExpr extends CStmnt
         _op = op;
       }
 
+    @Override
     int precedence()
     {
       return 2;
     }
 
+    @Override
     void code(CString sb)
     {
       sb.append(_op);
@@ -773,11 +771,13 @@ abstract class CExpr extends CStmnt
       _prec = prec;
     }
 
+    @Override
     int precedence()
     {
       return _prec;
     }
 
+    @Override
     void code(CString sb)
     {
       _left.code(sb, precedence());
@@ -895,26 +895,14 @@ abstract class CExpr extends CStmnt
           inner.code(sb);
           sb.append("/* ").append(s).append(" */");
         }
-        boolean isLocalVar()
-        {
-          return inner.isLocalVar();
-        }
       };
-  }
-
-
-  /**
-   * Is this a local variable?
-   */
-  boolean isLocalVar()
-  {
-    return false;
   }
 
 
   /**
    * Create String for debugging-output.
    */
+  @Override
   public String toString()
   {
     return "C-Expression '" + code() + "'";

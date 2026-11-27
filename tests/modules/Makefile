@@ -34,6 +34,8 @@ FZ = FUZION_DISABLE_ANSI_ESCAPES=true ../../bin/fz
 all: sources_only a ab b clean
                        # xy (shows problem related to #462)
 
+fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+
 int: all
 
 c: a_c ab_c b_c

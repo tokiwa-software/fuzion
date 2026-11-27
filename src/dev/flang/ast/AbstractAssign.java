@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Assign
+ * Source of class AbstractAssign
  *
  *---------------------------------------------------------------------*/
 
@@ -118,7 +118,8 @@ public abstract class AbstractAssign extends Expr
    *
    * @return this
    */
-  public AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
+  @Override
+  protected AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
     if (_target != null)
@@ -127,20 +128,6 @@ public abstract class AbstractAssign extends Expr
       }
     v.action(this);
     return this;
-  }
-
-
-  /**
-   * visit all the expressions within this Assign.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    _value.visitExpressions(v);
-    _target.visitExpressions(v);
-    super.visitExpressions(v);
   }
 
 
@@ -261,6 +248,11 @@ public abstract class AbstractAssign extends Expr
             _value.checkAmbiguousAssignmentToChoice(frmlT);
           }
 
+        if (f instanceof Feature ff && ff.isNamelessField()
+            && frmlT.compareTo(Types.resolved.t_unit) == 0)
+          {
+            AstErrors.unitResultExplicitlyIgnored(f.pos());
+          }
 
         if (CHECKS) check
           (Errors.any() || res._module.lookupFeature(this._target.type().feature(), f.featureName()) == f);
@@ -272,16 +264,14 @@ public abstract class AbstractAssign extends Expr
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
+  @Override
   public boolean containsOnlyDeclarations()
   {
     return false;
   }
 
 
-  /**
-   * Some Expressions do not produce a result, e.g., a Block
-   * whose last expression is not an expression that produces a result.
-   */
+  /** {@inheritDoc} */
   @Override public boolean producesResult()
   {
     return false;
@@ -293,9 +283,10 @@ public abstract class AbstractAssign extends Expr
    *
    * @return
    */
+  @Override
   public String toString()
   {
-    return toString(_assignedField.featureName().baseNameHuman());
+    return toString(_assignedField.baseNameHuman());
   }
 
 

@@ -27,48 +27,21 @@
 #
 # option represents an optional value of type T
 #
-public option(public T type)
-  : switch T nil
-is
-
-
-  # Does this option contain no value of type T?
-  #
-  public is_nil bool => !exists
+public option(T : Any) : switch T nil is
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  public bind(B type, f T -> option B) option B =>
+  public bind(B : Any, f T -> option B) option B =>
     option.this ? v T => f v
                 | nil => nil
 
 
-  # converts option to a string
-  #
-  # returns the result of $T for an option containing an instance
-  # of T, alternatively returns $nil for an option that is nil.
-  #
-  public redef as_string String =>
-    option.this ? v T => $v
-                | nil => $nil
-
-
-  # monadic operator for bool result, false for nil
-  #
-  public infix >>? (f T -> bool) bool
-  pre
-    T : numeric
-  =>
-    option.this ? v T => f v
-                | nil => false
-
-
   # 'prefix +' (identity)
   #
-  public prefix +? option T
+  public fixed prefix +? option T
   pre
     T : numeric
   => option.this >>= v -> +v
@@ -76,7 +49,7 @@ is
 
   # 'prefix -' (negation)
   #
-  public prefix -? option T
+  public fixed prefix -? option T
   pre
     T : numeric
   => option.this >>= v -> -?v
@@ -84,7 +57,7 @@ is
 
   # addition operator
   #
-  public infix +? (other option T) option T
+  public fixed infix +? (other option T) option T
   pre
     T : numeric
   => option.this >>= v -> other >>= w -> v +? w
@@ -92,7 +65,7 @@ is
 
   # subtraction operator
   #
-  public infix -? (other option T) option T
+  public fixed infix -? (other option T) option T
   pre
     T : numeric
   => option.this >>= v -> other >>= w -> v -? w
@@ -100,15 +73,15 @@ is
 
   # multiplication operator
   #
-  public infix *? (other option T) option T
+  public fixed infix *? (other option T) option T
   pre
     T : numeric
   => option.this >>= v -> other >>= w -> v *? w
 
 
-  # exponentation operator
+  # exponentiation operator
   #
-  public infix **?(other option T) option T
+  public fixed infix **?(other option T) option T
   pre
     T : numeric
   => option.this >>= v -> other >>= w -> v **? w
@@ -116,27 +89,27 @@ is
 
   # division operator
   #
-  public infix /? (other option T) option T
+  public fixed infix /? (other option T) option T
     pre
       T : numeric
-      safety: !other.is_zero
+      safety: other != T.zero
   =>
     option.this >>= v -> other >>= w -> v / w
 
 
   # modulo operator
   #
-  public infix %? (other option T) option T
+  public fixed infix %? (other option T) option T
     pre
       T : numeric
-      safety: !other.is_zero
+      safety: other != T.zero
   =>
     option.this >>= v -> other >>= w -> v % w
 
 
   # equals operator
   #
-  public infix ==? (other option T) bool
+  public fixed infix ==? (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v = w
@@ -144,7 +117,7 @@ is
 
   # not equals operator
   #
-  public infix !=? (other option T) bool
+  public fixed infix !=? (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v != w
@@ -152,7 +125,7 @@ is
 
   # lower than operator
   #
-  public infix <?  (other option T) bool
+  public fixed infix <?  (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v <  w
@@ -160,7 +133,7 @@ is
 
   # lower or equal than operator
   #
-  public infix <=? (other option T) bool
+  public fixed infix <=? (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v ≤ w
@@ -168,7 +141,7 @@ is
 
   # greater than operator
   #
-  public infix >?  (other option T) bool
+  public fixed infix >?  (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v >  w
@@ -176,7 +149,7 @@ is
 
   # greater or equal than operator
   #
-  public infix >=? (other option T) bool
+  public fixed infix >=? (other option T) bool
   pre
     T : numeric
   => option.this >>? v -> other >>? w -> v ≥ w
@@ -193,16 +166,16 @@ is
   # sign function resulting in `-1`/`0`/`+1` depending on whether `numeric.this`
   # is less than, equal or larger than zero
   #
-  public sign option i32
+  public sign option i64
   pre
     T : numeric
   =>
-    bind i32 v->v.sign
+    bind i64 v->v.sign
 
 
   # absolute value
   #
-  public abs option T
+  public fixed abs option T
   pre
     T : numeric
   =>
@@ -210,7 +183,7 @@ is
 
 
 
-# option with 1 argument provides an short-hand to wrap a value into an option
+# option with 1 argument provides an shorthand to wrap a value into an option
 #
 # Using this enables to write
 #
@@ -220,4 +193,4 @@ is
 #
 #     o option TypeOfX := x
 #
-public option(T type, o option T) option T => o
+public option(T : Any, o option T) option T => o

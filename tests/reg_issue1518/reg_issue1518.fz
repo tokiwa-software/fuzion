@@ -25,12 +25,12 @@ reg_issue1518 =>
 
   # this causes errors, but it should NOT cause a syntax error
 
-    c (T type) is
+    c (T : Any) is
       b (f T -> unit) unit => abstract
 
     a : c a is
       redef b (f a.this -> unit) unit =>
-        f a.this.type.x
+        f a.this.x
 
       type.x a.this => a
 

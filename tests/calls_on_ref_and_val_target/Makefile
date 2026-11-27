@@ -19,7 +19,7 @@
 #
 #  Source code of Fuzion test Makefile
 #
-#  Author: Fridftjof Siebert (fridtjof.siebert@tokiwa.software)
+#  Author: Fridtjof Siebert (fridtjof.siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 

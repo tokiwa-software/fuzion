@@ -1,0 +1,133 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature try
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+# try -- try to run code requiring fallible effect and handle failure
+#
+# This feature allows Java-like try-catch syntax for fallible
+#
+#     res := FALLIBLE_TYPE.try RESULT_TYPE ()->
+#               code
+#            .catch s->
+#               handle failure condition `s`
+#
+# or even
+#
+#     res := FALLIBLE_TYPE.try RESULT_TYPE code || (s->handle post condition failure `s`)
+#
+public type.try(T : Any, code_try ()->T) is
+
+
+  # a local mutate used for storing an error
+  # when throwing an exception
+  #
+  universe.try_lm(F : Any) : mutate is
+
+
+  # define code to execute in case of fault and run code
+  #
+  public catch(code_catch ERROR->T) T =>
+    (try_lm fallible.this) ! ()->
+      catch0 code_catch
+
+
+  # catch that uses an already instated local mutate
+  #
+  # this is necessary e.g. for `or_try` to avoid
+  # an `invalid mutate` error.
+  #
+  catch0(code_catch ERROR->T) T ! (try_lm fallible.this) =>
+    m := (try_lm fallible.this).env.var (option ERROR nil)
+    v := fallible.this.new e->
+              m <- e
+              fallible.this.abort
+    fallible.this.instate T v code_try (_ -> code_catch m.get.or_panic)
+
+
+  # on failure try if code `alt` succeeds
+  #
+  # usage example:
+  #
+  #     fuzion.runtime.contract_fault
+  #       .try ()->(envir.Args.env.nth 3).or_panic.trim.parse_i32.or_panic
+  #       .or_try _->envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic
+  #       .catch  _->4
+  #
+  public or_try(alt ERROR->T) try T =>
+    try _ ()->
+      catch0 alt
+
+
+  # run `code_try` and return its result wrapped in an `outcome`
+  #
+  # In case of a fault, the `outcome` contains the error instead. If `ERROR`
+  # is not `error`, e.g., the `String` used by `panic`, it is converted using
+  # `as_string`. Use `or_outcome m` for a custom conversion.
+  #
+  # usage example:
+  #
+  #     sqrt_int(n i32) outcome i32 =>
+  #       panic
+  #         .try i32 ()->
+  #           if n < 0 then panic "negative argument $n"
+  #           n.as_f64.sqrt.as_i32
+  #         .or_outcome
+  #
+  #     say (sqrt_int 16)   # 4
+  #     say (sqrt_int -4)   # --error: negative argument -4--
+  #
+  public or_outcome outcome T =>
+    fallible.this.try (outcome T) (()->code_try())
+      .catch e->
+        if ERROR : error then error e.msg e.error_code
+        else                  error e.as_string
+
+
+  # run `code_try` and return its result wrapped in an `outcome`, using `m` to
+  # create the `error` in case of a fault
+  #
+  # This can be used to add context to an error message or to convert an
+  # `ERROR` that is not an `error`.
+  #
+  # usage example:
+  #
+  #     checked_div(a, b i32) outcome i32 =>
+  #       panic
+  #         .try i32 ()->
+  #           if b = 0 then panic "division by zero"
+  #           a / b
+  #         .or_outcome (msg -> error "checked_div $a $b: $msg")
+  #
+  #     say (checked_div 6 3)   # 2
+  #     say (checked_div 1 0)   # --error: checked_div 1 0: division by zero--
+  #
+  public or_outcome(m ERROR -> error) outcome T =>
+    fallible.this.try (outcome T) (()->code_try())
+      .catch (e->m e)
+
+
+  # infix alias for catch
+  #
+  public infix || (code_catch ERROR->T) T => catch code_catch

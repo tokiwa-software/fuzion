@@ -25,6 +25,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 #define _POSIX_C_SOURCE 200809L
+#ifdef __linux__
+#define _GNU_SOURCE
+#endif
+#ifdef __APPLE__
+#define _DARWIN_C_SOURCE  // pthread_mach_thread_np
+#endif
 
 #ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
@@ -38,6 +44,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <fcntl.h>      // fcntl
 #include <string.h>
+#include <math.h>
 
 #include <netdb.h>      // getaddrinfo
 #include <netinet/in.h> // AF_INET
@@ -51,11 +58,22 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>     // close
+#include <limits.h>
 #include <time.h>
 #include <assert.h>
 #include <dirent.h>
-#ifdef FUZION_ENABLE_THREADS
 #include <pthread.h>
+#ifdef __APPLE__
+#include <mach/mach.h>  // thread_info, THREAD_BASIC_INFO
+#endif
+#ifdef __linux__
+#include <sched.h>    // CPU_SET
+#if defined(__has_include)
+#  if __has_include(<sys/sdt.h>)
+#    include <sys/sdt.h>  // dtrace_probe
+#    define HAVE_SYS_SDT_H 1
+#  endif
+#endif
 #endif
 
 #include "fz.h"
@@ -73,25 +91,58 @@ static_assert(SIGSEGV == 11, "signal definition different than expected");
 static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
+static_assert(EWOULDBLOCK == EAGAIN, "EWOULDBLOCK != EAGAIN, failed assumption of fzE_file_read implementation");
+static_assert(NAME_MAX < PATH_MAX, "Expected max filename component length to be less than PATH_MAX, used in fzE_dir_read");
+static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
 
-// thread local to hold the last
-// error that occurred in fuzion runtime.
-_Thread_local int64_t last_error = 0;
+/*
+ * Retry a system call that may be interrupted by a signal
+ * until it is no longer interrupted with EINTR.
+ */
+#define FZ_RETRY_ON_EINTR(var, call)                     \
+  do {                                                   \
+    (var) = (call);                                      \
+    while ((var) == -1 && errno == EINTR)                \
+      (var) = (call);                                    \
+  } while (0)
 
+
+#define ASSERT_SUCCESS(call)                             \
+  do {                                                   \
+      int assert_success_result = (call);                \
+      assert(assert_success_result == 0);                \
+  } while (0)
+
+
+/**
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
+ *   - 2 for CLOCK_THREAD_CPUTIME_ID (CPU time consumed by the current thread)
+ *   - 3 for CLOCK_PROCESS_CPUTIME_ID (CPU time consumed by all threads of the process)
+ */
+clockid_t get_clock_id(int clock)
+{
+  switch(clock)
+    {
+      case 0:
+        return CLOCK_REALTIME;
+      case 1:
+        return CLOCK_MONOTONIC;
+      case 2:
+        return CLOCK_THREAD_CPUTIME_ID;
+      case 3:
+        return CLOCK_PROCESS_CPUTIME_ID;
+      default:
+        assert(false);
+        return -1;
+    }
+}
 
 // returns the latest error number of
 // the current thread
 int64_t fzE_last_error(void){
-  return last_error;
-}
-
-// helper to set last_error
-// if return value of some function is -1.
-int set_last_error(int ret_val)
-{
-  last_error = ret_val == -1 ? errno : 0;
-  return ret_val;
+  return errno;
 }
 
 // zero memory
@@ -132,16 +183,17 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
          (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0));
 
   if ( entry == NULL ) {
-    last_error = errno;
     return errno == 0
       // end reached
       ? 0
-      // some error occured
+      // some error occurred
       : -1;
   }
   else {
     size_t len = strlen(entry->d_name);
-    assert(len<1024); // NYI:
+    if (len >= PATH_MAX) {  // NYI: CLEANUP: io.dir.Read uses os.max_path, should maybe be NAME_MAX
+      return -1;
+    }
     fzE_memcpy(result, entry->d_name, len + 1);
     return len;
   }
@@ -149,7 +201,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
 
 
 int fzE_dir_close(intptr_t * dir) {
-  return set_last_error(closedir((DIR *)dir));
+  return closedir((DIR *)dir);
 }
 
 
@@ -207,9 +259,11 @@ int fzE_get_protocol(int protocol)
 
 
 // close a socket descriptor
-int fzE_close(int sockfd)
+int fzE_socket_close(int sockfd)
 {
-  return set_last_error(close(sockfd));
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, close(sockfd));
+  return _r;
 }
 
 
@@ -220,10 +274,12 @@ int fzE_socket(int family, int type, int protocol){
   // make sure no fork is done while we open socket
   fzE_lock();
 
-  int sockfd = set_last_error(socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol)));
+  int sockfd = socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
   if (sockfd != -1)
   {
     fcntl(sockfd, F_SETFD, FD_CLOEXEC);
+    // NYI: UNDER DEVELOPMENT: we need fzE_setsocketopt eventually
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
   }
 
   fzE_unlock();
@@ -247,29 +303,18 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 
 
 // create a new socket and bind to given host:port
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    result[0] = errno;
-    return -1;
-  }
+int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, AI_PASSIVE, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
     return -1;
   }
-  int bind_res = bind(result[0], addr_info->ai_addr, (int)addr_info->ai_addrlen);
+  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
 
   if(bind_res == -1)
   {
-    fzE_close(result[0]);
-    result[0] = errno;
     return -1;
   }
   freeaddrinfo(addr_info);
@@ -280,43 +325,30 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
 // set the given socket to listening
 // backlog = queuelength of pending connections
 int fzE_listen(int sockfd, int backlog){
-  return set_last_error(listen(sockfd, backlog));
+  return listen(sockfd, backlog);
 }
 
 
 // accept a new connection
 // blocks if socket is blocking
 int fzE_accept(int sockfd){
-  return set_last_error(accept(sockfd, NULL, NULL));
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, accept(sockfd, NULL, NULL));
+  return _r;
 }
 
 
 // create connection for given parameters
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  // get socket
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    result[0] = errno;
-    return -1;
-  }
+int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, 0, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
     return -1;
   }
-  int con_res = connect(result[0], addr_info->ai_addr, addr_info->ai_addrlen);
-  if(con_res == -1)
-  {
-    // NYI: UNDER DEVELOPMENT: do we want to try another address in addr_info->ai_next?
-    fzE_close(result[0]);
-    result[0] = errno;
-  }
+  int con_res;
+  FZ_RETRY_ON_EINTR(con_res, connect(sockfd, addr_info->ai_addr, addr_info->ai_addrlen));
   freeaddrinfo(addr_info);
   return con_res;
 }
@@ -331,7 +363,9 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   struct sockaddr_storage peeraddr;
   fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen));
+  if (_r == 0) {
     if (peeraddr.ss_family == AF_INET) {
       fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
       return 4;
@@ -346,14 +380,16 @@ int fzE_get_peer_address(int sockfd, void * buf) {
 
 // get the peer's port
 // result is the port number
-// might return useless infomrmation when called on udp socket
+// might return useless information when called on udp socket
 unsigned short fzE_get_peer_port(int sockfd) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
   fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen));
+  if (_r == 0) {
     if (peeraddr.ss_family == AF_INET) {
       return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
     } else if (peeraddr.ss_family == AF_INET6) {
@@ -368,23 +404,27 @@ unsigned short fzE_get_peer_port(int sockfd) {
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read
 int fzE_socket_read(int sockfd, void * buf, size_t count){
-  return set_last_error(recvfrom( sockfd, buf, count, 0, NULL, NULL));
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, recvfrom(sockfd, buf, count, 0, NULL, NULL));
+  return _r;
 }
 
 
 // write buf to sockfd
 // may block if socket is set to blocking.
-// return error code or zero on success
+// return -1 or number of bytes written on success
 int fzE_socket_write(int sockfd, const void * buf, size_t count){
-  return set_last_error(sendto( sockfd, buf, count, 0, NULL, 0));
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, sendto(sockfd, buf, count, 0, NULL, 0));
+  return _r;
 }
 
 
 // returns -1 on error, size of file in bytes otherwise
 long fzE_get_file_size(void * file) {
   // store current pos
-  long cur_pos = set_last_error(ftell((FILE *)file));
-  if(cur_pos == -1 || set_last_error(fseek((FILE *)file, 0, SEEK_END)) == -1){
+  long cur_pos = ftell((FILE *)file);
+  if(cur_pos == -1 || fseek((FILE *)file, 0, SEEK_END) == -1){
     return -1;
   }
 
@@ -404,29 +444,23 @@ long fzE_get_file_size(void * file) {
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
  * returns:
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ *   - error   :  NULL
+ *   - success :  address where the file was mapped to
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
+void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 
   if ((unsigned long)fzE_get_file_size((FILE *)file) < (offset + size)){
-    result[0] = -1;
     return NULL;
   }
 
   int file_descriptor = fileno((FILE *)file);
 
-  if (file_descriptor == -1) {
-    result[0] = -1;
-    return NULL;
-  }
+  assert (file_descriptor != -1);
 
   void * mapped_address = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, file_descriptor, offset);
   if (mapped_address == MAP_FAILED) {
-    result[0] = -1;
     return NULL;
   }
-  result[0] = 0;
   return mapped_address;
 }
 
@@ -434,19 +468,19 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
 // unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success
 int fzE_munmap(void * mapped_address, const int file_size){
-  return set_last_error(munmap(mapped_address, file_size));
+  return munmap(mapped_address, file_size);
 }
 
 
 /**
- * returns a monotonically increasing timestamp.
+ * @return the time of the given posix clock
  */
-uint64_t fzE_nanotime()
+uint64_t fzE_posix_time(int clockid)
 {
   struct timespec result;
-  if (clock_gettime(CLOCK_MONOTONIC,&result)!=0)
+  if (clock_gettime(get_clock_id(clockid), &result)!=0)
   {
-    fprintf(stderr,"*** clock_gettime failed\012");
+    fprintf(stderr,"*** clock_gettime failed for clockid %d \012", clockid);
     exit(EXIT_FAILURE);
   }
   return result.tv_sec*1000000000ULL+result.tv_nsec;
@@ -470,9 +504,7 @@ int fzE_rm(char * path)
 {
   return unlink(path) == 0
     ? 0
-    : set_last_error(rmdir(path)) == 0
-    ? 0
-    : -1;
+    : rmdir(path);
 }
 
 
@@ -482,13 +514,18 @@ int fzE_rm(char * path)
 int fzE_stat(const char *pathname, int64_t * metadata)
 {
   struct stat statbuf;
-  int result = set_last_error(stat(pathname,&statbuf));
+  int result = stat(pathname,&statbuf);
   if (result == 0)
   {
     metadata[0] = statbuf.st_size;
-    metadata[1] = statbuf.st_mtime;
-    metadata[2] = S_ISREG(statbuf.st_mode);
-    metadata[3] = S_ISDIR(statbuf.st_mode);
+    metadata[1] = statbuf.st_atime;  /* Time of last access */
+    metadata[2] = statbuf.st_mtime;  /* Time of last modification */
+    metadata[3] = statbuf.st_ctime;  /* Time of last status change */
+    metadata[4] = S_ISREG(statbuf.st_mode);
+    metadata[5] = S_ISDIR(statbuf.st_mode);
+    metadata[6] = S_ISLNK(statbuf.st_mode);
+    metadata[7] = statbuf.st_uid;
+    metadata[8] = statbuf.st_gid;
   }
   return result;
 }
@@ -500,40 +537,48 @@ int fzE_stat(const char *pathname, int64_t * metadata)
 int fzE_lstat(const char *pathname, int64_t * metadata)
 {
   struct stat statbuf;
-  int result = set_last_error(lstat(pathname,&statbuf));
+  int result = lstat(pathname,&statbuf);
   if (result == 0)
   {
     metadata[0] = statbuf.st_size;
-    metadata[1] = statbuf.st_mtime;
-    metadata[2] = S_ISREG(statbuf.st_mode);
-    metadata[3] = S_ISDIR(statbuf.st_mode);
+    metadata[1] = statbuf.st_atime;  /* Time of last access */
+    metadata[2] = statbuf.st_mtime;  /* Time of last modification */
+    metadata[3] = statbuf.st_ctime;  /* Time of last status change */
+    metadata[4] = S_ISREG(statbuf.st_mode);
+    metadata[5] = S_ISDIR(statbuf.st_mode);
+    metadata[6] = S_ISLNK(statbuf.st_mode);
+    metadata[7] = statbuf.st_uid;
+    metadata[8] = statbuf.st_gid;
   }
   return result;
 }
 
-#ifdef FUZION_ENABLE_THREADS
 static pthread_mutex_t fzE_global_mutex;
-#endif
 
 /**
- * Run plattform specific initialisation code
+ * Run platform-specific initialisation code
  */
 void fzE_init()
 {
-  fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+  ASSERT_SUCCESS(fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK));
 
-#ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
   fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
-  bool res = pthread_mutexattr_init(&attr) == 0 &&
-            pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
-            pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
-  assert(res);
-#endif
+  ASSERT_SUCCESS(pthread_mutexattr_init(&attr));
+  ASSERT_SUCCESS(pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT));
+  ASSERT_SUCCESS(pthread_mutex_init(&fzE_global_mutex, &attr));
 
 #ifdef GC_THREADS
   GC_INIT();
 #endif
+}
+
+/**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current()
+{
+  return (void *)pthread_self();
 }
 
 
@@ -543,40 +588,153 @@ void fzE_init()
 void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
+  pthread_t pt = (pthread_t){0};
+  pthread_attr_t attr;
+
+  int s = pthread_attr_init(&attr);
+  if (s != 0)
+  {
+    fprintf(stderr,"*** pthread_attr_init failed with return code %d\012",s);
+    exit(EXIT_FAILURE);
+  }
+
+  struct sched_param default_schedparam;
+  default_schedparam.sched_priority = 0;
+
+  ASSERT_SUCCESS(pthread_attr_setschedparam(&attr, &default_schedparam));
+  ASSERT_SUCCESS(pthread_attr_setschedpolicy(&attr, SCHED_OTHER));
+
 #ifdef GC_THREADS
-  int res = GC_pthread_create(pt,NULL,code,args);
+  int res = GC_pthread_create(&pt,NULL,code,args);
 #else
-  int res = pthread_create(pt,NULL,code,args);
+  int res = pthread_create(&pt,NULL,code,args);
 #endif
-  if (res!=0)
+  if (res != 0)
   {
     fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
     exit(EXIT_FAILURE);
   }
-  return pt;
-#else
-  printf("You discovered a severe bug. (fzE_thread_join)");
-  exit(EXIT_FAILURE);
-  return NULL;
-#endif
+
+  s = pthread_attr_destroy(&attr);
+  if (s != 0)
+  {
+    fprintf(stderr,"*** pthread_attr_destroy failed with return code %d\012",s);
+    exit(EXIT_FAILURE);
+  }
+
+  return (void *)pt;
 }
 
 
 /**
  * Join with a running thread.
  */
-void fzE_thread_join(void * thrd)
+int fzE_thread_join(void * thrd)
 {
-#ifdef FUZION_ENABLE_THREADS
+  int ret = 0;
 #ifdef GC_THREADS
-  GC_pthread_join(*(pthread_t *)thrd, NULL);
+  ret = GC_pthread_join((pthread_t)thrd, NULL);
 #else
-  pthread_join(*(pthread_t *)thrd, NULL);
+  ret = pthread_join((pthread_t)thrd, NULL);
 #endif
-  fzE_free(thrd);
+  switch (ret)
+    {
+      case 0:
+        return 0;
+      case EDEADLK:
+        return 1;
+      case EINVAL:
+        return 2;
+      case ESRCH:
+        return 3;
+      default:
+        fprintf(stderr,"*** unexpected case in fzE_thread_join: %d", ret);
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+/*
+ * Convert internal policy number to system policy number.
+ */
+int fzE_thread_setschedparam_convert_policy(int policy)
+{
+  switch (policy)
+    {
+      case 0:
+        return SCHED_OTHER;
+      case 1:
+        return SCHED_FIFO;
+      case 2:
+        return SCHED_RR;
+      default:
+        fprintf(stderr,"*** unexpected case in fzE_thread_setschedparam_convert_policy: %d", policy);
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+/*
+ * Set the scheduling policy and priority of a running thread.
+ */
+int fzE_thread_setschedparam(void * thrd, int policy, int priority)
+{
+  struct sched_param param;
+  param.sched_priority = priority;
+  int ret = pthread_setschedparam((pthread_t)thrd, fzE_thread_setschedparam_convert_policy(policy), &param);
+  return ret;
+}
+
+
+/*
+ * Set the scheduling CPU affinity of a running thread.
+ */
+int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
+{
+#ifdef __linux__
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+
+  for (int i = 0; i < length; i++)
+    {
+      CPU_SET(((uint64_t *)cores)[i], &cpuset);
+    }
+
+  return pthread_setaffinity_np((pthread_t)thrd, sizeof(cpu_set_t), &cpuset);
+#else
+  return 38;
 #endif
+}
+
+
+/*
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd)
+{
+  int64_t res = -1;
+#ifdef __APPLE__
+  // macOS only supports microsecond precision
+  mach_port_t port = pthread_mach_thread_np((pthread_t)thrd);
+  thread_basic_info_data_t info;
+  mach_msg_type_number_t count = THREAD_BASIC_INFO_COUNT;
+
+  if (port != MACH_PORT_NULL ||
+      thread_info(port, THREAD_BASIC_INFO, (thread_info_t)&info, &count) == KERN_SUCCESS)
+    {
+      res = ((int64_t)info.user_time.seconds      + info.system_time.seconds     ) * 1000000000LL
+          + ((int64_t)info.user_time.microseconds + info.system_time.microseconds) * 1000LL;
+    }
+#elif defined(_POSIX_THREAD_CPUTIME) && _POSIX_THREAD_CPUTIME >= 0
+  clockid_t clk;
+  struct timespec ts;
+  if (pthread_getcpuclockid((pthread_t)thrd, &clk) == 0 ||
+      clock_gettime(clk, &ts) == 0)
+    {
+      res = (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+    }
+#endif
+  return res;
 }
 
 
@@ -585,12 +743,7 @@ void fzE_thread_join(void * thrd)
  */
 void fzE_lock()
 {
-#ifdef FUZION_ENABLE_THREADS
-  int res = pthread_mutex_lock(&fzE_global_mutex);
-  assert( res == 0 );
-#else
-  printf("You discovered a severe bug. (fzE_lock)");
-#endif
+  ASSERT_SUCCESS(pthread_mutex_lock(&fzE_global_mutex));
 }
 
 
@@ -599,12 +752,7 @@ void fzE_lock()
  */
 void fzE_unlock()
 {
-#ifdef FUZION_ENABLE_THREADS
-  int res = pthread_mutex_unlock(&fzE_global_mutex);
-  assert( res == 0 );
-#else
-  printf("You discovered a severe bug. (fzE_unlock)");
-#endif
+  ASSERT_SUCCESS(pthread_mutex_unlock(&fzE_global_mutex));
 }
 
 
@@ -634,25 +782,35 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   int stdOut[2];
   int stdErr[2];
   int ret = 0;
-  if (set_last_error(pipe(stdIn)) == -1)
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, pipe(stdIn));
+  if (_r == -1)
   {
     ret = -1;
   }
-  if (ret == 0 && set_last_error(pipe(stdOut)) == -1)
+  if (ret == 0)
   {
-    close(stdIn[0]);
-    close(stdIn[1]);
-    ret = -1;
+    FZ_RETRY_ON_EINTR(_r, pipe(stdOut));
+    if (_r == -1)
+    {
+      close(stdIn[0]);
+      close(stdIn[1]);
+      ret = -1;
+    }
   }
-  if (ret == 0 && set_last_error(pipe(stdErr)) == -1)
+  if (ret == 0)
   {
-    close(stdIn[0]);
-    close(stdIn[1]);
-    close(stdOut[0]);
-    close(stdOut[1]);
-    ret = -1;
+    FZ_RETRY_ON_EINTR(_r, pipe(stdErr));
+    if (_r == -1)
+    {
+      close(stdIn[0]);
+      close(stdIn[1]);
+      close(stdOut[0]);
+      close(stdOut[1]);
+      ret = -1;
+    }
   }
-  if (set_last_error(ret) == 0)
+  if (ret == 0)
   {
     fcntl(stdIn[1], F_SETFD, FD_CLOEXEC);
     fcntl(stdOut[0], F_SETFD, FD_CLOEXEC);
@@ -662,10 +820,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
     posix_spawn_file_actions_t file_actions;
 
-    if (posix_spawn_file_actions_init(&file_actions) != 0)
-    {
-      exit(1);
-    }
+    ASSERT_SUCCESS(posix_spawn_file_actions_init(&file_actions));
 
     posix_spawn_file_actions_adddup2(&file_actions, stdIn[0], 0);
     posix_spawn_file_actions_adddup2(&file_actions, stdOut[1], 1);
@@ -690,17 +845,13 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
     close(stdOut[1]);
     close(stdErr[1]);
 
-    posix_spawn_file_actions_destroy(&file_actions);
+    ASSERT_SUCCESS(posix_spawn_file_actions_destroy(&file_actions));
 
     if(s != 0)
     {
-      last_error = s;
-      close(stdIn[0]);
       close(stdIn[1]);
       close(stdOut[0]);
-      close(stdOut[1]);
       close(stdErr[0]);
-      close(stdErr[1]);
       ret = -1;
     }
     else
@@ -717,37 +868,125 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   return ret;
 }
 
+/**
+ * close process handle, free memory
+ */
+int fzE_process_close(int64_t p)
+{
+  // nothing to be done
+  return 0;
+}
 
-// wait for process to finish
-// returns exit code or -1 on wait-failure.
-int64_t fzE_process_wait(int64_t p){
+
+// check the status of process p, does not wait for process to finish
+//
+// result
+//   >=0 : the process exit code
+//   -1  : process is still running
+//   -2  : an error occurred when calling waitpid, check errno
+//  <-100: process was terminated by a signal
+//         -100-SIG, e.g., -109 for 9 (SIGKILL)
+int64_t fzE_process_poll(int64_t p){
+
+  assert(p>0);
+
   int status;
-  return set_last_error(waitpid(p, &status, WUNTRACED | WCONTINUED)) == -1
-    ? -1
-    : WIFEXITED(status)
-    // man waitpid: "This macro should be employed only if WIFEXITED returned true."
-    ? WEXITSTATUS(status)
-    : 1;
+  pid_t ret;
+  FZ_RETRY_ON_EINTR(ret, waitpid(p, &status, WNOHANG));
+
+  int res = 0;
+
+  if (ret == 0) {
+      // Child is still running.
+      res = -1;
+  }
+  else if (ret == -1) {
+      // Error. Check errno.
+      res = -2;
+  }
+  else if (WIFEXITED(status)) {
+      // process exited
+      res = WEXITSTATUS(status);
+  }
+  else if (WIFSIGNALED(status)) {
+      // process was terminated by a signal
+      res = -100 - WTERMSIG(status);
+  }
+  else {
+    assert(false);
+  }
+  return res;
+}
+
+
+// returns -1 on error or length of the hostname otherwise
+//
+int fzE_hostname(char *buf, size_t nbytes)
+{
+    assert (buf != NULL && nbytes != 0);
+
+    if (gethostname(buf, nbytes) != 0) {
+        return -1;
+    }
+
+    // Ensure null termination in case the hostname was truncated
+    buf[nbytes - 1] = '\0';
+
+    return (int)strnlen(buf, nbytes);
+}
+
+
+// open a new pipe
+//
+int fzE_pipe_create(int64_t * fds)
+{
+  int pipefd[2];
+
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, pipe(pipefd));
+  if (_r == -1)
+  {
+    return errno;
+  }
+  else
+  {
+    fds[0] = (int64_t) pipefd[0];
+    fds[1] = (int64_t) pipefd[1];
+  }
+
+  return 0;
 }
 
 
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
-  return set_last_error(read((int) desc, buf, nbytes));
+  errno = 0;
+  ssize_t result;
+  FZ_RETRY_ON_EINTR(result, read((int) desc, buf, nbytes));
+  // NYI: UNDER DEVELOPMENT: this assertion will probably fail some time
+  assert(result > 0 || (errno != EAGAIN && errno != EWOULDBLOCK));
+  return result;
 }
 
 
 // return -1 on error, the number of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
-  return set_last_error(write((int) desc, buf, nbytes));
+  errno = 0;
+  ssize_t result;
+  FZ_RETRY_ON_EINTR(result, write((int) desc, buf, nbytes));
+
+  return result >= 0
+    ? (int32_t)result
+    : (errno == EAGAIN || errno == EWOULDBLOCK ? 0 : -1);
 }
 
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI: UNDER DEVELOPMENT: do we need to flush?
-  return set_last_error(close((int) desc));
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, close((int) desc));
+  return _r;
 }
 
 
@@ -765,7 +1004,17 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
   // make sure no fork is done while we open file
   fzE_lock();
 
-  FILE * fp = fopen(file_name, mode==FZ_FILE_MODE_READ ? "rb" : "a+b");
+  const char * m = "rb";
+  if (mode == FZ_FILE_MODE_WRITE)
+    {
+      m = "w+b";
+    }
+  else if (mode == FZ_FILE_MODE_APPEND)
+    {
+      m = "a+b";
+    }
+
+  FILE * fp = fopen(file_name, m);
   if (fp!=NULL)
   {
     fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
@@ -783,103 +1032,117 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 
 
 void * fzE_mtx_init() {
-#ifdef FUZION_ENABLE_THREADS
   pthread_mutex_t *mtx = (pthread_mutex_t *)fzE_malloc_safe(sizeof(pthread_mutex_t));
   return pthread_mutex_init(mtx, NULL) == 0 ? (void *)mtx : NULL;
-#else
-  return NULL;
-#endif
 }
 
 int32_t fzE_mtx_lock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 int32_t fzE_mtx_trylock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 int32_t fzE_mtx_unlock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 void fzE_mtx_destroy(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_mutex_destroy((pthread_mutex_t *)mtx);
-  // NYI: free(mtx);
-#else
-#endif
+  ASSERT_SUCCESS(pthread_mutex_destroy((pthread_mutex_t *)mtx));
+  fzE_free(mtx);
 }
 
-void * fzE_cnd_init() {
-#ifdef FUZION_ENABLE_THREADS
+/**
+ * initialize a condition
+ *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /usr/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
+ * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
+ */
+void * fzE_cnd_init(int clock)
+{
   pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
-  return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
-#else
- return NULL;
+  pthread_condattr_t attr;
+  void * res = NULL;
+  if (pthread_condattr_init(&attr) == 0) // may return ENOMEM
+    {
+// NYI: BUG: pthread_condattr_setclock not available on macOS
+#ifndef __APPLE__
+      if (pthread_condattr_setclock(&attr, get_clock_id(clock)) == 0) // may return EINVAL in case clock not supported
 #endif
+        {
+          if (pthread_cond_init(cnd, &attr) == 0) // may return EAGAIN or ENOMEM
+            {
+              res = (void *)cnd;
+            }
+        }
+      pthread_condattr_destroy(&attr);
+    }
+  return res;
 }
 
-int32_t fzE_cnd_signal(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
+void fzE_cnd_signal(void * cnd) {
+  ASSERT_SUCCESS(pthread_cond_signal((pthread_cond_t *)cnd));
 }
 
-int32_t fzE_cnd_broadcast(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
+void fzE_cnd_broadcast(void * cnd) {
+  ASSERT_SUCCESS(pthread_cond_broadcast((pthread_cond_t *)cnd));
 }
 
-int32_t fzE_cnd_wait(void * cnd, void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
+void fzE_cnd_wait(void * cnd, void * mtx) {
+  ASSERT_SUCCESS(pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx));
+}
+
+void fzE_cnd_timedwait(void * cnd, void * mtx, uint64_t time_ns)
+{
+  uint64_t  s  =                   time_ns / 1000000000;
+  long     ns = (long) (time_ns - s       * 1000000000);
+  const struct timespec abstime = { s, ns };
+  // NYI: BUG: we need sth. like this on macOS:
+  // #ifdef __APPLE__
+  //     pthread_cond_timedwait_relative_np(cond, mutex, &relative);
+  // #else
+  //     pthread_cond_timedwait(cond, mutex, &absolute_monotonic);
+  // #endif
+  int res = pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime);
+
+  assert(res == 0 || res == ETIMEDOUT);
 }
 
 void fzE_cnd_destroy(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_cond_destroy((pthread_cond_t *)cnd);
-  // NYI: free(cnd);
-#else
-#endif
+  ASSERT_SUCCESS(pthread_cond_destroy((pthread_cond_t *)cnd));
+  fzE_free(cnd);
 }
 
 
 int32_t fzE_file_read(void * file, void * buf, int32_t size)
 {
+  int32_t result = -1; // ERROR, unless we succeed
   struct pollfd fds;
   fds.fd = fileno(file);
   fds.events = POLLIN;
 
-  while(poll(&fds, 1, -1) == 0);
+  int res;
+  do
+    {
+      FZ_RETRY_ON_EINTR(res, poll(&fds, 1, -1));
+    }
+  while (res == 0);  // timeout, should never happen, retry just in case
 
-  size_t result = fread(buf, 1, size, (FILE*)file);
+  if (res > 0)
+    {
+      FZ_RETRY_ON_EINTR(result, read(fileno(file), buf, (size_t)size));
+    }
 
-  return result > 0
-    ? result
-    : result == 0
-    ? -1  // EOF
-    : -2; // ERROR
+  return result;
 }
 
 
@@ -899,7 +1162,7 @@ void fzE_date_time(int32_t * result)
   struct timespec ts;
   struct tm ptm;
 
-  clock_gettime(CLOCK_REALTIME, &ts);
+  ASSERT_SUCCESS(clock_gettime(CLOCK_REALTIME, &ts));
   gmtime_r(&ts.tv_sec, &ptm);
 
   ((int32_t *)result)[0] = ptm.tm_year + 1900;
@@ -914,9 +1177,11 @@ void fzE_date_time(int32_t * result)
 
 int32_t fzE_file_write(void * file, void * buf, int32_t size)
 {
-  size_t result = fwrite(buf, 1, size, (FILE*)file);
-  return ferror((FILE*)file)!=0
-    ? -1
+  errno = 0;
+  ssize_t result;
+  FZ_RETRY_ON_EINTR(result, write(fileno(file), buf, size));
+  return result == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)
+    ? 0
     : result;
 }
 
@@ -952,4 +1217,97 @@ int32_t fzE_file_flush(void * file)
 int fzE_send_signal(int64_t pid, int sig)
 {
   return kill(pid, sig);
+}
+
+int32_t fzE_path_max(void)
+{
+  return PATH_MAX;
+}
+
+int64_t fzE_page_size(void)
+{
+  return sysconf(_SC_PAGESIZE);
+}
+
+int64_t fzE_mmap_offset_multiple(void)
+{
+  return sysconf(_SC_PAGESIZE);
+}
+
+int fzE_cwd(void * buf, size_t size)
+{
+  return getcwd(buf, size) == NULL
+    ? -1
+    : 0;
+}
+
+int fzE_isnan(double d)
+{
+  return isnan(d);
+}
+
+/**
+ * wrapper around DTRACE_PROBE
+ */
+void fzE_dtrace_probe(char col, const char* msg)
+{
+#ifdef HAVE_SYS_SDT_H
+  // we currently use DTRACE_PROBE5(fuzion, probe, col, a0, a1, a2, a3) where
+  //
+  // col is a char representing the color
+  //
+  // a0,a1,a2,a3 each have 8 chars from the msg, with the first characters using the lower bits, i.e,
+  // a0@0..7 is msg[0], a0@1..15 is msg[1], etc.
+  //
+  #define N 4
+  uint64_t args[N];
+  int i = 0;
+  int j = 0;
+  for (i = 0; i<N; i++)
+    {
+      args[i] = 0;
+    }
+  i = 0;
+  char c;
+  do
+    {
+      c = *(msg++);
+      args[i] = args[i] | ((((uint64_t) c) << (8*j)));
+      j = j + 1;
+      if (j == 8)
+        {
+          i = i + 1;
+          j = 0;
+        }
+    }
+  while (i < N && c);
+
+  /*  we have do disable '-Wgnu-zero-variadic-macro-arguments', otherwise we get
+
+/home/runner/work/fuzion/fuzion/build/include/posix.c:1049:3: error: must specify at least one argument for '...' parameter of variadic macro [-Werror,-Wgnu-zero-variadic-macro-arguments]
+ 1049 |   DTRACE_PROBE5(fuzion, probe, col, args[0], args[1], args[2], args[3]);
+      |   ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:492:3: note: expanded from macro 'DTRACE_PROBE5'
+  492 |   STAP_PROBE5(provider,probe,parm1,parm2,parm3,parm4,parm5)
+      |   ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:378:3: note: expanded from macro 'STAP_PROBE5'
+  378 |   _SDT_PROBE(provider, name, 5, (arg1, arg2, arg3, arg4, arg5))
+      |   ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:78:75: note: expanded from macro '_SDT_PROBE'
+   78 |     __asm__ __volatile__ (_SDT_ASM_BODY(provider, name, _SDT_ASM_ARGS, (n)) \
+      |                                                                           ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:283:9: note: macro '_SDT_ASM_BODY' defined here
+  283 | #define _SDT_ASM_BODY(provider, name, pack_args, args, ...)                   \
+      |         ^
+1 error generated.
+  */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
+
+  DTRACE_PROBE5(fuzion, probe, col, args[0], args[1], args[2], args[3]);
+
+#pragma clang diagnostic pop
+
+  #undef N
+#endif
 }

@@ -36,6 +36,38 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 static_assert(sizeof(int)    == 4, "implementation restriction, int must be 4 bytes");
 static_assert(sizeof(size_t) == 8, "implementation restriction, size_t must be 8 bytes");
+static_assert(sizeof(void *) == 8, "implementation restriction, pointer must be 8 bytes");
+
+
+static_assert(sizeof(float) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(double) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(long double) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(long) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(signed long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(time_t) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(size_t) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(ssize_t) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(clock_t) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(long long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed long long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(int64_t) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(char) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed char) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(int) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed int) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(int32_t) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned long long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint64_t) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(unsigned long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(short) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed short) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned short) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint16_t) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned char) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint8_t) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned int) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint32_t) == 4, "implementation restriction, fzextract assumption failure");
 
 
 /**
@@ -139,7 +171,7 @@ int fzE_set_blocking(int sockfd, int blocking);
  *
  * @return 0 if successful, -1 if not
  */
-int fzE_close(int sockfd);
+int fzE_socket_close(int sockfd);
 
 /**
  * create a new socket
@@ -163,6 +195,9 @@ int fzE_socket(int family, int type, int protocol);
 /**
  * create a new socket and bind to given host:port
  *
+ * @param sockfd
+ *      socket file descriptor
+ *
  * @param family
  *      address family (e.g., ipv4 => 2)
  *
@@ -184,7 +219,7 @@ int fzE_socket(int family, int type, int protocol);
  *
  * @return 0 if successful, -1 if not
  */
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
+int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, char * port);
 
 /**
  * set the given socket to listening
@@ -212,6 +247,9 @@ int fzE_accept(int sockfd);
 /**
  * create connection for given parameters
  *
+ * @param sockfd
+ *      socket file descriptor
+ *
  * @param family
  *      address family (e.g., ipv4 => 2)
  *
@@ -227,13 +265,9 @@ int fzE_accept(int sockfd);
  * @param port
  *      port to connect to
  *
- * @param result
- *      result[0] contains either an error code or a socket descriptor
- *      -1 on error, 0 on success
- *
  * @return 0 if successful, -1 if not
  */
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
+int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host, char * port);
 
 /**
  * get the peer's ip address
@@ -289,8 +323,7 @@ int fzE_socket_read(int sockfd, void * buf, size_t count);
  * @param count
  *      number of bytes to write
  *
- * @return 0 on success, or error code
- *         may block if socket is set to blocking
+ * @return -1 or number of bytes written on success
  */
 int fzE_socket_write(int sockfd, const void * buf, size_t count);
 
@@ -302,11 +335,11 @@ int fzE_socket_write(int sockfd, const void * buf, size_t count);
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
  * @return
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ *   - error   :  NULL
+ *   - success :  an address where the file was mapped to
  * NOTE: needs to be unmapped via fzE_munmap
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result);
+void * fzE_mmap(void * file, uint64_t offset, size_t size);
 
 /**
  * unmap an address that was previously mapped by fzE_mmap
@@ -317,20 +350,20 @@ int fzE_munmap(void * mapped_address, const int file_size);
 
 /**
  * Perform bitwise comparison of two float values. This is used by
- * concur.atmic.compare_and_swap/set to compare floats. In particular, this
- * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * concur.atomic.compare_and_swap/set to compare floats. In particular, this
+ * results in inequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
  * @param f1, f2 two float values
  *
- * @return true iff f1 and f2 are represented in memory by the same bit patternsx.
+ * @return true iff f1 and f2 are represented in memory by the same bit patterns.
  */
 bool fzE_bitwise_compare_float(float f1, float f2);
 
 /**
  * Perform bitwise comparison of two double values. This is used by
- * concur.atmic.compare_and_swap/set to compare floats. In particular, this
- * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * concur.atomic.compare_and_swap/set to compare doubles. In particular, this
+ * results in inequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
  * @param d1, d2 two double values
@@ -340,9 +373,10 @@ bool fzE_bitwise_compare_float(float f1, float f2);
 bool fzE_bitwise_compare_double(double d1, double d2);
 
 /**
- * @return a monotonically increasing timestamp.
+ * @return the time of the given posix clock in nano seconds,
+ * for supported clock ids see `posix.clockid_t.val` in base.
  */
-uint64_t fzE_nanotime(void);
+uint64_t fzE_posix_time(int clockid);
 
 /**
  * Sleep for at least `n` nano seconds.
@@ -373,9 +407,14 @@ int fzE_stat(const char *pathname, int64_t * metadata);
 int fzE_lstat(const char *pathname, int64_t * metadata);
 
 /**
- * Run plattform specific initialisation code
+ * Run platform-specific initialisation code
  */
 void fzE_init(void);
+
+/**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current();
 
 /**
  * Start a new thread, returns a pointer to the thread.
@@ -385,9 +424,32 @@ void * fzE_thread_create(void *(*code)(void *),
 
 /**
  * Join with a running thread.
+ *
+ * returns:
+ * 0 = success
+ * 1 = deadlock
+ * 2 = invalid operation of some kind
+ * 3 = not a valid thread id
+ *
  */
-// NYI: UNDER DEVELOPMENT:  add return value
-void fzE_thread_join(void * thrd);
+int fzE_thread_join(void * thrd);
+
+/*
+ * Set the scheduling policy and priority of a running thread.
+ */
+int fzE_thread_setschedparam(void * thrd, int policy, int priority);
+
+/*
+ * Set the scheduling CPU affinity of a running thread.
+ */
+int fzE_thread_setaffinity(void * thrd, const void * cores, int length);
+
+
+/**
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd);
+
 
 /**
  * Global lock
@@ -419,11 +481,39 @@ void fzE_unlock(void);
 int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result);
 
 /**
- * wait for process `p` to exit
+ * check the status of process p, does not wait for process to finish
  *
- * @return -1 error, >=0 exit code
+ * @return  >=0 : the process exit code
+ *          -1  : process is still running
+ *          -2  : an error occurred when calling waitpid, check errno
+ *        <-100 : Unix systems only: process was terminated by a signal
+ *                -100-SIG, e.g., -109 for 9 (SIGKILL)
  */
-int64_t fzE_process_wait(int64_t p);
+int64_t fzE_process_poll(int64_t p);
+
+/**
+ * close process handle, free memory
+ *
+ * @return -1 error, 0 success
+ */
+int fzE_process_close(int64_t p);
+
+/**
+ * get the hostname
+ *
+ * @return -1 on error, length of hostname on success
+ */
+int fzE_hostname(char *buf, size_t nbytes);
+
+/**
+ * open a new pipe, put read and write end into array passed here
+ *
+ * @param fds array to be filled with pipe's file descriptors
+ *
+ * @return non-zero error number, or 0 on success
+ *
+ */
+int fzE_pipe_create(int64_t * fds);
 
 /**
  * read nbytes bytes into `buf` from pipe `desc`.
@@ -474,13 +564,15 @@ typedef enum file_open_mode {
 void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode);
 
 /**
+ * NYI: UNDER DEVELOPMENT: for file set to non-blocking this currently blocks until data available
+ *
  * @param file the pointer to the file
  *
  * @param buf pointer to a byte array
  *
  * @param size the size of buf in bytes
  *
- * @return amounts of bytes read, or negative number on error
+ * @return amounts of bytes read, zero on end_of_file, or negative number on error
  */
 int32_t fzE_file_read(void * file, void * buf, int32_t size);
 
@@ -491,7 +583,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size);
  *
  * @param size the size of buf in bytes
  *
- * @return amounts of bytes writter, or negative number on error
+ * @return amounts of bytes written, or negative number on error
  */
 int32_t fzE_file_write(void * file, void * buf, int32_t size);
 
@@ -591,7 +683,7 @@ struct fzE_jvm_result
 
 // initialize the JVM
 // executed once at the start of the application
-void fzE_create_jvm(char * option_string);
+int32_t fzE_create_jvm(void * options, int32_t len);
 
 // close the JVM.
 void fzE_destroy_jvm(void);
@@ -630,11 +722,11 @@ jvalue fzE_array_get(jarray array, jsize index, const char *sig);
 // get a non-static field on obj.
 jvalue fzE_get_field0(jobject obj, jstring name, const char *sig);
 // set a non-static field on obj.
-jvalue fzE_set_field0(jobject obj, jstring name, jobject value, const char *sig);
+void fzE_set_field0(jobject obj, jstring name, jvalue value, const char *sig);
 // get a static field in class.
 jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig);
 // set a static field in class.
-jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, const char *sig);
+void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig);
 
 #endif
 
@@ -684,10 +776,18 @@ void    fzE_mtx_destroy  (void * mtx);
 /**
  * initialize a condition
  *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /usr/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
  * @return NULL on error or pointer to condition
  *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
  */
-void *  fzE_cnd_init     (void);
+void *  fzE_cnd_init     (int clock);
 
 /**
  * unblocks one thread waiting on this condition
@@ -696,7 +796,7 @@ void *  fzE_cnd_init     (void);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_signal   (void * cnd);
+void fzE_cnd_signal   (void * cnd);
 
 /**
  * unblocks all threads waiting on this condition
@@ -705,7 +805,7 @@ int32_t fzE_cnd_signal   (void * cnd);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_broadcast(void * cnd);
+void fzE_cnd_broadcast(void * cnd);
 
 /**
  * blocks thread until signal, broadcast or spurious wakeup
@@ -716,7 +816,20 @@ int32_t fzE_cnd_broadcast(void * cnd);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_wait     (void * cnd, void * mtx);
+void fzE_cnd_wait     (void * cnd, void * mtx);
+
+/**
+ * blocks thread until signal, broadcast or spurious wakeup or given absolute time is reached
+ *
+ * @param cnd pointer to a condition
+ *
+ * @param mtx pointer to a mutex
+ *
+ * @param time_ns the timeout as an absolute time relative to the clock associated with cnd.
+ *
+ * @return -1 on error, 0 on success
+ */
+void fzE_cnd_timedwait(void * cnd, void * mtx, uint64_t time_ns);
 
 /**
  * destroys the condition
@@ -761,5 +874,19 @@ int fzE_is_null(void * p);
 
 int fzE_send_signal(int64_t pid, int sig);
 
+int32_t fzE_path_max(void);
+
+int64_t fzE_page_size(void);
+
+int64_t fzE_mmap_offset_multiple(void);
+
+int fzE_cwd(void * buf, size_t size);
+
+int fzE_isnan(double d);
+
+/**
+ * wrapper around DTRACE_PROBE
+ */
+void fzE_dtrace_probe(char col, const char* msg);
 
 #endif /* fz.h  */

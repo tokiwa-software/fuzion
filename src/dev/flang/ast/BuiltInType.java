@@ -37,7 +37,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class BuiltInType extends ParsedType
+class BuiltInType extends ParsedType
 {
 
 
@@ -46,7 +46,7 @@ public class BuiltInType extends ParsedType
 
   public BuiltInType(String name)
   {
-    super(SourcePosition.builtIn, name, NONE, null);
+    super(SourcePosition.builtIn, name);
   }
 
 

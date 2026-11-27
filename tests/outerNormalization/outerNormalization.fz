@@ -32,14 +32,14 @@
 outerNormalization is
 
 
-  # string.as_codepoints is a constructor that, if it was specialized for
+  # string.codepoints is a constructor that, if it was specialized for
   # actual strings, would result in different, incompatible types
   #
   testCodepointsStream(s String) is
-    l := s.as_codepoints
+    l := s.codepoints
 
-  say "testCodepointsStream of \$1234 is {(testCodepointsStream $1234).l}"
-  say "testCodepointsStream of \$true is {(testCodepointsStream $true).l}"
+  say "testCodepointsStream of \$1234 is $((testCodepointsStream $1234).l)"
+  say "testCodepointsStream of \$true is $((testCodepointsStream $true).l)"
 
 
   # similar to testCodepointsStream, testConstructor tests that constructor a.f
@@ -48,7 +48,7 @@ outerNormalization is
   #
   testConstructor =>
 
-    a (i i32) ref is
+    a (i i64) ref is
       f is
         set i := i+1
         s := i
@@ -58,7 +58,7 @@ outerNormalization is
 
     call_f (v a) unit =>
       x a.f := v.f
-      say "testConstructor: {x.s}"
+      say "testConstructor: $(x.s)"
 
     call_f b
     call_f c
@@ -70,7 +70,7 @@ outerNormalization is
   #
   testConstructor2 =>
 
-    a (i i32) ref is
+    a (i i64) ref is
       f is
         set i := i+1
         s := i
@@ -79,60 +79,60 @@ outerNormalization is
 
     call_f (v a) unit =>
       x a.f := v.f
-      say "testConstructor2: {x.s}"
+      say "testConstructor2: $(x.s)"
 
     call_f b
 
   testConstructor2
 
-  # testNormalize maps the problem checked by testZero from i32/numeric to
+  # testNormalize maps the problem checked by testZero from i64/numeric to
   # simpler features j/n
   #
   testNormalize =>
-    n(T type : n T) is
+    n(T : n T) is
       a T => abstract
       b T => a
 
     rj ref : n j is
     j : rj is
       redef a => j
-      public redef as_string => "a 'j'"
+      public redef as_string String => "a 'j'"
 
     t(r rj) =>
-      say "testNormalize: {r.b}"
+      say "testNormalize: $(r.b)"
 
     t j
 
   testNormalize
 
 
-  # testNormalize2 maps the problem checked by testZero from i32/numeric to
+  # testNormalize2 maps the problem checked by testZero from i64/numeric to
   # simpler features j/n that are not even generic
   #
   testNormalize2 =>
     n is
-      a i32 => abstract
-      b i32 => a
+      a i64 => abstract
+      b i64 => a
 
     rj ref : n is
     j : rj is
       redef a => 3
-      public redef as_string => "a 'j'"
+      public redef as_string String => "a 'j'"
 
     t(r rj) =>
-      say "testNormalize2: {r.b}"
+      say "testNormalize2: $(r.b)"
 
     t j
 
   testNormalize2
 
 
-  # An (open) interval such as '0..' is of type '(has_interval i32).infix ..', but
-  # that should be converted to 'i32.infix ..' in FUIR:
+  # An (open) interval such as '0..' is of type '(property.interval i64).infix ..', but
+  # that should be converted to 'i64.infix ..' in FUIR:
   #
   testInterval =>
-    _ := for i in 0.. do
-           say $i
-         until i > 3
+    for i in 0.. do
+      say $i
+    until i > 3
 
   testInterval

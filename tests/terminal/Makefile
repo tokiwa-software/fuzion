@@ -24,5 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = test_terminal
-FUZION_OPTIONS = -modules=terminal
 include ../simple.mk

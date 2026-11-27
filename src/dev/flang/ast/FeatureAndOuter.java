@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.ANY;
-import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -182,12 +181,6 @@ public class FeatureAndOuter extends ANY
         var fn = f.featureName();
         if (isExact.test(fn))  /* an exact match, so use it: */
           {
-            if (CHECKS) check
-              (Errors.any() ||
-               !match ||
-               fn.argCount() == 0 /* we might have several exact matches for fields */ ||
-               found.get(0)._outer != fo._outer /* we might have several exact matches at different outer levels */
-               );
             if (!match)
               {
                 found = new List<>();
@@ -261,12 +254,13 @@ public class FeatureAndOuter extends ANY
   /**
    * human readable string, for debugging
    */
+  @Override
   public String toString()
   {
     return
-      "[" + _feature.qualifiedName() +
-      " found in " + _outer.qualifiedName() + ", " +
-      (_nextInner == null ? "no next inner" : "next inner " + _nextInner.qualifiedName()) + ", " +
+      "[" + _feature.qualifiedNameHuman() +
+      " found in " + _outer.qualifiedNameHuman() + ", " +
+      (_nextInner == null ? "no next inner" : "next inner " + _nextInner.qualifiedNameHuman()) + ", " +
       (isNextInnerFixed() ? "fixed" : "not fixed") + "]";
   }
 

@@ -232,6 +232,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   /*-----------------------------  methods  -----------------------------*/
 
 
+  @Override
   public int compareTo(FeatureName o)
   {
     if (PRECONDITIONS) require
@@ -258,12 +259,19 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   }
 
 
+  /**
+   * human readable version of the base name. This tries to replace cryptic
+   * internal names by names that are more human-friendly at the expense of
+   * possibly becoming ambiguous.
+   *
+   * Whenever possible, use {@link dev.flang.ast.AbstractFeature#baseNameHuman()} instead since
+   * that may use the underlying feature to create a better name.
+   */
   public String baseNameHuman()
   {
     var n = baseName();
     return
-      n.startsWith(FuzionConstants.UNDERSCORE_PREFIX)                  ? "_"          :
-      n.startsWith(FuzionConstants.LAMBDA_PREFIX)                      ? "λ"        :
+      n.startsWith(FuzionConstants.LAMBDA_PREFIX)                      ? FuzionConstants.HUMAN_READABLE_LAMBDA_NAME :
       n.startsWith(FuzionConstants.ANONYMOUS_FEATURE_PREFIX)           ? "anonymous"  :
       n.startsWith(FuzionConstants.REC_LOOP_PREFIX)                    ? (n.contains("else") ? "else" : "loop") :
       n.startsWith(FuzionConstants.EXPRESSION_RESULT_PREFIX) ||
@@ -275,6 +283,12 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
       n.endsWith(FuzionConstants.TYPE_NAME)                            ? n.replace("." + FuzionConstants.TYPE_NAME, "") :
       n.startsWith(FuzionConstants.ITER_ARG_PREFIX_INIT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_INIT, "") :
       n.startsWith(FuzionConstants.ITER_ARG_PREFIX_NEXT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_NEXT, "") :
+      n.startsWith(FuzionConstants.AUTO_CHOICE_APPLY_CASE_FIELD_PREFIX    ) ? n.replace(FuzionConstants.AUTO_CHOICE_APPLY_CASE_FIELD_PREFIX    , "v") :
+      n.startsWith(FuzionConstants.AUTO_CHOICE_COMBINE_CASE_V_FIELD_PREFIX) ? n.replace(FuzionConstants.AUTO_CHOICE_COMBINE_CASE_V_FIELD_PREFIX, "v") :
+      n.startsWith(FuzionConstants.AUTO_CHOICE_COMBINE_CASE_W_FIELD_PREFIX) ? n.replace(FuzionConstants.AUTO_CHOICE_COMBINE_CASE_W_FIELD_PREFIX, "w") :
+      n.startsWith(FuzionConstants.INTERNAL_NAME_SYMBOL)               ? "_" :
+      n.endsWith(FuzionConstants.VALUES_OF_OPEN_TYPE_SUFFIX)           ? n.replace(FuzionConstants.VALUES_OF_OPEN_TYPE_SUFFIX, "._") :
+      n.compareTo(FuzionConstants.COTYPE_RELAY_TYPE) == 0              ? "_" :
       n;
   }
 
@@ -291,6 +305,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   }
 
 
+  @Override
   public String toString()
   {
     return baseNameHuman() + argCountAndIdString();
@@ -330,7 +345,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
    */
   public boolean isInternal()
   {
-    return baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
+    return baseName().contains(FuzionConstants.INTERNAL_NAME_SYMBOL);
   }
 
 

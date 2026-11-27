@@ -23,14 +23,14 @@
 
 # A Future is an interface for an asynchronous computation.
 #
-public Future(T type) ref is
+public Future(T : Any) ref is
 
   # is the computation done?
   #
   public is_done bool => abstract
 
   # block until the computation is done
-  # the return the result
+  # and return its result
   #
   public get T => abstract
 
@@ -38,4 +38,4 @@ public Future(T type) ref is
   # This takes a lambda from "result of future" to "new result" and returns a new future,
   # scheduled on the same thread pool as the first future.
   #
-  public and_then(T2 type, new_task T->T2) concur.Future T2 => abstract
+  public and_then(T2 : Any, new_task T->T2) concur.Future T2 => abstract

@@ -29,25 +29,27 @@
 #  FUZION -- the fz command
 
 FUZION_OPTIONS ?=
-FUZION = ../../bin/fz $(FUZION_OPTIONS)
+FUZION ?= ../../bin/fz
+FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 FILE = $(NAME).fz
 
 all: jvm c int
 
-../check_simple_example:
-	$(FUZION) -modules=terminal -c -o=../check_simple_example ../check_simple_example.fz
+fuir:
+	rm -f *.fuir
+	@printf 'FUIR %s ' "$(FILE)" && $(ENV) dev_flang_tools_serializeFUIR=true $(FUZION_RUN) -noBackend $(FILE) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED\033[0m.\n" && cat err.txt && exit 1)
 
 int:
-	printf 'COMPILE %s ' "$(NAME)" && $(FUZION) -noBackend $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'COMPILE %s using $@ backend ' "$(FILE)" && $(FUZION_RUN) -noBackend $(FILE) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED\033[0m.\n" && cat err.txt && exit 1)
 
 jvm:
-	printf 'COMPILE %s ' "$(NAME)" && $(FUZION) -classes $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'COMPILE %s using $@ backend ' "$(FILE)" && $(FUZION_RUN) -classes $(FILE) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED\033[0m.\n" && cat err.txt && exit 1)
 
 c:
-	printf 'COMPILE %s ' "$(NAME)" && $(FUZION) -c $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'COMPILE %s using  $@  backend ' "$(FILE)" && $(FUZION_RUN) -c $(FILE) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED\033[0m.\n" && cat err.txt && exit 1)
 
-effect: ../check_simple_example
-	$(ENV) ../check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
+effect:
+	$(ENV) ../../bin/simple_example check effect "$(FUZION_RUN)" $(FILE) || exit 1
 
-record_effect: ../check_simple_example
-	$(ENV) ../record_simple_example effect "$(FUZION_RUN)" $(FILE)
+record_effect:
+	$(ENV) ../../bin/simple_example record effect "$(FUZION_RUN)" $(FILE)

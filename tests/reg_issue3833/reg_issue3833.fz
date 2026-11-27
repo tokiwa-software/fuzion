@@ -21,14 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
-semigroup(T type) is
+semigroup(T : Any) is
   append(a,b T) T => abstract
 
-Seq_semigroup(A type) : semigroup (Sequence A) is
+Seq_semigroup(A : Any) : semigroup (Sequence A) is
   redef append(a,b Sequence A) Sequence A => a ++ b
 
 dup(s S : semigroup T, a T) =>
   s.append a a
 
-_ := dup (Seq_semigroup i32) [1]
-
+_ := dup (Seq_semigroup i64) [1]

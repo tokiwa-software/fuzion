@@ -48,7 +48,7 @@ import dev.flang.lsp.util.Bridge;
  */
 public enum Diagnostics
 {
-  nameingRefs, nameingFeatures, nameingTypeParams, duplicateName, errors, warnings, unusedFeatures;
+  namingRefs, namingFeatures, namingTypeParams, duplicateName, errors, warnings, unusedFeatures;
 
   public static void publishDiagnostics(URI uri)
   {
@@ -59,7 +59,7 @@ public enum Diagnostics
 
   public static Stream<Diagnostic> getDiagnostics(URI uri)
   {
-    // NYI: UNDER DEVELOPMENT: check names of type arguments
+    // NYI: UNDER DEVELOPMENT: check names of type parameters
     return Util.concatStreams(
       errors(uri),
       warnings(uri),
@@ -101,20 +101,20 @@ public enum Diagnostics
       .filter(f -> !f.isTypeParameter())
       .filter(f -> (f.isOuterRef() || f.isRef()) && !f.isField())
       .filter(f -> {
-        var basename = f.featureName().baseName();
-        var splittedBaseName = basename.split("_");
+        var basename = f.baseName();
+        var splitBaseName = basename.split("_");
         return
         // any lowercase after _
-        Arrays.stream(splittedBaseName).anyMatch(str -> Character.isLowerCase(str.codePointAt(0)))
+        Arrays.stream(splitBaseName).anyMatch(str -> Character.isLowerCase(str.codePointAt(0)))
           // any uppercase after first char
-          || Arrays.stream(splittedBaseName)
+          || Arrays.stream(splitBaseName)
             .anyMatch(str -> !str.isEmpty()
               && str.substring(1).codePoints().anyMatch(c -> Character.isUpperCase(c)));
       })
       .map(f -> {
         return create(Bridge.toRangeBaseName(f),
           "use Snake_Pascal_Case for refs, check: https://flang.dev/design/identifiers",
-          DiagnosticSeverity.Information, nameingRefs);
+          DiagnosticSeverity.Information, namingRefs);
       });
   }
 
@@ -124,7 +124,7 @@ public enum Diagnostics
       .filter(f -> !f.isTypeParameter())
       .filter(f -> !(f.isOuterRef() || f.isRef()) || f.isField())
       .filter(f -> {
-        var basename = f.featureName().baseName();
+        var basename = f.baseName();
         return
         // any uppercase
         basename.codePoints().anyMatch(c -> Character.isUpperCase(c));
@@ -132,7 +132,7 @@ public enum Diagnostics
       .map(f -> {
         return create(Bridge.toRangeBaseName(f),
           "use snake_case for features and value types, check: https://flang.dev/design/identifiers",
-          DiagnosticSeverity.Information, nameingFeatures);
+          DiagnosticSeverity.Information, namingFeatures);
       });
     return snakeCase;
   }
@@ -142,13 +142,13 @@ public enum Diagnostics
     var uppercase = QueryAST.selfAndDescendants(uri)
       .filter(f -> f.isTypeParameter())
       .filter(f -> {
-        var basename = f.featureName().baseName();
+        var basename = f.baseName();
         return basename.codePoints().anyMatch(c -> Character.isLowerCase(c));
       })
       .map(f -> {
         return create(Bridge.toRangeBaseName(f),
           "use UPPERCASE for type parameters, check: https://flang.dev/design/identifiers",
-          DiagnosticSeverity.Information, Diagnostics.nameingTypeParams);
+          DiagnosticSeverity.Information, Diagnostics.namingTypeParams);
       });
     return uppercase;
   }

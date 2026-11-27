@@ -35,7 +35,7 @@ import dev.flang.util.LongMap;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NumericValue extends Value
+class NumericValue extends Value
 {
 
 
@@ -61,7 +61,7 @@ public class NumericValue extends Value
       case c_i8   -> (long) data.get      ();
       case c_i16  -> (long) data.getShort ();
       case c_i32  -> (long) data.getInt   ();
-      case c_i64  -> (long) data.getLong  ();
+      case c_i64  ->        data.getLong  ();
       case c_u8   -> (long) data.get      () & 0xff;
       case c_u16  -> (long) data.getChar  ();
       case c_u32  -> (long) data.getInt   ();
@@ -134,13 +134,13 @@ public class NumericValue extends Value
   /**
    * The DFA instance we are working with.
    */
-  DFA _dfa;
+  final DFA _dfa;
 
 
   /**
    * The value cast to long, null if not known.
    */
-  Long _value;
+  final Long _value;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -186,6 +186,7 @@ public class NumericValue extends Value
   /**
    * Get set of values of given field within this instance.
    */
+  @Override
   Value readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     /* for a numeric value, this can only read the 'val' field, e.g., 'i32.val',
@@ -195,17 +196,7 @@ public class NumericValue extends Value
   }
 
 
-  /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   *
-   * @param dfa the current analysis context.
-   *
-   * @param v the value this value should be joined with.
-   *
-   * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
-   */
+  /** {@inheritDoc} */
   @Override
   public Value joinInstances(DFA dfa, Value v, int clazz)
   {
@@ -214,34 +205,12 @@ public class NumericValue extends Value
         if (CHECKS) check
           (_clazz == nv._clazz);
 
-        var r =
-          _value == null || nv._value == null ||
-          switch (_dfa._fuir.getSpecialClazz(_clazz))
-          {
-          case c_i8   -> i8 () == nv.i8 ();
-          case c_i16  -> i16() == nv.i16();
-          case c_i32  -> i32() == nv.i32();
-          case c_i64  -> i64() == nv.i64();
-          case c_u8   -> u8 () == nv.u8 ();
-          case c_u16  -> u16() == nv.u16();
-          case c_u32  -> u32() == nv.u32();
-          case c_u64  -> u64() == nv.u64();
-          case c_f32  -> f32() == nv.f32();  // NYI: check if this is correct for NaN etc.
-          case c_f64  -> f64() == nv.f64();  // NYI: check if this is correct for NaN etc.
-          default -> false;
-          };
-        if (r)
-          {
-            return this;
-          }
-        else if (_clazz == nv._clazz)
-          {
-            return create(_dfa, _clazz);
-          }
-        else
-          {
-            return super.joinInstances(dfa, v, clazz);
-          }
+        // this may mean that different NaNs are not put together, but IMHO okay
+        return _value == null || _value == nv._value
+          ? this
+          : nv._value == null
+          ? nv
+          : create(_dfa, _clazz);
       }
     else if (v instanceof ValueSet)
       {
@@ -254,9 +223,20 @@ public class NumericValue extends Value
   }
 
 
+  /** {@inheritDoc} */
+  @Override boolean contains(Value other)
+  {
+    if (PRECONDITIONS) require
+      (_clazz == other._clazz);
+
+    return _value == null;
+  }
+
+
   /**
    * Add v to the set of values of given field within this instance.
    */
+  @Override
   public void setField(DFA dfa, int field, Value v)
   {
     if (_dfa._fuir.clazzOuterClazz(field) == _clazz)
@@ -265,7 +245,7 @@ public class NumericValue extends Value
       }
     else
       {
-        throw new Error("Value.setField called on class " + this + " (" + getClass() + ") to set "+_dfa._fuir.clazzAsString(field)+" expected " + Instance.class);
+        throw new Error("Value.setField called on class " + this + " (" + getClass() + ") to set "+_dfa._fuir.clazzName(field)+" expected " + Instance.class);
       }
   }
 
@@ -273,9 +253,10 @@ public class NumericValue extends Value
   /**
    * Create human-readable string from this instance.
    */
+  @Override
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz) + ":" +
+    return _dfa._fuir.clazzName(_clazz) + ":" +
       (_value == null
        ? "--any value--"
        : switch (_dfa._fuir.getSpecialClazz(_clazz))

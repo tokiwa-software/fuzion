@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = reg_issue2345.fz
+override NAME = reg_issue2345
 include ../compile.mk

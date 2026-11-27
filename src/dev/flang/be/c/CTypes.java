@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
+import dev.flang.ir.IR.FeatureKind;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 
@@ -39,7 +40,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class CTypes extends ANY
+class CTypes extends ANY
 {
 
 
@@ -293,19 +294,19 @@ public class CTypes extends ANY
     CStmnt result = CStmnt.EMPTY;
     if (needsTypeDeclaration(cl))
       {
-        var l = new List<CStmnt>(CStmnt.lineComment("for clazz#" + _fuir.clazzId2num(cl) + ": " + _fuir.clazzAsString(cl)));
+        var l = new List<CStmnt>(CStmnt.lineComment("for clazz#" + _fuir.clazzId2num(cl) + ": " + _fuir.clazzName(cl)));
         var els = new List<CStmnt>();
         if (_fuir.clazzIsRef(cl))
           {
             var vcl = _fuir.clazzAsValue(cl);
-            els.add(CStmnt.decl(typeClazzID, _names.CLAZZ_ID));
-            els.add(CStmnt.decl(clazz(vcl), _names.FIELDS_IN_REF_CLAZZ));
+            els.add(CStmnt.decl(typeClazzID, CNames.CLAZZ_ID));
+            els.add(CStmnt.decl(clazz(vcl), CNames.FIELDS_IN_REF_CLAZZ));
           }
         else if (_fuir.clazzIsChoice(cl))
           {
             if (!_fuir.clazzIsChoiceOfOnlyRefs(cl))
               {
-                els.add(CStmnt.decl(typeTagName, _names.TAG_NAME));
+                els.add(CStmnt.decl(typeTagName, CNames.TAG_NAME));
               }
             var uls = new List<CStmnt>();
             for (int i = 0; i < _fuir.clazzChoiceCount(cl); i++)
@@ -313,24 +314,21 @@ public class CTypes extends ANY
                 var cc = _fuir.clazzChoice(cl, i);
                 if (!_fuir.clazzIsVoidType(cc) && !_fuir.clazzIsRef(cc))
                   {
-                    uls.add(CStmnt.decl(clazz(cc), new CIdent(_names.CHOICE_ENTRY_NAME + i)));
+                    uls.add(CStmnt.decl(clazz(cc), CIdent.choiceEntry(i)));
                   }
               }
             if (_fuir.clazzIsChoiceWithRefs(cl))
               {
-                uls.add(CStmnt.decl(clazz(_fuir.clazzAny()), _names.CHOICE_REF_ENTRY_NAME));
+                uls.add(CStmnt.decl(clazz(_fuir.clazzAny()), CNames.CHOICE_REF_ENTRY_NAME));
               }
-            els.add(CStmnt.unyon(uls, _names.CHOICE_UNION_NAME));
+            els.add(CStmnt.unyon(uls, CNames.CHOICE_UNION_NAME));
           }
         else
           {
             for (int i = 0; i < _fuir.clazzFieldCount(cl); i++)
               {
                 var f = _fuir.clazzField(cl, i);
-                var t = _fuir.clazzResultClazz(f);
-                // NYI: UNDER DEVELOPMENT: Why not just `if (fieldExists(f)`?
-                if (!_fuir.clazzIsUnitType(t) &&
-                    !_fuir.clazzIsVoidType(t))
+                if (fieldExists(f))
                   {
                     els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
                   }
@@ -339,7 +337,7 @@ public class CTypes extends ANY
         l.add(CStmnt.struct(_names.struct(cl), els));
         if (cl == _fuir.clazzUniverse())
           {
-            l.add(CStmnt.decl("static", _names.struct(cl), _names.UNIVERSE));
+            l.add(CStmnt.decl("static", _names.struct(cl), CNames.UNIVERSE));
           }
         result = CStmnt.seq(l);
       }
@@ -356,7 +354,7 @@ public class CTypes extends ANY
    */
   public String atomicType(int rc)
   {
-    var res = "atomic type not found for: " + _fuir.clazzAsString(rc);
+    var res = "atomic type not found for: " + _fuir.clazzName(rc);
     if (_fuir.clazzIsRef(rc))
       {
         res = "atomic_uintptr_t";
@@ -379,18 +377,6 @@ public class CTypes extends ANY
   }
 
 
-  boolean clazzNeedsCode(int cl)
-  {
-    return _fuir.clazzNeedsCode(cl) ||
-      cl == _fuir.clazz_const_string() ||
-      cl == _fuir.clazz_const_string_utf8_data() ||
-      cl == _fuir.clazz_array_u8() ||
-      cl == _fuir.clazz_fuzionSysArray_u8() ||
-      cl == _fuir.clazz_fuzionSysArray_u8_data() ||
-      cl == _fuir.clazz_fuzionSysArray_u8_length();
-  }
-
-
   /**
    * Does given field exist as a C field? This is the case for fields that
    *
@@ -404,12 +390,14 @@ public class CTypes extends ANY
    */
   boolean fieldExists(int field)
   {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(field) == FeatureKind.Field);
+
     var rt = _fuir.clazzResultClazz(field);
 
     return
-      !_fuir.clazzIsUnitType(rt) &&
-      !_fuir.clazzIsVoidType(rt) &&
-      clazzNeedsCode(field);
+      _fuir.clazzNeedsCode(field) &&
+      _fuir.hasData(rt);
   }
 
 }

@@ -62,6 +62,9 @@ public class FunctionReturnType extends ReturnType
    */
   public FunctionReturnType(AbstractType t)
   {
+    if (PRECONDITIONS) require
+      (t != null);
+
     _type = t;
     _pos = t instanceof UnresolvedType ut ? ut.pos() : SourcePosition.builtIn;
   }
@@ -76,6 +79,7 @@ public class FunctionReturnType extends ReturnType
    *
    * @return true for a constructor return type, false for a function.
    */
+  @Override
   public boolean isConstructorType()
   {
     return false;
@@ -87,33 +91,16 @@ public class FunctionReturnType extends ReturnType
    *
    * @return the function return type.
    */
-  public AbstractType functionReturnType()
+  @Override
+  public AbstractType functionReturnType(boolean allowIncomplete)
   {
-    return _type == Types.t_UNDEFINED
+    return _type == Types.t_UNDEFINED || _type.isIncompleteType() && !allowIncomplete
       ? null
       : _type;
   }
 
 
-  /**
-   * For a function, the source code position of the return type.
-   *
-   * @return the function return type source position.
-   */
-  public SourcePosition functionReturnTypePos()
-  {
-    if (PRECONDITIONS) require
-      (!isConstructorType());
-
-    return _pos;
-  }
-
-
-  /**
-   * If this has a source code position, return it
-   *
-   * @return the source position or null if there is none (e.g. for NoType).
-   */
+  /** {@inheritDoc} */
   @Override
   public SourcePosition posOrNull()
   {
@@ -129,9 +116,12 @@ public class FunctionReturnType extends ReturnType
    *
    * @param outer the feature surrounding this expression.
    */
+  @Override
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     _type = _type.visit(v, outer);
+    if (CHECKS) check
+      (_type != null);
   }
 
 
@@ -145,6 +135,7 @@ public class FunctionReturnType extends ReturnType
    * @param outer the outer feature, which is the argument this is the result
    * type of.
    */
+  @Override
   void resolveArgumentType(Resolution res, Feature outer)
   {
     if (PRECONDITIONS) require
@@ -153,6 +144,8 @@ public class FunctionReturnType extends ReturnType
 
     res.resolveDeclarations(outer);
     _type = _type.resolve(res, outer.context());
+    if (CHECKS) check
+      (_type != null);
   }
 
 
@@ -161,6 +154,7 @@ public class FunctionReturnType extends ReturnType
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _type.toString(true);

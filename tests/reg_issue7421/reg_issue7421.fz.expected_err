@@ -1,0 +1,17 @@
+
+reg_issue7421.fz:26:7: error 1: Incompatible type parameter 'E' for 'E : e.this'
+    b E
+------^
+formal type parameter 'E : e.this'
+actual type parameter 'E'
+assignable to constraint: 'E'
+
+
+reg_issue7421.fz:28:3: error 2: Incompatible type parameter 'E' for 'E : e.this'
+  b(E : e.this) unit =>
+--^
+formal type parameter 'E : e.this'
+actual type parameter 'E'
+assignable to constraint: 'E'
+
+2 errors.

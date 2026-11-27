@@ -123,10 +123,8 @@ public class Instance extends ValueWithClazz
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * Create a copy (clone) of this value.  Used for boxing values into
-   * ref-types.
-   */
+  /** {@inheritDoc} */
+  @Override
   Instance cloneValue(int cl)
   {
     if (PRECONDITIONS) require
@@ -137,11 +135,8 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * For a value of type i8, return the value.
-   *
-   * @return the i8 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public int i8Value()
   {
     if (PRECONDITIONS) require
@@ -152,11 +147,8 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * For a value of type i16, return the value.
-   *
-   * @return the i16 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public int i16Value()
   {
     if (PRECONDITIONS) require
@@ -167,11 +159,8 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * For a value of type i32, return the value.
-   *
-   * @return the i32 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public int i32Value()
   {
     if (PRECONDITIONS) require
@@ -182,11 +171,8 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * For a value of type i64, return the value.
-   *
-   * @return the i64 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public long i64Value()
   {
     if (PRECONDITIONS) require
@@ -199,11 +185,8 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * For a value of type u8, return the value.
-   *
-   * @return the u8 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public int u8Value()
   {
     if (PRECONDITIONS) require
@@ -215,11 +198,8 @@ public class Instance extends ValueWithClazz
 
 
 
-  /**
-   * For a value of type u16, return the value.
-   *
-   * @return the u16 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public int u16Value()
   {
     if (PRECONDITIONS) require
@@ -230,11 +210,8 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * For a value of type u32, return the value.
-   *
-   * @return the u32 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public int u32Value()
   {
     if (PRECONDITIONS) require
@@ -245,11 +222,8 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * For a value of type u64, return the value.
-   *
-   * @return the u64 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public long u64Value()
   {
     if (PRECONDITIONS) require
@@ -262,11 +236,8 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * For a value of type f32, return the value.
-   *
-   * @return the f32 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public float f32Value()
   {
     if (PRECONDITIONS) require
@@ -277,11 +248,8 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * For a value of type f64, return the value.
-   *
-   * @return the f64 value
-   */
+  /** {@inheritDoc} */
+  @Override
   public double f64Value()
   {
     if (PRECONDITIONS) require
@@ -295,75 +263,27 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * For a value of type bool, return the value.
-   *
-   * @return the bool value
-   */
+  /** {@inheritDoc} */
+  @Override
   public boolean boolValue()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(SpecialClazzes.c_true_) ||
-       _clazz == fuir().clazz(SpecialClazzes.c_false_) ||
-       _clazz == fuir().clazz(SpecialClazzes.c_bool));
+      (_clazz == fuir().clazz(SpecialClazzes.c_bool));
 
-    return
-      _clazz == fuir().clazz(SpecialClazzes.c_true_)  ? true  :
-      _clazz == fuir().clazz(SpecialClazzes.c_false_) ? false
-                                               : nonrefs[0] == 1;
+    return nonrefs[0] == 1;
   }
 
 
-  /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  public void checkStaticClazz(int expected)
-  {
-    if (fuir().clazzIsRef(expected))
-      {
-        // NYI:
-        // if (!expected.isAssignableFromWithoutTagging(clazz()))
-        //   {
-        //     throw new Error("Dynamic runtime clazz "+clazz()+" does not match static "+expected);
-        //   }
-      }
-    else
-      {
-        if (expected != _clazz)
-          {
-            throw new Error("Runtime clazz "+_clazz+" does not equal static "+expected);
-          }
-      }
-  }
-
-
-  /**
-   * Convert this value into an LValue with the given offset.
-   *
-   * @param c the clazz of the value, for debugging only
-   *
-   * @param off the offset of the value within this
-   *
-   * @return the LValue to rev
-   */
+  /** {@inheritDoc} */
+  @Override
   public LValue at(int c, int off)
   {
     return new LValue(c, this, off);
   }
 
 
-  /**
-   * Store this value in a field
-   *
-   * @param slot the slot that addresses the field this should be stored in.
-   *
-   * @param size the size of the data to be stored
-   */
+  /** {@inheritDoc} */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require
@@ -395,15 +315,8 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * Does this value equal the value in slot of given size on a low-level
-   * bit-wise comparison?
-   *
-   * @param slot the slot that addresses the field this should be compared
-   * against.
-   *
-   * @param size the size of the data to be compared.
-   */
+  /** {@inheritDoc} */
+  @Override
   boolean equalsBitWise(LValue slot, int size)
   {
     if (PRECONDITIONS) require
@@ -439,19 +352,16 @@ public class Instance extends ValueWithClazz
   }
 
 
-  /**
-   * Return the instance this value contains.  If this is an Instance, return
-   * this, if this is an LValue containing an instance, get that instance.
-   */
+  /** {@inheritDoc} */
+  @Override
   Instance instance()
   {
     return this;
   }
 
 
-  /**
-   * Return the tag of this choice.
-   */
+  /** {@inheritDoc} */
+  @Override
   public int tag()
   {
     if (PRECONDITIONS) require
@@ -470,9 +380,10 @@ public class Instance extends ValueWithClazz
    *
    * @return
    */
+  @Override
   public String toString()
   {
-    var result = "instance[" + fuir().clazzAsString(_clazz) + "]" + this.hashCode() +
+    var result = "instance[" + fuir().clazzName(_clazz) + "]" + this.hashCode() +
       (_clazz == fuir().clazz(SpecialClazzes.c_i32)  ? " (" + i32Value() + ")" :
        _clazz == fuir().clazz(SpecialClazzes.c_u32)  ? " (" + u32Value() + ")" :
        _clazz == fuir().clazz(SpecialClazzes.c_u8)   ? " (" + u8Value() + ")" :

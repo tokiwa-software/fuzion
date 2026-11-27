@@ -30,10 +30,8 @@ import java.util.Collections;
 import java.util.Stack;
 
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
-import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Universe;
 
 import dev.flang.util.FuzionConstants;
@@ -58,19 +56,19 @@ public abstract class LibraryCall extends AbstractCall
    */
   public final LibraryModule _libModule;
 
-
-  /**
-   * index of this call within _libModule.
-   */
-  private final int _index;
-
-
   private final AbstractType _type;
   private final Expr _target;
   private final List<Expr> _actuals;
   private final List<AbstractType> _generics;
-  private final AbstractFeature _calledFeature;
+  private final LibraryFeature _calledFeature;
   private final int _select;
+
+
+  /**
+   * Pre-allocated empty list of inherits calls for features that do not
+   * inherit.
+   */
+  static final List<LibraryCall> NO_CALLS = new List<LibraryCall>().freeze();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -82,7 +80,6 @@ public abstract class LibraryCall extends AbstractCall
   LibraryCall(LibraryModule lib, int index, Stack<Expr> s)
   {
     _libModule = lib;
-    _index = index;
     _type = lib.callType(index);
     var na = _libModule.callNumArgs(index);
     var actuals = new List<Expr>();
@@ -108,7 +105,7 @@ public abstract class LibraryCall extends AbstractCall
     g.freeze();
     Expr target = null;
     var feat = lib.callCalledFeature(index);
-    var f = lib.libraryFeature(feat);
+    LibraryFeature f = lib.libraryFeature(feat);
     if (f.outer().isUniverse())
       {
         target = Universe.instance;
@@ -126,53 +123,14 @@ public abstract class LibraryCall extends AbstractCall
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    var j = actuals().listIterator();
-    while (j.hasNext())
-      {
-        j.set(j.next().visit(v, outer));
-      };
-    if (target() != null)
-      {
-        var t = target().visit(v, outer);
-        if (CHECKS) check
-          (target() == t);
-      }
-    v.action(this);
-    return this;
-  }
-
-
-
   @Override public List<AbstractType> actualTypeParameters() { return _generics; }
-  @Override public AbstractFeature calledFeature() { return _calledFeature; }
+  @Override public LibraryFeature calledFeature() { return _calledFeature; }
   @Override public Expr target() { return _target; }
   @Override public List<Expr> actuals() { return _actuals; }
   @Override public int select() { return _select; }
   boolean _isInheritanceCall = false;
   @Override public boolean isInheritanceCall() { return _isInheritanceCall; }
   @Override public AbstractType type() { return _type; }
-
-
-  /**
-   * Unique global index of this Call.
-   */
-  public int globalIndex()
-  {
-    return _libModule.globalIndex(_index);
-  }
 
 }
 

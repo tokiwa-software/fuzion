@@ -37,7 +37,6 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
@@ -50,7 +49,7 @@ public class IO
   private static PrintStream CLIENT_OUT = System.out;
   private static PrintStream CLIENT_ERR = System.err;
   // NYI: UNDER DEVELOPMENT: "fuzion-lsp-server" should depend on usage
-  private static File tempDir =
+  private static final File tempDir =
     ErrorHandling.resultOrDefault(() -> Files.createTempDirectory("fuzion-lsp-server").toFile(), null);
 
   static byte[] getBytes(String text)
@@ -87,9 +86,10 @@ public class IO
             tempFile.deleteOnExit();
           }
 
-        FileWriter writer = new FileWriter(tempFile);
-        writer.write(text);
-        writer.close();
+        try (FileWriter writer = new FileWriter(tempFile))
+          {
+            writer.write(text);
+          }
         return tempFile;
       }
     catch (IOException e)
@@ -122,34 +122,6 @@ public class IO
       {
         IO.redirectErrOutToClientLog();
       }
-  }
-
-  /**
-   * @param runnable
-   * @return callable to be run on an executor.
-   * The result of the callable is everything that is written to stdout/stderr by the runnable.
-   */
-  public synchronized static Callable<String> withCapturedStdOutErr(Runnable runnable)
-  {
-    return () -> {
-      var inputStream = new PipedInputStream();
-      var outputStream = new PrintStream(new PipedOutputStream(inputStream));
-      try
-        {
-          System.setOut(outputStream);
-          System.setErr(outputStream);
-          runnable.run();
-          // close outputstream so that reading of inputstream does not run
-          // inifinitly.
-          outputStream.close();
-          return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        } finally
-        {
-          outputStream.close();
-          inputStream.close();
-          IO.redirectErrOutToClientLog();
-        }
-    };
   }
 
   public static void redirectErrOutToClientLog()

@@ -21,10 +21,12 @@
 #
 # -----------------------------------------------------------------------
 
+# this used to cause failure of a require condition in AbstractFeature.replaceOpen
+#
 reg_issue5433 =>
 
-  a(public R type,
-           public A type...) is
+  a(R : Any,
+    A... : Any) is
 
     b is
       c(arg A...) unit => abstract
