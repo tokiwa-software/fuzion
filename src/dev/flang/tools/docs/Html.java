@@ -689,7 +689,7 @@ class Html extends ANY
         // NYI: UNDER DEVELOPMENT: rename fd-private?
         "attributes", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'",
         "summary", summary(af, outer),
-        "comment", commentOf(af),
+        "comment", commentHtml(af),
         "redefines", redefines(af, (outer != null ? outer : af))))
     )
     .collect(Collectors.joining(System.lineSeparator()));
@@ -719,7 +719,7 @@ class Html extends ANY
         <code class="fd-module-name">""" + lm.name() + "</code>"
         : anchorTags(f),
       "summary",   f.isUniverse() ? "" : summary(f),
-      "comment",   commentOf(f),
+      "comment",   commentHtml(f),
       "contract",  contractOf(f),
       "redefines", redefines(f, f)));
   }
@@ -814,10 +814,13 @@ class Html extends ANY
 
 
   /**
-   * the comment belonging to this feature in HTML.
-   * If the comment does not exist, the comment of a redefined feature.
+   * Render the feature's documentation as HTML. If the feature has no local
+   * comment, use available documentation from the features it redefines.
+   *
+   * @param af the feature being documented
+   * @return the documentation as HTML, or an empty string if there is none to display
    */
-  String commentOf(AbstractFeature af)
+  String commentHtml(AbstractFeature af)
   {
     // Redefinition targets come from the frontend and may include internal
     // implementations, even though those were excluded from page collection.
@@ -834,15 +837,7 @@ class Html extends ANY
       {
         return "";
       }
-    var line = af.pos().line() - 1;
-    var commentLines = new ArrayList<String>();
-
-    // NYI: OPTIMIZATION: use lexer to retrieve comments
-    while (line > 0 && af.pos()._sourceFile.line(line).matches("(?s)^\\s*#.*"))
-      {
-        commentLines.add(af.pos()._sourceFile.line(line));
-        line = line - 1;
-      }
+    var commentLines = sourceCommentLines(af);
 
     if (commentLines.stream().allMatch(l -> l.isBlank()))
       {
@@ -851,7 +846,7 @@ class Html extends ANY
             return af.redefines().stream().flatMap(r ->
               {
                 // Keep inherited content without naming an ineligible origin.
-                var c = commentOf(r);
+                var c = commentHtml(r);
                 return c.isBlank()
                   ? Stream.empty()
                   : !canReference(r) || c.startsWith("<details open>")
@@ -869,8 +864,6 @@ class Html extends ANY
         // say_err("Warning: No comment found for " + af.qualifiedNameHuman());
       }
 
-    Collections.reverse(commentLines);
-
     var result = Html.processComment(af.qualifiedNameHuman() + af.featureName().argCount() + "_", commentLines
       .stream()
       .map(l -> l.trim())
@@ -878,6 +871,49 @@ class Html extends ANY
         .replaceAll("^#", "")
         .replaceAll("^ ", ""))
       .collect(Collectors.joining(System.lineSeparator())));
+    return result;
+  }
+
+
+  /**
+   * Read the comment lines immediately preceding the declaration. For arguments
+   * and type parameters, also include a comment immediately after the opening
+   * parenthesis, without reading past it into the enclosing feature's comment.
+   *
+   * @param af the feature being documented
+   * @return the raw comment lines with their {@code #} markers and indentation
+   *         preserved, or an empty list if none were found
+   */
+  static ArrayList<String> sourceCommentLines(AbstractFeature af)
+  {
+    var result = new ArrayList<String>();
+    var source = af.pos()._sourceFile;
+    var line = af.pos().line() - 1;
+
+    // NYI: OPTIMIZATION: use lexer to retrieve comments
+
+    // Match lines whose first non-whitespace character is '#'.
+    while (line > 0 && source.line(line).matches("(?s)^\\s*#.*"))
+      {
+        result.add(source.line(line));
+        line--;
+      }
+
+    if (line > 0 && (af.isArgument() || af.isTypeParameter()))
+      {
+        // Match a comment after '(' in a feature signature, capturing from '#' onward:
+        //
+        //   some_feat(# first argument's comment
+        //             arg i64) is
+        var inline = Pattern.compile("(?s)^.*?\\(\\s*(#.*)$")
+          .matcher(source.line(line));
+        if (inline.matches())
+          {
+            result.add(inline.group(1));
+          }
+      }
+
+    Collections.reverse(result);
     return result;
   }
 
