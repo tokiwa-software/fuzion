@@ -282,21 +282,18 @@ public class C extends ANY
         {
           var arg = _fuir.clazzArg(constCl, i);
           var fr = _fuir.clazzArgClazz(constCl, i);
-          // NYI: CLEANUP: would be better if clazzArg would not return unit type args
-          if (!_fuir.clazzIsUnitType(fr))
+          // NYI: CLEANUP: would be nice if clazzArg would not return unit type args
+          if (_types.fieldExists(arg))
             {
               var bytes = _fuir.deserializeConst(fr, bb);
-              if (_types.fieldExists(arg))
+              sb.append("." + _names.fieldName(arg).code());
+              sb.append(" = ");
+              var cd = constData(_fuir.clazzResultClazz(arg), bytes);
+              l.add(cd.v1());
+              sb.append(cd.v0().code());
+              if (i + 1 != argCount)
                 {
-                  sb.append("." + _names.fieldName(arg).code());
-                  sb.append(" = ");
-                  var cd = constData(_fuir.clazzResultClazz(arg), bytes);
-                  l.add(cd.v1());
-                  sb.append(cd.v0().code());
-                  if (i + 1 != argCount)
-                    {
-                      sb.append(",");
-                    }
+                  sb.append(",");
                 }
             }
         }
