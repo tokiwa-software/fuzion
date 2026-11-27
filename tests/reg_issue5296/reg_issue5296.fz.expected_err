@@ -1,0 +1,55 @@
+
+reg_issue5296.fz:41:13: error 1: Inconsistent indentation
+      cond2 ? val2 :
+------------^
+Indentation reference point is reg_issue5296.fz:40:12
+_ := cond1 ? val1 :
+-----------^
+When '?' is part of a chained ternary, it must be aligned with '?' or ':' of the surrounding ternary expression.
+
+
+reg_issue5296.fz:42:12: error 2: Inconsistent indentation
+     cond3 ? val3 :
+-----------^
+Indentation reference point is reg_issue5296.fz:41:13
+      cond2 ? val2 :
+------------^
+When '?' is part of a chained ternary, it must be aligned with '?' or ':' of the surrounding ternary expression.
+
+
+reg_issue5296.fz:47:6: error 3: Inconsistent indentation
+     ? val1
+-----^
+Indentation reference point is reg_issue5296.fz:46:6
+_ := cond1
+-----^^^^^
+When '?' is not in the same line as its condition, it must be indented deeper than the condition.
+
+
+reg_issue5296.fz:54:18: error 4: Inconsistent indentation
+                 ? val2 : cond3
+-----------------^
+Indentation reference point is reg_issue5296.fz:53:12
+_ := cond1 ? val1 : cond2
+-----------^
+When '?' is part of a chained ternary, it must be aligned with '?' or ':' of the surrounding ternary expression.
+
+
+reg_issue5296.fz:59:17: error 5: Inconsistent indentation
+      longcond2 ? val2 :
+----------------^
+Indentation reference point is reg_issue5296.fz:58:12
+_ := cond1 ? val1 :
+-----------^
+When '?' is part of a chained ternary, it must be aligned with '?' or ':' of the surrounding ternary expression.
+
+
+reg_issue5296.fz:60:13: error 6: Inconsistent indentation
+      cond3 ? val3 :
+------------^
+Indentation reference point is reg_issue5296.fz:59:17
+      longcond2 ? val2 :
+----------------^
+When '?' is part of a chained ternary, it must be aligned with '?' or ':' of the surrounding ternary expression.
+
+6 errors.
