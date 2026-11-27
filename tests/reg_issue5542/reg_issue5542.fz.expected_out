@@ -110,7 +110,7 @@ instance[reg_issue5542.(λa,b,c->unit)]
 instance[reg_issue5542.(λa,b,c,d->unit)]
 instance[reg_issue5542.(λa,b,c,d,e->unit)]
 instance[reg_issue5542.(λa,b,c,d,e,f->unit)]
-lambdas as function resutls:
+lambdas as function results:
 42
 1
 3

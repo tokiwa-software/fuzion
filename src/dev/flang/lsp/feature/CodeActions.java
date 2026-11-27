@@ -53,9 +53,9 @@ public class CodeActions
   public static List<Either<Command, CodeAction>> getCodeActions(CodeActionParams params)
   {
     return Util.concatStreams(
-      nameingFixes(params, Diagnostics.nameingFeatures, oldName -> CaseConverter.toSnakeCase(oldName)),
-      nameingFixes(params, Diagnostics.nameingRefs, oldName -> CaseConverter.toSnakePascalCase(oldName)),
-      nameingFixes(params, Diagnostics.nameingTypeParams, oldName -> oldName.toUpperCase()),
+      namingFixes(params, Diagnostics.namingFeatures, oldName -> CaseConverter.toSnakeCase(oldName)),
+      namingFixes(params, Diagnostics.namingRefs, oldName -> CaseConverter.toSnakePascalCase(oldName)),
+      namingFixes(params, Diagnostics.namingTypeParams, oldName -> oldName.toUpperCase()),
       generateMatchCases(params))
       .collect(Collectors.toList());
   }
@@ -91,11 +91,11 @@ public class CodeActions
       .filter(x -> x.getCode().isRight() && x.getCode().getRight().equals(diag.ordinal()));
   }
 
-  private static Stream<Either<Command, CodeAction>> nameingFixes(CodeActionParams params, Diagnostics diag,
+  private static Stream<Either<Command, CodeAction>> namingFixes(CodeActionParams params, Diagnostics diag,
     Function<String, String> fix)
   {
     return getDiagnostics(params, diag)
-      .flatMap(d -> codeActionForNameingIssue(params.getTextDocument(), d, fix).stream())
+      .flatMap(d -> codeActionForNamingIssue(params.getTextDocument(), d, fix).stream())
       .<Either<Command, CodeAction>>map(
         ca -> Either.forRight(ca));
   }
@@ -109,7 +109,7 @@ public class CodeActions
    * @param convertIdentifier
    * @return
    */
-  private static Optional<CodeAction> codeActionForNameingIssue(TextDocumentIdentifier tdi, Diagnostic d,
+  private static Optional<CodeAction> codeActionForNamingIssue(TextDocumentIdentifier tdi, Diagnostic d,
     Function<String, String> convertIdentifier)
   {
     var uri = LSP4jUtils.getUri(tdi);

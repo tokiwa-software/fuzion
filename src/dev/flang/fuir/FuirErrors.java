@@ -117,7 +117,7 @@ class FuirErrors extends AstErrors
   }
 
 
-  public static void unmetTypeContraint(SourcePosition pos, AbstractType tp, Clazz constraint)
+  public static void unmetTypeConstraint(SourcePosition pos, AbstractType tp, Clazz constraint)
   {
     error(pos, "Actual type parameter " + s(tp) + " does not satisfy constraint " + s(constraint._type), "");
   }

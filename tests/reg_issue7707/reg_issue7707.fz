@@ -27,7 +27,7 @@
 reg_issue7707 =>
 
 
-  # the original example from isue #7707
+  # the original example from issue #7707
   #
   # This contains a typo in `a.q`, should have been `say "a.q $v"`:
   #
@@ -53,7 +53,7 @@ reg_issue7707 =>
   original
 
 
-  # the second example from isue #7707 using explicit instead of inferred `.this` type arguments for `q`
+  # the second example from issue #7707 using explicit instead of inferred `.this` type arguments for `q`
   #
   # This contains a typo in `a.q`, should have been `say "a.q $v"`:
   #
@@ -97,9 +97,9 @@ reg_issue7707 =>
     a : m is
       redef q(v vn) => say "a.q $v $(type_of v)"
 
-    yap "expecing m.q (vn in *.m) *.m.vn: "; m.vn.x
-    yap "expecing b.q (vn in *.b) *.b.vn: "; b.vn.x
-    yap "expecing a.q (vn in *.a) *.a.vn: "; a.vn.x
+    yap "expecting m.q (vn in *.m) *.m.vn: "; m.vn.x
+    yap "expecting b.q (vn in *.b) *.b.vn: "; b.vn.x
+    yap "expecting a.q (vn in *.a) *.a.vn: "; a.vn.x
 
   original_improved
 
@@ -123,9 +123,9 @@ reg_issue7707 =>
     a : m is
       redef q(v a.this.vn) => say "a.q $v $(type_of v)"
 
-    yap "expecing m.q (vn in *.m) *.m.vn: "; m.vn.x
-    yap "expecing b.q (vn in *.b) *.b.vn: "; b.vn.x
-    yap "expecing a.q (vn in *.a) *.a.vn: "; a.vn.x
+    yap "expecting m.q (vn in *.m) *.m.vn: "; m.vn.x
+    yap "expecting b.q (vn in *.b) *.b.vn: "; b.vn.x
+    yap "expecting a.q (vn in *.a) *.a.vn: "; a.vn.x
 
   second___improved
 
@@ -149,14 +149,14 @@ reg_issue7707 =>
     a : m is
       redef q(v Rn) => say "a.q $v $(type_of v)"
 
-    yap "expecing m.q (Rn in *.m) *.m.Rn: "; m.Rn.x
-    yap "expecing b.q (Rn in *.b) *.b.Rn: "; b.Rn.x
-    yap "expecing a.q (Rn in *.a) *.a.Rn: "; a.Rn.x
+    yap "expecting m.q (Rn in *.m) *.m.Rn: "; m.Rn.x
+    yap "expecting b.q (Rn in *.b) *.b.Rn: "; b.Rn.x
+    yap "expecting a.q (Rn in *.a) *.a.Rn: "; a.Rn.x
 
   original_ref_____
 
 
-  # second using `ref`outer feature
+  # second using a `ref` outer feature
   #
   second___ref_____  # using `_` padding for nicer output formatting
   =>
@@ -175,9 +175,9 @@ reg_issue7707 =>
     a : m is
       redef q(v a.this.Rn) => say "a.q $v $(type_of v)"
 
-    yap "expecing m.q (Rn in *.m) *.m.Rn: "; m.Rn.x
-    yap "expecing b.q (Rn in *.b) *.b.Rn: "; b.Rn.x
-    yap "expecing a.q (Rn in *.a) *.a.Rn: "; a.Rn.x
+    yap "expecting m.q (Rn in *.m) *.m.Rn: "; m.Rn.x
+    yap "expecting b.q (Rn in *.b) *.b.Rn: "; b.Rn.x
+    yap "expecting a.q (Rn in *.a) *.a.Rn: "; a.Rn.x
 
   second___ref_____
 

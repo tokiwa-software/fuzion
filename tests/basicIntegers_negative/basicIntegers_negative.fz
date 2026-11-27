@@ -83,7 +83,7 @@ basicIntegers_negative is
     _ u64 := -1                   # 25. should flag an error, constant out of range
     _ u64 := - -1                 # 26. should flag an error, constant out of range
 
-  assignToConstructur =>
+  assignToConstructor =>
 
     _ := i8 0
     _ := i8 127

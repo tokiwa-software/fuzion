@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 # This example contains code that resulted in fz command crashing with a failing
-# require condition (or null pointer in case checkds were not enabled).
+# require condition (or null pointer in case checks were not enabled).
 #
 # The problem was a call to a field `o.v` that is declared of a type parameter that is set
 # via inheritance of the actual type of the target `o` of the call.  If the underlying feature

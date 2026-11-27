@@ -578,7 +578,7 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  // need to overrid this here since this is not visible for LibraryCall
+  // need to override this here since this is not visible for LibraryCall
   // and we want LibraryCall.typeForInferencing to not return null...
   @Override
   AbstractType typeForInferencing()

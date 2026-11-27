@@ -84,7 +84,7 @@ test_free_type is
       b B => say "g: B $b"
 
   ga1 String | i32 := 42
-  ga2 String | u8  := "fourty two"
+  ga2 String | u8  := "forty-two"
   g ga1
   g ga2
 

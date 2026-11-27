@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Thie issue was about validity tests for `this`-types that were not done systematically, but
+# This issue was about validity tests for `this`-types that were not done systematically, but
 # instead engrafted into unrelated code resulting in redundant checks, repeated errors and the risk
 # of missing some checks.
 #

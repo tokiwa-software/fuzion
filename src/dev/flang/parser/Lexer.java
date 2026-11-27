@@ -744,7 +744,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Is the given token ignored?  This is usually the case for t_erro, t_ws and
+   * Is the given token ignored?  This is usually the case for t_error, t_ws and
    * t_comment, but it might be different for tools like the pretty printer that
    * want to know about white space and comments.
    *

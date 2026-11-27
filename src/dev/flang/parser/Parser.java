@@ -1403,7 +1403,7 @@ dotCall     : dot call   callTail
         AbstractType t = target.asParsedType();
         if (t == null)
           {
-            AstErrors.noValidLHSInExpresssion(target, ".env");
+            AstErrors.noValidLHSInExpression(target, ".env");
             t = Types.t_ERROR;
             result = Call.ERROR;
           }
@@ -1418,7 +1418,7 @@ dotCall     : dot call   callTail
         AbstractType t = target.asParsedType();
         if (t == null)
           {
-            AstErrors.noValidLHSInExpresssion(target, ".type");
+            AstErrors.noValidLHSInExpression(target, ".type");
             t = Types.t_ERROR;
             result = Call.ERROR;
           }

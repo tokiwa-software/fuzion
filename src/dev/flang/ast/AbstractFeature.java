@@ -429,7 +429,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * If this feature has a post condition or redefines a feature from which it
    * inherits a post condition, this gives the feature that implements the post
-   * condition check.  The postFeature has tha same outer feature as the
+   * condition check.  The postFeature has the same outer feature as the
    * original feature and the same arguments except for an additional {@code result}
    * argument in case the feature has a non-unit result.
    */
@@ -761,7 +761,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Number of arguments that are non-inferred, i.e., excluding free types.
    * This is the number of arguments used in `FeatureName` and the number to be
-   * usedin a call to get an exact match withing type parameter inference or
+   * used in a call to get an exact match within type parameter inference or
    * partial application.
    */
   public int explicitArgumentCount()
@@ -1409,7 +1409,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param l a list of types to be handed down
    *
-   * @param heirType the type we are inherting to.
+   * @param heirType the type we are inheriting to.
    *
    * @return the types from the argument l as seen this by heirType.  Their
    * number might have changed due to open generics.  Result may be
@@ -1451,7 +1451,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param t a type that must not be open generic (unless {@code Errors.any()})
    *
-   * @param heirType the type we are inherting to.
+   * @param heirType the type we are inheriting to.
    *
    * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
    * in case of previous errors.
@@ -1475,7 +1475,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param t a type that must not be open generic (unless {@code Errors.any()})
    *
-   * @param heirType the type we are inherting to.
+   * @param heirType the type we are inheriting to.
    *
    * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
    * in case of previous errors.

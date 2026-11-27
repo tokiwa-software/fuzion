@@ -95,7 +95,7 @@ class OpExpr extends ANY
    *
    * NOTE: this must be higher than any other precedence
    */
-  static final int NO_WHITESPACE_PRECENDENCE_OFFSET = 1000;
+  static final int NO_WHITESPACE_PRECEDENCE_OFFSET = 1000;
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -163,10 +163,10 @@ class OpExpr extends ANY
                         // 'a + +b' => 'a + (+b)'
                         // 'a+ +b'  => 'a + (+b)' due to white space
                         isOp(i-1) && !op._whiteSpaceAfter && op._whiteSpaceBefore && op(i-1)._whiteSpaceBefore &&
-                        precedence(i, Kind.prefix) + NO_WHITESPACE_PRECENDENCE_OFFSET > pmax)
+                        precedence(i, Kind.prefix) + NO_WHITESPACE_PRECEDENCE_OFFSET > pmax)
                       {
                         max = i;
-                        pmax = precedence(i, Kind.prefix) + NO_WHITESPACE_PRECENDENCE_OFFSET;
+                        pmax = precedence(i, Kind.prefix) + NO_WHITESPACE_PRECEDENCE_OFFSET;
                       }
                     else if (// 'a + * b' => 'a + (* b)' and
                              // 'a + + b' => 'a + (+ b)' and
@@ -184,12 +184,12 @@ class OpExpr extends ANY
                         // 'a+ +b'   => 'a + (+b)' and
                         // 'a+ + b+' => '(a+) + (b+)' due to white space
                         (isOp(i+1) && op(i+1)._whiteSpaceAfter || isOp(i-2) && op(i-2)._whiteSpaceAfter) && !op._whiteSpaceBefore && op._whiteSpaceAfter &&
-                        precedence(i, Kind.postfix) + NO_WHITESPACE_PRECENDENCE_OFFSET > pmax)
+                        precedence(i, Kind.postfix) + NO_WHITESPACE_PRECEDENCE_OFFSET > pmax)
                       {
                         // in case white space suggests higher precedence for
                         // postfix op, then treat it as a postfix op.
                         max = i;
-                        pmax = precedence(i, Kind.postfix) + NO_WHITESPACE_PRECENDENCE_OFFSET;
+                        pmax = precedence(i, Kind.postfix) + NO_WHITESPACE_PRECEDENCE_OFFSET;
                       }
                     else if (// 'a + * b' => 'a + (* b)' and
                              // 'a * + b' => '(a *) + b' due to precedence

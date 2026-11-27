@@ -526,7 +526,7 @@ on a xref:fuzion_feature[feature] that is a xref:fuzion_choice[choice].
 
 [#fuzion_constructor]
 ((Constructor)):: A _constructor_ is a xref:fuzion_routine[routine] declared using `is`.  A
-constructor has exceutable code and defines a xref:fuzion_type[type].  On a call to a constructor,
+constructor has executable code and defines a xref:fuzion_type[type].  On a call to a constructor,
 an instance of this type is created and this instance is implicitly returned as a result after
 execution of the constructor's code.
 
@@ -619,7 +619,7 @@ of that call at runtime results in the xref:fuzion_instance[instance] that was a
 
 [#fuzion_function]
 ((Function)):: A _function_ is a xref:fuzion_routine[routine] declared using `=>`. A
-function has exceutable code that produces a result value `result` and an explicit or inferred result type `rt`.
+function has executable code that produces a result value `result` and an explicit or inferred result type `rt`.
 
 [#function_type]
 ((Function Type)):: A _function type_ is any type derived from the Fuzion base
@@ -656,7 +656,7 @@ CAUTION: *NYI*: Need more detail on native feature
 ((Open Type Parameter)): An _open type parameter_ is a xref:fuzion_typeparameter[type parameters] whose declaration is followed by three dots as in `A type ...`.
 
 [#fuzion_orignalfeature]
-((Original Feature)):: An _original feature_ is a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] seen from their corresponing xref:fuzion_cotype[cotype].
+((Original Feature)):: An _original feature_ is a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] seen from their corresponding xref:fuzion_cotype[cotype].
 
 [#outer_instance]
 ((Outer Instance)):: With the exception of the xref:universe_instance[universe instance], every instance is linked to a corresponding _outer instance_.

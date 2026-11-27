@@ -20,7 +20,7 @@ f: [1,3,5] instance[Any]
 g: String i32
 g: B 42
 g: String u8
-g: A fourty two
+g: A forty-two
 h: i64 String 42 Hello
 x1: [1, 4, 6, 4, 1]
 x3: [1, 4, 6, 4, 1]

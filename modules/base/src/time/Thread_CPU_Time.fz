@@ -32,7 +32,7 @@
 # to sleep. It cannot be read any longer once `thread` was joined.
 #
 # The resolution depends on the platform, e.g., on macOS it is one
-# microsecond, while Linux provides nano seconds.
+# microsecond, while Linux provides nanoseconds.
 #
 module:public Thread_CPU_Time(thread concur.Thread) ref : time.Clock is
 

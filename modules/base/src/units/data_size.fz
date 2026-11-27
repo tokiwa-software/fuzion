@@ -270,7 +270,7 @@ is
     as_string unit_si_for_as_string
 
 
-  # Output fo as_string padded for nice alignment in a table, e.g.
+  # Output of as_string padded for nice alignment in a table, e.g.
   # '   1 B  '
   # '12.3 KiB'
   # ' 500 MiB'
@@ -280,7 +280,7 @@ is
     "$(val.pad_left 4) $(unt.pad 3)"
 
 
-  # Output fo as_string_si padded for nice alignment in a table, e.g.
+  # Output of as_string_si padded for nice alignment in a table, e.g.
   # '   1 B '
   # '12.3 kB'
   # ' 500 MB'
@@ -339,7 +339,7 @@ is
 
 
   # Determines the si prefixed unit to use for as_string,
-  # such that the resulting value is is in the range [1,1000)
+  # such that the resulting value is in the range [1,1000)
   #
   public unit_si_for_as_string units.byte_si =>
     for

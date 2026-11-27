@@ -141,7 +141,7 @@ public clang is
   # get the fields of a struct/union
   #
   get_fields(crsr CXCursor) =>
-    childs := lm.env.var (container.expanding_array clang.arg .empty)
+    children := lm.env.var (container.expanding_array clang.arg .empty)
 
     visitor : Function i32 CXCursor Native_Ref Native_Ref is
       public redef call(cxc CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
@@ -149,12 +149,12 @@ public clang is
           arg_name := clang_getCursorSpelling cxc
           arg_type := clang_getCanonicalType (clang_getCursorType cxc)
           arg_type_spelling := clang_getTypeSpelling arg_type
-          childs <- childs.add (clang.arg (cx_string_to_string arg_name) (cx_string_to_string arg_type_spelling))
+          children <- children.add (clang.arg (cx_string_to_string arg_name) (cx_string_to_string arg_type_spelling))
         CXChildVisit_Continue
 
     _ := clang_visitChildren crsr visitor ffi.null
 
-    childs.as_array
+    children.as_array
 
 
   # parsed a header file

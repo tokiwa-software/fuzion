@@ -1684,7 +1684,7 @@ public class Feature extends AbstractFeature
   private boolean needsCotypeInFumFile(Resolution res)
   {
     // If we are compiling a module
-    // we can omit creating coptypes that are unused
+    // we can omit creating cotypes that are unused
     // and can not be used from outside the module
     return res._module.name() == FuzionConstants.MAIN_MODULE_NAME
       ? !isUniverse()

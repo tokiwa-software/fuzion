@@ -2022,7 +2022,7 @@ public class AstErrors extends ANY
                                                                 : " into " + sqpn(names) + "."));
   }
 
-  static void destructuringMisMatch(SourcePosition pos, int fn, int nn)
+  static void destructuringMismatch(SourcePosition pos, int fn, int nn)
   {
     error(pos,
           "Destructuring mismatch between number of visible fields and number of target variables.",
@@ -2137,7 +2137,7 @@ public class AstErrors extends ANY
         error(formalArg.pos(),
               "Type inference from actual arguments failed due to incompatible types of actual arguments",
               "For the formal argument " + s(formalArg) + " " +
-              "the following incompatible actual arguments where found for type inference:\n" +
+              "the following incompatible actual arguments were found for type inference:\n" +
               typesMsg("actual is", "actuals are", types, positions));
       }
   }
@@ -2493,7 +2493,7 @@ public class AstErrors extends ANY
           "To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.");
   }
 
-  public static void noValidLHSInExpresssion(Expr expr, String type)
+  public static void noValidLHSInExpression(Expr expr, String type)
   {
     error(expr.pos(),
       "Wrong syntax in " + skw(type) + " expression.",
@@ -2720,7 +2720,7 @@ public class AstErrors extends ANY
     );
   }
 
-  public static void lamdaOuterMustNotHaveArgs(SourcePosition pos, AbstractType tt)
+  public static void lambdaOuterMustNotHaveArgs(SourcePosition pos, AbstractType tt)
   {
     error(pos, "Can not create lambda since an outer has unknown arguments.",
       "The outer having the arguments:\n\n" + s_feat_with_pos(tt.feature()) + "\n"+
@@ -2728,7 +2728,7 @@ public class AstErrors extends ANY
      );
   }
 
-  public static void lamdaOuterMustNotBeTypeParameter(SourcePosition pos, AbstractType tt)
+  public static void lambdaOuterMustNotBeTypeParameter(SourcePosition pos, AbstractType tt)
   {
     error(pos, "Can not create lambda since an outer of its type is a generic argument.",
       "The generic argument used in lambdas type " + s(tt) + "."

@@ -46,7 +46,7 @@ class ValueSet extends Value
 
 
   /**
-   * Helper class to collet the values when creating a ValueSet.
+   * Helper class to collect the values when creating a ValueSet.
    *
    * This handles two cases: Usually, the values in the set will just be joined,
    * ordered by their _id fields.

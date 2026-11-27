@@ -124,7 +124,7 @@ is
     if other.ns
       int.this ** other
     else
-      panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
+      panic "negative exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
 
   # equality: are these two ints equal?
   #

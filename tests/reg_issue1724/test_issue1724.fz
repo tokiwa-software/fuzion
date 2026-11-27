@@ -27,7 +27,7 @@
 # test_issue1724 tests calling different non-existing features on a void type.
 #
 # Since void can never be produced, we are sure that we can use it for anything
-# we like, it fits everywere
+# we like, it fits everywhere
 #
 test_issue1274 =>
 

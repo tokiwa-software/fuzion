@@ -53,9 +53,9 @@ abstract class ContextVisitor extends FeatureVisitor
   /**
    * Constructor for a ContextVisitor with the given initial context.
    */
-  ContextVisitor(Context initialConext)
+  ContextVisitor(Context initialContext)
   {
-    this._context = initialConext;
+    this._context = initialContext;
   }
 
 

@@ -423,7 +423,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * features. Produce an error otherwise.
    *
    * An expression used as a lazy value or a partially applied call must not
-   * contain any inner declarations.  There is is no fundamental problem, it
+   * contain any inner declarations.  There is no fundamental problem, it
    * just requires that the front end would not add the feature declarations
    * found in this expression to the outer feature eagerly, but only after
    * processing of lazy values and partial application was done.

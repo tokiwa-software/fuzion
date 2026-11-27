@@ -48,9 +48,9 @@ nested_choice =>
     assign_choice_to_nested_choice =>
       bool_or_u64 : choice u64 bool is
 
-      tripel_nested_choice : choice i64 bool_or_u64 is
+      triple_nested_choice : choice i64 bool_or_u64 is
         public redef as_string String =>
-          match tripel_nested_choice.this
+          match triple_nested_choice.this
             i i64 => $i
             b1 bool_or_u64 =>
               match b1
@@ -60,11 +60,11 @@ nested_choice =>
 
       bool_or_num_bool bool_or_u64 := false
       bool_or_num_num bool_or_u64 := u64 9
-      b tripel_nested_choice := true
-      n4 tripel_nested_choice := i64 -1
-      n8 tripel_nested_choice := u64 1
-      c1 tripel_nested_choice := bool_or_num_bool
-      c2 tripel_nested_choice := bool_or_num_num
+      b triple_nested_choice := true
+      n4 triple_nested_choice := i64 -1
+      n8 triple_nested_choice := u64 1
+      c1 triple_nested_choice := bool_or_num_bool
+      c2 triple_nested_choice := bool_or_num_num
 
       say b
       say n4

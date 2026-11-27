@@ -400,7 +400,7 @@ class Value extends Val
 
 
   /**
-   * Wrapp this value into a tagged union type.
+   * Wrap this value into a tagged union type.
    *
    * @param dfa the current analysis context
    *
