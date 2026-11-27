@@ -23,7 +23,7 @@
 
 example is
 
-  squares := container.set_of_ordered ((1..10).map i->i*i)
+  squares := (container.ps_set i64).new ((1..10).map i->i*i)
   (1..10).for_each x ->
     if x ∈ squares
       say "$x in squares"

@@ -1,5 +1,5 @@
 
---CURDIR--/bugOptionFalse.fz:36:9: error 1: Incompatible types in assignment
+bugOptionFalse.fz:36:9: error 1: Incompatible types in assignment
         false  # SHOULD FLAG AN ERROR!
 --------^^^^^
 assignment to field : 'bugOptionFalse.x.b.result'

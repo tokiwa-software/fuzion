@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class SourcepositionTool
+ * Source of class SourcePositionTool
  *
  *---------------------------------------------------------------------*/
 
@@ -79,7 +79,7 @@ public class SourcePositionTool extends ANY
   public static SourcePosition byLine(SourceFile sf, int line)
   {
     // lineStartPos throws in case of empty file
-    if(line == 1)
+    if (line == 1)
     {
       return new SourcePosition(sf, 0);
     }

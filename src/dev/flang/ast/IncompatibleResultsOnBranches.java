@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class IncompatibleResultTypeError
+ * Source of class IncompatibleResultsOnBranches
  *
  *---------------------------------------------------------------------*/
 
@@ -42,7 +42,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class IncompatibleResultsOnBranches extends ANY
+class IncompatibleResultsOnBranches extends ANY
 {
 
 

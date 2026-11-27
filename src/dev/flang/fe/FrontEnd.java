@@ -84,11 +84,13 @@ public class FrontEnd extends ANY
     private final FeatureName _fn = FeatureName.get(FuzionConstants.UNIVERSE_NAME, 0);
 
     { setState(State.LOADING); }
+    @Override
     public boolean isUniverse()
     {
       return true;
     }
 
+    @Override
     public FeatureName featureName()
     {
       return _fn;
@@ -118,7 +120,7 @@ public class FrontEnd extends ANY
 
 
   /**
-   * The total # of bytes loadeded for modules. Global indices are in this range.
+   * The total # of bytes loaded for modules. Global indices are in this range.
    */
   private int _totalModuleData = 0;
 
@@ -389,7 +391,7 @@ public class FrontEnd extends ANY
         if (_options.serializeFuir())
           {
             // We need this for source positions in fuir
-            _sourceModule.writeToFile(Path.of(Long.toString(_options.serializationHash()) + ".fum"));
+            _sourceModule.writeToFile(Path.of(Long.toString(_options.serializationHash()) + FuzionConstants.MODULE_FILE_SUFFIX));
           }
         reset();
         _mainModule = libModule(data, null /* use universe of module */);

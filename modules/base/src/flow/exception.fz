@@ -1,0 +1,70 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature exception
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# exception -- simple exception effect
+#
+# exception provides an operation 'cause' that immediately stops execution and
+# returns an 'error' wrapped in an 'outcome'.
+#
+# The type parameter `T` is used to find the handler: `(flow.exception T).env`
+# returns the *innermost* installed instance of `flow.exception T`.
+#
+# Therefore, `T` must inherit from `flow.exception_tag`, so a common type such as
+# `unit` cannot be used: any unrelated code using the same `T` that is executed
+# within your `try` (e.g., via a call to a redefined feature or a callback) would
+# cause an exception that ends up in your handler, and backwards.
+#
+# Instead, declare a dedicated type for each usage:
+#
+#     parse(s String) outcome i32 =>
+#       parse_exception : flow.exception_tag is
+#       flow.exception parse_exception
+#         .try i32 ()->
+#           if s.is_empty then (flow.exception parse_exception).env.cause (error "empty string")
+#           s.parse_i32.or_cause parse_exception id
+#         .or_outcome
+#
+#     say (parse "42")   # 42
+#     say (parse "")     # --error: empty string--
+#     say (parse "x")    # --error: failed to parse 'x': invalid integer digit for base 10--
+#
+public exception (# type parameter used only to distinguish different
+                  # instances of `exception`. This permits using, e.g.,
+                  # `exception reader` and `exception writer` and distinguish the
+                  # errors raised by the reader from those raised
+                  # by the writer.
+                  #
+                  # `T` must inherit from `flow.exception_tag`, e.g.,
+                  # `reader : flow.exception_tag is`
+                  T : flow.exception_tag,
+
+                  h error->void
+                  ) : flow.fallible error h
+is
+
+  # type feature to create an instance of `exception` with the given error handler.
+  #
+  public fixed redef type.new(h error->void) flow.exception T =>
+    flow.exception T h

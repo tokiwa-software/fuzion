@@ -29,7 +29,7 @@ package dev.flang.be.interpreter;
 import dev.flang.fuir.FUIR;
 import dev.flang.util.ANY;
 
-public class FUIRContext extends ANY {
+class FUIRContext extends ANY {
 
   private static FUIR _fuir;
 

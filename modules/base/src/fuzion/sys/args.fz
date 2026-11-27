@@ -37,4 +37,4 @@ module args =>
   => intrinsic
 
   # return the arguments in an array
-  array String count (i -> get i)
+  array String _ count (i -> get i)

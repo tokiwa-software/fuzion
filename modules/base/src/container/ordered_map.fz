@@ -32,9 +32,9 @@
 # performance of creation of the map is in O(n log n) where n is
 # keys.length.
 #
-public ordered_map(
-           public OK type : property.orderable,
-           public V  type,
+private:public ordered_map(
+           OK : property.orderable,
+           V  : Any,
            k0 Sequence OK,
            v0 Sequence V) : container.Map OK V
 pre
@@ -49,7 +49,7 @@ is
   # entry represents the pair of key and value at the given
   # index i of the ordered map.
   #
-  public entry(i i32) : property.orderable is
+  public entry(i i64) : property.orderable is
 
 
     public key OK => ks[i]
@@ -70,7 +70,7 @@ is
 
   # number of entries in this map
   #
-  public redef size i32 => sorted_entries.length
+  public redef size i64 => sorted_entries.length
 
 
   # get the value k is mapped to, or nil if none.
@@ -101,25 +101,5 @@ is
         ordered_map ks va
 
 
-  # create a string containing all mappings
-  #
-  public redef as_string String =>
-    for
-      r := "", r + c + n
-      i in ks.indices
-      n := "({ks[i]} => {vs[i]})"
-      c := "", ", "
-    else
-      r
-
-
-  # create a mutable map from this
-  #
-  public redef as_mutable_map(LM type : mutate) container.Mutable_Map OK V =>
-    (container.mutable_tree_map LM OK V).from items
-
-
-  # create an empty instance of ordered_map
-  #
-  public fixed redef type.empty container.ordered_map OK V =>
-    container.ordered_map OK V [] []
+  public fixed redef type.of(kvs Sequence (tuple OK V)) container.ordered_map OK V =>
+    container.ordered_map OK V (kvs.map (.0)) (kvs.map (.1))

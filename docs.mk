@@ -41,16 +41,24 @@ REF_MANUAL_SOURCES = $(wildcard $(FZ_SRC)/doc/ref_manual/*.adoc) \
                      $(JAVA_FILES_UTIL) \
                      $(JAVA_FILES_PARSER) \
                      $(JAVA_FILES_FE)
+
 REF_MANUAL_PDF     = $(BUILD_DIR)/doc/reference_manual/fuzion_reference_manual.pdf
 REF_MANUAL_HTML    = $(BUILD_DIR)/doc/reference_manual/html/index.html
+
+REALTIME_MANUAL_SOURCE  = $(FZ_SRC)/doc/ref_manual/realtime_manual.adoc
+REALTIME_MANUAL_SOURCES = $(REF_MANUAL_SOURCES)
+REALTIME_MANUAL_PDF     = $(BUILD_DIR)/doc/realtime_manual/realtime_manual.pdf
+REALTIME_MANUAL_HTML    = $(BUILD_DIR)/doc/realtime_manual/html/index.html
 
 DOCUMENTATION = \
 	$(DOC_FILES_FUMFILE) \
 	$(DOC_DESIGN_JVM)    \
 	$(REF_MANUAL_PDF)    \
 	$(REF_MANUAL_HTML)   \
+	$(REALTIME_MANUAL_PDF) \
+	$(REALTIME_MANUAL_HTML) \
 	$(DOC_JAVA)          \
-	$(BUILD_DIR)/apidocs/index.html
+	$(BUILD_DIR)/apidocs_web/index.html
 
 $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
@@ -59,6 +67,14 @@ $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.ado
 $(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
 	asciidoctor --failure-level=WARN $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REF_MANUAL_SOURCE)
+
+$(REALTIME_MANUAL_PDF): $(REALTIME_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
+	mkdir -p $(@D)
+	asciidoctor-pdf --failure-level=WARN $(REF_MANUAL_ATTRIBUTES) --out-file $@ $(REALTIME_MANUAL_SOURCE)
+
+$(REALTIME_MANUAL_HTML): $(REALTIME_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
+	mkdir -p $(@D)
+	asciidoctor --failure-level=WARN $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REALTIME_MANUAL_SOURCE)
 
 .phony: doc
 doc: $(DOCUMENTATION)
@@ -82,10 +98,12 @@ REF_MANUAL_ATTRIBUTES = \
   --attribute UNICODE_SOURCE=$(UNICODE_SOURCE)
 
 $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
-	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
+	javadoc --release $(JAVA_VERSION) -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
 
-$(BUILD_DIR)/generated/doc/unicode_version.adoc:
-	mkdir -p $(@D)
+$(BUILD_DIR)/generated/doc:
+	mkdir -p $@
+
+$(BUILD_DIR)/generated/doc/unicode_version.adoc: $(BUILD_DIR)/generated/doc
 	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep --extended-regexp "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
 
 $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
@@ -121,21 +139,27 @@ $(BUILD_DIR)/generated/doc/stringEscapes.adoc: $(CLASS_FILES_PARSER)
 	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -stringLiteralEscapes >$@
 
 # NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs
-$(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES) $(MOD_FZ_CMD)
+$(BUILD_DIR)/apidocs_web/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES) $(MOD_FZ_CMD)
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -api-src=/api $(@D)
 
 # NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs
-$(BUILD_DIR)/apidocs_git/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES) $(MOD_FZ_CMD)
-	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -docs-root=/docs_git -api-src=/api_git $(@D)
+.PHONY: standalone_api_docs
+standalone_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(CLASS_FILES_TOOLS) $(BUILD_DIR)/generated/doc/ace.js
+	mkdir -p $(BUILD_DIR)/apidocs_standalone
+	cp assets/docs/style.css assets/docs/32.png assets/docs/standalone.js $(BUILD_DIR)/apidocs_standalone/
+	cp $(BUILD_DIR)/generated/doc/ace.js $(BUILD_DIR)/apidocs_standalone/
+	$(FZ) -acemode > $(BUILD_DIR)/apidocs_standalone/ace-mode-fuzion.js
+	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/apidocs_standalone
+	@echo "Open file://$(abspath $(BUILD_DIR))/apidocs_standalone/index.html to start browsing standalone docs."
 
-# NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs
+# Bundle Ace so standalone docs also work offline and via file:// URLs.
+$(BUILD_DIR)/generated/doc/ace.js:
+	mkdir -p $(@D)
+	wget -O $@ https://raw.githubusercontent.com/ajaxorg/ace-builds/v1.43.3/src/ace.js
+
 .phony: debug_api_docs
-debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
-	mkdir -p $(BUILD_DIR)/debugdocs
-	cp assets/docs/style.css $(BUILD_DIR)/debugdocs/
-	cp assets/docs/32.png $(BUILD_DIR)/debugdocs/
-	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
-	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
+debug_api_docs: standalone_api_docs
+	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/apidocs_standalone)
 
 .phony: serve_docs
 serve_docs: $(DOCUMENTATION)

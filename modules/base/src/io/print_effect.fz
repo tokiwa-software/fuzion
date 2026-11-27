@@ -41,8 +41,8 @@ is
   public print (s Any) unit =>
     # NYI: BUG: error handling, maybe we should raise
     # some kind of IO runtime fault here?
-    if s.as_string.utf8.count > os.page_size.as_i32
-      for c in s.as_string.utf8.chunk os.page_size.as_i32
+    if s.as_string.utf8.count > os.page_size
+      for c in s.as_string.utf8.chunk os.page_size
       do
         write c .or_panic
     else
@@ -59,7 +59,7 @@ is
   # write bytes (without explicit flushing)
   #
   public write(b Sequence u8) outcome unit
-    pre debug: b.count <= os.page_size.as_i32
+    pre debug: b.count <= os.page_size
   => abstract
 
 

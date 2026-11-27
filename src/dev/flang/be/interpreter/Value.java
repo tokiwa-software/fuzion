@@ -100,6 +100,7 @@ public abstract class Value extends FUIRContext
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "UNKNOWN VALUE";
@@ -267,20 +268,6 @@ public abstract class Value extends FUIRContext
   boolean equalsBitWise(LValue slot, int size)
   {
     throw new Error("value "+ this + " not allowed for equalsBitWise");
-  }
-
-
-  /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  void checkStaticClazz(int expected)
-  {
-    throw new Error("value " + this + " not allowed for clazz "+ expected);
   }
 
 

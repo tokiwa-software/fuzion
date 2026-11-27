@@ -1,8 +1,15 @@
 
---CURDIR--/reg_issue4480.fz:30:23: error 1: Incompatible type parameter
+reg_issue4480.fz:30:23: error 1: Incompatible type parameter 'void' for 'T : numeric'
 _ := [3].map count |> sum
 ----------------------^^^
 formal type parameter 'T : numeric'
 actual type parameter 'void'
+assignable to constraint: 'Any',
+                          'choice',
+                          'property.equatable',
+                          'property.hashable',
+                          'property.orderable',
+                          'property.partially_orderable',
+                          'void'
 
 one error.

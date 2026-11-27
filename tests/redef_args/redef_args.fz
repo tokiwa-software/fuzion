@@ -30,15 +30,15 @@ redef_args is
     s := if (b)
            "PASSED: "
          else
-           _ := set_exit_code 1
+           _ := Exit.env.set_exit_code 1
            "FAILED: "
     say (s + msg)
 
-  RComplex(RT type) ref is
+  RComplex(RT : Any) ref is
     real RT => abstract
     imag RT => abstract
 
-  Complex(T type, redef real, imag T) : RComplex T is
+  Complex(T : Any, redef real, imag T) : RComplex T is
   Complex1(real, imag i32) is
   Complex2(rr, ii i32) : Complex i32 rr ii is
   Complex3(redef real, imag i32) : Complex i32 real imag is
@@ -77,4 +77,4 @@ redef_args is
     chck (a = 2) "redefined field as in #165"
 
 
-  exit
+  Exit.env.exit

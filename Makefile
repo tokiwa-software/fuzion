@@ -127,6 +127,8 @@ FUZION_FILES_RT       = $(shell find $(FZ_SRC_INCLUDE))
 FZ_SRC_EXAMPLES       = $(FZ_SRC)/examples
 FUZION_FILES_EXAMPLES = $(shell find $(FZ_SRC_EXAMPLES))
 
+FUZION_RUNTIME_VERSION    = $(BUILD_DIR)/modules/base/src/fuzion/runtime/version.fz
+FUZION_RUNTIME_VERSION_IN =    $(FZ_SRC)/modules/base/src/fuzion/runtime/version.fz.in
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
@@ -255,20 +257,24 @@ $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 
 $(FUZION_EBNF): $(FUZION_BASE) $(FZ_SRC)/bin/ebnf.fz
 	mkdir -p $(@D)
-	$(FZ) $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
+	$(FZ) -modules=tokiwa $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
+
+ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
+SED_DATE_AND_BUILTBY = "s^@@DATE@@^^g;s^@@BUILTBY@@^^g"
+else
+SED_DATE_AND_BUILTBY = "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`printf $(USER)@; hostname`^g"
+endif
+
+PROCESS_VERSION_IN := \
+            sed "s^@@VERSION@@^$(VERSION)^g" \
+          | sed "s^@@JAVA_VERSION@@^$(JAVA_VERSION)^g" \
+          | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
+          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); printf \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" \
+          | sed $(SED_DATE_AND_BUILTBY)
 
 $(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
 	mkdir -p $(@D)
-	cat $(JAVA_FILE_UTIL_VERSION_IN) \
-          | sed "s^@@VERSION@@^$(VERSION)^g" \
-          | sed "s^@@JAVA_VERSION@@^$(JAVA_VERSION)^g" \
-          | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
-          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); printf \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
-ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
-	sed -i "s^@@DATE@@^^g;s^@@BUILTBY@@^^g" $@
-else
-	sed -i "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`printf $(USER)@; hostname`^g" $@
-endif
+	cat $(JAVA_FILE_UTIL_VERSION_IN) | $(PROCESS_VERSION_IN) >$@
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
@@ -421,10 +427,11 @@ $(FZ): $(FZ_SRC)/bin/fz | $(CLASS_FILES_TOOLS)
 	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
 
-$(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
+$(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz") $(FUZION_RUNTIME_VERSION_IN)
 	rm -rf $(@D)/base
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/base $(@D)
+	cat $(FUZION_RUNTIME_VERSION_IN) | $(PROCESS_VERSION_IN) >$(FUZION_RUNTIME_VERSION)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseModule=off -saveModule=$@ -XenableSetKeyword
 	$(FZ) -XXcheckIntrinsics
 
@@ -532,15 +539,11 @@ $(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
-	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
+$(BUILD_DIR)/bin/simple_example: $(FZ_SRC)/bin/simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
+	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/simple_example.fz
 	@echo " + $@"
 
-$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
-	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
-	@echo " + $@"
-
-$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
+$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(BUILD_DIR)/include $(BUILD_DIR)/bin/simple_example
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_TESTS) $@
@@ -587,48 +590,40 @@ $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_jar
+run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_jar run_tests_dump_fuir
 
 TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/fuzion.jar
 
 # phony target to run Fuzion tests using effects and report number of failures
-.PHONY .SILENT: run_tests_effect
+.PHONY: run_tests_effect
 run_tests_effect: $(FZ) $(TEST_DEPENDENCIES)
-	printf "testing effects: "
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
-.PHONY .SILENT: run_tests_int
+.PHONY: run_tests_int
 run_tests_int: $(FZ_INT) $(TEST_DEPENDENCIES)
-	printf "testing interpreter: "
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
-.PHONY .SILENT: run_tests_c
+.PHONY: run_tests_c
 run_tests_c: $(FZ_C) $(TEST_DEPENDENCIES)
-	printf "testing C backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
-.PHONY .SILENT: run_tests_jvm
+.PHONY: run_tests_jvm
 run_tests_jvm: $(FZ_JVM) $(TEST_DEPENDENCIES)
-	printf "testing JVM backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm
 
-.PHONY .SILENT: run_tests_fuir
+.PHONY: run_tests_fuir
 run_tests_fuir: $(TEST_DEPENDENCIES)
-	printf "testing FUIR backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) fuir
 
-.PHONY .SILENT: run_tests_jar_build
+.PHONY: run_tests_jar_build
 run_tests_jar_build: $(FZ_JVM) $(BUILD_DIR)/tests
 	$(FZ) -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
-	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(BUILD_DIR)/lib" \
-	PATH="$(PATH):$(BUILD_DIR)/lib" \
-	DYLD_FALLBACK_LIBRARY_PATH="$(DYLD_FALLBACK_LIBRARY_PATH):$(BUILD_DIR)/lib" \
-		$(JAVA) -jar HelloWorld.jar > /dev/null
+	$(JAVA) -jar HelloWorld.jar > /dev/null
 
-.PHONY .SILENT: run_tests_jar
+.PHONY: run_tests_jar
 run_tests_jar: run_tests_jar_build
 	output1="Hello World!"; \
 	output2=$$(./HelloWorld); \
@@ -637,6 +632,10 @@ run_tests_jar: run_tests_jar_build
 		exit 1; \
 	fi
 	rm -f HelloWorld HelloWorld.jar libfuzion_rt.so libfuzion_rt.dylib fuzion_rt.dll
+
+.PHONY: run_tests_dump_fuir
+run_tests_dump_fuir: $(BUILD_DIR)/tests
+	$(MAKE) fuir -C $(BUILD_DIR)/tests/dump_fuir
 
 .PHONY: clean
 clean:
@@ -694,6 +693,9 @@ $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAG
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop,java.net.http -saveModule=$@
 
+# target triple for the Windows runtime; the MSYS2 clang of the active
+# environment (UCRT64, CLANGARM64) knows its native triple
+WINDOWS_CLANG_TARGET ?= $(shell clang -dumpmachine)
 
 $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
@@ -701,7 +703,7 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
-	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
+	clang --target=$(WINDOWS_CLANG_TARGET) -Wall -Werror -O3 -shared \
 	-DPTW32_STATIC_LIB \
 	-DGC_THREADS -DGC_WIN32_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
@@ -712,7 +714,7 @@ else
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $@
 endif
-# NYI: eventuall link libgc
+# NYI: eventually link libgc
 # ifeq ($(OS),Windows_NT)
 # 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
 # 	-DPTW32_STATIC_LIB -DGC_WIN32_PTHREADS \

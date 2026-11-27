@@ -25,7 +25,7 @@ reg_issue2303 =>
 
   log1(s Lazy String) =>
   log2(s ()->String) =>
-  log3(s ()->i32) =>
+  log3(s ()->i64) =>
 
   p := "hi"
   i := 42

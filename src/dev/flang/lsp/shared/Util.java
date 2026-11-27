@@ -126,11 +126,6 @@ public class Util
       .orElseGet(Stream::empty);
   }
 
-  public static <T> T lastOrDefault(Stream<T> s, T t)
-  {
-    return s.reduce((a, b) -> b).orElse(t);
-  }
-
   /*
    * returns codepoint count of text
    * 😀 => 1
@@ -148,14 +143,4 @@ public class Util
   {
     return text.codePoints().map(cp -> Character.charCount(cp)).sum();
   }
-
-  public static String addParens(String str)
-  {
-    if (str.contains(" "))
-      {
-        return "(" + str + ")";
-      }
-    return str;
-  }
-
 }

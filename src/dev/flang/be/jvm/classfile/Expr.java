@@ -66,16 +66,19 @@ public abstract class Expr extends ByteCode
       this.from = from;
     }
 
+    @Override
     public String toString()
     {
       return "goto " + to;
     }
 
+    @Override
     public JavaType type()
     {
       return ClassFileConstants.PrimitiveType.type_void;
     }
 
+    @Override
     public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
     {
       if (CHECKS) check
@@ -171,6 +174,7 @@ public abstract class Expr extends ByteCode
     /**
      * String for debugging
      */
+    @Override
     public String toString()
     {
       return "try " + super.toString()+ " .. " + _end + " catch " + _handler + " for " + _type;
@@ -210,8 +214,11 @@ public abstract class Expr extends ByteCode
    */
   static class Unit extends Expr
   {
+    @Override
     public String toString() { return "UNIT"; }
+    @Override
     public JavaType type() { return PrimitiveType.type_void; }
+    @Override
     public void code(ClassFile.ByteCodeWriter ba, ClassFile cf) { ba.write(BC_EMPTY); }
   }
 
@@ -223,6 +230,7 @@ public abstract class Expr extends ByteCode
   static abstract class LoadConst extends Expr
   {
     abstract ClassFile.CPEntry cpEntry(ClassFile cf);
+    @Override
     public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
     {
       code(ba, O_ldc, cpEntry(cf));
@@ -252,8 +260,11 @@ public abstract class Expr extends ByteCode
       this._type = type;
       this._bc = bc;
     }
+    @Override
     public String   toString()             { return _str;  }
+    @Override
     public JavaType type()                 { return _type; }
+    @Override
     public void code(ClassFile.ByteCodeWriter ba, ClassFile cf)
     {
       ba.write(_bc);
@@ -408,6 +419,12 @@ public abstract class Expr extends ByteCode
             stack.pop();
             break;
           }
+        case O_i2l :
+          {
+            stack.pop();
+            stack.push(VerificationType.Long);
+            break;
+          }
         default:
           throw new UnsupportedOperationException("Unimplemented method");
         }
@@ -426,6 +443,7 @@ public abstract class Expr extends ByteCode
    */
   static abstract class Load extends Expr
   {
+    @Override
     public Expr drop()
     {
       return UNIT;
@@ -437,6 +455,7 @@ public abstract class Expr extends ByteCode
    */
   static abstract class Store extends Expr
   {
+    @Override
     public JavaType type()
     {
       return PrimitiveType.type_void;
@@ -577,6 +596,7 @@ public abstract class Expr extends ByteCode
 
   public static final Expr MONITORENTER = new Simple("MONITORENTER", PrimitiveType.type_void, BC_MONITORENTER);
   public static final Expr MONITOREXIT = new Simple("MONITOREXIT", PrimitiveType.type_void, BC_MONITOREXIT);
+  public static final Expr I2L         = new Simple("I2L", PrimitiveType.type_long, BC_I2L);
 
 
   /**
@@ -616,14 +636,9 @@ public abstract class Expr extends ByteCode
    */
   public static Expr comment(String msg)
   {
-    if (ENABLE_COMMENTS)
-      {
-        return commentAlways(msg);
-      }
-    else
-      {
-        return UNIT;
-      }
+    return ENABLE_COMMENTS
+      ? commentAlways(msg)
+      : UNIT;
   }
 
 
@@ -1624,7 +1639,7 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
         {
-          idx[0] += (n>4 ? 2 : 1);
+          idx[0] += (n>3 ? 2 : 1);
         }
     };
   }
@@ -1918,7 +1933,7 @@ public abstract class Expr extends ByteCode
 
 
   /**
-   * Is bc an `if` instruction?
+   * Is bc an {@code if} instruction?
    */
   private static boolean isIfInstruction(byte bc)
   {

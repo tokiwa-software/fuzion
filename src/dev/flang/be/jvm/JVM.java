@@ -254,7 +254,7 @@ There are basically two approaches to pass such value fields
 
       class G extends FuzionInstance
       {
-        int x_mutable_value;   // inlined field mutate.new.mutable_value
+        int x_mutable_value;   // inlined field mutate.var.mutable_value
       }
 
       static Access_F access_G_x = new Access_f() {
@@ -277,7 +277,7 @@ There are basically two approaches to pass such value fields
 +
 This might turn out difficult since if we would not inline the calls made in
 `f.inc` we need to wrap the access wrapper into another access wrapper for
-calling `mutate.new.get` and `mutate.new.infix <-`.
+calling `mutate.var.get` and `mutate.var.infix <-`.
 
 . Since mutating value fields should happen only for the target of a call, we
   could specialize the call for the location of the value in the surrounding
@@ -285,7 +285,7 @@ calling `mutate.new.get` and `mutate.new.infix <-`.
 
       class G extends FuzionInstance
       {
-        int x_mutable_value;   // inlined field mutate.new.mutable_value
+        int x_mutable_value;   // inlined field mutate.var.mutable_value
       }
 
       static void g()
@@ -612,6 +612,16 @@ should be avoided as much as possible.
               }
             jvm._jos.putNextEntry(new JarEntry(Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME));
             jvm._jos.write(jvm._names.methodNameToFuzionClazzNames().getBytes(StandardCharsets.UTF_8));
+            for (String str : new List<>("libfuzion_rt.so", "libfuzion_rt.dylib", "fuzion_rt.dll"))
+              {
+                var file = jvm._options.fuzionHome().resolve("lib/" + str);
+                if (file.toFile().exists())
+                  {
+                    jvm._options.verbosePrintln(2, " + " + str);
+                    jvm._jos.putNextEntry(new JarEntry(str));
+                    jvm._jos.write(Files.readAllBytes(file));
+                  }
+              }
           }
         catch (IOException io)
           {
@@ -873,20 +883,23 @@ should be avoided as much as possible.
                                       LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
                                       PATH="$PATH:$SCRIPT_PATH" \
                                       DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
-                                      java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
+                                      java --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
                                       """,
                                       FUZION_COMMAND_PROPERTY,
                                       args));
           }
         f.setExecutable(true);
-        for (String str : new List<>("libfuzion_rt.so", "libfuzion_rt.dylib", "fuzion_rt.dll"))
+        if (!_options._saveJAR)
           {
-            var file = Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY)).resolve("lib/" + str);
-            if (file.toFile().exists())
+            for (String str : new List<>("libfuzion_rt.so", "libfuzion_rt.dylib", "fuzion_rt.dll"))
               {
-                Files.copy(file,
-                           executableName.toAbsolutePath().getParent().resolve(str),
-                           StandardCopyOption.REPLACE_EXISTING);
+                var file = Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY)).resolve("lib/" + str);
+                if (file.toFile().exists())
+                  {
+                    Files.copy(file,
+                               executableName.toAbsolutePath().getParent().resolve(str),
+                               StandardCopyOption.REPLACE_EXISTING);
+                  }
               }
           }
       }
@@ -1258,7 +1271,7 @@ should be avoided as much as possible.
   {
     if (TRACE_RETURN)
       {
-        var msg = "return from " + _fuir.clazzAsString(cl);
+        var msg = "return from " + _fuir.clazzName(cl);
         return callRuntimeTrace(msg);
       }
     else
@@ -1306,16 +1319,16 @@ should be avoided as much as possible.
                *
                */
             tr
-             .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsString(cl)))
+             .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzName(cl)))
           // field does not exist and signature is void and real type is also fuzions void
           : _fuir.clazzIsVoidType(t)
           ?
             /* Example:
 
               count(a,b,n i32) =>
-                yak n
+                yap n
                 if a < b then
-                  yak " "
+                  yap " "
                   count a+1 b n+1
                 else
                   say ""
@@ -1325,7 +1338,7 @@ should be avoided as much as possible.
 
               */
             tr
-              .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsString(cl)))
+              .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzName(cl)))
           // field does not exist and signature is void and real type is not fuzions void
           :
               /**
@@ -1380,7 +1393,7 @@ should be avoided as much as possible.
    *
    * @param cl id of clazz to generate code for
    *
-   * @return the number of slotes used for local vars
+   * @return the number of slots used for local vars
    */
   int numLocals(int cl)
   {
@@ -1484,7 +1497,7 @@ should be avoided as much as possible.
 
     var locals = initialLocals(cl);
 
-    var code_cl = cf.codeAttribute(_fuir.clazzAsString(cl),
+    var code_cl = cf.codeAttribute(_fuir.clazzName(cl),
                                     bc_cl,
                                     new List<>(), dev.flang.be.jvm.classfile.ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
 
@@ -1604,6 +1617,7 @@ should be avoided as much as possible.
       .andThen(Expr.DUP_X1)                           //        cs, cs, arr, arr, fsa, byt, fsa
       .andThen(Expr.SWAP)                             //        cs, cs, arr, arr, fsa, fsa, byt
       .andThen(Expr.ARRAYLENGTH)                      //        cs, cs, arr, arr, fsa, fsa, len
+      .andThen(Expr.I2L)
       .andThen(putfield(length))                      //        cs, cs, arr, arr, fsa
       .andThen(putfield(internalArray))               //        cs, cs, arr
       .andThen(putfield(cs_utf8_data))                //        cs
@@ -1664,7 +1678,7 @@ should be avoided as much as possible.
   {
     return const_array(arrayCl,
                        bytesArrayAsString(bytes)
-                       .andThen(Expr.iconst(bytes.length))
+                       .andThen(Expr.lconst(bytes.length))
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_ARRAY_8_SIG,
@@ -1794,7 +1808,7 @@ should be avoided as much as possible.
       .andThen(arr)                                   //        cs, cs, fsa, fsa, arr
       .andThen(putfield(data))                        //        cs, cs, fsa
       .andThen(Expr.DUP)                              //        cs, cs, fsa, fsa
-      .andThen(Expr.iconst(len))                      //        cs, cs, fsa, fsa, len
+      .andThen(Expr.lconst(len))                      //        cs, cs, fsa, fsa, len
       .andThen(putfield(length))                      //        cs, cs, fsa
       .andThen(putfield(internalArray))               //        cs
       .is(_types.resultType(arrayCl));                //        -
@@ -1854,7 +1868,7 @@ should be avoided as much as possible.
     if (fieldExists(field))
       {
         return
-          Expr.comment("Getting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          Expr.comment("Getting field `" + _fuir.clazzName(field) + "` in `" + _fuir.clazzName(cl) + "`")
           .andThen(Expr.getfield(_names.javaClass(cl),
                                  _names.field(field),
                                  _types.resultType(rt)));
@@ -1862,7 +1876,7 @@ should be avoided as much as possible.
     else
       {
         return
-          Expr.comment("Eliminated getfield since field does not exist: `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          Expr.comment("Eliminated getfield since field does not exist: `" + _fuir.clazzName(field) + "` in `" + _fuir.clazzName(cl) + "`")
           .andThen(Expr.POP); // objectref
       }
   }
@@ -1881,7 +1895,7 @@ should be avoided as much as possible.
     if (fieldExists(field))
       {
         return
-          Expr.comment("Setting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          Expr.comment("Setting field `" + _fuir.clazzName(field) + "` in `" + _fuir.clazzName(cl) + "`")
           .andThen(Expr.putfield(_names.javaClass(cl),
                                  _names.field(field),
                                  _types.resultType(rt)));
@@ -1890,7 +1904,7 @@ should be avoided as much as possible.
       {
         var popv = _types.javaType(rt).pop();
         return
-          Expr.comment("Eliminated putfield since field does not exist: `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          Expr.comment("Eliminated putfield since field does not exist: `" + _fuir.clazzName(field) + "` in `" + _fuir.clazzName(cl) + "`")
           .andThen(popv)
           .andThen(Expr.POP);
 
@@ -1971,9 +1985,9 @@ should be avoided as much as possible.
       }
     else
       {
-        res = Expr.comment("Not setting field `" + _fuir.clazzAsString(f) + "`: "+
-                           (!_fuir.hasData(rt)       ? "type `" + _fuir.clazzAsString(rt) + "` is a unit type" :
-                            _fuir.isScalar(occ) ? "target type is a scalar `" + _fuir.clazzAsString(occ) + "`"
+        res = Expr.comment("Not setting field `" + _fuir.clazzName(f) + "`: "+
+                           (!_fuir.hasData(rt)       ? "type `" + _fuir.clazzName(rt) + "` is a unit type" :
+                            _fuir.isScalar(occ) ? "target type is a scalar `" + _fuir.clazzName(occ) + "`"
                                                  : "FUIR.clazzNeedsCode() is false for this field"))
           // make sure we evaluate tvalue and value:
           .andThen(tvalue.drop())
@@ -2013,6 +2027,7 @@ should be avoided as much as possible.
     if (!_fuir.clazzIsRef(rt) &&
         (f == NO_CLAZZ || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
         !_fuir.isScalar(rt) &&
+        !_fuir.clazzIsUnitType(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
         var vti = _types.resultType(rt).vti();

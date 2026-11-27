@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.tools.docs;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.util.ANY;
 
@@ -46,7 +45,15 @@ public class Util extends ANY
      feature.outer()
       .arguments()
       .stream()
-      .anyMatch(f -> f.equals(feature));
+       .anyMatch(f -> f.equals(feature));
+  }
+
+  /**
+   * Is this a value argument of a constructor, accessible like a field?
+   */
+  static boolean isConstructorArgument(AbstractFeature feature)
+  {
+    return isArgument(feature) && feature.isField() && feature.outer().isConstructor();
   }
 
 
@@ -63,23 +70,24 @@ public class Util extends ANY
   }
 
 
-  static enum Kind {
-    RefConstructor,
-    ValConstructor,
-    Type,
-    Cotype,
-    Other;
-
-    static Kind classify(AbstractFeature af) {
-      return
-      // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
-        (af.outer() != null && af.outer().isCotype() ||
-        (af.outer().compareTo(Types.resolved.f_Type) == 0)                    ? Kind.Cotype
-        : !af.definesType()                                                   ? Kind.Other
-        : af.isChoice() || af.visibility().eraseTypeVisibility() != Visi.PUB  ? Kind.Type
-        : af.isRef()                                                          ? Kind.RefConstructor
-                                                                              : Kind.ValConstructor);
-    }
+  /**
+   * Is this declaration part of an internal or anonymous implementation?
+   * Public members inside such scopes are internal too. Ordinary private
+   * scopes do not affect this check. Cotypes represent their original feature's
+   * type namespace and are checked through that origin.
+   */
+  static boolean isInternalFeature(AbstractFeature af)
+  {
+    boolean result = false;
+    for (var f = af; !result && f != null && !f.isUniverse(); f = f.outer())
+      {
+        if (f.isCotype())
+          {
+            f = f.cotypeOrigin();
+          }
+        result = f.featureName().isInternal() || f.featureName().isNameless();
+      }
+    return result;
   }
 
 }

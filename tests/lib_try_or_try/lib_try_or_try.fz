@@ -32,7 +32,7 @@
 # ```
 # catch(code_catch ERROR->T) T =>
 #     lm ! ()->
-#           m := lm.env.new (option ERROR nil)
+#           m := lm.env.var (option ERROR nil)
 #           v := F.new e->
 #               m <- e
 #               F.abort
@@ -41,13 +41,13 @@
 # and some example code
 # ```
 #    panic
-#      .try ()->(envir.args.nth 3).or_panic.trim.parse_i32.or_panic
-#      .or_try _->envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic
+#      .try ()->(envir.Args.env.nth 3).or_panic.trim.parse_i32.or_panic
+#      .or_try _->envir.Vars.env["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic
 #      .catch  _->4
 # ```
 
-#  1) the catch of the try returned from `or_try` would first instatiate an lm. lets called it lm_1.
-#  2) the code of the catch calls the catch of the original try, this instantiates another lm, lets call it lm_2.
+#  1) the catch of the try returned from `or_try` would first instate `lm`. Let's call it `lm_1`.
+#  2) the code of the catch calls the catch of the original try, which instates `lm` again. Let's call it `lm_2`.
 #  3) code of the original try fails, writing to `m <- e`, m was created from lm_2, so all is good
 #  4) code_catch m.get.or_panic is now executed, this code also fails, also writing to m via `m <- e` but this m was created from lm_1 while lm_2 is still instated => we get an invalid mutate error.
 
@@ -56,9 +56,8 @@
 
 x :=
   panic
-    .try ()->(envir.args.nth 3).or_panic.trim.parse_i32.or_panic
-    .or_try _->(say "failed envir args"; envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic)
+    .try ()->(envir.Args.env.nth 3).or_panic.trim.parse_i32.or_panic
+    .or_try _->(say "failed envir args"; envir.Vars.env["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic)
     .catch  _->(say "failed envir vars";4)
 
 say x
-

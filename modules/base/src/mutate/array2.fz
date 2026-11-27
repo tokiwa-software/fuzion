@@ -25,7 +25,7 @@
 #
 module:public array2 (
        # element type
-       public T type,
+       T : Any,
 
        # length of the array to create
        public redef length0 i64,
@@ -38,30 +38,42 @@ module:public array2 (
       ) : container.Mutable_Array2 T mutate.this, mutable_element
 pre
   safety: length0 ≥ 0
-  safety: length0 ≤ data.length.as_i64
+  safety: length0 ≤ data.length
   safety: length1 ≥ 0
-  safety: length1 ≤ data.length.as_i64
+  safety: length1 ≤ data.length
   safety: length0 *? length1 >=? 0
-  safety: length0 * length1 ≤ data.length.as_i64
+  safety: length0 * length1 ≤ data.length
 is
+
+
+  # A mutable array might be inaccessible if we are running in a thread that is
+  # not permitted by the underlying mutate instance to access its mutable elements
+  # at this point. See `blocking_mutate` and `mutate.exclusive`.
+  #
+  public redef is_accessible bool
+  =>
+    is_exclusive
+
 
   # get element at given index i
   #
-  public redef index [ ] (I type : integer, i1, i2 I) T =>
-    data[i1.as_i32 * length1.as_i32 + i2.as_i32]
+  public redef index [ ] (I : integer, i1, i2 I) T =>
+    check_and_replace
+    data[i1.as_i64 * length1 + i2.as_i64]
 
 
   # set element at given index i to given value o
   #
-  public redef set [ ] (I type : integer, i1, i2 I, o T) unit =>
+  public redef set [ ] (I : integer, i1, i2 I, o T) unit =>
     check_and_replace
-    data[i1.as_i32 * length1.as_i32 + i2.as_i32] := o
+    data[i1.as_i64 * length1.as_i64 + i2.as_i64] := o
 
 
   # create immutable array from this
   #
   public redef as_array universe.array T =>
-    array (length0.as_i32 * length1.as_i32) i->data[i]
+    check_and_replace
+    universe.array (length0 * length1) i->data[i]
 
 
   # create a list from this array
@@ -85,11 +97,11 @@ is
 
    ) mutate.this.array2 T
   =>
-    data := fuzion.sys.internal_array_init T (length0.as_i32 * length1.as_i32)
+    data := fuzion.sys.internal_array_init T (length0 * length1)
 
     for i1 in (i64 0)..length0-1 do
       for i2 in (i64 0)..length1-1 do
-        data[i1.as_i32 * length1.as_i32 + i2.as_i32] := init
+        data[i1 * length1 + i2] := init
 
     mutate.this.env.array2 length0 length1 data unit
 
@@ -97,5 +109,5 @@ is
 # convenience feature for creating a new array2,
 # in some cases even with type inference
 #
-public new_array2 (T type, length0, length1 i64, init T) container.Mutable_Array2 T mutate.this =>
+public new_array2 (T : Any, length0, length1 i64, init T) container.Mutable_Array2 T mutate.this =>
   (mutate.this.array2 T).new length0 length1 init

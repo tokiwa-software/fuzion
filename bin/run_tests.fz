@@ -26,7 +26,7 @@
 
 # envir vars as map
 #
-envir_vars := envir.vars.map_of [
+envir_vars := envir.Vars.env.map_of [
     "PATH",
     "LANG",
     "JAVA_HOME",
@@ -45,39 +45,8 @@ envir_vars := envir.vars.map_of [
 #
 max_test_time := (time.duration.min 10)
 
-# execute this Sequence of process+args
-#
-Sequence.prefix ! =>
-  seq := map x->x.as_string
-  os.process.start seq.first.or_panic (seq.drop 1) envir_vars
-            .bind (p -> tokiwa.record_process p Sequence.this.as_string max_test_time nil)
 
-
-# feed this string to a new process
-#
-String.infix | (seq Sequence String) =>
-
-  lm : mutate is
-  lm ! ()->
-    match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
-      e error => panic "failed executing $seq, error is $e"
-      p os.process =>
-        _ := p.with_in unit lm ()->
-          # NYI: ambiguous result type:
-          # _ := write_to lm
-          _ := (io.buffered lm).writer.env.write String.this
-          _ := (io.buffered lm).writer.env.flush
-          _ := p.close_in
-        tokiwa.record_process p seq.as_string max_test_time nil
-
-
-# execute this string by splitting at all whitespaces
-#
-String.prefix !! =>
-  !split
-
-
-append_line(mtx concur.sync.mutex, dest path, str String) =>
+append_line(mtx concur.sync.mutex, dest io.path, str String) =>
   mtx.synchronized ()->
     (io.file.use dest io.file.mode.append ()->
       "$str\n".write_to io.file.file_mutate .or_panic).or_panic
@@ -85,17 +54,16 @@ append_line(mtx concur.sync.mutex, dest path, str String) =>
 ########### run_tests ###############
 
 
-find_tests(dir path) array path =>
+find_tests(dir io.path) array io.path =>
   m : mutate is
   tests := m ! ()->
     io.dir.use _ dir ()->
-      res := (m.array path).type.new 0 (path.of "")
-      _ :=
-        for x := io.dir.open.read
-        while x.ok
-          dir_x := dir.resolve x.or_panic
-          if io.file.exists (dir_x.resolve "Makefile")
-            res.add dir_x
+      res := (container.Dynamic_Array m io.path).empty
+      for x := io.dir.Read.env.next
+      while x ? io.path => true | * => false
+        dir_x := dir.resolve (x ? p io.path => p | * => panic "unexpected case")
+        if io.file.exists (dir_x.resolve "Makefile")
+          res.add dir_x
       res.as_array
 
   tests
@@ -113,28 +81,30 @@ main =>
 
   mtx := concur.sync.mutex.new.or_panic
 
-  append_line(dest path, str String) =>
+  append_line(dest io.path, str String) =>
     append_line mtx dest str
 
   # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
 
-  if (envir.args.count != 3)
+  if (envir.Args.env.count != 3)
     say "wrong argument count"
     say "usage:"
     say "run_tests.fz <build_dir> <target>"
-    exit 1
+    Exit.env.exit 1
 
-  build_dir := path.of envir.args[1]
-  target := envir.args[2]
+  build_dir := io.path.of envir.Args.env[1]
+  target := envir.Args.env[2]
 
+  say ""
+  say_section "start testing $target"
 
   # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
   # first, try third arg then try a few executables, if everything fails use default value
   thread_count :=
-      envir.vars["FUZION_RUN_TESTS_PARALLELISM"]      .flat_map (    .trim.parse_i32) .first
-        .or_else (     (!!"nproc --all"              ).flat_map (.out.trim.parse_i32) .first
-          .or_else (   (!!"getconf _NPROCESSORS_ONLN").flat_map (.out.trim.parse_i32) .first
-            .or_else ( (!!"sysctl -n hw.ncpu"        ).flat_map (.out.trim.parse_i32) .first
+      envir.Vars.env["FUZION_RUN_TESTS_PARALLELISM"]     .flat_map (    .trim.parse_i64) .first
+        .or_else (    "nproc --all"              .execute.flat_map (.out.trim.parse_i64) .first
+          .or_else (  "getconf _NPROCESSORS_ONLN".execute.flat_map (.out.trim.parse_i64) .first
+            .or_else ("sysctl -n hw.ncpu"        .execute.flat_map (.out.trim.parse_i64) .first
               .or_else 4)))
 
   tests := find_tests (build_dir.resolve "tests")
@@ -148,48 +118,48 @@ main =>
   _ := io.file.delete failures
 
   # for storing the elapsed time of each test
-  test_durations := (lock_free.Map path time.duration).empty
+  test_durations := (lock_free.Map io.path time.duration).empty
 
-  run_single_test(test path) =>
+  run_single_test(test io.path) =>
     if (
        io.file.exists (test.resolve "skip") ||
        io.file.exists (test.resolve "skip_$target") ||
        (os.platform.or_panic ? os.windows => io.file.exists (test.resolve "skip_win") | os.posix => false)
        )
-      yak "_"
+      yap "_"
       append_line results "$test: skipped"
     else
 
       opt_res, elapsed_time := time.stopwatch _ ()->
-            !!"make $target --environment-overrides --directory=$test"
+            "make $target --environment-overrides --directory=$test".execute envir_vars nil max_test_time
 
       test_durations.put test elapsed_time
 
       match opt_res
         e error =>
-          yak "!"
-          append_line results "$test in {elapsed_time}: $e error"
+          yap "!"
+          append_line results "$test in $(elapsed_time): $e error"
           append_line failures "$test: $e"
         res tokiwa.process_result =>
           if res.exit_code = 0 || target = "fuir" then
-            yak "."
-            append_line results "$test in {elapsed_time}: ok"
+            yap "."
+            append_line results "$test in $(elapsed_time): ok"
           else
-            yak "#"
-            append_line results "$test in {elapsed_time}: failed"
+            yap "#"
+            append_line results "$test in $(elapsed_time): failed"
             append_line failures res.out
             append_line failures res.err
 
 
-  say "{tests.count} tests, running $thread_count tests in parallel."
+  say "$(tests.count) tests, running $thread_count tests in parallel."
 
 
 
   elapsed_time_total := time.stopwatch ()->
-    _ := concur.thread_pool thread_count ()->
+    r := concur.thread_pool thread_count ()->
       for t in tests do
         check concur.thread_pool.env.submit (run_single_test t)
-
+    r.or_panic
 
   results_content := (io.slurp results)
     .or_panic
@@ -203,11 +173,11 @@ main =>
   produced_error := results_content.count (.ends_with "error"  )
 
   say ""
-  say ("$ok/{tests.count} tests passed" +
+  say ("$ok/$(tests.count) tests passed" +
        ", $skipped skipped" +
        ", $failed failed" +
        (produced_error = 0 ? "" :", $produced_error produced error") +
-       " in {elapsed_time_total.as_string.trim}.")
+       " in $(elapsed_time_total.as_string.trim).")
 
   max_recorded := test_durations
     .values
@@ -219,7 +189,7 @@ main =>
   say h
 
   if failed + produced_error > 0
-    say_section "Failed tests"
+    say_section "Failed tests using $target backend"
 
     failed_tests := results_content.filter (.ends_with "failed")
 
@@ -229,8 +199,11 @@ main =>
     say (io.slurp failures)
     say_section "run_tests.failures END"
 
+    common_prefix := 1 + results_content.map (.split[0].find_last "/" .or_else -1)
+                                        .min.or_else 0
+
     failed_test_names := failed_tests
-                           .map (.split[0].substring 12) # remove "build/tests/"
+                           .map (.split[0].substring common_prefix) # remove prefix, e.g., "build/tests/"
                            .as_string " "
 
     say """
@@ -248,7 +221,7 @@ main =>
         done
         """
 
-    set_exit_code 1 .or_panic
+    Exit.env.set_exit_code 1 .or_panic
 
 
   num_slowest := 10
@@ -256,28 +229,23 @@ main =>
 
   test_durations
     .items
-    .sort_by (td1,td2 -> td2.1<=td1.1)
+    .sort_by (t -> property.reverse_order t.1)
     .take num_slowest
-    .for_each (td -> say "{td.1.as_string_pad} {td.0}")
+    .for_each (td -> say "$(td.1.as_string_pad) $(td.0)")
 
-  say_section "$target done"
+  say ""
 
-  match
-    {
-    envir
-      .vars
-      .get "INFLUXDB_TOKEN"
-    }
+  match envir.Vars.env.get "INFLUXDB_TOKEN"
     nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
     token String =>
       data := test_durations.items
-        .map td->"test_runtime,backend={target},test={td.0} value={td.1.millis}"
+        .map td->"test_runtime,backend=$(target),test=$(td.0) value=$(td.1.millis)"
       if token.is_blank
         say "INFLUXDB_TOKEN is blank, not sending to influxdb."
       else
         say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
-        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend={target} total_time={elapsed_time_total.millis}"
+        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend=$(target) total_time=$(elapsed_time_total.millis)"
 
-  exit
+  Exit.env.exit
 
 _ := main

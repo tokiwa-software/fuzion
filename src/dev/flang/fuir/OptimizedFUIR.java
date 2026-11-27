@@ -64,6 +64,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
   @Override public boolean clazzIsUnitType(int cl){ return _original.clazzIsUnitType(cl); }
   @Override public int clazzOuterRef(int cl){  return _original.clazzOuterRef(cl); }
   @Override public int accessedClazz(int s){ return _original.accessedClazz(s); }
+  @Override public boolean clazzNeedsCode(int s){ return _original.clazzNeedsCode(s); }
 
 
   /*----------------------  serializing FUIR  ----------------------*/
@@ -91,7 +92,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * for clazz `cl` get all argument clazzes.
+   * for clazz {@code cl} get all argument clazzes.
    */
   private int[] clazzArgs(int cl)
   {
@@ -105,7 +106,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * for choice `cl` get the choice element clazzes.
+   * for choice {@code cl} get the choice element clazzes.
    */
   private int[] clazzChoices(int cl)
   {
@@ -120,11 +121,11 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * the actual generics for clazz `cl`
+   * the actual generics for clazz {@code cl}
    */
   private int[] clazzActualGenerics(int cl)
   {
-    var cc = id2clazz(cl);
+    var cc = clazz(cl);
     var generics = cc.actualTypeParameters();
     var result = new int[generics.length];
     for (int gix = 0; gix < result.length; gix++)
@@ -136,7 +137,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * for clazz `cl` get all field clazzes.
+   * for clazz {@code cl} get all field clazzes.
    */
   private int[] clazzFields(int cl)
   {
@@ -205,7 +206,8 @@ public class OptimizedFUIR extends GeneratingFUIR {
                 lookupStaticFinally(cl),
                 isRoutine ? lifeTime(cl) : null,
                 clazzTypeName(cl),
-                clazzAsStringHuman(cl),
+                clazzName(cl),
+                clazzNameHuman(cl),
                 clazzSrcFile(cl),
                 clazzDeclarationPos(cl).bytePos(),
                 lookupJavaRef(cl),
@@ -217,7 +219,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
         var sites = new SiteRecord[siteCount];
         for (int s = SITE_BASE; s < SITE_BASE+siteCount; s++)
           {
-            if (invalidSite(s))
+            if (!withinCode(s))
               {
                 sites[s-SITE_BASE] = new SiteRecord(
                   clazzAt(s), false, false, null, NO_CLAZZ, null, NO_CLAZZ, null,
@@ -275,19 +277,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * Does `s` represent an invalid site?
-   *
-   * This either means `s` does not point to any code
-   * or the code was never accessed during the DFA.
-   */
-  private boolean invalidSite(int s)
-  {
-    return !withinCode(s) || !_accessedSites.get(s-SITE_BASE);
-  }
-
-
-  /**
-   * For the match at `s` for each case get the tags
+   * For the match at {@code s} for each case get the tags
    * that it matches.
    */
   private int[][] matchCaseTags(int s)
@@ -302,7 +292,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * For the match at `s` get the sites of the code of the cases
+   * For the match at {@code s} get the sites of the code of the cases
    */
   private int[] matchCaseCode(int s)
   {
@@ -316,7 +306,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * For the match at `s` get the clazzes of the field cases
+   * For the match at {@code s} get the clazzes of the field cases
    */
   private int[] matchCaseFields(int s)
   {

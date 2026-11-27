@@ -129,7 +129,7 @@ public class Intrinsics extends ANY
   public static int     u16_as_i32                  (char   a          ) { return                 (      a); }
   public static byte    u16_low8bits                (char   a          ) { return (byte)          (      a); }
   public static short   u16_cast_to_i16             (char   a          ) { return (short)         (      a); }
-  public static char    u16_prefix_minusDEGREE      (char   a, char   b) { return (char)          (  -   a); }
+  public static char    u16_prefix_minusDEGREE      (char   a          ) { return (char)          (  -   a); }
   public static char    u16_infix_plusDEGREE        (char   a, char   b) { return (char)          (a +   b); }
   public static char    u16_infix_minusDEGREE       (char   a, char   b) { return (char)          (a -   b); }
   public static char    u16_infix_timesDEGREE       (char   a, char   b) { return (char)          (a *   b); }
@@ -211,7 +211,7 @@ public class Intrinsics extends ANY
     return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
   }
 
-  public static void fuzion_sys_thread_join0(Object thread)
+  public static int fuzion_sys_thread_join0(Object thread)
   {
     var result = false;
     do
@@ -227,6 +227,22 @@ public class Intrinsics extends ANY
           }
       }
     while (!result);
+    return 0;
+  }
+
+  public static int fuzion_sys_thread_set_policy(Object thread, int policy, int priority)
+  {
+    return 38 /* ENOSYS - Function not implemented */;
+  }
+
+  public static int fuzion_sys_thread_set_affinity0(Object thread, Object cores, int cores_len)
+  {
+    return 38 /* ENOSYS - Function not implemented */;
+  }
+
+    public static long fuzion_sys_thread_cpu_time0(Object thread)
+  {
+    return java.lang.management.ManagementFactory.getThreadMXBean().getThreadCpuTime(((Thread) thread).threadId());
   }
 
 }

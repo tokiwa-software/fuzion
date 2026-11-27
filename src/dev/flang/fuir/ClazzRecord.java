@@ -35,7 +35,7 @@ import dev.flang.ir.IR.FeatureKind;
  * NYI: UNDER DEVELOPMENT:
  * remove this once we have custom serialization of FUIR
  */
-public record ClazzRecord(
+record ClazzRecord(
   String clazzBaseName,
   int clazzOuterClazz,
   boolean clazzIsBoxed,
@@ -58,7 +58,8 @@ public record ClazzRecord(
   int lookupStaticFinally,
   LifeTime lifeTime,
   byte[] clazzTypeName,
-  String clazzAsStringHuman,
+  String clazzName,
+  String clazzNameHuman,
   String clazzSrcFile,
   int clazzSrcBytePos,
   int lookupJavaRef,

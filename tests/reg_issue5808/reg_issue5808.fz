@@ -25,7 +25,7 @@ reg_issue5808 =>
 
   # original code from the issue
 
-  x(O type) is
+  x(O : Any) is
     f(x,y Q) => say "hi x"
 
   y : x i32 is
@@ -34,7 +34,7 @@ reg_issue5808 =>
 
   # additional tests
 
-  a(O type) is
+  a(O : Any) is
     f(x P, y Q, z i32) => say "hi x"
 
   b : a i32 is

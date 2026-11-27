@@ -34,6 +34,9 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.TreeMap;
+
+import java.util.concurrent.TimeUnit;
+
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -65,6 +68,16 @@ public class Intrinsics extends ANY
   }
 
 
+  /*-----------------------------  records  -----------------------------*/
+
+
+  /**
+   * A JvmCondition, we try to mimic a pthread condition connected to a clock
+   * with given clockid_t.
+   */
+  record JvmCondition(Condition cnd, int clockid) { }
+
+
   /*------------------------------  enums  ------------------------------*/
 
 
@@ -90,6 +103,11 @@ public class Intrinsics extends ANY
 
   static final TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
 
+  /* NYI: UNDER DEVELOPMENT: Constants to be kept in sync with `modules/baser/src/posix.fz`, should be automated.
+   */
+  static final int CLOCK_REALTIME  = 0;
+  static final int CLOCK_MONOTONIC = 1;
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -104,6 +122,7 @@ public class Intrinsics extends ANY
   private static void put(String n1, String n2, String n3, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
   private static void put(String n1, String n2, String n3, String n4, String n5, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); }
+  private static void put(String n1, String n2, String n3, String n4, String n5, String n6, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); put(n6, c); }
 
 
   /**
@@ -173,69 +192,76 @@ public class Intrinsics extends ANY
     put("Type.name"            , (executor, innerClazz) -> args ->
       Interpreter.boxedConstString(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
 
-    put("concur.atomic.compare_and_swap0",  (executor, innerClazz) -> args ->
+    put("mutate.var.compare_and_swap0",  (executor, innerClazz) -> args ->
         {
-          var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var nc = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupMutableValue(nc);
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              var res = Interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
-              if (Interpreter.compareField(f, a, thiz, expected))
+              var res = Interpreter.getField(f, nc, thiz, false); // NYI: HACK: We must clone this!
+              if (Interpreter.compareField(f, nc, thiz, expected))
                 {
                   res = expected;   // NYI: HACK: workaround since res was not cloned
-                  Interpreter.setField(f, a, thiz, new_value);
+                  Interpreter.setField(f, nc, thiz, new_value);
                 }
               return res;
             }
         });
-    put("concur.atomic.compare_and_set0",  (executor, innerClazz) -> args ->
+
+    put("mutate.var.compare_and_set0",  (executor, innerClazz) -> args ->
         {
-          var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var nc = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupMutableValue(nc);
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              if (Interpreter.compareField(f, a, thiz, expected))
+              if (Interpreter.compareField(f, nc, thiz, expected))
                 {
-                  Interpreter.setField(f, a, thiz, new_value);
+                  Interpreter.setField(f, nc, thiz, new_value);
                   return new boolValue(true);
                 }
               return new boolValue(false);
             }
         });
-    put("concur.atomic.racy_accesses_supported",  (executor, innerClazz) -> args ->
+
+    put("mutate.atomic_access_supported",  (executor, innerClazz) -> args ->
         {
-          var t = executor.fuir().clazzActualGeneric(executor.fuir().clazzOuterClazz(innerClazz), 0);
+          var t = executor.fuir().clazzActualGeneric(innerClazz, 0);
           return new boolValue
             (executor.fuir().clazzIsRef(t)                            ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i8  )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i16 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_i64 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u8  )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u16 )) ||
              (t == executor.fuir().clazz(SpecialClazzes.c_u32 )) ||
+             // (t == executor.fuir().clazz(SpecialClazzes.c_u64 )) ||  -- we split up 64-bit values to store them in an array of ints
              (t == executor.fuir().clazz(SpecialClazzes.c_f32 )) ||
+             // (t == executor.fuir().clazz(SpecialClazzes.c_f64 )) ||  -- we split up 64-bit values to store them in an array of ints
              (t == executor.fuir().clazz(SpecialClazzes.c_bool)));
         });
-    put("concur.atomic.read0",  (executor, innerClazz) -> args ->
+
+    put("mutate.var.atomic_read0",  (executor, innerClazz) -> args ->
         {
           var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var f = executor.fuir().lookupMutableValue(a);
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
               return Interpreter.getField(f, a, thiz, false);
             }
         });
-    put("concur.atomic.write0", (executor, innerClazz) -> args ->
+
+    put("mutate.var.atomic_write0",  (executor, innerClazz) -> args ->
         {
           var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupAtomicValue(a);
+          var f = executor.fuir().lookupMutableValue(a);
           var thiz = args.get(0);
           synchronized (LOCK_FOR_ATOMIC)
             {
@@ -244,13 +270,13 @@ public class Intrinsics extends ANY
           return Value.UNIT;
         });
 
-    put("concur.util.load_fence",   (executor, innerClazz) -> args ->
+    put("mutate.read_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
           return Value.UNIT;
         });
 
-    put("concur.util.store_fence",  (executor, innerClazz) -> args ->
+    put("mutate.write_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
           return Value.UNIT;
@@ -263,7 +289,7 @@ public class Intrinsics extends ANY
           var fuir = executor.fuir();
           if (i == 0)
             {
-              return  Interpreter.boxedConstString(fuir.clazzAsString(fuir.mainClazz()));
+              return  Interpreter.boxedConstString(fuir.clazzName(fuir.mainClazz()));
             }
           else
             {
@@ -275,7 +301,7 @@ public class Intrinsics extends ANY
         {
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
-                         Executor.callStack(executor.fuir()));
+                         Executor.callStack());
           return Value.UNIT;
         });
 
@@ -400,7 +426,7 @@ public class Intrinsics extends ANY
             case c_i64  -> Long     .valueOf(args.get(1).i64Value());
             case c_i8   -> Byte     .valueOf((byte)args.get(1).i8Value());
             case c_u16  -> Character.valueOf((char)args.get(1).u16Value());
-            default -> throw new Error("NYI: BUG: primitive_to_java_object not implemented for " + executor.fuir().clazzAsString(executor.fuir().clazzActualGeneric(innerClazz, 0)));
+            default -> throw new Error("unexpected case: primitive_to_java_object not implemented for " + executor.fuir().clazzName(executor.fuir().clazzActualGeneric(innerClazz, 0)));
           };
           return new JavaRef(res);
         });
@@ -430,16 +456,14 @@ public class Intrinsics extends ANY
                               /* type  */ et);
           return Value.UNIT;
         });
-    put("fuzion.sys.internal_array.freeze", (executor, innerClazz) -> args ->
-        {
-          return Value.UNIT;
-        });
-    put("fuzion.sys.internal_array.ensure_not_frozen", (executor, innerClazz) -> args ->
-        {
-          return Value.UNIT;
-        });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.boxedConstString(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    put("fuzion.sys.thread.current", (executor, innerClazz) -> args ->
+        {
+          // NYI: CLEANUP: should not use javaObjectToInstance
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
+          return JavaInterface.javaObjectToInstance(FuzionThread.current(), resultClazz);
+        });
     put("fuzion.sys.thread.spawn0", (executor, innerClazz) -> args ->
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);
@@ -469,12 +493,28 @@ public class Intrinsics extends ANY
                 }
             }
           while (!result);
-          return Value.UNIT;
+          return new i32Value(0);
+        });
+    put("fuzion.sys.thread.set_policy", (executor, innerClazz) -> args ->
+        {
+          return new i32Value(38 /* ENOSYS - Function not implemented */);
+        });
+    put("fuzion.sys.thread.set_affinity0", (executor, innerClazz) -> args ->
+        {
+          return new i32Value(38 /* ENOSYS - Function not implemented */);
+        });
+    put("fuzion.sys.thread.cpu_time0", (executor, innerClazz) -> args ->
+        {
+          var t = ((JavaRef) args.get(1))._javaRef;
+          // `fuzion.sys.thread.current` results in a FuzionThread, `spawn0` in a Java Thread
+          var thread = t instanceof FuzionThread ft ? ft._javaThread : (Thread) t;
+          return new i64Value(java.lang.management.ManagementFactory.getThreadMXBean().getThreadCpuTime(thread.threadId()));
         });
 
     put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));
     put("debug"                 , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionDebug()));
     put("debug_level"           , (executor, innerClazz) -> args -> new i32Value (executor.options().fuzionDebugLevel()));
+    put("choice.tag"            , (executor, innerClazz) -> args -> new i32Value (executor.tagAndVal(                       args.get(0)).v0()      ));
     put("i8.as_i32"             , (executor, innerClazz) -> args -> new i32Value (              (                           args.get(0).i8Value() )));
     put("i8.cast_to_u8"         , (executor, innerClazz) -> args -> new u8Value  (       0xff & (                           args.get(0).i8Value() )));
     put("i8.prefix -°"          , (executor, innerClazz) -> args -> new i8Value  ((int) (byte)  (                       -   args.get(0).i8Value() )));
@@ -626,11 +666,12 @@ public class Intrinsics extends ANY
     put("f64.as_i64_lax"        , (executor, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
     put("f64.as_f32"            , (executor, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.cast_to_u64"       , (executor, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
-    put("effect.type.abort0"      ,
-        "effect.type.default0"    ,
-        FuzionConstants.EFFECT_INSTATE_NAME,
-        "effect.type.is_instated0",
-        "effect.type.replace0"    , (executor, innerClazz) -> effect(executor, innerClazz));
+    put("effect.type.abort0"                 ,
+        "effect.type.instate_at_singularity0",
+        FuzionConstants.EFFECT_INSTATE_NAME  ,
+        "effect.type.is_instated0"           ,
+        "effect.type.set0"                   ,
+        "effect.type.remove0"                , (executor, innerClazz) -> effect(executor, innerClazz));
 
     put("effect.type.from_env",
         "effect.type.unsafe_from_env",
@@ -640,7 +681,7 @@ public class Intrinsics extends ANY
           var result = FuzionThread.current()._effects.get(ecl);
           if (result == null)
             {
-              Errors.fatal("No effect installed: " + executor.fuir().clazzAsStringHuman(ecl));
+              Errors.fatal("No effect installed: " + executor.fuir().clazzNameHuman(ecl));
             }
 
           if (POSTCONDITIONS) ensure
@@ -676,48 +717,72 @@ public class Intrinsics extends ANY
           return new boolValue(false);
         }
     });
-    put("concur.sync.mtx_destroy", (executor, innerClazz) -> args -> executor.unitValue());
+    put("concur.sync.mtx_destroy", (executor, innerClazz) -> args -> Value.UNIT);
 
     /* Condition */
     put("concur.sync.cnd_init", (executor, innerClazz) -> args -> {
       var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
       return JavaInterface.javaObjectToInstance(
-        ((ReentrantLock) ((JavaRef) args.get(1))._javaRef).newCondition(), resultClazz);
+        new JvmCondition(((ReentrantLock) ((JavaRef) args.get(1))._javaRef).newCondition(),
+                         args.get(2).i32Value()),
+        resultClazz);
     });
     put("concur.sync.cnd_signal", (executor, innerClazz) -> args -> {
       try
         {
-          ((Condition) ((JavaRef) args.get(1))._javaRef).signal();
-          return new boolValue(true);
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          jc.cnd.signal();
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
     put("concur.sync.cnd_broadcast", (executor, innerClazz) -> args -> {
       try
         {
-          ((Condition) ((JavaRef) args.get(1))._javaRef).signalAll();
-          return new boolValue(true);
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          jc.cnd.signalAll();
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
     put("concur.sync.cnd_wait", (executor, innerClazz) -> args -> {
       try
         {
-          ((Condition) ((JavaRef) args.get(1))._javaRef).await();
-          return new boolValue(true);
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          jc.cnd.await();
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
-    put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> executor.unitValue());
+    put("concur.sync.cnd_timedwait", (executor, innerClazz) -> args -> {
+      try
+        {
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          var timeout = args.get(3).i64Value();
+          var ns = switch (jc.clockid)
+            {
+            case CLOCK_REALTIME  -> timeout - System.currentTimeMillis() * 1000000L;
+            case CLOCK_MONOTONIC -> timeout - System.nanoTime();
+            default              -> { Errors.fatal("JVM backend unexpected POSIX clockid "+jc.clockid); throw new Error(); }
+            };
+          jc.cnd.await(ns, TimeUnit.NANOSECONDS);
+        }
+      catch (Exception e)
+        {
+          Errors.fatal(e);
+        }
+      return Value.UNIT;
+    });
+    put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> Value.UNIT);
     put("native_string_length", (executor, innerClazz) -> args -> {
       throw new UnsupportedOperationException("NYI: UNDER DEVELOPMENT: native_string_length");
     });
@@ -757,7 +822,13 @@ public class Intrinsics extends ANY
         switch (in)
           {
           case "effect.type.abort0"    : throw new Abort(ecl);
-          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev); } break;
+          case "effect.type.instate_at_singularity0":
+            {
+              check(effects.get(ecl) == null);
+              check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT);
+              effects.put(ecl, ev);
+              break;
+            }
           case FuzionConstants.EFFECT_INSTATE_NAME :
             {
               // save old and instate new effect value ev:
@@ -796,7 +867,9 @@ public class Intrinsics extends ANY
             }
             break;
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
-          case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev);   break;
+          case "effect.type.set0"        : check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT);
+                                           effects.put(ecl, ev);   break;
+          case "effect.type.remove0"     : effects.put(ecl, null); break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");
           }
         return Value.UNIT;

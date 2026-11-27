@@ -36,7 +36,7 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.SourceModule;
 import dev.flang.util.ANY;
 
-public class ParserCache extends ANY
+class ParserCache extends ANY
 {
   private int PARSER_CACHE_MAX_SIZE = 1;
 
@@ -79,7 +79,7 @@ public class ParserCache extends ANY
   public SourceModule sourceModule(AbstractFeature f)
   {
     if (PRECONDITIONS)
-      require(!TypeTool.containsError(f.selfType()));
+      require(!f.selfType().containsError());
     var universe = FeatureTool.universe(f);
     return universe2FrontEndMap.get(universe).sourceModule();
   }

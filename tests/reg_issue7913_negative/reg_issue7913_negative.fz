@@ -1,0 +1,50 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7913_negative
+#
+# -----------------------------------------------------------------------
+
+# Test that space separated actual arguments must be separated by white space
+#
+reg_issue7913_negative =>
+
+  # number followed by string
+  #
+  _ := tuple 4711"a"                  # 1. should flag an error: no white space between actual arguments
+
+  # string followed by parenthesized actual
+  #
+  _ := tuple "a"(3,4)                 # 2. should flag an error: no white space between actual arguments
+
+  # parenthesized actual followed by number
+  #
+  _ := tuple (1)42                    # 3. should flag an error: no white space between actual arguments
+
+  # two missing separators in one line
+  #
+  _ := tuple 4711 "a"(((("b"))))()    # 4. should flag an error: no white space between actual arguments
+
+  # two parenthesized actuals
+  #
+  _ := tuple (1)(2) 3                 # 5. should flag an error: no white space between actual arguments
+
+  # string followed by number in the middle of the list
+  #
+  _ := tuple 1 "a"2 3                 # 6. should flag an error: no white space between actual arguments

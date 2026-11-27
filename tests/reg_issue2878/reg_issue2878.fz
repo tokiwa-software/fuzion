@@ -25,7 +25,6 @@ reg_issue2878 =>
 
   a (f String -> bool) =>
 
-  a s->!s.is_empty # does not work: ->! is parsed as operator
+  a s->!s.is_empty # now works: ->! is split into -> and !
 
   a (s-> !s.is_empty) # works
-

@@ -58,6 +58,8 @@ import dev.flang.fuir.analysis.dfa.DFA;
 
 import dev.flang.opt.Optimizer;
 
+import dev.flang.parser.Parser;
+
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Metrics;
@@ -375,7 +377,7 @@ public class Fuzion extends Tool
     /**
      * backend to dump the IR of the main clazz to stdout
      *
-     * NYI: make this dump all clazzes or give some way to control what clazzes should be dumped.
+     * NYI: UNDER DEVELOPMENT: make this dump all clazzes or give some way to control what clazzes should be dumped.
      */
     dumpFUIR   ("-XdumpFUIR")
     {
@@ -383,6 +385,10 @@ public class Fuzion extends Tool
       void process(FuzionOptions options, FUIR fuir)
       {
         fuir.dumpCode();
+      }
+      boolean serializeFuir()
+      {
+        return true; // this is necessary now, see #7925
       }
     },
 
@@ -768,10 +774,11 @@ public class Fuzion extends Tool
    *
    * @param xtra include extra options such as -Xhelp, -XjavaProf, etc.
    */
+  @Override
   protected String STANDARD_OPTIONS(boolean xtra)
   {
     return super.STANDARD_OPTIONS(xtra) +
-      (xtra ? "[-XfuzionHome=<path>] [-XloadBaseModule=(on|off)] " : "");
+      (xtra ? "[-XfuzionHome=<path>] [-XloadBaseModule=(on|off)] [-XenableSetKeyword]" : "");
   }
 
 
@@ -780,6 +787,7 @@ public class Fuzion extends Tool
    *
    * @param xtra include extra options
    */
+  @Override
   protected String USAGE(boolean xtra)
   {
     var std = STANDARD_OPTIONS(xtra);
@@ -815,7 +823,7 @@ public class Fuzion extends Tool
                            stdBe + std +
                            (b.takesApplicationArgs() ? "[--] " : "") +
                            "(<main> | <srcfile>.fz | - | (-e|-execute) <code>) " +
-                           (b.takesApplicationArgs() ? "[<list of arbitrary arguments for envir.args effect>] " : "");
+                           (b.takesApplicationArgs() ? "[<list of arbitrary arguments for envir.Args effect>] " : "");
       }
   }
 
@@ -828,6 +836,7 @@ public class Fuzion extends Tool
    *
    * @return a Runnable to run the selected tool.
    */
+  @Override
   public Runnable parseArgs(String[] args)
   {
     if (args.length >= 1 && args[0].equals("-pretty"))
@@ -1102,6 +1111,7 @@ public class Fuzion extends Tool
             else if (a.startsWith("-XdumpModules="           )) { _dumpModules             = parseStringListArg(a);     }
             else if (a.startsWith("-sourceDirs="             )) { _sourceDirs = new List<>(); _sourceDirs.addAll(parseStringListArg(a)); }
             else if (a.startsWith("-moduleDirs="             )) {                             _moduleDirs.addAll(parseStringListArg(a)); }
+            else if (a.equals    ("-XenableSetKeyword"       )) { Parser.ENABLE_SET_KEYWORD = true;                     }
             else if (_backend.runsCode() && a.matches("-debug(=\\d+|)"       )) { _debugLevel              = parseIntArg(a, 1); }
             else if (_backend.runsCode() && a.startsWith("-safety="          )) { _safety                  = parseOnOffArg(a);          }
             else if (_backend.handleOption(this, a))
@@ -1200,7 +1210,7 @@ public class Fuzion extends Tool
           }
         else
           {
-            if(CHECKS) check
+            if (CHECKS) check
               (options.needsEscapeAnalysis() == true, _backend != Backend.effects);
 
             Path fuirFile = fuirFile(options);

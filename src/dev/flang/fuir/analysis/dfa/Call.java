@@ -198,6 +198,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Compare this to another Call.
    */
+  @Override
   public int compareTo(Call other)
   {
     var res = _group.compareTo(other._group);
@@ -214,14 +215,17 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   String compareToWhy(Call other)
   {
-    return
-      calledClazz() != other.calledClazz() ? "cc different" :
-      target()._id  != other.target()._id  ? "target different" :
-      site()        != other.site()        ? "site different" :
-      envCompare(other) != 0               ? "env different" + " env1: "+env()+ " env2: "+other.env() +
-                                             " used " + _group.usedEffectsAsString() +
-                                             " req " + _group.requiredEffectsAsString()
-                                           : "not different";
+    var differences = new List<>();
+
+    if(calledClazz() != other.calledClazz()) { differences.add("cc different"); }
+    if(target()._id  != other.target()._id ) { differences.add("target different"); }
+    if(site()        != other.site()       ) { differences.add("site different"); }
+    if(envCompare(other) != 0              ) { differences.add("env different" + " env1: "+env()+ " env2: "+other.env() +
+                                                                " used " + _group.usedEffectsAsString() +
+                                                                " req " + _group.requiredEffectsAsString()); }
+    return differences.isEmpty()
+      ? "not different"
+      : differences.toString();
   }
 
 
@@ -331,6 +335,15 @@ public class Call extends ANY implements Comparable<Call>, Context
         markSysArrayArgsAsInitialized();
         markFunctionArgsAsCalled();
         markArrayArgsAsRead();
+        markValueFieldsAsRead(_dfa._fuir.clazzResultClazz(calledClazz()));
+        for (int i = 0; i < _dfa._fuir.clazzArgCount(calledClazz()); i++)
+          {
+            var at = _dfa._fuir.clazzArgClazz(calledClazz(), i);
+            if (!_dfa._fuir.clazzIsRef(at))
+              {
+                markValueFieldsAsRead(at);
+              }
+          }
 
         result = genericResult();
         if (result == null)
@@ -344,6 +357,22 @@ public class Call extends ANY implements Comparable<Call>, Context
         result = _result;
       }
     return result;
+  }
+
+
+  /**
+   * Mark all arg fields of {@code cl} as read/used so
+   * that they aren't optimized out later.
+   *
+   * NYI: UNDER DEVELOPMENT: need to do this recursively if field is
+   * of value type.
+   */
+  private void markValueFieldsAsRead(int cl)
+  {
+    for (int i = 0; i < _dfa._fuir.clazzArgCount(cl); i++)
+      {
+        _dfa.readField(_dfa._fuir.clazzArg(cl, i));
+      }
   }
 
 
@@ -463,6 +492,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Create human-readable string from this call.
    */
+  @Override
   public String toString()
   {
     if (_toStringRecursion_.contains(this))
@@ -473,7 +503,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         _toStringRecursion_.add(this);
         var sb = new StringBuilder();
-        sb.append(_dfa._fuir.clazzAsString(calledClazz()));
+        sb.append(_dfa._fuir.clazzName(calledClazz()));
         if (target() != Value.UNIT)
           {
             sb.append(" target=")
@@ -500,6 +530,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Create human-readable string from this call with effect environment information
    */
+  @Override
   public String toString(boolean forEnv)
   {
     var on = _dfa._fuir.clazzOriginalName(calledClazz());
@@ -507,12 +538,12 @@ public class Call extends ANY implements Comparable<Call>, Context
     return
       (forEnv
        ? (on.equals(EFFECT_INSTATE_NAME)
-          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectTypeFromIntrinsic(calledClazz()))) + ", old environment was "
+          ? "install effect " + Errors.effe(_dfa._fuir.clazzNameHuman(_dfa._fuir.effectTypeFromIntrinsic(calledClazz()))) + ", old environment was "
           : "effect environment ") +
          Errors.effe(Env.envAsString(env())) +
          " for call to "
        : "call ")+
-      Errors.sqn(_dfa._fuir.clazzAsStringHuman(calledClazz())) +
+      Errors.sqn(_dfa._fuir.clazzNameHuman(calledClazz())) +
       (pos != null ? " at " + pos.pos().show() : "");
   }
 
@@ -525,6 +556,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @return a string providing the indentation level for the caller in case of
    * nested contexts.  "  " is to be added to the result on each recursive call.
    */
+  @Override
   public String showWhy(StringBuilder sb)
   {
     var indent = _context.showWhy(sb);
@@ -618,7 +650,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         if (result == null && _dfa._reportResults && !ignoreError)
           {
             DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
-                                             _dfa._fuir.clazzAsString(ecl),
+                                             _dfa._fuir.clazzName(ecl),
                                              this);
           }
       }
@@ -631,7 +663,7 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * Mark effect of type `ecl` used and return its values via {@link getEffect}.
+   * Mark effect of type {@code ecl} used and return its values via {@link getEffect}.
    *
    * @param s the site that requires this effect, for error message in case
    * _dfa._reportResults.
@@ -670,8 +702,8 @@ public class Call extends ANY implements Comparable<Call>, Context
         if (_dfa._reportResults && DFA.TRACE_ENVS)
           {
             // NYI: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
-            Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
-                         + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
+            Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzName(ecl))
+                         + " that is not yet installed:\n" + toString(false) + "\n" + toString(true));
           }
       }
     if (_env != null)

@@ -30,5 +30,5 @@ g(start i32) : effect is
 
 (g 0) ! ()->
   for _ in 1..10 do
-    yak g.env.call
+    yap g.env.call
 

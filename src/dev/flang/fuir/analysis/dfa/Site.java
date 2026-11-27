@@ -37,7 +37,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Site extends ANY implements Comparable<Site>
+class Site extends ANY implements Comparable<Site>
 {
 
 
@@ -94,6 +94,7 @@ public class Site extends ANY implements Comparable<Site>
   /**
    * Define total order over two call sites.
    */
+  @Override
   public int compareTo(Site cs)
   {
     return Integer.compare(_s, cs._s);

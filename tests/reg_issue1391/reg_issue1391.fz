@@ -26,5 +26,5 @@ o is
   e is
   _ := s e
 or ref : o is
-s(T type) is
+s(T : Any) is
 

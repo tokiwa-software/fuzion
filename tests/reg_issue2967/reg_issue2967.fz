@@ -26,4 +26,4 @@
 reg_issue2967 =>
 
   ctrie := (lock_free.Map i32 i32).empty
-  say ((ctrie.items.map x->x.values.1).group_by x->x)
+  say ((ctrie.items.map (.values.1)).group_by id)

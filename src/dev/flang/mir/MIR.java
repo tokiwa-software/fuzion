@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.mir;
 
-import dev.flang.ast.AbstractAssign;  // NYI: Remove dependency!
-import dev.flang.ast.AbstractCall;  // NYI: Remove dependency!
-import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
+import dev.flang.ast.AbstractAssign;  // NYI: CLEANUP: Remove dependency!
+import dev.flang.ast.AbstractCall;  // NYI: CLEANUP: Remove dependency!
+import dev.flang.ast.AbstractFeature;  // NYI: CLEANUP: Remove dependency!
 
 import dev.flang.ir.IR;
 
@@ -74,8 +74,7 @@ public class MIR extends IR
   public MIR(AbstractFeature universe, AbstractFeature main, MirModule module)
   {
     _universe = universe;
-    var pac = main.preAndCallFeature();
-    _main = pac != null ? pac : main;
+    _main = main;
     _module = module;
   }
 
@@ -268,7 +267,7 @@ hw25 is
   {
     return f == -1
       ? "-- no feature --"
-      : _featureIds.get(f).qualifiedName();
+      : _featureIds.get(f).qualifiedNameHuman();
   }
 
 

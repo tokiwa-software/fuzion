@@ -28,35 +28,35 @@
 # A monad in X is just a monoid in the category of endofunctors of X, with
 # product × replaced by composition of endofunctors and unit set by the
 # identity endofunctor.
-#       -- Saunder Mac Lane, Categories for the Working Mathematician, 1971
+#       -- Saunders Mac Lane, Categories for the Working Mathematician, 1971
 #
 # Don't be scared, in Java terms: A monad is a means to compose functions
 # applied to generic types.
 #
 #
-public monad (public A type,
-              public MA type : monad A MA) is
+public monad (A : Any) is
 
 
   # monadic operator within the same monad
   #
   # Apply f to elements of type A and re-wrap them in this monad.
   #
-  public infix >>= (f A -> MA) MA => abstract
+  public infix >>= (f A -> monad.this) monad.this =>
+    monad.this >>=~ f
 
 
   # monadic operator to another monad
   #
   # Apply f to elements of type A and wrap them in MB.
   #
-  public infix >>=~ (B type, MB type : monad B MB, f A -> MB) MB => abstract
+  public infix >>=~ (B : Any, MB : monad B, f A -> MB) MB => abstract
 
 
   # join operator
   #
-  public join(MMA type : monad MA MMA, a MMA) MA => abstract
+  public join(a monad.this) monad.this => abstract
 
 
   # return function
   #
-  public type.return (a A) MA => abstract
+  public type.return (a A) monad.this => abstract

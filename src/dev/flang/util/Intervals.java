@@ -68,7 +68,7 @@ public class Intervals<PROPERTY> extends ANY
    * @param max the value after the last value for which p holds. May be {@literal <=} min
    * to specify the empty interval.
    *
-   * @param p tne new property to store for min..max-1
+   * @param p the new property to store for min..max-1
    */
   public void add(int min, int max, PROPERTY p)
   {

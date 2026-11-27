@@ -42,13 +42,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Perform bitwise comparison of two float values. This is used by
- * concur.atmic.compare_and_swap/set to compare floats. In particular, this
- * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * concur.atomic.compare_and_swap/set to compare floats. In particular, this
+ * results in inequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
  * @param f1, f2 two float values
  *
- * @return true iff f1 and f2 are represented in memory by the same bit patternsx.
+ * @return true iff f1 and f2 are represented in memory by the same bit patterns.
  */
 bool fzE_bitwise_compare_float(float f1, float f2)
 {
@@ -65,8 +65,8 @@ bool fzE_bitwise_compare_float(float f1, float f2)
 
 /**
  * Perform bitwise comparison of two double values. This is used by
- * concur.atmic.compare_and_swap/set to compare floats. In particular, this
- * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * concur.atomic.compare_and_swap/set to compare doubles. In particular, this
+ * results in inequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
  * @param d1, d2 two double values

@@ -42,7 +42,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessExpression;
 
@@ -58,7 +57,7 @@ import dev.flang.util.StringHelpers;
  * The class Executor implements ProcessExpression of the AbstractInterpreter.
  * It does the actual execution of the code.
  */
-public class Executor extends ProcessExpression<Value, Object>
+class Executor extends ProcessExpression<Value, Object>
 {
 
 
@@ -208,6 +207,12 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
+  public Object drop(Value v, int type)
+  {
+    return null;
+  }
+
+  @Override
   public Object assignStatic(int s, int f, Value tvalue, Value val)
   {
     Interpreter.setField(f, _fuir.clazzAt(s), tvalue, val);
@@ -279,7 +284,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var tt = ttcc.v0();
     var cc = ttcc.v1();
 
-    if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc)))
+    if (_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc)))
       {
         tt = ((Boxed)tvalue)._valueClazz;
         tvalue = ((Boxed)tvalue)._contents;
@@ -287,7 +292,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
     var cl = _fuir.clazzAt(s);
     if (cc == cl // calling myself
-        && _tailCall.callIsTailCall(cl, s))
+        && _tailCall.callIsTailCall(s))
       {
         throw new TailCallException(tvalue, args);
       }
@@ -296,7 +301,9 @@ public class Executor extends ProcessExpression<Value, Object>
       {
       case Routine :
         // NYI: UNDER DEVELOPMENT: change call to pass in ai as in match expression?
-        var cur = callOnNewInstance(s, cc, tvalue, args);
+        var cur = _fuir.clazzNeedsCode(cc)
+          ? callOnNewInstance(s, cc, tvalue, args)
+          : Value.UNIT;
 
         Value rres = cur;
         if (!_fuir.isConstructor(cc))
@@ -450,7 +457,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Pair<Value, Object> box(int s, Value v, int vc, int rc)
   {
-    return pair(new Boxed(rc, vc, v /* .cloneValue(vcc) */));
+    return pair(new Boxed(rc, vc, v.cloneValue(vc)));
   }
 
   @Override
@@ -538,7 +545,7 @@ public class Executor extends ProcessExpression<Value, Object>
         else
           {
             Errors.error("Unsupported constant.",
-                         "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+                         "Backend cannot handle constant of clazz '" + _fuir.clazzName(constCl) + "' ");
             yield null;
           }
       }
@@ -550,12 +557,10 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Pair<Value, Object> match(int s, AbstractInterpreter<Value, Object> ai, Value subv)
   {
-    var staticSubjectClazz = subv instanceof boolValue ? fuir().clazz(SpecialClazzes.c_bool) : ((ValueWithClazz)subv)._clazz;
+    if (PRECONDITIONS) check
+      (subv instanceof boolValue || fuir().clazzIsChoice(((ValueWithClazz)subv)._clazz));
 
-    if (CHECKS) check
-      (fuir().clazzIsChoice(staticSubjectClazz));
-
-    var tagAndChoiceElement = tagAndVal(staticSubjectClazz, subv);
+    var tagAndChoiceElement = tagAndVal(subv);
 
     var cix = _fuir.matchCaseIndex(s, tagAndChoiceElement.v0());
 
@@ -573,36 +578,41 @@ public class Executor extends ProcessExpression<Value, Object>
 
 
   /**
-   * @param staticSubjectClazz the clazz of the subject, a choice
+   * From a tagged value, extract the tag and value parts.
    *
    * @param sub the subjects current value
    *
    * @return pair where first value is the tag, the second value the extracted value.
    */
-  private Pair<Integer, Value> tagAndVal(int staticSubjectClazz, Value sub)
+  Pair<Integer, Value> tagAndVal(Value sub)
   {
     if (PRECONDITIONS) require
-      (fuir().clazzIsChoice(staticSubjectClazz));
+      (sub instanceof boolValue || fuir().clazzIsChoice(((ValueWithClazz)sub)._clazz));
 
-    var tag = -1;
-    Value val = null;
-    if (fuir().clazzIsChoiceOfOnlyRefs(staticSubjectClazz))
-      {
-        val = Interpreter.getChoiceRefVal(staticSubjectClazz, staticSubjectClazz, sub);
-        tag = ChoiceIdAsRef.tag(staticSubjectClazz, val);
-      }
-    else if (staticSubjectClazz == fuir().clazz(SpecialClazzes.c_bool))
+    int tag;
+    Value val;
+    if (sub instanceof boolValue)
       {
         tag = sub.boolValue() ? 1 : 0;
-        val = sub;
+        val = Value.UNIT;
       }
     else
       {
-        tag = sub.tag();
-      }
-    if (val == null)
-      {
-        val = Interpreter.getChoiceVal(staticSubjectClazz, staticSubjectClazz, sub, tag);
+        var staticSubjectClazz = ((ValueWithClazz)sub)._clazz;
+        if (fuir().clazzIsChoiceOfOnlyRefs(staticSubjectClazz))
+          {
+            val = Interpreter.getChoiceRefVal(staticSubjectClazz, staticSubjectClazz, sub);
+            tag = ChoiceIdAsRef.tag(staticSubjectClazz, val);
+            if (val == null || val instanceof ChoiceIdAsRef)
+              {
+                val = Value.UNIT;
+              }
+          }
+        else
+          {
+            tag = sub.tag();
+            val = Interpreter.getChoiceVal(staticSubjectClazz, staticSubjectClazz, sub, tag);
+          }
       }
 
     if (POSTCONDITIONS) ensure
@@ -610,6 +620,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
     return new Pair<Integer, Value>(tag, val);
   }
+
 
   @Override
   public Pair<Value, Object> tag(int s, Value value, int newcl, int tagNum)
@@ -623,11 +634,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
 
-  /**
-   * Generate code to terminate the execution immediately.
-   *
-   * @param msg a message explaining the illegal state
-   */
+  /** {@inheritDoc} */
   @Override
   public Object reportErrorInCode(String msg)
   {
@@ -684,19 +691,17 @@ public class Executor extends ProcessExpression<Value, Object>
   /**
    * Helper for callStack() to show one single frame
    *
-   * @param fuir
-   *
    * @param sb used to append the output
    *
    * @param frame the clazz of the entry to show
    *
    * @param callSite the call of the entry to show
    */
-  private static void showFrame(FUIR fuir, StringBuilder sb, int frame, int callSite)
+  private static void showFrame(StringBuilder sb, int frame, int callSite)
   {
     if (frame != NO_CLAZZ)
       {
-        sb.append(_fuir.clazzAsStringHuman(frame)).append(": ");
+        sb.append(_fuir.clazzNameHuman(frame)).append(" at ");
       }
     sb.append(_fuir.sitePos(callSite).show()).append("\n");
   }
@@ -704,8 +709,6 @@ public class Executor extends ProcessExpression<Value, Object>
 
   /**
    * Helper for callStack() to show a repeated frame
-   *
-   * @param fuir
    *
    * @param sb used to append the output
    *
@@ -717,7 +720,7 @@ public class Executor extends ProcessExpression<Value, Object>
    *
    * @param callSite the call of the previous entry
    */
-  private static void showRepeat(FUIR fuir, StringBuilder sb, int repeat, int frame, int callSite)
+  private static void showRepeat(StringBuilder sb, int repeat, int frame, int callSite)
   {
     if (repeat > 1)
       {
@@ -725,7 +728,7 @@ public class Executor extends ProcessExpression<Value, Object>
       }
     else if (repeat > 0)
       {
-        showFrame(fuir, sb, frame, callSite);
+        showFrame(sb, frame, callSite);
       }
   }
 
@@ -733,7 +736,7 @@ public class Executor extends ProcessExpression<Value, Object>
   /**
    * Current call stack as a string for debugging output.
    */
-  public static String callStack(FUIR fuir)
+  public static String callStack()
   {
     StringBuilder sb = new StringBuilder("Call stack:\n");
     int lastFrame = NO_CLAZZ;
@@ -751,14 +754,14 @@ public class Executor extends ProcessExpression<Value, Object>
           }
         else
           {
-            showRepeat(fuir, sb, repeat, lastFrame, lastCallSite);
+            showRepeat(sb, repeat, lastFrame, lastCallSite);
             repeat = 0;
-            showFrame(fuir, sb, frame, call);
+            showFrame(sb, frame, call);
             lastFrame = frame;
             lastCallSite = call;
           }
       }
-    showRepeat(fuir, sb, repeat, lastFrame, lastCallSite);
+    showRepeat(sb, repeat, lastFrame, lastCallSite);
     return sb.toString();
   }
 

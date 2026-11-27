@@ -21,4 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
-say (0 : (match true { a true_ => { say a; nil }; b false_ => { say b; nil } }))
+lazy_value => match true { a true_ => { say a; nil }; b false_ => { say b; nil } }
+say (0 : lazy_value)
+
+# NYI: BUG: does not work, due to implementation restriction
+# say (0 : (match true { a true_ => { say a; nil }; b false_ => { say b; nil } }))

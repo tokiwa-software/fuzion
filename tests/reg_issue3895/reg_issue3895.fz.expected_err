@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue3895.fz:24:13: error 1: Could not find called feature
+reg_issue3895.fz:24:13: error 1: Could not find called feature
 a := String.concat 1 2 3 4 5 6; _ := a.utf8
 ------------^^^^^^
 Feature not found: 'concat' (6 arguments)

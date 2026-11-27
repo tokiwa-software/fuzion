@@ -28,16 +28,16 @@
 #
 test_atomic is
 
-  chck0(T type, x, y T, eq (T,T)->bool) =>
+  chck0(T : Any, x, y T, eq (T,T)->bool) =>
     if eq x y
       say "PASSED $x = $y"
     else
       say "FAILED $x /= $y"
 
-  chck(T type: property.equatable, x, y T) =>
+  chck(T : property.equatable, x, y T) =>
     chck0 x y (a,b)->a=b
 
-  test0(T type, a, b, c, d T, eq (T,T)->bool) =>
+  test0(T : Any, a, b, c, d T, eq (T,T)->bool) =>
     a1 := concur.atomic T .new a
     chck0 a1.read a eq
     a1.write b
@@ -53,7 +53,7 @@ test_atomic is
       a1.racy_write d
       chck0 a1.racy_read d eq
 
-  test(T type : property.equatable, a, b, c, d T) =>
+  test(T : property.equatable, a, b, c, d T) =>
     test0 a b c d (v1,v2)->v1=v2
 
   p(x, y i64) : property.equatable is
@@ -97,7 +97,7 @@ test_atomic is
     public redef as_string String => match my_switch.this
       on => "on"
       off => "off"
-    type.equality(a, b my_switch.this) => a.ord = b.ord
+    public redef type.equality(a, b my_switch.this) bool => a.ord = b.ord
   test0 my_switch on on off off ((a,b)-> a.ord=b.ord)
 
   # test int-like choice
@@ -153,8 +153,7 @@ test_atomic is
   test0 lights3 red "blinking" green (error "out-of-order") ((a,b)-> a.ord=b.ord)
 
   # test general choice
-  test0 (option 23) (option 42) nil (option 4711) (a,b)->
-    a?? = b?? && (a!! || a.or_panic = b.or_panic)
+  test0 (option 23) (option 42) nil (option 4711) (=)
 
 
   test =>
@@ -165,12 +164,12 @@ test_atomic is
     c2 := concur.atomic i64 .new 0
     s2 := concur.atomic i64 .new -1
 
-    thrd1 := concur.threads.spawn (()->
-      end := time.nano.read + (time.duration.seconds 5)
+    thrd1 := concur.Threads.env.spawn (()->
+      end := time.Nano.env.read + (time.duration.seconds 5)
       for
         s := i64 0, o=v ? s+1 : s
         c := i64 0, c+1
-      while time.nano.read < end do
+      while time.Nano.env.read < end do
         v := a1.read
         n := v + 1
         o := a1.compare_and_swap v n
@@ -179,12 +178,12 @@ test_atomic is
         s1.write s
       )
 
-    thrd2 := concur.threads.spawn (()->
-      end := time.nano.read + (time.duration.seconds 5)
+    thrd2 := concur.Threads.env.spawn (()->
+      end := time.Nano.env.read + (time.duration.seconds 5)
       for
         s := i64 0, o=v ? s+1 : s
         c := i64 0, c+1
-      while time.nano.read < end do
+      while time.Nano.env.read < end do
         v := a1.read
         n := v + 0x1_0000_0000
         o := a1.compare_and_swap v n
@@ -193,8 +192,8 @@ test_atomic is
         s2.write s
       )
 
-    thrd1.join
-    thrd2.join
+    thrd1.join.or_panic
+    thrd2.join.or_panic
 
     chck s1.read>=0 true
     chck s1.read=(a1.read & 0x7fff_ffff) true
@@ -204,7 +203,7 @@ test_atomic is
 
     # use `-debug` argument to show CAS success / failure statistics:
     #
-    if ((envir.args.nth 1).or_else "")="-debug"
+    if ((envir.Args.env.nth 1).or_else "")="-debug"
       say "thread 1: CAS successful: "+s1.read+" failed "+(c1.read-s1.read)+" total "+c1.read
       say "thread 2: CAS successful: "+s2.read+" failed "+(c2.read-s2.read)+" total "+c2.read
       say "a is "+a1.read.hex

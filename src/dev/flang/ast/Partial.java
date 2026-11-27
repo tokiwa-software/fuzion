@@ -56,8 +56,8 @@ public class Partial extends AbstractLambda
    *
    *   f (i32,i32)->i32 => pa1,pa2 -> pa1 + pa2
    *
-   * Then the two calls `pa1` and `pa2` on the right hand side will be done
-   * using `PartialArg`. This is used in AstErrors to decide if a call is an
+   * Then the two calls {@code pa1} and {@code pa2} on the right hand side will be done
+   * using {@code PartialArg}. This is used in AstErrors to decide if a call is an
    * automatically generated partial call.
    */
   static class PartialArg extends ParsedCall
@@ -75,7 +75,7 @@ public class Partial extends AbstractLambda
 
     /**
      * The source text produced by Expr.sourceText would be the original call,
-     * i.e., `+`, which is very confusing, so we create a verbose text with the
+     * i.e., {@code +}, which is very confusing, so we create a verbose text with the
      * actual argument name here.
      */
     @Override
@@ -183,26 +183,7 @@ public class Partial extends AbstractLambda
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * During type inference: Inform this expression that it is used in an
-   * environment that expects the given type.  In particular, if this
-   * expression's result is assigned to a field, this will be called with the
-   * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   *
-   * @param from for error output: if non-null, produces a String describing
-   * where the expected type came from.
-   *
-   * @return either this or a new Expr that replaces thiz and produces the
-   * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the expression that reads the field.
-   */
+  /** {@inheritDoc} */
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
@@ -242,7 +223,7 @@ public class Partial extends AbstractLambda
   AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
-    if (_function == null && t.isFunctionType(res) && (t.arity(res) == 1 || t.arity(res) == 2))
+    if (_function == null && t.isFunctionLikeType() && (t.arity(res) == 1 || t.arity(res) == 2))
       {
         var a = argName(pos());
         List<Expr> args = new List<>(a);
@@ -280,20 +261,15 @@ public class Partial extends AbstractLambda
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  @Override
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     return _function == null ? this
                              : _function.visit(v, outer);
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -304,13 +280,7 @@ public class Partial extends AbstractLambda
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {
@@ -330,6 +300,7 @@ public class Partial extends AbstractLambda
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "(" + _op + ")";

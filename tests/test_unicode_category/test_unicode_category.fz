@@ -1,0 +1,92 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test test_unicode_category
+#
+# -----------------------------------------------------------------------
+
+# test `codepoint.category`, the group predicates of `unicode_category` and
+# the Unicode predicates on `codepoint`, see issue (#7834)
+#
+test_unicode_category =>
+
+
+  # 1. one example for each of the 30 General_Category values plus edge cases
+  #
+  #   U+0009 TAB is Cc (control), not a separator
+  #   U+200B ZERO WIDTH SPACE is Cf, it was Zs before Unicode 4.0.1
+  #   U+E000 is private use, U+0378 and U+10FFFF are unassigned
+  #   U+20000 is inside a <CJK Ideograph Extension B, First>..<.., Last> range
+  #
+  say "--- categories ---"
+  examples array u32 := [0x41, 0x61, 0x1c5, 0x2b0, 0x4e2d,          # Lu Ll Lt Lm Lo
+                         0x301, 0x903, 0x20dd,                      # Mn Mc Me
+                         0x663, 0x216b, 0xbd,                       # Nd Nl No
+                         0x5f, 0x2d, 0x28, 0x29, 0xab, 0xbb, 0x21,  # Pc Pd Ps Pe Pi Pf Po
+                         0x2b, 0x20ac, 0x5e, 0x1f600,               # Sm Sc Sk So
+                         0x20, 0x2028, 0x2029,                      # Zs Zl Zp
+                         0x9, 0x200b, 0xe000, 0x378, 0x10ffff,      # Cc Cf Co Cn Cn
+                         0x20000]                                   # Lo in First/Last range
+
+  for v in examples do
+    c := (codepoint v).category
+    say "U+$(v.hex 4) $c letter=$(c.is_letter) cased=$(c.is_cased_letter) mark=$(c.is_mark) number=$(c.is_number) punct=$(c.is_punctuation) symbol=$(c.is_symbol) sep=$(c.is_separator) other=$(c.is_other)"
+
+
+  # 2. predicates on codepoint, including cases where General_Category
+  #    differs from derived properties or where case mapping is locale
+  #    dependent:
+  #
+  #   U+24B6 Ⓐ is So, but has property Uppercase
+  #   U+00AA ª is Lo, but has property Lowercase
+  #   U+00DF ß, U+0130 İ, U+0131 ı: category does not depend on the locale
+  #
+  say "--- codepoint predicates ---"
+  # It means:   A     z     Ⓐ      ª     ß     İ      ı      ٣      Ⅻ      ½     _     中
+  for v in [u32 0x41, 0x7a, 0x24b6, 0xaa, 0xdf, 0x130, 0x131, 0x663, 0x216b, 0xbd, 0x5f, 0x4e2d] do
+    c := codepoint v
+    say "$c: letter=$(c.is_letter) upper=$(c.is_uppercase_letter) lower=$(c.is_lowercase_letter) digit=$(c.is_digit) numeric=$(c.is_numeric) alnum=$(c.is_alpha_num) punct=$(c.is_punctuation)"
+
+
+  # 3. typical use: check all codepoints of a string
+  #
+  say "--- strings ---"
+  for s in ["Fuzion", "Жук", "中文", "abc1", "a b", "x²"] do
+    say "$s: all letters=$(s.codepoints ∀ (.is_letter)) all alnum=$(s.codepoints ∀ (.is_alpha_num))"
+
+
+  # 4. exhaustive match on the category
+  #
+  say "--- match ---"
+  kind(c unicode_category) String =>
+    match c
+      unicode_categories.uppercase_letter => "upper"
+      unicode_categories.lowercase_letter => "lower"
+      * => "neither"
+
+  say (kind (codepoint 0x416).category)   # Ж
+  say (kind (codepoint 0x436).category)   # ж
+  say (kind (codepoint 0x31).category)    # 1
+
+
+  # 5. equality
+  #
+  say "--- equality ---"
+  say ((codepoint 0x42).category = unicode_categories.uppercase_letter) # B
+  say ((codepoint 0x62).category = unicode_categories.uppercase_letter) # b

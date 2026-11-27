@@ -1,0 +1,14 @@
+atomic mutate test
+
+to run this as a benchmark, set environment var BENCHMARK=true
+Use SAMPLE_MS=<n> to change the time for each sample run.
+
+single threaded test for atomic_mutate_test.lm
+single threaded test for atomic_mutate_test.bm
+*** skipping test for atomic_mutate_test.am since atomic u64 support is missing
+multi threaded test for atomic_mutate_test.lm, ERROR: (precondition, safety: exclusive_allowed)
+multi threaded test for atomic_mutate_test.bm
+*** skipping test for atomic_mutate_test.am since atomic u64 support is missing
+multi threaded racy test for atomic_mutate_test.lmr, ERROR: (precondition, safety: atomic_access_supported T)
+multi threaded racy test for atomic_mutate_test.bmr, ERROR: (precondition, safety: atomic_access_supported T)
+*** skipping test for atomic_mutate_test.amr since atomic u64 support is missing

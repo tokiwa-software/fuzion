@@ -208,17 +208,20 @@ public class CFG extends ANY
   {
     put("Type.name"                      , (cfg, cl) -> { } );
 
-    put("concur.atomic.compare_and_swap0", (cfg, cl) -> { } );
-    put("concur.atomic.compare_and_set0",  (cfg, cl) -> { } );
-    put("concur.atomic.racy_accesses_supported", (cfg, cl) -> { } );
-    put("concur.atomic.read0"            , (cfg, cl) -> { } );
-    put("concur.atomic.write0"           , (cfg, cl) -> { } );
-    put("concur.util.load_fence"          , (cfg, cl) -> { } );
-    put("concur.util.store_fence"         , (cfg, cl) -> { } );
+    put("mutate.atomic_access_supported" , (cfg, cl) -> { } );
+    put("mutate.var.compare_and_set0"    , (cfg, cl) -> { } );
+    put("mutate.var.compare_and_swap0"   , (cfg, cl) -> { } );
+    put("mutate.var.atomic_read0"        , (cfg, cl) -> { } );
+    put("mutate.var.atomic_write0"       , (cfg, cl) -> { } );
+    put("mutate.read_fence"              , (cfg, cl) -> { } );
+    put("mutate.write_fence"             , (cfg, cl) -> { } );
 
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );
     put("debug_level"                    , (cfg, cl) -> { } );
+
+    put("choice.tag"                     , (cfg, cl) -> { } );
+
     put("fuzion.sys.args.count"          , (cfg, cl) -> { } );
     put("fuzion.sys.args.get"            , (cfg, cl) -> { } );
     put("fuzion.std.exit"                , (cfg, cl) -> { } );
@@ -382,16 +385,16 @@ public class CFG extends ANY
     put("fuzion.sys.type.alloc"          , (cfg, cl) -> { } );
     put("fuzion.sys.type.setel"          , (cfg, cl) -> { } );
     put("fuzion.sys.type.getel"          , (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.freeze"
-                                         , (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.ensure_not_frozen"
-                                         , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.has0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.get0"       , (cfg, cl) -> { } );
+    put("fuzion.sys.thread.current"      , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.sys.thread.join0"        , (cfg, cl) -> { } );
+    put("fuzion.sys.thread.set_policy"   , (cfg, cl) -> { } );
+    put("fuzion.sys.thread.set_affinity0", (cfg, cl) -> { } );
+    put("fuzion.sys.thread.cpu_time0"    , (cfg, cl) -> { } );
 
-    put("effect.type.default0"           , (cfg, cl) -> { } );
+    put("effect.type.instate_at_singularity0", (cfg, cl) -> { } );
     put(FuzionConstants.EFFECT_INSTATE_NAME , (cfg, cl) ->
         {
           var oc  = cfg._fuir.clazzActualGeneric(cl, 1);
@@ -401,7 +404,8 @@ public class CFG extends ANY
               cfg.addToCallGraph(cl, call);
             }
         });
-    put("effect.type.replace0"              , (cfg, cl) -> { } );
+    put("effect.type.set0"                  , (cfg, cl) -> { } );
+    put("effect.type.remove0"               , (cfg, cl) -> { } );
     put("effect.type.abort0"                , (cfg, cl) -> { } );
     put("effect.type.is_instated0"          , (cfg, cl) -> { } );
     put("effect.type.from_env"              , (cfg, cl) -> { } );
@@ -433,6 +437,7 @@ public class CFG extends ANY
     put("concur.sync.cnd_signal"            , (cfg, cl) -> { } );
     put("concur.sync.cnd_broadcast"         , (cfg, cl) -> { } );
     put("concur.sync.cnd_wait"              , (cfg, cl) -> { } );
+    put("concur.sync.cnd_timedwait"         , (cfg, cl) -> { } );
     put("concur.sync.cnd_destroy"           , (cfg, cl) -> { } );
 
     put("native_string_length"              , (cfg, cl) -> { } );
@@ -547,18 +552,6 @@ public class CFG extends ANY
             _newCalledClazzesToBeProcessed.add(cc);
           }
       }
-  }
-
-
-  /**
-   * Add connection from cl to ecl in _effects
-   *
-   * @param cl a clazz
-   *
-   * @param ecl an effect that is required by cl
-   */
-  public void addEffect(int cl, int ecl)
-  {
   }
 
 

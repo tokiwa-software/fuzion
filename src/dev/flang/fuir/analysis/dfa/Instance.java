@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+
+import java.util.Arrays;
 import java.util.TreeMap;
 
 import dev.flang.ir.IR;
@@ -40,7 +42,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Instance extends Value
+class Instance extends Value
 {
 
 
@@ -153,10 +155,17 @@ public class Instance extends Value
   /**
    * Add v to the set of values of given field within this instance.
    */
+  @Override
   public void setField(DFA dfa, int field, Value v)
   {
+    var cl0 = v._clazz;
     if (PRECONDITIONS) require
-      (v != null);
+      (v != null,
+       Errors.any()
+        || v == Value.UNIT && dfa._fuir.clazzIsUnitType(dfa._fuir.clazzResultClazz(field))
+        || dfa._fuir.clazzIsRef(cl0) &&
+           Arrays.stream(dfa._fuir.clazzInstantiatedHeirs(dfa._fuir.clazzResultClazz(field))).anyMatch(cl -> cl == cl0)
+        || dfa._fuir.clazzResultClazz(field) == cl0);
 
     var oldv = _fields.get(field);
     if (oldv != null)
@@ -172,17 +181,17 @@ public class Instance extends Value
           }
         _fields.put(field, v);
       }
-    dfa._writtenFields.set(field);
   }
 
 
   /**
    * Get set of values of given field within this instance.
    */
+  @Override
   Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     if (PRECONDITIONS) require
-      (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)),
+      (Errors.any() || _clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)),
        site != -1);
 
     dfa.readField(field);
@@ -193,8 +202,8 @@ public class Instance extends Value
         if (!Errors.any())
           {
             DfaErrors.readingUninitializedField(site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
-                                                dfa._fuir.clazzAsString(field),
-                                                dfa._fuir.clazzAsString(_clazz),
+                                                dfa._fuir.clazzName(field),
+                                                dfa._fuir.clazzName(_clazz),
                                                 why);
           }
       }
@@ -210,9 +219,10 @@ public class Instance extends Value
   /**
    * Create human-readable string from this instance.
    */
+  @Override
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz) + "@" + _dfa._fuir.sitePos(_site);
+    return _dfa._fuir.clazzName(_clazz) + "@" + _dfa._fuir.sitePos(_site);
   }
 
 }

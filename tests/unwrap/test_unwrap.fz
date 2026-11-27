@@ -23,18 +23,25 @@
 
 test_unwrap =>
 
-  a := mut.new 3
-  b := concur.atomic i32 .new 5
+  a := mutate.env.var 3
+  b := concur.atomic i64 .new 5
 
-  say2(v i32) => say v
+  say2(v i64) => say v
 
-  (exception (option i32)).on ()->
-    (exception (outcome i32)).on ()->
-      say a
-      say b
+  outer_exception : flow.exception_tag is
+  inner_exception : flow.exception_tag is
 
-      say2 a
-      say2 b
+  (flow.exception outer_exception)
+    .try ()->
+      (flow.exception inner_exception)
+        .try ()->
+          say a
+          say b
 
-      e := a+b
-      say2 e
+          say2 a
+          say2 b
+
+          e := a+b
+          say2 e
+        .or_outcome
+    .or_outcome

@@ -1,12 +1,12 @@
 
---CURDIR--/issue350.fz:26:1: error 1: Illegal 'ref' in feature definition using '=>'
+issue350.fz:26:1: error 1: Illegal 'ref' in feature definition using '=>'
 x ref =>
 ^
 For function definition using '=>', the type is determined automatically, it must not be given explicitly.
 Feature declared: 'x'
 
 
---CURDIR--/issue350.fz:31:3: error 2: Illegal result type 'ref' in field definition using ':='
+issue350.fz:31:3: error 2: Illegal result type 'ref' in field definition using ':='
   _ ref := 42
 --^
 For field definition using ':=', the type is determined automatically, it must not be given explicitly.

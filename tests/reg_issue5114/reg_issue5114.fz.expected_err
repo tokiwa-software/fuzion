@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue5114.fz:33:15: error 1: Could not find outer feature in '.this'-expression
+reg_issue5114.fz:33:15: error 1: Could not find outer feature in '.this'-expression
     type.x => A.this        # results in expected error
 --------------^^^^^^
 Within feature: 'reg_issue5114.A.type.x'

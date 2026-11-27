@@ -65,6 +65,7 @@ public class NoType extends ReturnType
    *
    * @return true for a constructor return type.
    */
+  @Override
   public boolean isConstructorType()
   {
     return false;
@@ -79,6 +80,7 @@ public class NoType extends ReturnType
    *
    * @param outer the feature surrounding this expression.
    */
+  @Override
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
   }
@@ -94,6 +96,7 @@ public class NoType extends ReturnType
    * @param outer the outer feature, which is the argument this is the result
    * type of.
    */
+  @Override
   void resolveArgumentType(Resolution res, Feature outer)
   {
     if (PRECONDITIONS) require
@@ -109,6 +112,7 @@ public class NoType extends ReturnType
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "";

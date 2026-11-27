@@ -130,6 +130,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   /**
    * Create and return the actual source code position held by this instance.
    */
+  @Override
   public SourcePosition pos()
   {
     /* this not only has a position, it _is_ a position! */
@@ -150,7 +151,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    */
   public void show(String msg, String detail)
   {
-    Errors.println(fileNameWithPosition() + " " + msg);
+    Errors.println(fileNameWithPosition() + ": " + msg);
     if (!isBuiltIn())
       {
         Errors.println(showInSource());
@@ -296,6 +297,22 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
 
   /**
+   * @return the complete lines touched by this source position, all ended with "\n".
+   */
+  public String lines()
+  {
+    int start = line();
+    int end = _sourceFile.lineNum(byteEndPos());
+    var sb = new StringBuilder();
+    for (var l = start; l<=end; l++)
+      {
+        sb.append(_sourceFile.line(l));
+      }
+    return sb.toString();
+  }
+
+
+  /**
    * @return the column of this source position,
    * starting at 1.
    */
@@ -332,7 +349,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    */
   public String fileNameWithPosition()
   {
-    return Terminal.GREEN + rawFileNameWithPosition() + ":" + Terminal.REGULAR_COLOR;
+    return Terminal.GREEN + rawFileNameWithPosition() + Terminal.REGULAR_COLOR;
   }
 
 
@@ -368,15 +385,60 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
 
   /**
+   * The actual text in the source code this source position points to, with indentation replaced by
+   * prefix.
+   *
+   * @return
+   */
+  public String sourceTextPrefix(String prefix)
+  {
+    var res = sourceText();
+
+    /* if the sourceText extends several lines, e.g, the condition in this `if`
+     *
+     *     if (a > b &&
+     *         c < d    ) then
+     *
+     * res looks a bit ugly
+     *
+     *     (a > b &&
+     *         c < d    )
+     *
+     * so we remove to indentation to get (for prefix=="")
+     *
+     *     (a > b &&
+     *      c < d    )
+     *
+     * or, for prefix="____"
+     *
+     *     ____(a > b &&
+     *     ____ c < d    )
+     */
+    var p = bytePos();
+    var i = 0;
+    var spaces = new StringBuilder();
+    while (p-1-i >= 0 && _sourceFile.byteAt(p-1-i) != (byte) '\n')
+      {
+        i++;
+        spaces.append(" ");
+      }
+
+    return prefix + res.replaceAll("\n"+spaces, "\n"+prefix);
+  }
+
+
+  /**
    * Convert this position to a string of the form
    * {@code <filename>:<line>:<column>:}.
    */
+  @Override
   public String toString()
   {
     return fileNameWithPosition();
   }
 
 
+  @Override
   public int compareTo(SourcePosition o)
   {
     int result = fileName().compareTo(o.fileName());
@@ -407,7 +469,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
       {
         return this;
       }
-    else if (this == SourcePosition.notAvailable)
+    else if (isBuiltIn())
       {
         return this;
       }

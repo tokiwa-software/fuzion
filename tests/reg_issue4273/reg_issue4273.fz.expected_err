@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4273.fz:32:26: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
+reg_issue4273.fz:32:26: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
     type.x(a e.this) => $a.me   # 1. should flag an error: `Call has an ambiguous result type...`
 -------------------------^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
@@ -10,7 +10,7 @@ Target type: 'case1.p.this'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'case1.e', or change the result type of 'case1.e.me' to no longer depend on 'case1.e.this'.
 
 
---CURDIR--/reg_issue4273.fz:65:26: error 2: Call has an ambiguous result type since target of the call is a 'ref' type.
+reg_issue4273.fz:65:26: error 2: Call has an ambiguous result type since target of the call is a 'ref' type.
     type.x(a e.this) => $a.me   # 2. should flag an error: `Call has an ambiguous result type...`
 -------------------------^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
@@ -21,7 +21,7 @@ Target type: 'case3.p.this'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'case3.e', or change the result type of 'case3.e.me' to no longer depend on 'case3.e.this'.
 
 
---CURDIR--/reg_issue4273.fz:85:17: error 3: Call has an ambiguous result type since target of the call is a 'ref' type.
+reg_issue4273.fz:85:17: error 3: Call has an ambiguous result type since target of the call is a 'ref' type.
     redef s => $me              # 4. should flag an error: `Call has an ambiguous result type...`
 ----------------^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
@@ -32,7 +32,7 @@ Target type: 'case4.p.this'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'case4.e', or change the result type of 'case4.e.me' to no longer depend on 'case4.e.this'.
 
 
---CURDIR--/reg_issue4273.fz:84:17: error 4: Call has an ambiguous result type since target of the call is a 'ref' type.
+reg_issue4273.fz:84:17: error 4: Call has an ambiguous result type since target of the call is a 'ref' type.
     redef me => option e.this   # 3. should flag an error: `Call has an ambiguous result type...`
 ----------------^^^^^^^^^^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.

@@ -28,9 +28,7 @@ package dev.flang.parser;
 
 import java.util.LinkedList;
 
-import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Feature;
-import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Expr;
 
 import dev.flang.util.List;
@@ -43,7 +41,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FList extends Expr
+class FList extends Expr
 {
 
 
@@ -74,33 +72,17 @@ public class FList extends Expr
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _list.getFirst().pos();
-  }
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return nothing.
-   *
-   * @throws Error
-   */
-  public FList visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    throw new Error("FList must be used only during parsing");
   }
 
   /**
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
+  @Override
   public boolean containsOnlyDeclarations()
   {
     throw new Error("FList must be used only during parsing");

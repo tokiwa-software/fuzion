@@ -608,7 +608,7 @@ abstract class CStmnt extends ANY
 
 
   /**
-   * Add label l before this statement, such that is is possible to 'goto $l'.
+   * Add label l before this statement, such that it is possible to 'goto $l'.
    *
    * @param l identifier to be used as a label for this.
    */
@@ -689,6 +689,7 @@ abstract class CStmnt extends ANY
   /**
    * Create String for debugging-output.
    */
+  @Override
   public String toString()
   {
     return "C-Statement '" + code() + "'";

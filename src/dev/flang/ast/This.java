@@ -147,12 +147,21 @@ public class This extends ExprWithPos
 
     var outer = context.outerFeature();
 
-    var result = new This(pos, outer, f);
+    Expr result;
+    if (Types.resolved != null && f == Types.resolved.universe)
+      {
+        result = Universe.instance;
+      }
+    else
+      {
+        var thiz = new This(pos, outer, f);
 
-    return res.state(outer) != State.RESOLVING_INHERITANCE &&
-           res.state(outer) != State.RESOLVING
-      ? result.resolveTypes(res, context)
-      : result;
+        result = res.state(outer) != State.RESOLVING_INHERITANCE &&
+                 res.state(outer) != State.RESOLVING
+          ? thiz.resolveTypes(res, context)
+          : thiz;
+      }
+    return result;
   }
 
 
@@ -162,22 +171,18 @@ public class This extends ExprWithPos
   @Override
   public UnresolvedType asParsedType()
   {
-    return _qual != null ? new QualThisType(_qual)
+    return _qual != null ? new QualThisType(pos(), _qual)
                          : null;
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
-    return null;  // After type resolution, This is no longer part of the code.
+    return (_feature != null && !_feature.isUniverse() && _feature != Types.f_ERROR)
+      ? new ThisType(_feature)
+      : null;
   }
 
 
@@ -192,9 +197,51 @@ public class This extends ExprWithPos
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  @Override
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     return v.action(this);
+  }
+
+
+  /**
+   * determine the static type of all expressions and declared features in this feature
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @return a call to the outer references to access the value represented by
+   * this.
+   */
+  AbstractFeature resolveFeature(Context context)
+  {
+    if (PRECONDITIONS) require
+      (context != null);
+
+    if (_feature == null)
+      {
+        AbstractFeature result;
+        var outer = context.outerFeature();
+        if (_qual != null)
+          {
+            result = getThisFeature(pos(), this, _qual, outer);
+          }
+        else   /* convenience for This(pos) constructor that does not provide outer */
+          {
+            result = outer;
+          }
+        _feature = result;
+      }
+    return _feature;
+  }
+
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    return resolveFeature(context);
   }
 
 
@@ -216,14 +263,7 @@ public class This extends ExprWithPos
        context != null);
 
     var outer = context.outerFeature();
-    if (_qual != null)
-      {
-        this._feature = getThisFeature(pos(), this, _qual, outer);
-      }
-    else if (this._feature == null)  /* convenience for This(pos) constructor that does not provide outer */
-      {
-        this._feature = outer;
-      }
+    resolveFeature(context);
 
     Expr getOuter;
     var f = this._feature;
@@ -251,14 +291,25 @@ public class This extends ExprWithPos
         getOuter = new Current(pos(), cur);
         while (f != Types.f_ERROR && cur != f && !cur.isUniverse())
           {
-            var or = cur.outerRef();
-            if (CHECKS) check
-              (Errors.any() || (or != null));
-            if (or != null)
+            // we did not find `f` yet and cur.isCotype
+            // so we set getOuter to `f.this.type`
+            // see #5563 for an example where this is needed.
+            if (cur.isCotype())
               {
-                getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
+                getOuter = Call.typeAsValue(pos(), f.cotypeOrigin().thisType());
+                cur = f;
               }
-            cur = cur.outer();
+            else
+              {
+                var or = cur.outerRef();
+                if (CHECKS) check
+                  (Errors.any() || (or != null));
+                if (or != null)
+                  {
+                    getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
+                  }
+                cur = cur.outer();
+              }
           }
       }
 
@@ -292,7 +343,7 @@ public class This extends ExprWithPos
     var d = 0;                                    // d           is 9
     while (o.outer() != null)
       {
-        var b = o.featureName().baseName();
+        var b = o.baseName();
         if (all.containsKey(b))
           {
             ambig.add(b);
@@ -316,7 +367,7 @@ public class This extends ExprWithPos
             var d2 = 0;
             while (p >= 0 && o2.outer() != null)
               {
-                var b = o2.featureName().baseName();
+                var b = o2.baseName();
                 if (d2 == q)
                   {
                     result = o2;
@@ -338,7 +389,7 @@ public class This extends ExprWithPos
         var o2 = outer;                  // go backwards from outer to fill ol and list.
         while (o2.outer() != null)
           {
-            var b = o2.featureName().baseName();
+            var b = o2.baseName();
             ol.add("this");
             ol = ol.map(n -> b + "." + n);   // prefix all entries with o2's base name
             if (!ambig.contains(b))
@@ -364,6 +415,7 @@ public class This extends ExprWithPos
    *
    * @return
    */
+  @Override
   public String toString()
   {
     if (_qual != null)
@@ -372,7 +424,7 @@ public class This extends ExprWithPos
       }
     else if (_feature != null)
       {
-        return _feature.qualifiedName() + ".this";
+        return _feature.qualifiedNameHuman() + ".this";
       }
     else
       {

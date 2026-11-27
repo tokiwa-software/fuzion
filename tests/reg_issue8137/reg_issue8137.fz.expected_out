@@ -1,0 +1,5 @@
+case1: Any is  lock_free.Sieve_Cache String i32 (lock_free.Map String (lock_free.Node String i32))
+case2: Any is 42 i64
+case3: Any is 42 i64
+case4: String is bla const_string
+case5: [98, 108, 97]

@@ -21,10 +21,10 @@
 #
 # -----------------------------------------------------------------------
 
-Sequence.unzip2(A type)
+Sequence.unzip2(A : Any)
 pre
   T : tuple A
 =>
-  map x->x.values.0
+  map (.values.0)
 
-say ([tuple 42].unzip2 i32)
+say ([tuple 42].unzip2 i64)

@@ -323,8 +323,7 @@ int fzE_socket_read(int sockfd, void * buf, size_t count);
  * @param count
  *      number of bytes to write
  *
- * @return 0 on success, or error code
- *         may block if socket is set to blocking
+ * @return -1 or number of bytes written on success
  */
 int fzE_socket_write(int sockfd, const void * buf, size_t count);
 
@@ -351,20 +350,20 @@ int fzE_munmap(void * mapped_address, const int file_size);
 
 /**
  * Perform bitwise comparison of two float values. This is used by
- * concur.atmic.compare_and_swap/set to compare floats. In particular, this
- * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * concur.atomic.compare_and_swap/set to compare floats. In particular, this
+ * results in inequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
  * @param f1, f2 two float values
  *
- * @return true iff f1 and f2 are represented in memory by the same bit patternsx.
+ * @return true iff f1 and f2 are represented in memory by the same bit patterns.
  */
 bool fzE_bitwise_compare_float(float f1, float f2);
 
 /**
  * Perform bitwise comparison of two double values. This is used by
- * concur.atmic.compare_and_swap/set to compare floats. In particular, this
- * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * concur.atomic.compare_and_swap/set to compare doubles. In particular, this
+ * results in inequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
  * @param d1, d2 two double values
@@ -374,9 +373,10 @@ bool fzE_bitwise_compare_float(float f1, float f2);
 bool fzE_bitwise_compare_double(double d1, double d2);
 
 /**
- * @return a monotonically increasing timestamp.
+ * @return the time of the given posix clock in nano seconds,
+ * for supported clock ids see `posix.clockid_t.val` in base.
  */
-uint64_t fzE_nanotime(void);
+uint64_t fzE_posix_time(int clockid);
 
 /**
  * Sleep for at least `n` nano seconds.
@@ -407,9 +407,14 @@ int fzE_stat(const char *pathname, int64_t * metadata);
 int fzE_lstat(const char *pathname, int64_t * metadata);
 
 /**
- * Run plattform specific initialisation code
+ * Run platform-specific initialisation code
  */
 void fzE_init(void);
+
+/**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current();
 
 /**
  * Start a new thread, returns a pointer to the thread.
@@ -419,9 +424,32 @@ void * fzE_thread_create(void *(*code)(void *),
 
 /**
  * Join with a running thread.
+ *
+ * returns:
+ * 0 = success
+ * 1 = deadlock
+ * 2 = invalid operation of some kind
+ * 3 = not a valid thread id
+ *
  */
-// NYI: UNDER DEVELOPMENT:  add return value
-void fzE_thread_join(void * thrd);
+int fzE_thread_join(void * thrd);
+
+/*
+ * Set the scheduling policy and priority of a running thread.
+ */
+int fzE_thread_setschedparam(void * thrd, int policy, int priority);
+
+/*
+ * Set the scheduling CPU affinity of a running thread.
+ */
+int fzE_thread_setaffinity(void * thrd, const void * cores, int length);
+
+
+/**
+ * @return CPU time consumed by thread `thrd` in nano seconds, -1 on error.
+ */
+int64_t fzE_thread_cpu_time(void * thrd);
+
 
 /**
  * Global lock
@@ -453,11 +481,39 @@ void fzE_unlock(void);
 int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result);
 
 /**
- * wait for process `p` to exit
+ * check the status of process p, does not wait for process to finish
  *
- * @return -1 error, >=0 exit code
+ * @return  >=0 : the process exit code
+ *          -1  : process is still running
+ *          -2  : an error occurred when calling waitpid, check errno
+ *        <-100 : Unix systems only: process was terminated by a signal
+ *                -100-SIG, e.g., -109 for 9 (SIGKILL)
  */
-int64_t fzE_process_wait(int64_t p);
+int64_t fzE_process_poll(int64_t p);
+
+/**
+ * close process handle, free memory
+ *
+ * @return -1 error, 0 success
+ */
+int fzE_process_close(int64_t p);
+
+/**
+ * get the hostname
+ *
+ * @return -1 on error, length of hostname on success
+ */
+int fzE_hostname(char *buf, size_t nbytes);
+
+/**
+ * open a new pipe, put read and write end into array passed here
+ *
+ * @param fds array to be filled with pipe's file descriptors
+ *
+ * @return non-zero error number, or 0 on success
+ *
+ */
+int fzE_pipe_create(int64_t * fds);
 
 /**
  * read nbytes bytes into `buf` from pipe `desc`.
@@ -508,13 +564,15 @@ typedef enum file_open_mode {
 void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode);
 
 /**
+ * NYI: UNDER DEVELOPMENT: for file set to non-blocking this currently blocks until data available
+ *
  * @param file the pointer to the file
  *
  * @param buf pointer to a byte array
  *
  * @param size the size of buf in bytes
  *
- * @return amounts of bytes read, or negative number on error
+ * @return amounts of bytes read, zero on end_of_file, or negative number on error
  */
 int32_t fzE_file_read(void * file, void * buf, int32_t size);
 
@@ -525,7 +583,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size);
  *
  * @param size the size of buf in bytes
  *
- * @return amounts of bytes writter, or negative number on error
+ * @return amounts of bytes written, or negative number on error
  */
 int32_t fzE_file_write(void * file, void * buf, int32_t size);
 
@@ -718,10 +776,18 @@ void    fzE_mtx_destroy  (void * mtx);
 /**
  * initialize a condition
  *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /usr/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
  * @return NULL on error or pointer to condition
  *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
  */
-void *  fzE_cnd_init     (void);
+void *  fzE_cnd_init     (int clock);
 
 /**
  * unblocks one thread waiting on this condition
@@ -730,7 +796,7 @@ void *  fzE_cnd_init     (void);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_signal   (void * cnd);
+void fzE_cnd_signal   (void * cnd);
 
 /**
  * unblocks all threads waiting on this condition
@@ -739,7 +805,7 @@ int32_t fzE_cnd_signal   (void * cnd);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_broadcast(void * cnd);
+void fzE_cnd_broadcast(void * cnd);
 
 /**
  * blocks thread until signal, broadcast or spurious wakeup
@@ -750,7 +816,20 @@ int32_t fzE_cnd_broadcast(void * cnd);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_wait     (void * cnd, void * mtx);
+void fzE_cnd_wait     (void * cnd, void * mtx);
+
+/**
+ * blocks thread until signal, broadcast or spurious wakeup or given absolute time is reached
+ *
+ * @param cnd pointer to a condition
+ *
+ * @param mtx pointer to a mutex
+ *
+ * @param time_ns the timeout as an absolute time relative to the clock associated with cnd.
+ *
+ * @return -1 on error, 0 on success
+ */
+void fzE_cnd_timedwait(void * cnd, void * mtx, uint64_t time_ns);
 
 /**
  * destroys the condition
@@ -804,5 +883,10 @@ int64_t fzE_mmap_offset_multiple(void);
 int fzE_cwd(void * buf, size_t size);
 
 int fzE_isnan(double d);
+
+/**
+ * wrapper around DTRACE_PROBE
+ */
+void fzE_dtrace_probe(char col, const char* msg);
 
 #endif /* fz.h  */

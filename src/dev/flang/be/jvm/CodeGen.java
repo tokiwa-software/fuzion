@@ -162,9 +162,7 @@ class CodeGen
   }
 
 
-  /**
-   * A comment, adds human readable information
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr comment(String s)
   {
@@ -172,9 +170,7 @@ class CodeGen
   }
 
 
-  /**
-   * no operation, like comment, but without giving any comment.
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr nop()
   {
@@ -537,7 +533,7 @@ class CodeGen
         // in case we access the value in a boxed target, unbox it first:
         tv = Expr
           .comment("UNBOXING , boxed type " + clazzInQuotes(tt) + " desired type " + clazzInQuotes(cco))
-          .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getfield works vor unit type (resulting in tv.drop()).
+          .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getFieldOrUnit works for unit type (resulting in tv.drop()).
                                      Names.BOXED_VALUE_FIELD_NAME,
                                      _types.javaType(cco)));
       }
@@ -577,7 +573,7 @@ class CodeGen
           if (CHECKS) check
             (_fuir.clazzNeedsCode(cc),
              !(cc == _fuir.clazzAt(si) && // calling myself
-             _jvm._tailCall.callIsTailCall(_fuir.clazzAt(si), si)));
+             _jvm._tailCall.callIsTailCall(si)));
 
           res = makePair(callNative(si, args, cc, rt), rt);
           break;
@@ -594,7 +590,7 @@ class CodeGen
                                      : _fuir.clazzAt(si);
 
               if (cc == cl && // calling myself
-                  _jvm._tailCall.callIsTailCall(cl, si))
+                  _jvm._tailCall.callIsTailCall(si))
                 { // then we can do tail recursion optimization!
 
                   // if present, store target to local #0
@@ -668,15 +664,18 @@ class CodeGen
       + ")"
       + nativeResultTypeDescriptor(rt).descriptor();
 
+    var argSlots = new List<Integer>();
     var localSlotsOfMemorySegments = new List<Integer>();
-    return Expr
-          .getstatic(_names.javaClass(cc),
-                     Names.METHOD_HANDLE_FIELD_NAME,
-                     Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                                   // MethodHandle
-          .andThen(convertArgumentsToMemorySegments(si, args, localSlotsOfMemorySegments, cc)) // MethodHandle, args...
+    return assignArgsToLocals(si, args, argSlots, cc)
+          .andThen(Expr
+            .getstatic(_names.javaClass(cc),
+                       Names.METHOD_HANDLE_FIELD_NAME,
+                       Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                                   // MethodHandle
+          )
+          .andThen(convertArgumentsToMemorySegments(si, argSlots, localSlotsOfMemorySegments, cc)) // MethodHandle, args...
           .andThen(invokeMethodHandle(rt, invokeDescr))                                        // rt
           .andThen(copyValueResultToFuzion(rt))                                                // rt
-          .andThen(copyMemorySegmentsToArrays(cc, args, localSlotsOfMemorySegments))           // rt
+          .andThen(copyMemorySegmentsToArrays(cc, argSlots, localSlotsOfMemorySegments))           // rt
           .is(_types.javaType(rt));
   }
 
@@ -761,17 +760,17 @@ class CodeGen
   /**
    * invoke memorySegment2Obj for any of the args that are not primitives
    */
-  private Expr copyMemorySegmentsToArrays(int cc, List<Expr> args, List<Integer> slotsOfMemorySegments)
+  private Expr copyMemorySegmentsToArrays(int cc, List<Integer> argsSlots, List<Integer> slotsOfMemorySegments)
   {
     var result = Expr.UNIT;
     var slot = 0;
-    for (int i = 0; i < args.size(); i++)
+    for (int i = 0; i < argsSlots.size(); i++)
       {
         var at = _fuir.clazzArgClazz(cc, i);
         if (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) || _fuir.clazzIsRef(at))
           {
             result = result
-                .andThen(args.get(i))
+                .andThen(_types.javaType(at).load(argsSlots.get(i)))
                 .andThen(_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(Expr.aload(slotsOfMemorySegments.get(slot), Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
                 .andThen(invokeMemorySegment2Obj());
@@ -803,29 +802,29 @@ class CodeGen
    * the created MemorySegments are stored in locals and
    * the slot index is added to the slots list.
    */
-  private Expr convertArgumentsToMemorySegments(int si, List<Expr> args, List<Integer> slots, int cc)
+  private Expr convertArgumentsToMemorySegments(int si, List<Integer> argsSlots, List<Integer> slots, int cc)
   {
     var result = Expr.UNIT;
-    for (int i = 0; i < args.size(); i++)
+    for (int i = 0; i < argsSlots.size(); i++)
       {
         var at = _fuir.clazzArgClazz(cc, i);
         var call = _fuir.lookupCall(at);
         if (call != NO_CLAZZ)
           {
             result = result
-              .andThen(upcall(_fuir.clazzOuterRef(call) != NO_CLAZZ ? args.get(i) : Expr.ACONST_NULL, call));
+              .andThen(upcall(_fuir.clazzOuterRef(call) != NO_CLAZZ ? _types.javaType(at).load(argsSlots.get(i)) : Expr.ACONST_NULL, call));
           }
-        else if (args.get(i).type().isPrimitive())
+        else if (_types.javaType(at).isPrimitive())
           {
             result = result
-              .andThen(args.get(i));
+              .andThen(_types.javaType(at).load(argsSlots.get(i)));
           }
         else if (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) || _fuir.clazzIsRef(at) /* this may mean: internal_array.data */)
           {
             var slot = _jvm.allocLocal(si, 1);
             slots.addLast(slot);
             result = result
-                .andThen(args.get(i))
+                .andThen(_types.javaType(at).load(argsSlots.get(i)))
                 .andThen(_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(invokeObj2MemorySegment())
                 .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
@@ -834,9 +833,35 @@ class CodeGen
         else
           {
             result = result
-                .andThen(args.get(i))
+                .andThen(_types.javaType(at).load(argsSlots.get(i)))
                 .andThen(invokeObj2MemorySegment());
           }
+      }
+    return result;
+  }
+
+
+  /**
+   * Assign the list of argument expressions to locals
+   *
+   * @param si
+   * @param args
+   * @param slots
+   * @param cc
+   * @return
+   */
+  private Expr assignArgsToLocals(int si, List<Expr> args, List<Integer> slots, int cc)
+  {
+    var result = Expr.UNIT;
+    for (int i = 0; i < args.size(); i++)
+      {
+        var at = _fuir.clazzArgClazz(cc, i);
+        var jt = _types.javaType(at);
+        var slot = _jvm.allocLocal(si, jt.stackSlots());
+        slots.addLast(slot);
+        result = result
+          .andThen(args.get(i))
+          .andThen(jt.store(slot));
       }
     return result;
   }
@@ -918,9 +943,7 @@ class CodeGen
   }
 
 
-  /**
-   * For a given value v of value type vc create a boxed ref value of type rc.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> box(int s, Expr val, int vc, int rc)
   {
@@ -930,7 +953,7 @@ class CodeGen
     var n = _names.javaClass(rc);
     var res = Expr
       .comment("box from " + clazzInQuotes(vc) + " to " + clazzInQuotes(rc))
-      .andThen(val)
+      .andThen(_jvm.cloneValue(s, val, vc, NO_CLAZZ))
       .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
                                   _types.boxSignature(rc),
                                   _types.javaType(rc)));
@@ -938,9 +961,7 @@ class CodeGen
   }
 
 
-  /**
-   * Get the current instance
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> current(int s)
   {
@@ -1024,9 +1045,7 @@ class CodeGen
   }
 
 
-  /**
-   * Get a constant value of type constCl with given byte data d.
-   */
+  /** {@inheritDoc} */
   @Override
   public Pair<Expr, Expr> constData(int si, int constCl, byte[] d)
   {
@@ -1036,18 +1055,28 @@ class CodeGen
       case onEveryUse               -> c;  // create constant inline
       case onUniverseInitialization ->     // or create constant in universe' static initializer:
         {
-          var ucl = _types.classFile(_fuir.clazzUniverse());
-          var f = _names.preallocatedConstantField(constCl, d);
-          var jt = _types.resultType(constCl);
-          if (!ucl.hasField(f))
+          Pair<Expr,Expr> result = null;
+          // NYI: CLEANUP: AI/FUIR should not give us unit like consts
+          if (_fuir.clazzIsUnitType(constCl))
             {
-              ucl.field(ACC_STATIC | ACC_PUBLIC,
-                        f,
-                        jt.descriptor());
-              ucl.addToClInit(c.v1());
-              ucl.addToClInit(c.v0().andThen(Expr.putstatic(ucl._name, f, jt)));
+              result = new Pair<>(Expr.UNIT, Expr.UNIT);
             }
-          yield new Pair<Expr, Expr>(Expr.getstatic(ucl._name, f, jt), Expr.UNIT);
+          if (result == null)
+            {
+              var ucl = _types.classFile(_fuir.clazzUniverse());
+              var f = _names.preallocatedConstantField(constCl, d);
+              var jt = _types.resultType(constCl);
+              if (!ucl.hasField(f))
+                {
+                  ucl.field(ACC_STATIC | ACC_PUBLIC,
+                            f,
+                            jt.descriptor());
+                  ucl.addToClInit(c.v1());
+                  ucl.addToClInit(c.v0().andThen(Expr.putstatic(ucl._name, f, jt)));
+                }
+              result = new Pair<Expr, Expr>(Expr.getstatic(ucl._name, f, jt), Expr.UNIT);
+            }
+          yield result;
         }
       };
   }
@@ -1124,6 +1153,10 @@ class CodeGen
                     .andThen(jt.xastore());                        // T[]
                 }
               yield _jvm.const_array(constCl, result, elCount);
+            }
+          else if (_fuir.clazzIsUnitType(constCl))
+            {
+              yield new Pair<>(Expr.UNIT, Expr.UNIT);
             }
           else if (!_fuir.clazzIsChoice(constCl))
             {
@@ -1223,15 +1256,11 @@ class CodeGen
    */
   private String clazzInQuotes(int c)
   {
-    return "`" + _fuir.clazzAsString(c) + "`";
+    return "`" + _fuir.clazzName(c) + "`";
   }
 
 
-  /**
-   * Generate code to terminate the execution immediately.
-   *
-   * @param msg a message explaining the illegal state
-   */
+  /** {@inheritDoc} */
   @Override
   public Expr reportErrorInCode(String msg)
   {

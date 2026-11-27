@@ -31,9 +31,6 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
-import dev.flang.mir.MIR;
-import dev.flang.mir.MirModule;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -55,7 +52,7 @@ import java.util.stream.Stream;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Module extends ANY implements FeatureLookup
+public abstract class Module extends ANY
 {
 
 
@@ -67,6 +64,12 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   static class FData
   {
+    /**
+     * Cache for findRedefinition: map each feature that is redefined in this
+     * feature to the redefining feature.
+     */
+    SortedMap<AbstractFeature, AbstractFeature> _redefinitions;
+
 
     /**
      * Features declared inside a feature. The inner features are mapped from
@@ -292,11 +295,21 @@ public abstract class Module extends ANY implements FeatureLookup
         var existing = it.next();
         if (f != existing)
           {
-            if (redefines(f, existing))
+            var fInherited = f.outer() != outer;
+            var existingInherited = existing.outer() != outer;
+            if (
+                fInherited && existingInherited &&
+                ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0) ==
+                ((existing.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
+               )
+              {
+                // will trigger: Repeated inheritance, see #7062
+              }
+            else if (f.redefinesFull().contains(existing))
               {
                 it.remove();
               }
-            else if (redefines(existing, f))
+            else if (existing.redefinesFull().contains(f))
               {
                 f = null;
               }
@@ -306,16 +319,6 @@ public abstract class Module extends ANY implements FeatureLookup
       {
         add(set, fn, f);
       }
-  }
-
-
-  /**
-   * Does f1 redefine f2?
-   */
-  private boolean redefines(AbstractFeature f1, AbstractFeature f2)
-  {
-    return this instanceof SourceModule  && f1.redefines().contains(f2) ||
-        !(this instanceof SourceModule) && f1.outer().inheritsFrom(f2.outer()); // NYI: CLEANUP: #478: better check f1.redefines(f2)
   }
 
 
@@ -520,32 +523,33 @@ public abstract class Module extends ANY implements FeatureLookup
   }
 
 
+
   /**
-   * Find feature with given name in outer.
+   * Find the effective main feature from the given main feature name. In case
+   * main is null, this is the universe.  Otherwise, it is a feature with given
+   * name {@code main} or, if exits, its {@code preAndCallFeature}.
    *
-   * @param outer the declaring or inheriting feature
+   * @param universe the universe feature, may be null
+   *
+   * @param main the main features name, may be null
+   *
+   * @return the effective main feature, null in case universe is null or lookup failed.
    */
-  @Override
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
+  AbstractFeature effectiveMain(AbstractFeature universe, String main)
   {
-    return declaredOrInheritedFeatures(outer, name).getFirstOrNull();
-  }
-
-
-  /**
-   * Create MIR based on given main feature.
-   */
-  static MIR createMIR(MirModule mirMod, AbstractFeature universe, AbstractFeature main)
-  {
-    var result = new MIR(universe, main, mirMod);
-    if (!Errors.any())
+    var result = universe == null || main == null
+      ? universe
+      : declaredOrInheritedFeatures(universe, FeatureName.get(main, 0)).getFirstOrNull();
+    if (result != null)
       {
-        new DFA(result).check();
+        var pac = result.preAndCallFeature();
+        if (pac != null)
+          {
+            result = pac;
+          }
       }
-
     return result;
   }
-
 
 }
 

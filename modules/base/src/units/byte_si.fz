@@ -25,7 +25,7 @@
 #
 # Uses SI prefixes (base 10), e.g. 1000 Byte = 1 kilobyte.
 #
-public byte_si(
+private:public byte_si(
             # the next smaller unit, like kilobyte is smaller than megabyte, if it exists
             public smaller Lazy (option byte_si),
 

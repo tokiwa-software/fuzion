@@ -47,16 +47,22 @@ public abstract class AbstractMatch extends ExprWithPos
    * where this match came from.
    * used only for better error messages.
    */
-  enum Kind { Plain, If, Contract }
+  enum Kind { Plain, If, Contract, Until, While }
 
 
   /*----------------------------  variables  ----------------------------*/
 
 
   /**
-   * Static type of this match or null if none. Set during resolveTypes().
+   * Static type of this match or null if none.
+   * Cache for type().
+   *
+   * This will only be:
+   * - void, for a match known to never return
+   * - unit, for a match that may return (and whose result is assigned to some field)
+   *
    */
-  AbstractType _type;
+  private AbstractType _type;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -96,7 +102,8 @@ public abstract class AbstractMatch extends ExprWithPos
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  @Override
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var ns = subject().visit(v, outer);
     if (CHECKS) check
@@ -111,13 +118,7 @@ public abstract class AbstractMatch extends ExprWithPos
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {
@@ -126,7 +127,7 @@ public abstract class AbstractMatch extends ExprWithPos
         _type = cases()
           .map2(x -> x.code().type())
           .stream()
-          .reduce(Types.resolved.t_void, (a,b) -> a.union(b, Context.NONE));
+          .reduce(Types.resolved.t_void, (a,b) -> a.commonSupertype(b, Context.NONE));
         if (CHECKS) require
           (_type.isVoid() || _type.compareTo(Types.resolved.t_unit) == 0);
       }
@@ -144,38 +145,43 @@ public abstract class AbstractMatch extends ExprWithPos
   }
 
 
+  /** {@inheritDoc} */
+  @Override public boolean producesResult()
+  {
+    return false;
+  }
+
+
   /**
    * checks the subject type of this match.
    */
   void checkTypes(Context context)
   {
     var st = subject().type();
-    if (st.isGenericArgument())
+    if (st.isParametricType())
       {
         AstErrors.matchSubjectMustNotBeTypeParameter(subject().pos(), st);
       }
 
     if (CHECKS) check
-      (Errors.any() || st != Types.t_ERROR);
+      (Errors.any() || st != Types.t_ERROR,
+       Errors.any() || !producesResult());
 
     if (st != Types.t_ERROR)
       {
-        if (kind() == Kind.Plain)
+        if (switch (kind())
+              {
+              case Plain                      -> !st.isChoice();
+              case Contract, If, While, Until -> Types.resolved.t_bool.isAssignableFromWithoutBoxing(st, context).no();
+              })
           {
-            if (!st.isChoice())
+            switch (kind())
               {
-                AstErrors.matchSubjectMustBeChoice(subject().pos(), st);
-              }
-          }
-        else if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
-          {
-            if (kind() == Kind.Contract)
-              {
-                AstErrors.contractExpressionMustResultInBool(subject());
-              }
-            else
-              {
-                AstErrors.ifConditionMustBeBool(subject());
+              case Plain    -> AstErrors.matchSubjectMustBeChoice(subject().pos(), st);
+              case Contract -> AstErrors.contractExpressionMustResultInBool(subject());
+              case If       -> AstErrors.ifConditionMustBeBool(subject());
+              case While    -> AstErrors.whileConditionMustBeBool(subject());
+              case Until    -> AstErrors.untilConditionMustBeBool(subject());
               }
           }
       }

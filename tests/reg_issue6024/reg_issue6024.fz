@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 # test all sorts of illegal uses of `_` with actual arguments, with explicit
-# empty arguments `()` or with a targert.
+# empty arguments `()` or with a target.
 #
 reg_issue6024 =>
 

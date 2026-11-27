@@ -36,7 +36,7 @@ callWithUninstantiatedTarget is
   #
   x y =>
     say "x takes the back door out"
-    exit 0
+    Exit.env.exit 0
 
   # y is only used as a type, never instantiated
   #

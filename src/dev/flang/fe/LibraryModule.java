@@ -30,27 +30,21 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.ByteBuffer;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Map.Entry;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractFeature.Kind;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.TypeKind;
 import dev.flang.ast.UnresolvedType;
-import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
 import dev.flang.mir.MIR;
@@ -77,7 +71,7 @@ import dev.flang.util.Version;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LibraryModule extends Module implements MirModule
+public class LibraryModule extends Module implements MirModule, RedefinitionLookup
 {
 
 
@@ -155,7 +149,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Cache for innerFeatures created from given index
    */
-  private final Map<Integer, List<AbstractFeature>> _innerFeatures = new TreeMap<>();
+  private final Map<Integer, List<LibraryFeature>> _innerFeatures = new TreeMap<>();
 
 
   /**
@@ -311,14 +305,15 @@ public class LibraryModule extends Module implements MirModule
   {
     if (_mir == null)
       {
-        var d = main == null
-          ? universe()
-          : lookupFeature(universe(), FeatureName.get(main, 0));
-
+        var d = effectiveMain(universe(), main);
         if (CHECKS) check
           (d != null);
 
-        _mir = createMIR(this, universe(), d);
+        _mir = new MIR(universe(), d, this);
+        if (!Errors.any())
+          {
+            new DFA(_mir).check();
+          }
 
         Errors.showAndExit();
       }
@@ -332,6 +327,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param outer the declaring feature
    */
+  @Override
   public SortedMap<FeatureName, AbstractFeature> declaredFeatures(AbstractFeature outer)
   {
     var result = declaredFeaturesShallow(outer);
@@ -374,7 +370,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @return the feature declared at offset in this module.
    */
-  AbstractFeature libraryFeature(int offset)
+  LibraryFeature libraryFeature(int offset)
   {
     if (offset >= 0 && offset <= _data.limit())
       {
@@ -390,11 +386,10 @@ public class LibraryModule extends Module implements MirModule
       {
         var mr = moduleRef(offset);
         if (CHECKS) check
-          (mr != null);
+          (mr != null,
+           mr._module != null);
 
-        return mr._module != null
-                ? mr._module.libraryFeature(offset - mr._offset)
-                : Types.f_ERROR;
+        return mr._module.libraryFeature(offset - mr._offset);
       }
   }
 
@@ -426,7 +421,7 @@ public class LibraryModule extends Module implements MirModule
    * @return list of inner features of outer that are declared by this library
    * module.
    */
-  List<AbstractFeature> features(AbstractFeature outer)
+  List<LibraryFeature> features(AbstractFeature outer)
   {
     if (outer.isUniverse())
       {
@@ -455,7 +450,7 @@ public class LibraryModule extends Module implements MirModule
    */
   public LibraryFeature libraryUniverse()
   {
-    return (LibraryFeature)innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
+    return innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
   }
 
 
@@ -464,12 +459,12 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param at the index of an InnerFeatures block.
    */
-  List<AbstractFeature> innerFeatures(int at)
+  List<LibraryFeature> innerFeatures(int at)
   {
     var result = _innerFeatures.get(at);
     if (result == null)
       {
-        result = new List<AbstractFeature>();
+        result = new List<LibraryFeature>();
         var is = innerFeaturesSize(at);
         var ip = innerFeaturesFeaturesPos(at);
         for (var i = ip; i < ip+is; i = featureNextPos(i))
@@ -487,7 +482,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param offset the offset of the Generic
    */
-  AbstractFeature genericArgument(int offset)
+  AbstractFeature typeParameter(int offset)
   {
     var tp = feature(offset);
     var o = tp.outer();
@@ -528,7 +523,7 @@ public class LibraryModule extends Module implements MirModule
           }
         else if (k == -1)
           {
-            result = new GenericType(this, at, genericArgument(typeTypeParameter(at)));
+            result = new ParametricType(this, at, typeParameter(typeTypeParameter(at)));
           }
         else
           {
@@ -596,7 +591,7 @@ Module File
 
               | 1      | Name          | module name
 
-              | 1      | u128          | module hash, cryptographically strong, generated by JDKs SecureRandom()
+              | 1      | u256          | module hash, cryptographically strong, generated by JDKs SecureRandom()
 
               | 1      | int           | number of modules this module depends on n
 
@@ -621,7 +616,7 @@ Module File
    *   +        +--------+---------------+-------------------------------------------------------------------------+
    *   |        | 1      | Name          | module name                                                             |
    *   +        +--------+---------------+-------------------------------------------------------------------------+
-   *   |        | 1      | u128          | module hash, cryptographically strong, generated by JDKs SecureRandom() |
+   *   |        | 1      | u256          | module hash, cryptographically strong, generated by JDKs SecureRandom() |
    *   +        +--------+---------------+-------------------------------------------------------------------------+
    *   |        | 1      | int           | number of modules this module depends on n                              |
    *   +        +--------+---------------+-------------------------------------------------------------------------+
@@ -643,6 +638,7 @@ Module File
   {
     return startPos();
   }
+  @Override
   public String name()
   {
     return name(namePos());
@@ -657,7 +653,7 @@ Module File
   }
   byte[] hash(int at)
   {
-    var r = new byte[16];
+    var r = new byte[32];
     for (int i = 0; i<r.length; i++)
       {
         r[i] = _data.get(at);
@@ -671,7 +667,7 @@ Module File
   }
   int hashNextPos()
   {
-    return hashPos() + 16;
+    return hashPos() + 32;
   }
   int moduleRefsCountPos()
   {
@@ -737,7 +733,7 @@ ModuleRef
 
 .2+| true     | 1      | Name          | module name
 
-              | 1      | u128          | module hash
+              | 1      | u256          | module hash
 |====
 
 --asciidoc--
@@ -749,7 +745,7 @@ ModuleRef
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module hash                                   |
+   *   |        | 1      | u256          | module hash                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    *
    */
@@ -776,7 +772,7 @@ ModuleRef
   }
   int moduleRefHashNextPos(int at)
   {
-    return moduleRefHashPos(at) + 16;
+    return moduleRefHashPos(at) + 32;
   }
   int moduleRefNextPos(int at)
   {
@@ -916,7 +912,7 @@ Feature
                                          hasRT = !isConstructor && !isChoice && !isTypeParameter
    | O=1      | 1      | int           | open type Feature index,
    | isTypeParameter | 1 | Type        | constraint of (open) type parameters
-.2+| true NYI! !isField? !isIntrinsc
+.2+| true NYI! !isField? !isIntrinsic
               | 1      | int           | inherits count i
               | i      | Code          | inherits calls
 .2+| R        | 1      | int           | feature offset of precondition feature
@@ -974,7 +970,8 @@ Feature
    *   | NYI!   |        |               |                                               |
    *   | !isFiel+--------+---------------+-----------------------------------------------+
    *   | d? !isI| i      | Code          | inherits calls                                |
-   *   | ntrinsc|        |               |                                               |
+   *   | ntrinsi|        |               |                                               |
+   *   | c      |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | R      | 1      | int           | feature offset of precondition feature        |
    *   |        |        +---------------+-----------------------------------------------+
@@ -1003,8 +1000,7 @@ Feature
   }
   int featureKind(int at)
   {
-    var ko = data().getShort(featureKindPos(at));
-    return ko;
+    return data().getShort(featureKindPos(at));
   }
   AbstractFeature.Kind featureKindEnum(int at)
   {
@@ -1049,14 +1045,11 @@ Feature
   }
   int featureNamePos(int at)
   {
-    var i = featureKindPos(at) + 2;
-    return i;
+    return featureKindPos(at) + 2;
   }
   int featureNameLength(int at)
   {
-    var i = featureNamePos(at);
-    var l = data().getInt(i);
-    return l;
+    return data().getInt(featureNamePos(at));
   }
   byte[] featureName(int at)
   {
@@ -1176,8 +1169,9 @@ Feature
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return
-      (k == AbstractFeature.Kind.TypeParameter    .ordinal() ||
-       k == AbstractFeature.Kind.OpenTypeParameter.ordinal()    );
+      (k == AbstractFeature.Kind.ExplicitTypeParameter.ordinal() ||
+       k == AbstractFeature.Kind.FreeTypeParameter    .ordinal() ||
+       k == AbstractFeature.Kind.OpenTypeParameter    .ordinal()    );
   }
   int featureInheritsCountPos(int at)
   {
@@ -2409,7 +2403,7 @@ SourceFile
    *
    * @param module the module name the SourcePosition is from
    *
-   * @param pos 32-bits pos, 32-bits posEnd cramed into a long value
+   * @param pos 32-bit pos and 32-bit posEnd packed into a long value
    *
    * @return
    */
@@ -2470,14 +2464,13 @@ SourceFile
    *
    * @param fs the features to annotate.
    */
-  private void dump(HexDump hd, List<AbstractFeature> fs)
+  private void dump(HexDump hd, List<LibraryFeature> fs)
   {
     for (var f: fs)
       {
-        var lf = (LibraryFeature) f;
-        var li = lf._index;
+        var li = f._index;
         hd.mark(li, featureKindEnum(li).toString());
-        hd.mark(featureNamePos(li), f.qualifiedName());
+        hd.mark(featureNamePos(li), f.qualifiedNameHuman());
         if (featureIsRoutine(li))
           {
             hd.mark(featureCodePos(li), "code");
@@ -2490,6 +2483,7 @@ SourceFile
   /**
    * Create String representation for debugging.
    */
+  @Override
   public String toString()
   {
     return "LibraryModule for '" + name() + "'";
@@ -2517,6 +2511,58 @@ SourceFile
   public boolean sameOrDependent(LibraryModule lm)
   {
     return lm == this || Arrays.asList(_modules).stream().map(r->r._module).anyMatch(x->x==lm);
+  }
+
+
+  /**
+   * Find the redefinition of feature f within heir.
+   *
+   * For fixed features, this performs a lookup by name since fixed features
+   * are not inherited and a call to a fixed feature must be bound to the
+   * feature with the same name in the actual outer type.
+   *
+   * For all other features, this does not perform a lookup by name, but uses
+   * the redefinition relation, so features in heir that have the same name as
+   * f but do not redefine f are ignored.
+   *
+   * @param heir a feature that inherits from f.outer(), directly or
+   *             indirectly.
+   *
+   * @param f    a feature declared in or inherited by f.outer()
+   *
+   * @return the feature in heir that redefines f, or f itself if f is not
+   *         redefined in heir.
+   */
+  @Override
+  public AbstractFeature findRedefinition(AbstractFeature heir, AbstractFeature f) {
+    // NYI: BUG: #8187 Must not use name lookup; redefinitions should be found in
+    // `d._redefinitions`. If they are not there, we should find out why and fix that.
+    if (f.isFixed() && !f.isTypeParameter())
+      {
+        var sameName = declaredOrInheritedFeatures(heir, f.featureName()).getFirstOrNull();
+        if (sameName != null && sameName.isFixed())
+          {
+            return (LibraryFeature)sameName;
+          }
+      }
+    var d = data(heir);
+    var m = d._redefinitions;
+    if (m == null)
+      {
+        var res = new TreeMap<AbstractFeature, AbstractFeature>();
+        forEachDeclaredOrInheritedFeature(heir, g ->
+          {
+            for (var o : g.redefinesFull())
+              {
+                var prev = res.put(o, g);
+                if (CHECKS)
+                  check(prev == null || prev == g || Errors.any());
+              }
+          });
+        m = res;
+        d._redefinitions = m;
+      }
+    return m.getOrDefault(f, f);
   }
 
 }

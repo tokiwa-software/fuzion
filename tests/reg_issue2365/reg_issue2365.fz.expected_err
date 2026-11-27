@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue2365.fz:29:33: error 1: Could not find called feature
+reg_issue2365.fz:29:33: error 1: Could not find called feature
     _ := for j in 0.. else _ := j
 --------------------------------^
 Feature not found: 'j' (no arguments)

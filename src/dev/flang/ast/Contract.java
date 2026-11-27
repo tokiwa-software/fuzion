@@ -60,7 +60,7 @@ public class Contract extends ANY
    */
   public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND, null, null,
                                                              NO_COND, null, null,
-                                                             null);
+                                                             ()->AbstractFeature._NO_FEATURES_);
 
 
 
@@ -99,7 +99,7 @@ public class Contract extends ANY
    * of the declared formal arguments to be used in pre feature, pre bool
    * feature. pre_and_call feature and post feature.
    */
-  java.util.function.Supplier<List<AbstractFeature>> _argsSupplier;
+  private final java.util.function.Supplier<List<AbstractFeature>> _argsSupplier;
 
 
   /**
@@ -153,7 +153,7 @@ public class Contract extends ANY
     _hasPostThen = hasThen;
     _declared_preconditions   = r1 == null || r1.isEmpty() ? NO_COND : r1;
     _declared_preconditions2  = r2 == null || r2.isEmpty() ? NO_COND : r2;
-    _declared_postconditions = e == null || e.isEmpty() ? NO_COND : e;
+    _declared_postconditions  = e == null  ||  e.isEmpty() ? NO_COND : e;
     _argsSupplier = args;
   }
 
@@ -172,7 +172,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionFeatureName == null)
       {
-        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.baseName();
       }
     return c._preConditionFeatureName;
   }
@@ -189,7 +189,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preBoolConditionFeatureName == null)
       {
-        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.baseName();
       }
     return c._preBoolConditionFeatureName;
   }
@@ -206,7 +206,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionAndCallFeatureName == null)
       {
-        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.baseName();
       }
     return c._preConditionAndCallFeatureName;
   }
@@ -223,7 +223,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._postConditionFeatureName == null)
       {
-        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.baseName();
       }
     return c._postConditionFeatureName;
   }
@@ -318,7 +318,64 @@ public class Contract extends ANY
 
 
   /**
-   * Create call to outer's precondition feature
+   * Helper for call*Condition to create the actual call, unless the type
+   * parameters do not match (see #7747 for an example).
+   *
+   * @param res resolution instance
+   *
+   * @param pos the source position of the call
+   *
+   * @param target the target of the call
+   *
+   * @param typepars the type parameters
+   *
+   * @param args the actual arguments
+   *
+   * @param pf the called feature (pre/preBool/postFeature)
+   *
+   * @param context the environment we are creating the call in
+   */
+  private static Call callCondition(Resolution res,
+                                    SourcePosition pos,
+                                    Expr target,
+                                    List<AbstractType> typepars,
+                                    List<Expr> args,
+                                    AbstractFeature pf,
+                                    Context context)
+  {
+    return
+      pf.generics().sizeMatches(typepars)  // check generics match to avoid fz crash in case of broken input as in #7747
+      ? new Call(pos,
+                 target,
+                 typepars,
+                 args,
+                 pf).resolveTypes(res, context)
+      : Call.ERROR;
+  }
+
+
+  /**
+   * Helper for call*Condition to create the actual args from the args of feature `f`.
+   *
+   * @param res resolution instance
+   *
+   * @param pos the source position of the call
+   *
+   * @param f the feature to copy arguments from
+   */
+  private static List<Expr> argsAsActuals(Resolution res,
+                                          SourcePosition pos,
+                                          AbstractFeature f)
+  {
+    return f.valueArguments().map2(a -> new Call(pos,
+                                                 new Current(pos, f),
+                                                 a
+                                                ).resolveTypes(res, f.context()));
+  }
+
+
+  /**
+   * Create call to context.outerFeature()'s precondition feature
    *
    * @param res resolution instance
    *
@@ -330,61 +387,24 @@ public class Contract extends ANY
    */
   static Call callPreCondition(Resolution res, AbstractFeature f, Context context)
   {
-    return callPreCondition(res, f, (Feature) context.outerFeature(), context);
-  }
-  static Call callPreCondition(Resolution res, AbstractFeature f, Feature outer, Context context)
-  {
-    if (PRECONDITIONS) require(outer == context.outerFeature());
-    var oc = f.contract();
-    var p = oc._hasPre != null ? oc._hasPre : f.pos();
-    List<Expr> args = new List<>();
-    for (var a : outer.valueArguments())
-      {
-        var ca = new Call(p,
-                          new Current(p, outer),
-                          a);
-        ca = ca.resolveTypes(res, context);
-        args.add(ca);
-      }
-    return callPreCondition(res, f, outer, context, args);
-  }
+    if (PRECONDITIONS)
+      require(context.outerFeature() instanceof Feature /* used on newly compiled code only */);
 
-
-  /**
-   * Create call to outer's precondition feature to be added to code of feature {@code outer}.
-   *
-   * @param res resolution instance
-   *
-   * @param f a feature with a precondition that should be called.
-   *
-   * @param outer The call to f's precondition is to be added to outer's code.
-   *
-   * @param args actual arguments to be passed to the call
-   *
-   * @return a call to f.preFeature() to be added to code of outer.
-   */
-  private static Call callPreCondition(Resolution res,
-                                       AbstractFeature f,
-                                       Feature outer,
-                                       Context context,
-                                       List<Expr> args)
-  {
-    var p = outer.contract()._hasPre != null
-          ? outer.contract()._hasPre    // use `pre` position if `outer` is of the form `f pre cc is ...`
-          : outer.pos();                // `outer` does not have `pre` clause, only inherits preconditions. So use the feature position instead
-
+    var outer = (Feature) context.outerFeature();
+    var fc = f.contract();
+    var p = fc._hasPre != null ? fc._hasPre  // use `pre` position if `outer` is of the form `f pre cc is ...`
+                               : f.pos();    // `outer` does not have `pre` clause, only inherits preconditions. So use the feature position instead
+    var args = argsAsActuals(res, p, outer);
     var t = outer.outerRef() != null ? This.thiz(res, p, context, outer.outer())
                                      : Universe.instance;
-    if (f instanceof Feature ff)  // if f is currently being compiled, make sure its contract features are created first
-      {
-        addContractFeatures(res, ff, context);
-      }
-    return new Call(p,
-                    t,
-                    outer.genericsAsActuals(),
-                    args,
-                    f.preFeature())
-      .resolveTypes(res, context);
+    addContractFeatures(res, f, context);  // if f is currently being compiled, make sure its contract features are created first
+    return callCondition(res,
+                         p,
+                         t,
+                         outer.genericsAsActuals(),
+                         args,
+                         f.preFeature(),
+                         context);
   }
 
 
@@ -404,28 +424,18 @@ public class Contract extends ANY
     var outer = context.outerFeature();
     var oc = f.contract();
     var p = oc._hasPre != null ? oc._hasPre : f.pos();
-    List<Expr> args = new List<>();
-    for (var a : outer.valueArguments())
-      {
-        var ca = new Call(p,
-                          new Current(p, outer),
-                          a);
-        ca = ca.resolveTypes(res, context);
-        args.add(ca);
-      }
 
+    var args = argsAsActuals(res, p, outer);
     var t = outer.outerRef() != null ? This.thiz(res, p, context, outer.outer())
                                      : Universe.instance;
-    if (f instanceof Feature ff)  // if f is currently being compiled, make sure its post feature is added first
-      {
-        addContractFeatures(res, ff, context);
-      }
-    return new Call(p,
-                    t,
-                    outer.genericsAsActuals(),
-                    args,
-                    f.preBoolFeature())
-      .resolveTypes(res, context);
+    addContractFeatures(res, f, context);  // if f is currently being compiled, make sure its contract features are created first
+    return callCondition(res,
+                         p,
+                         t,
+                         outer.genericsAsActuals(),
+                         args,
+                         f.preBoolFeature(),
+                         context);
   }
 
 
@@ -443,15 +453,7 @@ public class Contract extends ANY
     var preAndCallOuter = f.preAndCallFeature();
     var oc = f.contract();
     var p = oc._hasPre != null ? oc._hasPre : f.pos();
-    List<Expr> args = new List<>();
-    for (var a : preAndCallOuter.valueArguments())
-      {
-        var ca = new Call(p,
-                          new Current(p, preAndCallOuter),
-                          a);
-        ca = ca.resolveTypes(res, preAndCallOuter.context());
-        args.add(ca);
-      }
+    var args = argsAsActuals(res, p, preAndCallOuter);
     var t = This.thiz(res, p, preAndCallOuter.context(), preAndCallOuter.outer());
     return new Call(p,
                     t,
@@ -481,29 +483,21 @@ public class Contract extends ANY
     var oc = outer.contract();
     var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
-    // NYI: CLEANUP: use outer.kind() and switch
-    if (!outer.isConstructor())
-      {
-        for (var a : outer.valueArguments())
-          {
-            var ca = new Call(p,
-                              new Current(p, outer),
-                              a);
-            ca = ca.resolveTypes(res, context);
-            args.add(ca);
-          }
-      }
-    if (outer.hasResultField())
-      {
-        var c2 = new Call(p,
-                          new Current(p, outer),
-                          outer.resultField());
-        c2 = c2.resolveTypes(res, context);
-        args.add(c2);
-      }
-    else if (outer.isConstructor())
+    if (outer.isConstructor())
       {
         args.add(new Current(p, outer));
+      }
+    else
+      {
+        args = argsAsActuals(res, p, outer);
+        if (outer.hasResultField())
+          {
+            var c2 = new Call(p,
+                              new Current(p, outer),
+                              outer.resultField());
+            c2 = c2.resolveTypes(res, context);
+            args.add(c2);
+          }
       }
     return callPostCondition(res, outer, context, args);
   }
@@ -514,13 +508,13 @@ public class Contract extends ANY
    *
    * @param res resolution instance
    *
-   * @param origouter a feature with a postcondition
+   * @param f a feature with a postcondition
    *
    * @param args actual arguments to be passed to the call
    *
    * @return a call to outer.postFeature() to be added to code of in.
    */
-  private static Call callPostCondition(Resolution res, AbstractFeature origouter, Context context, List<Expr> args)
+  private static Call callPostCondition(Resolution res, AbstractFeature f, Context context, List<Expr> args)
   {
     var in = context.outerFeature();
     var p = in.contract()._hasPost != null
@@ -531,17 +525,14 @@ public class Contract extends ANY
                                : (in.outerRef() != null)
                                   ? This.thiz(res, p, in.context(), in.outer())
                                   : Universe.instance;
-    if (origouter instanceof Feature of)  // if origouter is currently being compiled, make sure its post feature is added first
-      {
-        addContractFeatures(res, of, context);
-      }
-    var callPostCondition = new Call(p,
-                                     t,
-                                     origouter.isConstructor() ? new List<>() : in.genericsAsActuals(),
-                                     args,
-                                     origouter.postFeature());
-    callPostCondition = callPostCondition.resolveTypes(res, in.context());
-    return callPostCondition;
+    addContractFeatures(res, f, context);  // if f is currently being compiled, make sure its contract features are created first
+    return callCondition(res,
+                         p,
+                         t,
+                         f.isConstructor() ? new List<AbstractType>() : in.genericsAsActuals(),
+                         args,
+                         f.postFeature(),
+                         in.context());
   }
 
 
@@ -577,7 +568,7 @@ public class Contract extends ANY
    *
    * @param preBool true to create pre bool feature, false for pre feature.
    */
-  static void addPreFeature(Resolution res, Feature f, Context context, boolean preBool)
+  static void addPreFeature(Resolution res, Feature f, boolean preBool)
   {
     var fc = f.contract();
     var name = preBool ? preBoolConditionsFeatureName(f)
@@ -592,7 +583,7 @@ public class Contract extends ANY
                                 .filter(inh -> !hasPreConditionsFeature(inh))
                                 .findFirst();
 
-    var args = fc._argsSupplier == null ? null : fc._argsSupplier.get();
+    var args = fc._argsSupplier.get();
     var pos = fc._hasPre != null ? fc._hasPre : f.pos();
 
     var l = new List<Expr>();  // code for preconditions we are collecting (for !preBool)
@@ -621,7 +612,7 @@ public class Contract extends ANY
                          cond,
                          new Block(),
                          pc(p, FuzionConstants.FUZION_RUNTIME_PRECONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
-                         true));
+                         AbstractMatch.Kind.Contract));
           }
       }
     if (cc != null)
@@ -713,7 +704,7 @@ public class Contract extends ANY
                                        cc,
                                        new Block(),
                                        new Block(new_code),
-                                       false));
+                                       AbstractMatch.Kind.If));
       }
     code._expressions = new_code;
     var e = res.resolveType(code, pF.context());
@@ -722,28 +713,27 @@ public class Contract extends ANY
   }
 
 
-
   /**
-   * Part of the syntax sugar phase: For f's contract, create artificial
+   * Part of the syntax sugar phase: For of's contract, create artificial
    * features that check that contract: pre feature, pre bool feature, pre and
    * call feature and post feature as needed.
    *
    * @param res Resolution instance
    *
-   * @param f the feature that requires a pre or pre bool feature
+   * @param of the feature that requires a pre or pre bool or post feature
    */
-  static void addContractFeatures(Resolution res, Feature f, Context context)
+  static void addContractFeatures(Resolution res, AbstractFeature of, Context context)
   {
     if (PRECONDITIONS) require
-      (f != null,
+      (of != null,
        res != null,
-       Errors.any() || !f.isUniverse() || (f.contract()._declared_preconditions.isEmpty () &&
-                                           f.contract()._declared_postconditions.isEmpty()   ));
+       Errors.any() || !of.isUniverse() || (of.contract()._declared_preconditions.isEmpty () &&
+                                            of.contract()._declared_postconditions.isEmpty()   ));
 
-    var fc = f.contract();
+    var fc = of.contract();
 
     // add precondition feature
-    if (requiresPreConditionsFeature(f) && f._preBoolFeature == null)
+    if (of instanceof Feature f && requiresPreConditionsFeature(f) && f._preBoolFeature == null)
       {
         // NYI: UNDER DEVELOPMENT:
         if (!f.isRoutine() && f.kind() != Kind.Intrinsic && f.kind() != Kind.Abstract)
@@ -972,11 +962,11 @@ all of their redefinition to `true`. +
 
         if (f._preBoolFeature == null)
           {
-            addPreFeature(res, f, context, true);
+            addPreFeature(res, f, true);
           }
         if (f._preFeature == null)
           {
-            addPreFeature(res, f, context, false);
+            addPreFeature(res, f, false);
           }
 
         if (!f.isConstructor())
@@ -1011,7 +1001,7 @@ all of their redefinition to `true`. +
       }
 
     // add postcondition feature
-    if (requiresPostConditionsFeature(f) && f._postFeature == null)
+    if (of instanceof Feature f && requiresPostConditionsFeature(f) && f._postFeature == null)
       {
         // NYI: UNDER DEVELOPMENT:
         if (!f.isRoutine() && f.kind() != Kind.Abstract)
@@ -1031,7 +1021,7 @@ all of their redefinition to `true`. +
                                         ? f.thisType()
                                         // we will later replace type parameters of f
                                         // by type parameters of f post
-                                        : f.resultType(),
+                                        : f.resultTypeIfPresentUrgent(res, true),
                                       FuzionConstants.RESULT_NAME)
           {
             public boolean isResultField() { return true; }
@@ -1045,7 +1035,7 @@ all of their redefinition to `true`. +
                            c.cond(),
                            new Block(),
                            pc(p, FuzionConstants.FUZION_RUNTIME_POSTCONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
-                           false));
+                           AbstractMatch.Kind.If));
           }
         var code = new Block(l);
         var pF = new Feature(pos,
@@ -1089,22 +1079,16 @@ The conditions of a post-condition are checked at run-time in sequential source-
           {
             if (hasPostConditionsFeature(inh))
               {
-                List<Expr> args2 = new List<>();
-                for (var a : args)
-                  {
-                    var ca = new Call(pos,
-                                      new Current(pos, pF),
-                                      a);
-                    ca = ca.resolveTypes(res, pF.context());
-                    args2.add(ca);
-                  }
+                var args2 = argsAsActuals(res, pos, pF);
                 var inhpost = callPostCondition(res, inh, pF.context(), args2);
-                inhpost = inhpost.resolveTypes(res, pF.context());
-                if (l2 == null)
+                if (inhpost != Call.ERROR)
                   {
-                    l2 = new List<>();
+                    if (l2 == null)
+                      {
+                        l2 = new List<>();
+                      }
+                    l2.add(inhpost);
                   }
-                l2.add(inhpost);
               }
           }
         if (l2 != null)
@@ -1146,7 +1130,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
         var f = new Call(p, "fuzion");
         var r = new Call(p, f, "runtime");
         var e = new Call(p, r, fault, new List<>(new StrConst(p, p.sourceText())));
-        l.add(Match.createIf(p, c.cond(), new Block(), e, false));
+        l.add(Match.createIf(p, c.cond(), new Block(), e, AbstractMatch.Kind.If));
       }
     return new Block(l);
   }
@@ -1169,9 +1153,10 @@ The conditions of a post-condition are checked at run-time in sequential source-
    *
    * @return
    */
+  @Override
   public String toString()
   {
-    StringBuffer res = new StringBuffer();
+    var res = new StringBuilder();
     if (_hasPre != null)
       {
         res

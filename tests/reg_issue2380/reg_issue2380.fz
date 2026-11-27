@@ -25,19 +25,23 @@ reg_issue2380 is
 
   mi : mutate is
   input := mi ! ()->
-      ((io.stdin.reader mi) ! ()->(io.buffered mi).read_lines).filter !=""
-                                                              .map (.codepoints)
-  area := (array2 String).new input.count input[0].count i,j->input[i][j]
+    io.buffered mi .Reader.instate (io.stdin.reader mi) ()->
+        (io.buffered mi)
+          .read_lines
+          .or_panic
+          .filter !=""
+          .map (.codepoints)
+  area := (array2 String).new _ input.count input[0].count i,j->input[i][j]
 
   part1 =>
     lm : mutate is
     lm ! ()->
-      visited := lm.array i32 .new lm area.length.as_i64 0
+      visited := lm.array i64 .new _ area.length0*area.length1 (_->0)
       r => 1
       l => 2
       u => 4
       d => 8
-      ix(x,y) => (y+x*area.length1).as_i64
+      ix(x,y) => (y+x*area.length1)
       trace(x,y,w) =>
         if ((x ∈ area.indices0) &&
             (y ∈ area.indices1) &&

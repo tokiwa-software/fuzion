@@ -1,0 +1,51 @@
+
+reg_issue8084.fz:33:8: error 1: Failed to infer actual type parameters
+  y => x y.0
+-------^
+In call to 'reg_issue8084.x', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'V, T'
+Type inference failed for 2 type parameters 'V', 'T'
+
+
+reg_issue8084.fz:36:9: error 2: Failed to infer actual type parameters
+  y1 => x (y1,unit)
+--------^
+In call to 'reg_issue8084.x', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'V, T'
+Type inference failed for 2 type parameters 'V', 'T'
+
+
+reg_issue8084.fz:37:11: error 3: Illegal forward or cyclic type inference
+  y2 => x y2.as_string
+----------^^
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'reg_issue8084.y2' at reg_issue8084.fz:37:3
+  y2 => x y2.as_string
+--^^
+
+
+reg_issue8084.fz:38:12: error 4: Failed to infer actual type parameters
+  y3 => x (option y3)
+-----------^^^^^^
+In call to 'option', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+reg_issue8084.fz:39:9: error 5: Failed to infer actual type parameters
+  y4 => x (if true then panic "***" else y4)
+--------^
+In call to 'reg_issue8084.x', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'V, T'
+Type inference failed for one type parameter 'V'
+
+
+reg_issue8084.fz:40:9: error 6: Failed to infer actual type parameters
+  y5 => x <| y5
+--------^^^^^^^
+In call to 'infix_right <|', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A, R'
+Type inference failed for 2 type parameters 'A', 'R'
+
+6 errors.

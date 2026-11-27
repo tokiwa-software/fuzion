@@ -44,7 +44,6 @@ import dev.flang.lsp.shared.FeatureTool;
 import dev.flang.lsp.shared.LexerTool;
 import dev.flang.lsp.shared.ParserTool;
 import dev.flang.lsp.shared.QueryAST;
-import dev.flang.lsp.shared.TypeTool;
 import dev.flang.lsp.shared.Util;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.parser.Lexer.Token;
@@ -67,6 +66,7 @@ public class Completion
       triggerChar = s;
     }
 
+    @Override
     public String toString()
     {
       return this.triggerChar;
@@ -112,8 +112,8 @@ public class Completion
           .left()
           .token();
         // NYI: UNDER DEVELOPMENT: do not offer completion for number
-        if (tokenBeforeDot == Token.t_StringDQ ||
-            tokenBeforeDot == Token.t_stringBQ ||
+        if (tokenBeforeDot == Token.t_stringDQ ||
+            tokenBeforeDot == Token.t_stringPQ ||
             tokenBeforeDot == Token.t_stringQQ ||
             tokenBeforeDot == Token.t_numliteral)
           {
@@ -153,8 +153,8 @@ public class Completion
               Token.t_rbracket,
               Token.t_rparen,
               Token.t_stringQQ,
-              Token.t_StringDQ,
-              Token.t_stringBQ
+              Token.t_stringDQ,
+              Token.t_stringPQ
           };
         var set = Util.arrayToSet(validTokens);
         if (set.contains(tokenBeforeTriggerCharacter))
@@ -176,9 +176,9 @@ public class Completion
                 var types = QueryAST
                   .featuresInScope(pos)
                   .filter(af -> af.isConstructor() || af.isChoice())
-                  .filter(af -> !af.featureName().baseName().contains(" "))
+                  .filter(af -> !af.baseName().contains(" "))
                   // NYI: UNDER DEVELOPMENT: consider generics
-                  .map(af -> TypeTool.baseName(af.selfType()))
+                  .map(af -> af.featureName().baseName())
                   .distinct()
                   .map(name -> buildCompletionItem(name, name, CompletionItemKind.TypeParameter));
 
@@ -201,7 +201,7 @@ public class Completion
 
 
   /**
-   * completion item for keyword `type`
+   * completion item for keyword {@code type}
    * @return
    */
   private static Stream<CompletionItem> completionItemType()
@@ -210,7 +210,7 @@ public class Completion
   }
 
   /**
-   * completion item for keyword `this`
+   * completion item for keyword {@code this}
    * @return
    */
   private static Stream<CompletionItem> completionItemThis()
@@ -299,7 +299,7 @@ public class Completion
         var argument = arguments.get(index);
         if (true || !argument.resultType().isLambdaTargetButNotLazy(null)) // NYI: Support for lambda target
           {
-            return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
+            return " ${" + (index + 1) + ":" + argument.baseName() + "}";
           }
         return getFunArgument((index + 1) * 100, argument.resultType().generics());
       })
@@ -332,11 +332,11 @@ public class Completion
    */
   private static String argPlaceholder(AbstractType arg, int x, int offset)
   {
-    if (arg.isFunctionType(null))
+    if (arg.isFunctionLikeType())
       {
         return getFunArgument(offset * 100, arg.generics());
       }
-    return "${" + (offset + x) + ":" + TypeTool.baseName(arg) + "}";
+    return "${" + (offset + x) + ":" + arg.selfOrConstraint().feature().featureName().baseName() + "}";
   }
 
 }

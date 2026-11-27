@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue659.fz:32:19: error 1: Incompatible types in assignment
+reg_issue659.fz:32:19: error 1: Incompatible types in assignment
           i3 I => i3
 ------------------^^
 assignment to field : 'reg_issue659.parser.map.parse.result'

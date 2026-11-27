@@ -68,6 +68,7 @@ class ResolvedParametricType extends ResolvedType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
+  @Override
   public List<AbstractType> generics()
   {
     if (CHECKS) check
@@ -78,17 +79,19 @@ class ResolvedParametricType extends ResolvedType
 
 
   /**
-   * genericArgument gives the Generic instance of a type defined by a generic
+   * typeParameter gives the Generic instance of a type defined by a generic
    * argument.
    *
    * @return the Generic instance, never null.
    */
-  public AbstractFeature backingFeature()
+  @Override
+  protected AbstractFeature backingFeature()
   {
     return _generic;
   }
 
 
+  @Override
   public AbstractType outer()
   {
     if (CHECKS) check
@@ -105,28 +108,26 @@ class ResolvedParametricType extends ResolvedType
   @Override
   void usedFeatures(Set<AbstractFeature> s)
   {
-    if (!genericArgument().isCoTypesThisType() &&
+    if (!typeParameter().isRelayTypeParameter() &&
         /**
          * Must not be recursive definition as in:
          *
          * scenario1 =>
-         *   fs(F type : F) =>
+         *   fs(F : F) =>
          * scenario1
          */
-        this != genericArgument().resultType())
+        this != typeParameter().resultType())
       {
-        genericArgument().resultType().usedFeatures(s);
+        typeParameter().resultType().usedFeatures(s);
       }
   }
 
 
-  /**
-   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
-   */
+  /** {@inheritDoc} */
   @Override
   public TypeKind kind()
   {
-    return TypeKind.GenericArgument;
+    return TypeKind.ParametricType;
   }
 
 

@@ -25,10 +25,10 @@
 
 typeinference_for_args_negative is
 
-  a1(a, b) => a+b    # ok, only i32
+  a1(a, b) => a+b    # ok, only i64
   a2(a, b) => a+b    # ok, only String
   a3(a, b) => a+b    # *** error ***, mixes String and f64 in arg `a`
-  a4(a, b) => a+b    # *** error ***, mixes String, i32, f64 and bool in arg `b`
+  a4(a, b) => a+b    # *** error ***, mixes String, i64, f64 and bool in arg `b`
   a5(a, b) => a+b    # *** error ***, never called
 
   say (a1 32 64)
@@ -44,7 +44,7 @@ typeinference_for_args_negative is
   say (a3 1.1         " world!")
 
   say (a4 "hello"     " world!")
-  say (a4 "1.0"       " world!".byte_length)
+  say (a4 "1.0"       " world!".byte_count)
   say (a4 "10.as_f64" 3.14)
   say (a4 "1.1"       " world!"=" monde!")
 
@@ -56,7 +56,7 @@ typeinference_for_args_negative is
     f(fa option m2) =>
       _ := [1,2,3].map x->(m1 $x)
       q => fa.or_panic.y
-      t(p Sequence T) => test "scenario4: type of m2.y is " $T "Type of 'void'"
+      t(p Sequence T) => test "scenario4: type of m2.y is " $T "void"
       t ((1..0).map x->q)
 
     m1(x) is
@@ -77,7 +77,7 @@ typeinference_for_args_negative is
     f(fa option m2) =>
       q => fa.or_panic.y
       t(p Sequence T) =>
-        test "scenario4: type of m2.y is " $T "Type of 'void'"
+        test "scenario4: type of m2.y is " $T "void"
         _ := [1,2,3].map x->(m1 $x)
       t ((1..0).map x->q)
 

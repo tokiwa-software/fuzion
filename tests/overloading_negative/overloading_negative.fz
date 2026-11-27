@@ -31,7 +31,7 @@ overloading_negative is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   test1 is
     a is
@@ -55,7 +55,7 @@ overloading_negative is
     a(i i32) i32 => 13
     a(i, j i32) String => "foo"
 
-    _ := a
+    a
     _ := a 42
     _ := a 47 11
 

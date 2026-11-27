@@ -35,7 +35,7 @@ import dev.flang.util.LongMap;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NumericValue extends Value
+class NumericValue extends Value
 {
 
 
@@ -186,6 +186,7 @@ public class NumericValue extends Value
   /**
    * Get set of values of given field within this instance.
    */
+  @Override
   Value readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     /* for a numeric value, this can only read the 'val' field, e.g., 'i32.val',
@@ -195,17 +196,7 @@ public class NumericValue extends Value
   }
 
 
-  /**
-   * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instance, UNDEFINED) have been handled.
-   *
-   * @param dfa the current analysis context.
-   *
-   * @param v the value this value should be joined with.
-   *
-   * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
-   */
+  /** {@inheritDoc} */
   @Override
   public Value joinInstances(DFA dfa, Value v, int clazz)
   {
@@ -232,9 +223,7 @@ public class NumericValue extends Value
   }
 
 
-  /**
-   * Does this Value cover the values in other?
-   */
+  /** {@inheritDoc} */
   @Override boolean contains(Value other)
   {
     if (PRECONDITIONS) require
@@ -247,6 +236,7 @@ public class NumericValue extends Value
   /**
    * Add v to the set of values of given field within this instance.
    */
+  @Override
   public void setField(DFA dfa, int field, Value v)
   {
     if (_dfa._fuir.clazzOuterClazz(field) == _clazz)
@@ -255,7 +245,7 @@ public class NumericValue extends Value
       }
     else
       {
-        throw new Error("Value.setField called on class " + this + " (" + getClass() + ") to set "+_dfa._fuir.clazzAsString(field)+" expected " + Instance.class);
+        throw new Error("Value.setField called on class " + this + " (" + getClass() + ") to set "+_dfa._fuir.clazzName(field)+" expected " + Instance.class);
       }
   }
 
@@ -263,9 +253,10 @@ public class NumericValue extends Value
   /**
    * Create human-readable string from this instance.
    */
+  @Override
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz) + ":" +
+    return _dfa._fuir.clazzName(_clazz) + ":" +
       (_value == null
        ? "--any value--"
        : switch (_dfa._fuir.getSpecialClazz(_clazz))

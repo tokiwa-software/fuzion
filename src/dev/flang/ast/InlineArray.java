@@ -115,13 +115,7 @@ public class InlineArray extends ExprWithPos
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -129,13 +123,7 @@ public class InlineArray extends ExprWithPos
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {
@@ -176,48 +164,41 @@ public class InlineArray extends ExprWithPos
       {
         _type = super.type();
       }
-    return _type;
+
+    return _type == null || _type.isArtificialType() || !_type.containsArtificialType()
+      ? _type
+      : !urgent
+      ? null
+      : // possible propagation led to "better" element type in the mean time,
+        // we recreate the type.
+        ResolvedNormalType.create(_type.feature(),
+                                  new List<>(Expr.union(_elements, Context.NONE, urgent)));
   }
 
 
-  /**
-   * During type inference: Inform this expression that it is used in an
-   * environment that expects the given type.  In particular, if this
-   * expression's result is assigned to a field, this will be called with the
-   * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   *
-   * @return either this or a new Expr that replaces thiz and produces the
-   * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the expression that reads the field.
-   */
+  /** {@inheritDoc} */
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    if (_type == null)
-      {
-        // if expected type is choice, examine if there is exactly one
-        // array in choice generics, if so use this for further type propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, context);
+    var arrayType = t.isPlainType() && Types.resolved.f_array.inheritsFrom(t.feature()) && t.feature().typeArguments().size()==1
+      ? t.feature()
+      : Types.resolved.f_array;
+    // if expected type is choice, examine if there is exactly one
+    // array in choice generics, if so use this for further type propagation.
+    t = t.findInChoice(cg -> !cg.isParametricType() && cg.feature() == arrayType, context);
 
-        var elementType = elementType(t);
-        if (elementType != Types.t_ERROR)
+    var elementType = elementType(t);
+    if (elementType != Types.t_ERROR
+      // keep the most general element type
+      && (_type == null || elementType.isAssignableFrom(elementType(_type)).yes()))
+      {
+        var li = _elements.listIterator();
+        while (li.hasNext())
           {
-            var li = _elements.listIterator();
-            while (li.hasNext())
-              {
-                li.set(li.next().propagateExpectedType(res, context, elementType, null));
-              }
-            var arr = Types.resolved.f_array;
-            _type = arr.resultType()
-                       .applyTypePars(arr, new List<>(elementType));
+            li.set(li.next().propagateExpectedType(res, context, elementType, null));
           }
+        _type = arrayType.resultType()
+                  .applyTypePars(arrayType, new List<>(elementType));
       }
     return this;
   }
@@ -269,7 +250,8 @@ public class InlineArray extends ExprWithPos
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  @Override
+  protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
@@ -317,18 +299,13 @@ public class InlineArray extends ExprWithPos
   }
 
 
-  /**
-   * This expression as a compile time constant.
-   */
+  /** {@inheritDoc} */
   @Override
   public Constant asCompileTimeConstant()
   {
     var result = new Constant(InlineArray.this.pos()) {
 
-      /**
-       * first four bytes are the elementCount
-       * remaining bytes is the serialized data of the elements
-       */
+      /** {@inheritDoc} */
       @Override
       public byte[] data()
       {
@@ -352,7 +329,7 @@ public class InlineArray extends ExprWithPos
       }
 
       @Override
-      public Expr visit(FeatureVisitor v, AbstractFeature outer)
+      protected Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
       }
@@ -430,10 +407,17 @@ public class InlineArray extends ExprWithPos
     var sysArrArgsE     = new List<Expr>(readSysArrayVar,
                                          unit,
                                          unit,
+                                         unit,
                                          unit);
-    var arrayCall       = new Call(SourcePosition.builtIn, null, FuzionConstants.ARRAY_NAME, FuzionConstants.NO_SELECT,
-                                   eT,
-                                   sysArrArgsE, null).resolveTypes(res, context);
+    var arrayCall = new Call(
+        SourcePosition.builtIn,
+        Universe.instance,
+        FuzionConstants.ARRAY_NAME,
+        FuzionConstants.NO_SELECT,
+        eT,
+        sysArrArgsE,
+        null)
+      .resolveTypes(res, context);
     exprs.add(arrayCall);
 
     // we do not "replace" this inline array by instantiation code
@@ -457,6 +441,7 @@ public class InlineArray extends ExprWithPos
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _elements.toString("[", "; ", "]");

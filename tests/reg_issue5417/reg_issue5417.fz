@@ -1,0 +1,41 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5417
+#
+# -----------------------------------------------------------------------
+
+ex is
+  a is
+  ex is
+    b is
+    ex is
+      c is
+      inner (d universe.ex.ex.this,
+            e ex.ex.ex.this,
+            f ex.this,               # 1. should flag an error: Ambiguous type
+            g ex.ex.this) is         # 2. should flag an error: Ambiguous type
+        _ := d.b
+        _ := d.c                      # 3. should flag an error: Could not find called feature
+        _ := e.b                      # 4. should flag an error: Could not find called feature
+        _ := e.c
+        _ := f.b                      # These should not flag an error since type is ambiguous already.
+        _ := f.c                      # These should not flag an error since type is ambiguous already.
+        _ := g.b                      # These should not flag an error since type is ambiguous already.
+        _ := g.c                      # These should not flag an error since type is ambiguous already.

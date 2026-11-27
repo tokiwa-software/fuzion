@@ -1,0 +1,25 @@
+
+reg_issue8086.fz:38:3: error 1: Failed to infer actual type parameters
+  r q (-)
+--^
+In call to 'reg_issue8086.r', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'U, V, F'
+Type inference failed for 3 type parameters 'U', 'V', 'F'
+
+
+reg_issue8086.fz:39:3: error 2: Failed to infer actual type parameters
+  r q (.as_string)
+--^
+In call to 'reg_issue8086.r', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'U, V, F'
+Type inference failed for 3 type parameters 'U', 'V', 'F'
+
+
+reg_issue8086.fz:40:3: error 3: Failed to infer actual type parameters
+  r q x->x
+--^
+In call to 'reg_issue8086.r', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'U, V, F'
+Type inference failed for 3 type parameters 'U', 'V', 'F'
+
+3 errors.

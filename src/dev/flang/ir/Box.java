@@ -26,10 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ir;
 
-import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
-import dev.flang.ast.FeatureVisitor;
 import dev.flang.util.SourcePosition;
 
 
@@ -73,7 +71,8 @@ public class Box extends Expr
     if (PRECONDITIONS) require
       (value != null,
        !frmlT.containsUndefined(),
-       frmlT.isGenericArgument() || frmlT.isThisType() || !value.type().isRef(),
+       frmlT.isParametricType() || frmlT.isThisType() || frmlT.isRef(),
+       !value.type().isRef(),
        !(value instanceof Box));
 
     this._value = value;
@@ -87,6 +86,7 @@ public class Box extends Expr
   /**
    * The sourcecode position of this expression, used for error messages.
    */
+  @Override
   public SourcePosition pos()
   {
     return _value.pos();
@@ -100,19 +100,12 @@ public class Box extends Expr
   }
 
 
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visit'");
-  }
-
-
   /**
    * toString
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "box(" + _value + ")";

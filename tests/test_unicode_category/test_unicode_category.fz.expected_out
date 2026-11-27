@@ -1,0 +1,59 @@
+--- categories ---
+U+0041 Lu letter=true cased=true mark=false number=false punct=false symbol=false sep=false other=false
+U+0061 Ll letter=true cased=true mark=false number=false punct=false symbol=false sep=false other=false
+U+01c5 Lt letter=true cased=true mark=false number=false punct=false symbol=false sep=false other=false
+U+02b0 Lm letter=true cased=false mark=false number=false punct=false symbol=false sep=false other=false
+U+4e2d Lo letter=true cased=false mark=false number=false punct=false symbol=false sep=false other=false
+U+0301 Mn letter=false cased=false mark=true number=false punct=false symbol=false sep=false other=false
+U+0903 Mc letter=false cased=false mark=true number=false punct=false symbol=false sep=false other=false
+U+20dd Me letter=false cased=false mark=true number=false punct=false symbol=false sep=false other=false
+U+0663 Nd letter=false cased=false mark=false number=true punct=false symbol=false sep=false other=false
+U+216b Nl letter=false cased=false mark=false number=true punct=false symbol=false sep=false other=false
+U+00bd No letter=false cased=false mark=false number=true punct=false symbol=false sep=false other=false
+U+005f Pc letter=false cased=false mark=false number=false punct=true symbol=false sep=false other=false
+U+002d Pd letter=false cased=false mark=false number=false punct=true symbol=false sep=false other=false
+U+0028 Ps letter=false cased=false mark=false number=false punct=true symbol=false sep=false other=false
+U+0029 Pe letter=false cased=false mark=false number=false punct=true symbol=false sep=false other=false
+U+00ab Pi letter=false cased=false mark=false number=false punct=true symbol=false sep=false other=false
+U+00bb Pf letter=false cased=false mark=false number=false punct=true symbol=false sep=false other=false
+U+0021 Po letter=false cased=false mark=false number=false punct=true symbol=false sep=false other=false
+U+002b Sm letter=false cased=false mark=false number=false punct=false symbol=true sep=false other=false
+U+20ac Sc letter=false cased=false mark=false number=false punct=false symbol=true sep=false other=false
+U+005e Sk letter=false cased=false mark=false number=false punct=false symbol=true sep=false other=false
+U+1f600 So letter=false cased=false mark=false number=false punct=false symbol=true sep=false other=false
+U+0020 Zs letter=false cased=false mark=false number=false punct=false symbol=false sep=true other=false
+U+2028 Zl letter=false cased=false mark=false number=false punct=false symbol=false sep=true other=false
+U+2029 Zp letter=false cased=false mark=false number=false punct=false symbol=false sep=true other=false
+U+0009 Cc letter=false cased=false mark=false number=false punct=false symbol=false sep=false other=true
+U+200b Cf letter=false cased=false mark=false number=false punct=false symbol=false sep=false other=true
+U+e000 Co letter=false cased=false mark=false number=false punct=false symbol=false sep=false other=true
+U+0378 Cn letter=false cased=false mark=false number=false punct=false symbol=false sep=false other=true
+U+10ffff Cn letter=false cased=false mark=false number=false punct=false symbol=false sep=false other=true
+U+20000 Lo letter=true cased=false mark=false number=false punct=false symbol=false sep=false other=false
+--- codepoint predicates ---
+A: letter=true upper=true lower=false digit=false numeric=false alnum=true punct=false
+z: letter=true upper=false lower=true digit=false numeric=false alnum=true punct=false
+Ⓐ: letter=false upper=false lower=false digit=false numeric=false alnum=false punct=false
+ª: letter=true upper=false lower=false digit=false numeric=false alnum=true punct=false
+ß: letter=true upper=false lower=true digit=false numeric=false alnum=true punct=false
+İ: letter=true upper=true lower=false digit=false numeric=false alnum=true punct=false
+ı: letter=true upper=false lower=true digit=false numeric=false alnum=true punct=false
+٣: letter=false upper=false lower=false digit=true numeric=true alnum=true punct=false
+Ⅻ: letter=false upper=false lower=false digit=false numeric=true alnum=false punct=false
+½: letter=false upper=false lower=false digit=false numeric=true alnum=false punct=false
+_: letter=false upper=false lower=false digit=false numeric=false alnum=false punct=true
+中: letter=true upper=false lower=false digit=false numeric=false alnum=true punct=false
+--- strings ---
+Fuzion: all letters=true all alnum=true
+Жук: all letters=true all alnum=true
+中文: all letters=true all alnum=true
+abc1: all letters=false all alnum=true
+a b: all letters=false all alnum=false
+x²: all letters=false all alnum=false
+--- match ---
+upper
+lower
+neither
+--- equality ---
+true
+false

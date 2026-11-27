@@ -1,0 +1,43 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test f32_fits_in_i64
+#
+# -----------------------------------------------------------------------
+
+f32_fits_in_i64 =>
+
+  # 2^n exactly, built from integers (no float literal rounding)
+  p2(n i64) u128 => u128.one << n.as_u128
+
+  chk(label String, x f32) unit =>
+    if x.fits_in_i64
+      say "ok $label $(x.as_i64)"
+    else
+      say "no $label"
+
+  chk "0"                   0.0.as_f32
+  chk "-0.5"                (-0.5).as_f32
+  chk "-1.5"                (-1.5).as_f32
+  chk "(2^24-1)*2^39"       ((p2 24 - u128.one) << (u128 0 39)).as_f64.as_f32   # largest f32 < 2^63
+  chk "2^63"                (p2 63).as_f64.as_f32                               # old check accepted this
+  chk "-2^63"               i64.min.as_f32                                      # exactly i64.min -> fits
+  chk "-(2^63+2^40)"        (-(p2 63 + p2 40).as_f64).as_f32                    # next f32 below i64.min
+  chk "inf"                 f32.infinity
+  chk "nan"                 f32.NaN

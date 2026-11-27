@@ -27,7 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -43,17 +45,70 @@ public class QualThisType extends UnresolvedType
   /*--------------------------  constructors  ---------------------------*/
 
 
+  private final List<ParsedName> _qual;
+
+
   /**
    * Create the type corresponding to {@code <qual>.this}.
    *
    * @param qual the qualifier
    */
-  public QualThisType(List<ParsedName> qual)
+  public QualThisType(SourcePosition pos, List<ParsedName> qual)
   {
-    // NYI: BUG: need to take complete qualifier into account!
-    super(SourcePosition.range(qual),
+    _qual = qual;
+    super(pos,
           qual.getLast()._name,
           Call.NO_GENERICS, null, Optional.of(TypeKind.ThisType));
+  }
+
+
+
+  /** {@inheritDoc} */
+  @Override
+  AbstractType resolve(Resolution res, Context context, boolean tolerant)
+  {
+    if (PRECONDITIONS) require
+      (res != null,
+       context != null);
+
+    var outer = context.outerFeature();
+    res.resolveDeclarations(outer);
+
+    // The following code is
+    // for resolving fully qualified this-types.
+    if (_qual.size() > 1)
+      {
+        var found = new List<FeatureAndOuter>();
+        var cur = context.outerFeature();
+        do
+          {
+            var fo = res._module.lookupType(pos(), cur, _name, false, tolerant, true);
+            if (fo != null &&
+                fo._feature
+                  .qualifiedName()
+                  .endsWith(_qual.stream().filter(x -> !x._name.equals(FuzionConstants.UNIVERSE_NAME))
+                                          .map(x -> x._name)
+                                          .collect(Collectors.joining("."))) &&
+                                          found.stream().noneMatch(x -> x._feature == fo._feature))
+              {
+                found.add(fo);
+              }
+            cur = cur.outer();
+          }
+        while (cur != null);
+
+        if (found.size() == 1 || found.size() > 1 && _qual.getFirst()._name.equals(FuzionConstants.UNIVERSE_NAME))
+          {
+            _resolved = found.getLast()._feature.thisType();
+          }
+        else if (!found.isEmpty() && !tolerant)
+          {
+            AstErrors.ambiguousType(pos(), _name, found);
+            _resolved = Types.t_ERROR;
+          }
+      }
+
+    return super.resolve(res, context, tolerant);
   }
 
 

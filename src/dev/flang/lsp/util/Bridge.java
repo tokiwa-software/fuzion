@@ -103,7 +103,7 @@ public class Bridge extends ANY
       {
         return SymbolKind.Enum;
       }
-    if (feature.isBuiltInPrimitive() && "bool".equals(feature.featureName().baseName()))
+    if (feature.isBuiltInPrimitive() && "bool".equals(feature.baseName()))
       {
         return SymbolKind.Boolean;
       }
@@ -124,11 +124,6 @@ public class Bridge extends ANY
         return SymbolKind.Function;
       }
     return SymbolKind.Class;
-  }
-
-  public static TextDocumentPositionParams toTextDocumentPosition(SourcePosition sourcePosition)
-  {
-    return LSP4jUtils.textDocumentPositionParams(ParserTool.getUri(sourcePosition), toPosition(sourcePosition));
   }
 
   public static SourcePosition toSourcePosition(TextDocumentPositionParams params)

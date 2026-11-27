@@ -29,6 +29,7 @@ package dev.flang.be.jvm.runtime;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.lang.foreign.AddressLayout;
@@ -57,12 +58,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -71,6 +76,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.JavaInterface;
 import dev.flang.util.Pair;
 import dev.flang.util.StringHelpers;
+import dev.flang.util.Terminal;
 
 
 /**
@@ -151,8 +157,16 @@ public class Runtime extends ANY
    * Value used for {@code FuzionThread.effect_store} and {@code FuzionThread.effect_load}
    * to distinguish a unit value effect from a not existing effect
    */
-  public static final AnyI _UNIT_TYPE_EFFECT_ = new AnyI() { };
+  public static final AnyI _UNIT_TYPE_EFFECT_ = new AnyI()
+    {
+      public String toString() { return "UNIT_TYPE_EFFECT"; }
+    };
 
+
+  /* NYI: UNDER DEVELOPMENT: Constants to be kept in sync with `modules/base/src/posix.fz`, should be automated.
+   */
+  static final int CLOCK_REALTIME  = 0;
+  static final int CLOCK_MONOTONIC = 1;
 
   /*--------------------------  static fields  --------------------------*/
 
@@ -161,7 +175,7 @@ public class Runtime extends ANY
 
 
   /**
-   * The result of {@code envir.args[0]}
+   * The result of {@code envir.Args[0]}
    */
   public static final String _cmd_ =
     System.getProperties().computeIfAbsent(FUZION_COMMAND_PROPERTY,
@@ -172,7 +186,7 @@ public class Runtime extends ANY
 
 
   /**
-   * The results of {@code envir.args[1..n]}
+   * The results of {@code envir.Args[1..n]}
    */
   public static String[] _args_ = new String[] { "argument list not initialized", "this may indicate a severe bug" };
 
@@ -443,13 +457,17 @@ public class Runtime extends ANY
   }
 
 
-  public static void effect_default(int id, AnyI instance)
+  /**
+   * Helper for intrinsic for {@code effect.instate_at_singularity0} to instate
+   * an effect at startup.
+   */
+  public static void effect_instate_at_singularity(int id, AnyI instance)
   {
     var t = currentThread();
-    if (t.effect_load(id) == null)
-      {
-        t.effect_store(id, instance);
-      }
+    if (CHECKS) check
+     (t.effect_load(id) == null);
+
+    t.effect_store(id, instance);
   }
 
 
@@ -469,17 +487,30 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement intrinsic effect.replace0.
+   * Helper method to implement intrinsic effect.set0.
    *
    * @param id an effect type id.
    *
    * @param instance a new instance to replace the old one
    */
-  public static void effect_replace(int id, AnyI instance)
+  public static void effect_set(int id, AnyI instance)
   {
     var t = currentThread();
 
     t.effect_store(id, instance);
+  }
+
+
+  /**
+   * Helper method to implement intrinsic effect.remove0.
+   *
+   * @param id an effect type id.
+   */
+  public static void effect_remove(int id)
+  {
+    var t = currentThread();
+
+    t.effect_store(id, null);
   }
 
 
@@ -526,7 +557,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.type.instante0. Instate a new instance for
+   * Helper method to implement effect.type.instate0. Instate a new instance for
    * effect type with given id.
    *
    * The existing value instated for the effect type identified by id will be
@@ -551,7 +582,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.type.instante0. Un-instate an instance
+   * Helper method to implement effect.type.instate0. Un-instate an instance
    * instated by effect_push.
    *
    * The original instance that was saved to FuzionThread._effectStack will be
@@ -663,8 +694,8 @@ public class Runtime extends ANY
 
     var stacktrace = new StringWriter();
     stacktrace.write("Call stack:\n");
-    String last = "";
-    int count = 0;
+    var allStartWithFuzionDot = true;
+    var strs = new dev.flang.util.List<String>();
     for (var s : t.getStackTrace())
       {
         var m = s.getMethodName();
@@ -693,24 +724,57 @@ public class Runtime extends ANY
                   }
                 str = cl.substring(start);
               }
-            if (str.equals(last))
+            // we try to remove all lines that are inner features of `fuzion` or `panic.type` up to and including
+            // a call to `fuzion...cause` or `panic.cause`.
+            //
+            // NYI: CLEANUP: This might remove user defined features with
+            // carefully chosen names as well. Once the code base is
+            // sufficiently stable, we could instead have a fixed list of
+            // features to suppress here.
+            allStartWithFuzionDot = allStartWithFuzionDot && (str.startsWith("fuzion.") ||
+                                                              str.startsWith("panic.type."));
+            if (allStartWithFuzionDot &&
+                str.matches("fuzion\\..*\\.cause.*") ||
+                str.matches("panic.cause.*"))
               {
-                count++;
+                while (strs.size() > 1)  // we leave the topmost feature in
+                                         // (usually `fuzion.sys.fatal_fault`).
+                  {
+                    strs.removeLast();
+                  }
+                strs.add("[..]");
+              }
+            else if (s.getFileName().equals("--builtin--"))
+              {
+                strs.add(str);
               }
             else
               {
-                if (count > 1)
-                  {
-                    stacktrace.write("\n  " + StringHelpers.repeated(count));
-                  }
-                else if (count > 0)
-                  {
-                    stacktrace.write("\n");
-                  }
-                stacktrace.write(str + " at " + s.getFileName().replace(File.separator, "/") + ":" + s.getLineNumber());
-                last = str;
-                count = 1;
+                strs.add(str + " at " + Terminal.GREEN + s.getFileName().replace(File.separator, "/") + ":" + s.getLineNumber() + Terminal.REGULAR_COLOR);
               }
+          }
+      }
+    String last = "";
+    int count = 0;
+    for (var str : strs)
+      {
+        if (str.equals(last))
+          {
+            count++;
+          }
+        else
+          {
+            if (count > 1)
+              {
+                stacktrace.write("\n  " + StringHelpers.repeated(count) + "\n");
+              }
+            else if (count > 0)
+              {
+                stacktrace.write("\n");
+              }
+            stacktrace.write(str);
+            last = str;
+            count = 1;
           }
       }
     if (count > 1)
@@ -1173,48 +1237,70 @@ public class Runtime extends ANY
 
   }
 
+  /**
+   * A JvmCondition, we try to mimic a pthread condition connected to a clock
+   * with given clockid_t.
+   */
+  record JvmCondition(Condition cnd, int clockid) { }
 
-  public static Object cnd_init(Object rl)
+  public static Object cnd_init(Object rl, int clock)
   {
-    return ((ReentrantLock)rl).newCondition();
+    return new JvmCondition(((ReentrantLock)rl).newCondition(), clock);
   }
 
-  public static boolean cnd_signal(Object cnd)
+  public static void cnd_signal(Object cnd)
   {
     try
       {
-        ((Condition)cnd).signal();
-        return true;
+        (((JvmCondition)cnd).cnd).signal();
       }
     catch(Exception e)
       {
-        return false;
+        Errors.fatal(e);
       }
   }
 
-  public static boolean cnd_broadcast(Object cnd)
+  public static void cnd_broadcast(Object cnd)
   {
     try
       {
-        ((Condition)cnd).signalAll();
-        return true;
+        (((JvmCondition)cnd).cnd).signalAll();
       }
     catch(Exception e)
       {
-        return false;
+        Errors.fatal(e);
       }
   }
 
-  public static boolean cnd_wait(Object cnd)
+  public static void cnd_wait(Object cnd)
   {
     try
       {
-        ((Condition)cnd).await();
-        return true;
+        (((JvmCondition)cnd).cnd).await();
       }
     catch(Exception e)
       {
-        return false;
+        Errors.fatal(e);
+      }
+  }
+
+
+  public static void cnd_timedwait(Object cnd, long timeout)
+  {
+    try
+      {
+        var jc = (JvmCondition) cnd;
+        var ns = switch (jc.clockid)
+          {
+          case CLOCK_REALTIME  -> timeout - System.currentTimeMillis() * 1000000L;
+          case CLOCK_MONOTONIC -> timeout - System.nanoTime();
+          default              -> { Errors.fatal("JVM backend unexpected POSIX clockid "+jc.clockid); throw new Error(); }
+          };
+        jc.cnd.await(ns, TimeUnit.NANOSECONDS);
+      }
+    catch(Exception e)
+      {
+        Errors.fatal(e);
       }
   }
 
@@ -1278,6 +1364,37 @@ public class Runtime extends ANY
 
 
   /**
+   * Extract the fuzion runtime native library that may be bundled in the JAR
+   * file, so that it can be loaded from there.
+   *
+   * @return the path to the extracted library or {@code null} if no bundled
+   * library was found.
+   */
+  @SuppressWarnings("restricted")
+  private static Path extractFuzionRt()
+  {
+    var lib = System.mapLibraryName("fuzion_rt");
+    try (InputStream in = Runtime.class.getResourceAsStream("/" + lib))
+      {
+        if (in != null)
+          {
+            var dot = lib.lastIndexOf('.');
+            var suffix = dot < 0 ? "" : lib.substring(dot);
+            var file = Files.createTempFile("fuzion_rt_", suffix);
+            file.toFile().deleteOnExit();
+            Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
+            return file;
+          }
+      }
+    catch (IOException e)
+      {
+        Errors.error("Failed to extract native library '" + lib + "' from JAR: " + e.getMessage());
+      }
+    return null;
+  }
+
+
+  /**
    * @return SymbolLookup for fuzion_rt and libmath
    */
   @SuppressWarnings("restricted")
@@ -1286,7 +1403,10 @@ public class Runtime extends ANY
     SymbolLookup result = null;
     try
       {
-        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
+        var fuzionRt = extractFuzionRt();
+        result = fuzionRt == null
+          ? SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena)
+          : SymbolLookup.libraryLookup(fuzionRt, arena);
         try
           {
             result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"), arena));
@@ -1458,13 +1578,42 @@ public class Runtime extends ANY
   {
     try
       {
-        if (f.getType() == int.class)
+        var ft = f.getType();
+        if (ft == byte.class)
+          {
+            target.set(ValueLayout.JAVA_BYTE, offset, f.getByte(source));
+          }
+        else if (ft == char.class)
+          {
+            target.set(ValueLayout.JAVA_CHAR, offset, f.getChar(source));
+          }
+        else if (ft == short.class)
+          {
+            target.set(ValueLayout.JAVA_SHORT, offset, f.getShort(source));
+          }
+        else if (ft == int.class)
           {
             target.set(ValueLayout.JAVA_INT, offset, f.getInt(source));
           }
-        if (f.getType() == Object.class)
+        else if (ft == long.class)
+          {
+            target.set(ValueLayout.JAVA_LONG, offset, f.getLong(source));
+          }
+        else if (ft == float.class)
+          {
+            target.set(ValueLayout.JAVA_FLOAT, offset, f.getFloat(source));
+          }
+        else if (ft == double.class)
+          {
+            target.set(ValueLayout.JAVA_DOUBLE, offset, f.getDouble(source));
+          }
+        else if (ft == Object.class)
           {
             target.set(ValueLayout.ADDRESS, offset, (MemorySegment)f.get(source));
+          }
+        else
+          {
+            throw new Error("Implementation restriction: setMemSeg missing impl. for: " + ft);
           }
       }
     catch (Exception e)
@@ -1525,11 +1674,7 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (c != void.class);
 
-    if (c == boolean.class)
-      {
-        return 4;
-      }
-    else if (c == byte.class)
+    if (c == byte.class)
       {
         return 1;
       }
@@ -1566,12 +1711,12 @@ public class Runtime extends ANY
 
 
   @SuppressWarnings("restricted")
-  public static Object native_array(MemoryLayout memLayout, Object obj, int length)
+  public static Object native_array(MemoryLayout memLayout, Object obj, long length)
   {
     var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
     if (memLayout instanceof OfByte o)
       {
-        var result = new byte[length];
+        var result = new byte[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(o, i);
@@ -1580,7 +1725,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfBoolean ob)
       {
-        var result = new boolean[length];
+        var result = new boolean[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1589,7 +1734,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfChar ob)
       {
-        var result = new char[length];
+        var result = new char[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1598,7 +1743,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfDouble ob)
       {
-        var result = new double[length];
+        var result = new double[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1607,7 +1752,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfFloat ob)
       {
-        var result = new float[length];
+        var result = new float[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1616,7 +1761,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfInt ob)
       {
-        var result = new int[length];
+        var result = new int[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1625,7 +1770,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfLong ob)
       {
-        var result = new long[length];
+        var result = new long[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1634,7 +1779,7 @@ public class Runtime extends ANY
       }
     else if (memLayout instanceof OfShort ob)
       {
-        var result = new short[length];
+        var result = new short[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1644,7 +1789,7 @@ public class Runtime extends ANY
     else
       {
         var ob = (AddressLayout)memLayout;
-        var result = new Object[length];
+        var result = new Object[(int)length];
         for (int i = 0; i < result.length; i++)
           {
             result[i] = memSeg.getAtIndex(ob, i);
@@ -1757,9 +1902,9 @@ public class Runtime extends ANY
    * @return
    */
   @SuppressWarnings("restricted")
-  public static int native_string_length(MemorySegment segment)
+  public static long native_string_length(MemorySegment segment)
   {
-    int length = 0;
+    long length = 0;
     segment = segment.reinterpret(10000 /* NYI: magic constant */);
 
     while (segment.get(ValueLayout.JAVA_BYTE, length) != 0)
@@ -1779,11 +1924,7 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (ct != void.class);
 
-    if (ct == boolean.class)
-      {
-        return memSeg.get(ValueLayout.JAVA_BOOLEAN, offset);
-      }
-    else if (ct == byte.class)
+    if (ct == byte.class)
       {
         return memSeg.get(ValueLayout.JAVA_BYTE, offset);
       }
@@ -1830,11 +1971,7 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (ct != void.class);
 
-    if (ct == boolean.class)
-      {
-        return ValueLayout.JAVA_BOOLEAN;
-      }
-    else if (ct == byte.class)
+    if (ct == byte.class)
       {
         return ValueLayout.JAVA_BYTE;
       }

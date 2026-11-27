@@ -28,47 +28,59 @@ public signals is
   # hangup detected
   #
   public hangup is
+    public redef as_string String => "SIGHUP"
 
   # interrupt
   #
   public interrupt is
+    public redef as_string String => "SIGINT"
 
   # quit
   #
   public quit is
+    public redef as_string String => "SIGQUIT"
 
   # illegal instruction
   #
   public illegal_instruction is
+    public redef as_string String => "SIGILL"
 
   # trace/breakpoint trap
   #
   public trap is
+    public redef as_string String => "SIGTRAP"
 
   # abort
   #
   public abort is
+    public redef as_string String => "SIGABRT"
 
   # arithmetic error (fpe)
   #
   public arithmetic_error is
+    public redef as_string String => "SIGFPE"
 
   # kill
   #
   public kill is
+    public redef as_string String => "SIGKILL"
 
   # invalid memory reference (segv)
   #
   public invalid_memory_reference is
+    public redef as_string String => "SIGSEGV"
 
   # broken pipe
   #
   public broken_pipe is
+    public redef as_string String => "SIGPIPE"
 
   # alarm, timer signal
   #
   public alarm is
+    public redef as_string String => "SIGALRM"
 
   # terminate (term)
   #
   public terminate is
+    public redef as_string String => "SIGTERM"

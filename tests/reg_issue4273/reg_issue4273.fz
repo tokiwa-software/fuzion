@@ -24,7 +24,7 @@
 
 # first example from #4273
 #
-# using `e.this` as reult type
+# using `e.this` as result type
 #
 case1 =>
   e is
@@ -57,7 +57,7 @@ case2 =>
 
 # second example from #4273
 #
-# using `option e.this` as reult type
+# using `option e.this` as result type
 #
 case3 =>
   e is
@@ -74,7 +74,7 @@ case3 =>
 
 # extra example used for debugging this issue
 #
-# using `option d.this` as reult type and abstract feature implementation.
+# using `option d.this` as result type and abstract feature implementation.
 #
 case4 =>
   d ref is

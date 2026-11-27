@@ -35,9 +35,7 @@ public oneway_monad(
 
   # the type wrapped by this monad, `unit` in case this is used as an
   # effect.
-  A type,
-
-  OMA type : oneway_monad.this,
+  A : Any,
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   #
@@ -46,7 +44,7 @@ public oneway_monad(
   # which is not needed if used as an explicit monad.
   #
   mode oneway_monad_mode.val
-  ) : monad A OMA, effect
+  ) : monad A, effect
 is
 
   match mode

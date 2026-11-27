@@ -67,13 +67,7 @@ public class StrConst extends Constant
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -101,6 +95,7 @@ public class StrConst extends Constant
   /**
    * Serialized form of the data of this constant.
    */
+  @Override
   public byte[] data()
   {
     byte[] result;
@@ -138,6 +133,7 @@ public class StrConst extends Constant
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return "\"" + _str + "\"";

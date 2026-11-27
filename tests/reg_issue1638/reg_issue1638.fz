@@ -24,13 +24,13 @@
 reg_issue1638 =>
   obj is
 
-  first(A, B type, a A, b B) A | B =>
+  first(A, B : Any, a A, b B) A | B =>
     a
 
-  second(A, B type, a A, b B) A | B =>
+  second(A, B : Any, a A, b B) A | B =>
     b
 
-  pick(A, B type, a A, b B, fst bool) =>
+  pick(A, B : Any, a A, b B, fst bool) =>
     v := fst ? first A B a b : second A B a b
     match v
       aa A => say "a: $aa"

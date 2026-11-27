@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-module qwerty(T type) is
+module qwerty(T : Any) is
 
   say "QWERTY"
 
@@ -34,5 +34,5 @@ module qwerty(T type) is
       say "ASDFG"
 
       module hjkl(x T) is
-        yak x
+        yap x
         say "HJKL"

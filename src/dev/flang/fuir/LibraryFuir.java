@@ -145,15 +145,15 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public String clazzAsString(int cl)
+  public String clazzName(int cl)
   {
-    return cl == NO_CLAZZ ? "-- no clazz --" : clazzOriginalName(cl);
+    return cl == NO_CLAZZ ? FuzionConstants.NO_CLAZZ : _clazzes[clazzId2num(cl)].clazzName();
   }
 
   @Override
-  public String clazzAsStringHuman(int cl)
+  public String clazzNameHuman(int cl)
   {
-    return  cl == NO_CLAZZ ? "-- no clazz --" : _clazzes[clazzId2num(cl)].clazzAsStringHuman();
+    return  cl == NO_CLAZZ ? FuzionConstants.NO_CLAZZ : _clazzes[clazzId2num(cl)].clazzNameHuman();
   }
 
   @Override
@@ -273,9 +273,9 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int clazz(SpecialClazzes c)
+  public int clazz(SpecialClazzes sc)
   {
-    return _specialClazzes[c.ordinal()];
+    return _specialClazzes[sc.ordinal()];
   }
 
   @Override
@@ -311,17 +311,22 @@ public class LibraryFuir extends FUIR {
     return _clazzes[clazzId2num(cl)].lookupStaticFinally();
   }
 
+
   @Override
-  public int lookupAtomicValue(int cl)
+  public int lookupMutableValue(int cl)
   {
+    if (PRECONDITIONS) require
+      (cl >= firstClazz(),
+       cl <= lastClazz());
+
     for (int index = 0; index < clazzFieldCount(cl); index++)
       {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("v") == 0)
+        if (clazzBaseName(clazzField(cl, index)).compareTo("mutable_value") == 0)
           {
             return clazzField(cl, index);
           }
       }
-    Errors.fatal("v field not found!");
+    Errors.fatal("'val' field not found in '"+clazzNameHuman(cl)+"'!");
     return NO_CLAZZ;
   }
 
@@ -374,7 +379,7 @@ public class LibraryFuir extends FUIR {
       {
         var cl = clazzAt(s);
         var p = sitePos(s);
-        res = clazzAsString(cl) + "(" + clazzArgCount(cl) + " args)" + (p == null ? "" : " at " + sitePos(s).show());
+        res = clazzName(cl) + "(" + clazzArgCount(cl) + " args)" + (p == null ? "" : " at " + sitePos(s).show());
       }
     else
       {
@@ -501,13 +506,13 @@ public class LibraryFuir extends FUIR {
   @Override
   public boolean alwaysResultsInVoid(int s)
   {
-    return s==NO_SITE || s<0 ? false : _sites[s-SITE_BASE].alwaysResultsInVoid();
+    return s!=NO_SITE && _sites[s-SITE_BASE].alwaysResultsInVoid();
   }
 
   @Override
   public boolean doesResultEscape(int s)
   {
-    return s==NO_SITE || s<0 ? false : _sites[s-SITE_BASE].doesResultEscape();
+    return s!=NO_SITE && _sites[s-SITE_BASE].doesResultEscape();
   }
 
   @Override
@@ -541,14 +546,7 @@ public class LibraryFuir extends FUIR {
     return s != NO_SITE && _sites[s - SITE_BASE].codeAt() != null;
   }
 
-   /**
-   * From a given site, determine the site of the start of the code block that
-   * contains the given site.
-   *
-   * @param site any site
-   *
-   * @return the site of the first Expr in the code block containing `site`
-   */
+  /** {@inheritDoc} */
   @Override
   public int codeBlockStart(int site)
   {
@@ -562,14 +560,7 @@ public class LibraryFuir extends FUIR {
   }
 
 
-  /**
-   * From a given site, determine the site of the last Expr in the code block
-   * that contains the given site.
-   *
-   * @param site any site
-   *
-   * @return the site of the last Expr in the code block containing `site`
-   */
+  /** {@inheritDoc} */
   @Override
   public int codeBlockEnd(int site)
   {

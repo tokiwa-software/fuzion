@@ -391,7 +391,7 @@ include::rule.adoc[]
 Pre- and postconditions of features are introduced using the `pre` or `post`
 keyword if those features do not redefine an inherited feature:
 
-:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_SRC: src/dev/flang/ast/Feature.java
 :RULE_ID: PARS_CONTR_PRE_NO_ELSE
 include::rule.adoc[]
 
@@ -399,10 +399,10 @@ include::rule.adoc[]
 :RULE_ID: PARS_CONTR_POST_NO_THEN
 include::rule.adoc[]
 
-In case of redefining an inhertied feature, pre- and postconditions are
+In case of redefining an inherited feature, pre- and postconditions are
 introduced using `pre else` or `post then`, respectively:
 
-:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_SRC: src/dev/flang/ast/Feature.java
 :RULE_ID: PARS_CONTR_PRE_ELSE
 include::rule.adoc[]
 
@@ -410,11 +410,32 @@ include::rule.adoc[]
 :RULE_ID: PARS_CONTR_POST_THEN
 include::rule.adoc[]
 
+A feature redefining another feature, can only extend a precondition if
+all of the redefined features have or inherit a explicit precondition
+
+:RULE_SRC: src/dev/flang/ast/Feature.java
+:RULE_ID: PARS_CONTR_PRE_REDEF
+include::rule.adoc[]
+
 === Choice features
 
 :RULE_SRC: src/dev/flang/ast/Feature.java
 :RULE_ID: CHOICE_RESULT
 include::rule.adoc[]
+
+== Type System
+
+:RULE_SRC: src/dev/flang/ast/AbstractType.java
+:RULE_ID: TYPE_SYSTEM_ASSIGNABLE_FROM
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/ast/AbstractType.java
+:RULE_ID: TYPE_SYSTEM_COMMON_SUPERTYPE
+include::rule.adoc[]
+
+
+[appendix]
+
 
 
 == Semantics
@@ -471,7 +492,7 @@ include::rule.adoc[]
 [#fuzion_actual]
 ((Actual)):: An _actual argument_ is an expression that is parsed as an `actual` as part of a
 xref:feature_call[call] or the right hand side of an infix operator call. An _actual argument_ is either
-an xref:fuzion_actual_typeparameter[actual type paramater] or an xref:fuzion_actual_value_argument[actual value argument].
+an xref:fuzion_actual_typeparameter[actual type parameter] or an xref:fuzion_actual_value_argument[actual value argument].
 
 [#fuzion_actual_typeparameter]
 ((Actual Type Parameter)):: An _actual type parameter_ is a xref:fuzion_type[type] that replaces a
@@ -505,7 +526,7 @@ on a xref:fuzion_feature[feature] that is a xref:fuzion_choice[choice].
 
 [#fuzion_constructor]
 ((Constructor)):: A _constructor_ is a xref:fuzion_routine[routine] declared using `is`.  A
-constructor has exceutable code and defines a xref:fuzion_type[type].  On a call to a constructor,
+constructor has executable code and defines a xref:fuzion_type[type].  On a call to a constructor,
 an instance of this type is created and this instance is implicitly returned as a result after
 execution of the constructor's code.
 
@@ -549,13 +570,43 @@ a xref:fuzion_function[function], a xref:fuzion_field[field], a xref:fuzion_choi
 a xref:fuzion_typeparameter[type parameter], an xref:fuzion_abstract[abstract feature],
 an xref:fuzion_intrinsic[intrinsic], a xref:fuzion_native[native feature],
 or the xref:universe[universe].  Every feature except the xref:universe[universe] is declared within
-an xref:outer_feature[outer feature].
+an xref:outer_feature[outer feature]. Every feature except for xref:fuzion_typeparameter[type parameters] may define a xref:visibility[visibility]. The default xref:visibility[visibility] is private.
 
 [#fuzion_call]
 ((Feature Call)):: A _feature call_ is an expression in Fuzion code that calls a
 xref:call_destination[destination] xref:fuzion_feature[feature] on a given xref:fuzion_target[target] giving zero
 or more xref:fuzion_actual[actual arguments].  An example is `t.f a b` that calls
 a feature with xref:feature_name[name] `f,2` on target `t` giving two xref:fuzion_actual[actual arguments] `a` and `b`.
+
+[#visibility]
+((Visibility))::
+
+The visibility of a feature defines from where this feature can be called.
+
+[cols="1,1,1,1", options="header"]
+|===
+|Visibility Modifier |Current file |Current module |Other module
+
+|`private` or _(none)_
+|✅ Yes
+|❌ No
+|❌ No
+
+|`module`
+|✅ Yes
+|✅ Yes
+|❌ No
+
+|`public`
+|✅ Yes
+|✅ Yes
+|✅ Yes
+|===
+
+Furthermore it is possible to control the visibility of the type a feature defines separately.
+This is done by first stating the access-visibility colon the type-visibility. These are the possible visibilities
+in this case: `private:module`, `private:public`, `module:public`.
+
 
 [#feature_name]
 ((Feature Name)):: A _feature name_ is the combination of an identifier and an integer xref:fuzion_argument[argument] count.
@@ -568,7 +619,7 @@ of that call at runtime results in the xref:fuzion_instance[instance] that was a
 
 [#fuzion_function]
 ((Function)):: A _function_ is a xref:fuzion_routine[routine] declared using `=>`. A
-function has exceutable code that produces a result value `result` and an explicit or inferred result type `rt`.
+function has executable code that produces a result value `result` and an explicit or inferred result type `rt`.
 
 [#function_type]
 ((Function Type)):: A _function type_ is any type derived from the Fuzion base
@@ -605,7 +656,7 @@ CAUTION: *NYI*: Need more detail on native feature
 ((Open Type Parameter)): An _open type parameter_ is a xref:fuzion_typeparameter[type parameters] whose declaration is followed by three dots as in `A type ...`.
 
 [#fuzion_orignalfeature]
-((Original Feature)):: An _original feature_ is a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] seen from their corresponing xref:fuzion_cotype[cotype].
+((Original Feature)):: An _original feature_ is a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] seen from their corresponding xref:fuzion_cotype[cotype].
 
 [#outer_instance]
 ((Outer Instance)):: With the exception of the xref:universe_instance[universe instance], every instance is linked to a corresponding _outer instance_.
@@ -682,7 +733,7 @@ together with the xref:feature_name[feature name] of the call determines the xre
 ((Type)):: A _type_ is either a xref:fuzion_plain_type[plain type], a xref:fuzion_this_type[this type] or a  xref:fuzion_parametric_type[parametric type].
 
 [#fuzion_type_constraint]
-((Type Constraint)):: A _type constraint_ is a type provided in the declaration of a xref:fuzion_typeparameter[type parameter] following a colon, e.g., `A type : b` which places the constraint `b` on xref:fuzion_typeparameter[type parameter] `A`.
+((Type Constraint)):: A _type constraint_ is a type provided in the declaration of a xref:fuzion_typeparameter[type parameter] following a colon, e.g., `A : b` which places the constraint `b` on xref:fuzion_typeparameter[type parameter] `A`.
 
 [#fuzion_typefeature]
 ((Type Feature)):: A _type feature_ is a xref:fuzion_feature[feature] whose outer feature is a xref:fuzion_cotype[cotype]. A _type feature_ `name` can be declared within the xref:fuzion_cotype[cotype]'s xref:fuzion_orignalfeature[original feature] using `type.name` as the feature name. A _type feature_  cannot be called on an instance of the xref:fuzion_orignalfeature[original feature], but on an instance of the corresponding xref:fuzion_cotype[cotype].

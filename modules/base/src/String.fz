@@ -25,50 +25,66 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-public String ref : property.equatable, property.hashable, property.orderable is
+public String ref : property.hashable, property.orderable is
+
+  # any concrete string must implement utf8
+  #
+  public utf8 Sequence u8 => abstract
+
 
   # converting a string to a string is just returning string.this
+  #
   public redef as_string String => String.this
+
 
   # this String but limited to max_codepoints
   #
   # if String is longer than max_codepoints '…' is appended
   #
-  public truncate(max_codepoints i32) String
+  public truncate(max_codepoints i64) String
     pre
       debug: max_codepoints > 0
   =>
-    if codepoint_length <= max_codepoints then
+    if codepoint_count <= max_codepoints then
       String.this
     else
       substring_codepoint 0 max_codepoints-1 + "…"
 
-  # any concrete string must implement utf8
-  public utf8 Sequence u8 => abstract
 
   # is this string empty?
+  #
   public is_empty bool => utf8.is_empty
 
+
   # returns true if string is empty or contains whitespace only
+  #
   public is_blank bool => utf8 ∀ .is_ascii_white_space
 
+
   # returns true if string contains whitespace
+  #
   public contains_whitespace bool => utf8 ∃ .is_ascii_white_space
 
+
   # length of this string in bytes
-  public byte_length i32 => utf8.count
+  #
+  public byte_count i64 => utf8.count
+
 
   # length of this string in codepoints
-  public codepoint_length i32 => codepoints.count
+  #
+  public codepoint_count i64 => codepoints.count
+
 
   # concatenate string with string representation of another object
+  #
   public infix + (other Any) String =>
     String.concat String.this $other
 
 
-
   # repeat string given number of times
-  public infix * (n i32) ref : String
+  #
+  public infix * (n i64) ref : String
   pre
     n ≥ 0
     # NYI: UNDER DEVELOPMENT: String.this.utf8.finite, Strings where utf8 is a list are currently always infinite.
@@ -109,7 +125,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # internal helper to create error for failed parsing
   #
-  parse_error(msg String) => error "failed to parse '{String.this}': $msg"
+  parse_error(msg String) => error "failed to parse '$(String.this)': $msg"
 
 
   # parse this string as a signed 32-bit integer value
@@ -200,7 +216,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public parse_integer(
     # the integer type
-    T type : integer,
+    T : integer,
 
     # base gives the base of the integer, must be between 2 and 36, inclusive.
     base T
@@ -222,7 +238,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   parse_integer(
     # the integer type
-    T type : integer,
+    T : integer,
 
     # base gives the base, between 2 and 36
     base T,
@@ -250,7 +266,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       else parse_error "non-digit found"
 
     d.bind b->
-      t := parse_integer.this.T.from_u32 b.as_u32  # i converted to T
+      t := T.from_u32 b.as_u32  # i converted to T
       if t ≥ base
         parse_error "invalid integer digit for base $base"
       else
@@ -274,17 +290,19 @@ public String ref : property.equatable, property.hashable, property.orderable is
       .map x->
         match x
           c codepoint => c
-          error       => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
+          error       => codepoint.replacement_character
 
 
   # replaces invalid UTF-8 byte sequences in this string with the Unicode
   # replacement character (U+FFFD).
+  #
   public to_valid_utf8 String =>
-    to_valid_utf8 (codepoint 0xFFFD) # 'REPLACEMENT CHARACTER'
+    to_valid_utf8 codepoint.replacement_character
 
 
   # replaces invalid UTF-8 byte sequences in this string with the given
   # string.
+  #
   public to_valid_utf8(replacement String) String =>
     codepoints_and_errors
       .reduce "" r,x->
@@ -329,7 +347,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
               else if 0xc0 ≤ b1 ≤ 0xdf   # 0x0080..0x7ff encoded in 2 bytes
                 res := (b1.as_u32 & 0x1f) << 6 | (b2.as_u32 & 0x3f)
                 if res ∉ p.utf8_encoded_in_two_bytes
-                  e2 "codepoint $res uses overlong 2-byte encoding, allowed for range {p.utf8_encoded_in_two_bytes}."
+                  e2 "codepoint $res uses overlong 2-byte encoding, allowed for range $(p.utf8_encoded_in_two_bytes)."
                 else
                   ret (codepoint res) c2.tail
               else if u8 0xe0 ≤ b1
@@ -345,11 +363,11 @@ public String ref : property.equatable, property.hashable, property.orderable is
                              (b2.as_u32 & 0x3f) <<  6 |
                              (b3.as_u32 & 0x3f)
                       if res ∉ p.utf8_encoded_in_three_bytes
-                        e3 "codepoint $res uses overlong 3-byte encoding, allowed for range {p.utf8_encoded_in_two_bytes}."
+                        e3 "codepoint $res uses overlong 3-byte encoding, allowed for range $(p.utf8_encoded_in_two_bytes)."
                       else if res ∈ p.utf16_surrogate
-                        e3 "codepoint $res is invalid, values in the range {p.utf16_surrogate} are reserved for UTF-16 surrogate halves."
+                        e3 "codepoint $res is invalid, values in the range $(p.utf16_surrogate) are reserved for UTF-16 surrogate halves."
                       else if res ∈ p.not_a_character
-                        e3 "codepoint $res is not a valid unicode character {p.not_a_character}."
+                        e3 "codepoint $res is not a valid unicode character $(p.not_a_character)."
                       else
                         ret (codepoint res) c3.tail
                     else                     # 0x010000..0x10ffff encoded in 4 bytes
@@ -374,62 +392,66 @@ public String ref : property.equatable, property.hashable, property.orderable is
               else fuzion.std.panic "String.codepoints_and_errors: missing case for $b1"
         else if 0x80 ≤ b1 ≤ 0xbf then e1 "stray continuation byte without preceding leading byte."
         else if 0xf5 ≤ b1 ≤ 0xfd then e1 "codes 0xf5..0xfd are undefined."
-        else if 0xfe ≤ b1 ≤ 0xff then e1 "codes 0xfe and 0xff are undefined, used for endianess checking."
+        else if 0xfe ≤ b1 ≤ 0xff then e1 "codes 0xfe and 0xff are undefined, used for endianness checking."
         else
           fuzion.std.panic "String.codepoints_and_errors: missing case for $b1"
 
 
   # create substring of this string consisting of bytes from (inclusive) .. to (exclusive).
   #
-  public substring(from, to i32) String
+  public substring(from, to i64) String
     pre
-      debug: 0 ≤ from ≤ to ≤ String.this.byte_length
-    # NYI: UNDER DEVELOPMENT: check if from/to are valid start/end bytes?
+      debug: 0 ≤ from ≤ to ≤ String.this.byte_count
+      debug: from=to || String.is_valid_utf8_first_byte utf8[from]
+      debug: from=to || !String.is_multi_byte_start_byte utf8[to-1]
+    post
+      debug 10 : result.codepoints_and_errors ∀ (??)
   =>
     String.from_bytes (String.this.utf8.slice from to)
 
 
-  # create substring of this string consisting of bytes from (inclusive) .. byte_length (exclusive).
+  # create substring of this string consisting of bytes from (inclusive) .. byte_count (exclusive).
   #
-  public substring(from i32) String
+  public substring(from i64) String
     pre
-      debug: 0 ≤ from ≤ byte_length
+      debug: 0 ≤ from ≤ byte_count
   =>
-    substring from byte_length
+    substring from byte_count
 
 
   # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
   #
-  public substring_codepoint(from, to i32) String
+  public substring_codepoint(from, to i64) String
     pre
       debug    : 0 ≤ from ≤ to
-      (debug 2): to ≤ codepoint_length
+      (debug 2): to ≤ codepoint_count
   =>
     codepoints
       .slice from to
-      .map String c->c  # NYI: this should maybe not be needed since codepoint is a string
+      # we need to box codepoint to String first
+      .map ($)
       .fold String.concat
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. codepoint_length (exclusive).
+  # create substring of this string consisting of codepoints from (inclusive) .. codepoint_count (exclusive).
   #
-  public substring_codepoint(from i32) String
+  public substring_codepoint(from i64) String
     pre
       debug    : 0 ≤ from
-      (debug 2): from ≤ codepoint_length
+      (debug 2): from ≤ codepoint_count
   =>
-    substring_codepoint from codepoint_length
+    substring_codepoint from codepoint_count
 
 
   # splits this string in chunks of codepoint length n, the last part might be shorter
   #
-  public chunk(n i32) Sequence String
+  public chunk(n i64) Sequence String
     pre
       debug: n > 0
   =>
     codepoints
       .chunk n
-      .map String.type.from_codepoints
+      .map String.from_codepoints
 
 
   # check if this string starts with given prefix
@@ -441,15 +463,15 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # check if this string ends with given suffix
   #
   public ends_with(suffix String) bool =>
-    l  := byte_length
-    sl := suffix.byte_length
+    l  := byte_count
+    sl := suffix.byte_count
     end := utf8.drop l-sl
     end.starts_with suffix.utf8
 
 
   # find (utf8-byte-) index of 'substring' within this string.
   #
-  public find(substring String) option i32 =>
+  public find(substring String) option i64 =>
     utf8.find substring.utf8
 
 
@@ -461,7 +483,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public find(substring String,
               # start search at this index
-              from i32) option i32
+              from i64) option i64
     pre
       debug: from ≥ 0
   =>
@@ -470,17 +492,19 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # find (utf8-byte-) index of last occurrence of 'substring'
   # within this string.
-  public find_last(substring String) option i32 =>
+  #
+  public find_last(substring String) option i64 =>
     find_last substring nil
 
 
   # find (utf8-byte-) index of last occurrence of 'substring'
   # within this string.
-  find_last(substring String, found option i32) option i32 =>
+  #
+  find_last(substring String, found option i64) option i64 =>
     match find substring
-      nil => found >>= (pos -> pos - substring.byte_length)
-      i i32 =>
-        skip := i + substring.byte_length
+      nil => found >>= (pos -> pos - substring.byte_count)
+      i i64 =>
+        skip := i + substring.byte_count
         s := String.from_bytes (utf8.drop skip)
 
         s.find_last substring (skip + (found.or_else 0))
@@ -488,21 +512,24 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # replace all occurrences of old by new
   #
-  public replace (old, new String) String => String.from_bytes (utf8.replace old.utf8 new.utf8)
+  public replace (old, new String) String =>
+    String.from_bytes (utf8.replace old.utf8 new.utf8)
 
 
   # replace the first n occurrences of old by new
-  public replace(old, new String, n u64) String => String.from_bytes (utf8.replace old.utf8 new.utf8 n)
+  #
+  public replace(old, new String, n u64) String =>
+    String.from_bytes (utf8.replace old.utf8 new.utf8 n)
 
 
   # does this string contain the given 'substring'
   #
-  public contains (substring String) bool => find(substring).exists
+  public contains (substring String) bool => find substring ??
 
 
   # count number of occurrences of given 'substring' in this string
   #
-  public count (substring String) i32 =>
+  public count (substring String) i64 =>
     utf8.count_matches substring.utf8
 
 
@@ -518,14 +545,11 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # (hall, o)
   # (hallo, )
   #
-  public split_at_byte(i i32) (String, String)
+  public split_at_byte(i i64) (String, String)
     pre
-      debug: 0 ≤ i ≤ byte_length
-      # NYI: ENHANCEMENT: #6342, #6381: re-enable when Sequence.conat
-      # consistently can return an expanding_array for finite Strings
-      # debug: utf8.is_array_backed
+      debug: 0 ≤ i ≤ byte_count
   =>
-    (substring 0 i, substring i byte_length)
+    (substring 0 i, substring i byte_count)
 
 
   # Split string separated by (ASCII) white space
@@ -605,8 +629,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
                n u32 => n > 0
     =>
       utf8.split0 s.utf8 limit split_after
-          # NYI: BUG: could be just: .map String.from_bytes
-          .map String.type.from
+          .map String.from
 
 
   # split string at line feeds
@@ -618,7 +641,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # lambda testing if byte is is_ascii_white_space
   #
   is_ascii_white_space =>
-    (id (u8->bool) (.is_ascii_white_space))
+    id (u8->bool) (.is_ascii_white_space)
 
 
   # remove leading and trailing white space from this string
@@ -710,40 +733,40 @@ public String ref : property.equatable, property.hashable, property.orderable is
           String.from_codepoints s
 
 
-  # pad this string at the end with spaces such that its `codepoint_length` is at least `n`.
+  # pad this string at the end with spaces such that its `codepoint_count` is at least `n`.
   #
-  public pad(n i32) String
+  public pad(n i64) String
   pre
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length != n): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count != n): result = String.this)
   =>
     pad " " n
 
 
-  # pad this string at the beginning with spaces such that its `codepoint_length` is at least `n`.
+  # pad this string at the beginning with spaces such that its `codepoint_count` is at least `n`.
   #
-  public pad_left(n i32) String
+  public pad_left(n i64) String
   pre
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length != n): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count != n): result = String.this)
   =>
     pad_left " " n
 
 
-  # pad this string at the beginning and at the end with spaces such that its `codepoint_length` is at least `n`.
+  # pad this string at the beginning and at the end with spaces such that its `codepoint_count` is at least `n`.
   #
   # In case the required number of codepoints to add is odd, the padding at the end will be longer.
   #
-  public pad_center(n i32) String
+  public pad_center(n i64) String
   pre
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length != n): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count != n): result = String.this)
   =>
     pad_center " " n
 
@@ -751,49 +774,49 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # Helper for pad, pad_left and pad_right to determine minimum number of copies
   # of `p` needed to pad String.this to length >= n.
   #
-  pad_count(p String, n i32) =>
-    pl := p.codepoint_length
-    add_cps := max 0 n-codepoint_length
+  pad_count(p String, n i64) =>
+    pl := p.codepoint_count
+    add_cps := max 0 n-codepoint_count
     (add_cps + pl - 1) / pl
 
 
-  # pad this string at the end with `p` such that its `codepoint_length` is at least `n`.
+  # pad this string at the end with `p` such that its `codepoint_count` is at least `n`.
   #
-  public pad(p String, n i32) String
+  public pad(p String, n i64) String
   pre
-    safety: p.codepoint_length > 0
+    safety: p.codepoint_count > 0
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count >= n+p.codepoint_count): result = String.this)
   =>
     String.this + p * (pad_count p n)
 
 
-  # pad this string at the beginning with `p` such that its `codepoint_length` is at least `n`.
+  # pad this string at the beginning with `p` such that its `codepoint_count` is at least `n`.
   #
-  public pad_left(p String, n i32) String
+  public pad_left(p String, n i64) String
   pre
-    safety: p.codepoint_length > 0
+    safety: p.codepoint_count > 0
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count >= n+p.codepoint_count): result = String.this)
   =>
     p * (pad_count p n) + String.this
 
 
-  # pad this string at the beginning and at the end with `p` such that its `codepoint_length` is at least `n`.
+  # pad this string at the beginning and at the end with `p` such that its `codepoint_count` is at least `n`.
   #
   # In case the required number of copies of `p` is odd, the padding at the end will be longer.
   #
-  public pad_center(p String, n i32) String
+  public pad_center(p String, n i64) String
   pre
-    safety: p.codepoint_length > 0
+    safety: p.codepoint_count > 0
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count >= n+p.codepoint_count): result = String.this)
   =>
     pn := pad_count p n
     l := pn/2
@@ -804,10 +827,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # return string of at least length l by
   # padding codepoint s to start of string
   #
-  public pad_codepoint_start(l i32, s String) String
-  pre safety: s.codepoint_length = 1
+  public pad_codepoint_start(l i64, s String) String
+  pre safety: s.codepoint_count = 1
   =>
-    missing := l - codepoint_length
+    missing := l - codepoint_count
     if missing ≤ 0
       String.this
     else
@@ -815,12 +838,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
 
   # Splits this string at codepoints where p is true and returns the result as a
-  # list of strings. In case multiple, neighboring codepoints in the string are
-  # evaluated to be true by p, this does not cause empty strings to be added to
-  # the result list, rather this case is being treated as being one big separator.
+  # list of strings. No empty strings are produced: a run of adjacent matches
+  # acts as a single separator, and leading or trailing matches are skipped.
   #
   public split_if(p codepoint -> bool) Sequence String =>
-    i := split_if_state (Sequence String).empty false 0 0
+
+    split_if_state(l Sequence String, in_run bool, start_pos, current_pos i64) is
+
+    i := split_if_state (Sequence String).empty true 0 0
     last_state := codepoints.reduce split_if_state i (r,c)->
       if p c
         if r.in_run
@@ -841,35 +866,43 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # helper type for the result of the cut feature
   #
-  private:public cut_result (public before String, public after String, public found bool) is
+  private:public universe.string_cut_result (public before String, public after String, public found bool) is
+
+    public redef as_string String =>
+      """
+        before: $before
+        after : $after
+        found : $found"""
 
 
   # Cuts out the first appearance of the string sep from this string, in other words,
   # returns a tuple of two strings and a bool, the first string is the substring before
-  # the first appreance of sep, the second string is the substring after the first
+  # the first appearance of sep, the second string is the substring after the first
   # appearance of sep. The bool result is true iff sep appears in this string.
   #
   # If sep does not appear in this string at all, return this string as the first string,
   # the empty string as the second, and false as the bool.
   #
-  public cut(sep String) cut_result =>
+  public cut(sep String) string_cut_result =>
     match find sep
-      nil => cut_result String.this "" false
-      i i32 =>
-        l := byte_length
-        sepl := sep.byte_length
+      nil => string_cut_result String.this "" false
+      i i64 =>
+        l := byte_count
+        sepl := sep.byte_count
 
         before := String.from_bytes (utf8.slice 0 i)
         after := String.from_bytes (utf8.slice (i + sepl) l)
-        cut_result before after true
+        string_cut_result before after true
 
 
   # convert this string to upper case
+  #
   public upper_case String =>
     String.from_codepoints (codepoints.map (c -> encodings.unicode.mappings.upper_case[c.val].or_else c))
 
 
   # convert this string to lower case
+  #
   public lower_case String =>
     String.from_codepoints (codepoints.map (c -> encodings.unicode.mappings.lower_case[c.val].or_else c))
 
@@ -881,17 +914,17 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
 
   # write the bytes of this String to
-  # writer of type: (io.buffered LM).writer
+  # writer of : (io.buffered LM).Writer
   #
-  public write_to(LM type : mutate) outcome unit ! (io.buffered LM).writer
+  public write_to(LM : mutate) outcome unit ! (io.buffered LM).Writer
   =>
-    (io.buffered LM).writer.env.write String.this
+    (io.buffered LM).Writer.env.write String.this
 
 
   # returns a zero terminated array of
   # the bytes of this String
   #
-  public as_c_string(LM type : mutate) LM.array u8 =>
+  public as_c_string(LM : mutate) LM.array u8 =>
     LM.array u8 .from_Sequence (String.this + codepoint 0).utf8
 
 
@@ -901,7 +934,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     pre debug: !starts_with "\""
         debug: !ends_with "\""
   =>
-    "\"{String.this}\""
+    "\"$(String.this)\""
 
 
   # monoid of strings with infix + operation.
@@ -924,20 +957,17 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # concat strings a and b by
   # concatenating their byte sequences.
   #
-  public type.concat(a, b String) String =>
+  public type.concat(a, b String) String
+    pre
+      debug: a.utf8.finite != trit.no
+      debug: b.utf8.finite != trit.no
+  =>
     if a.is_empty
       b
     else if b.is_empty
       a
-    # NYI: PERFORMANCE:
-    # else if a.utf8.count + b.utf8.count <= MAGIC_NUMBER
-    #   String.from (array (a.utf8.count + b.utf8.count) (i -> if a.utf8.is_valid_index i then a.utf8[i] else b.utf8[i-a.utf8.count]))
     else
-      _ : String is
-        public redef utf8 Sequence u8 :=
-          container.Finger_Tree u8 .empty
-            .concat a.utf8
-            .concat b.utf8
+      String.from_bytes (a.utf8.concat b.utf8)
 
 
   # Takes a sequence of strings and concatenates its elements, while adding the separator
@@ -967,33 +997,6 @@ public String ref : property.equatable, property.hashable, property.orderable is
     join elems "\n"
 
 
-  # create string by concatenating the results of $a[a.indices].
-  #
-  # This uses a growing array if further strings are appended using 'infix +',
-  # so it avoids quadratic runtime caused if each 'infix +' would create its
-  # own concatenation-string.
-  #
-  # The performance of creating a string a0+a1+a2+...+a<n> is in O(n) since the
-  # backing array is shared and doubled in size when full (so the final array size
-  # is less than 2n in size and the sum of all arrays is less than 4n = 2n + n +
-  # n/2+n/4+...).
-  #
-  # The performance of iterating the utf8 bytes of a string is O(l+n) for an
-  # array of length l created by concatenating n sub-strings.
-  #
-  public type.from_mutable_array(E type : mutate, a container.Mutable_Array Any E) String =>  # NYI: Remove?
-
-    _ : String is
-
-      public redef utf8 Sequence u8 =>
-        a.as_list.flat_map (.as_string.utf8)
-
-
-      public redef infix + (other Any) String =>
-        a.add other
-        from_mutable_array a
-
-
   # create string from the given utf8 bytes
   #
   module type.from_bytes(utf8_bytes Sequence u8) String =>
@@ -1021,20 +1024,32 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
-  public type.minus_char  u8 => "-".utf8.first.or_panic
-  public type.plus_char   u8 => "+".utf8.first.or_panic
-  public type.zero_char   u8 => "0".utf8.first.or_panic
-  public type.nine_char   u8 => "9".utf8.first.or_panic
-  public type.a_char      u8 => "a".utf8.first.or_panic
-  public type.z_char      u8 => "z".utf8.first.or_panic
-  public type.cap_a_char  u8 => "A".utf8.first.or_panic
-  public type.cap_z_char  u8 => "Z".utf8.first.or_panic
+  module type.minus_char  u8 => "-".as_u8
+  module type.plus_char   u8 => "+".as_u8
+  module type.zero_char   u8 => "0".as_u8
+  module type.nine_char   u8 => "9".as_u8
+  module type.a_char      u8 => "a".as_u8
+  module type.z_char      u8 => "z".as_u8
+  module type.cap_a_char  u8 => "A".as_u8
+  module type.cap_z_char  u8 => "Z".as_u8
 
 
-# state used by `String.split_if`.
-#
-# Due to #4619, this currently cannot be declared local to `String.split_if`
-# since it would then define a type whose outer type is `String.this` which is
-# a ref type that currently cannot be used a result type.
-#
-split_if_state(l Sequence String, in_run bool, start_pos, current_pos i32) is
+  # is byte a valid starting byte of a utf-8 string?
+  #
+  public type.is_valid_utf8_first_byte(byte u8) bool =>
+    0x00 <= byte <= 0x7F
+     || String.is_multi_byte_start_byte byte
+
+
+  # is byte a start of a 2,3 or 4 byte sequence in utf-8?
+  #
+  public type.is_multi_byte_start_byte(byte u8) bool =>
+    0xC2 <= byte <= 0xDF
+     || 0xE0 <= byte <= 0xEF
+     || 0xF0 <= byte <= 0xF4
+
+
+  # is this a valid continuation byte in a utf8 sequence?
+  #
+  public type.is_continuation_byte(byte u8) bool =>
+    0x80 <= byte <= 0xBF

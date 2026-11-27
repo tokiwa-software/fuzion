@@ -53,4 +53,4 @@ issue2249 =>
 
 
   refs
-  _ := vals
+  vals

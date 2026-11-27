@@ -45,7 +45,6 @@ import dev.flang.lsp.shared.FeatureTool;
 import dev.flang.lsp.shared.LexerTool;
 import dev.flang.lsp.shared.ParserTool;
 import dev.flang.lsp.shared.QueryAST;
-import dev.flang.lsp.shared.TypeTool;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.util.ANY;
 
@@ -65,6 +64,7 @@ public class SignatureHelper extends ANY
       triggerChar = s;
     }
 
+    @Override
     public String toString()
     {
       return this.triggerChar;
@@ -123,13 +123,13 @@ public class SignatureHelper extends ANY
 
   private static boolean featureNameMatchesCallName(AbstractFeature f, AbstractCall ac)
   {
-    if (!TypeTool.containsError(ac.type()))
+    if (!ac.type().containsError())
       {
-        return f.featureName().baseName().equals(ac.calledFeature().featureName().baseName());
+        return f.baseName().equals(ac.calledFeature().baseName());
       }
     if (ac instanceof Call c)
       {
-        return f.featureName().baseName().equals(c.name());
+        return f.baseName().equals(c.name());
       }
     throw new RuntimeException("not implemented");
   }
@@ -139,7 +139,7 @@ public class SignatureHelper extends ANY
     return calledFeature.arguments()
       .stream()
       .map(
-        arg -> new ParameterInformation("NYI" + arg.featureName().baseName() + " " + arg.selfType().toString()))
+        arg -> new ParameterInformation("NYI" + arg.baseName() + " " + arg.selfType().toString()))
       .collect(Collectors.toList());
   }
 

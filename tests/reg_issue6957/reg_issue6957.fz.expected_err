@@ -1,0 +1,8 @@
+
+error 1: NYI: BUG: #6759: redefinition of outer feature of effect with default value not supported yet
+effect type: f.type.Stat.type.default_value
+required outer: f.type
+actual outer  : io.file.type
+
+*** fatal errors encountered, stopping.
+one error.

@@ -23,7 +23,7 @@
 
 numliteral_syntax_sugar_issue4754 =>
 
-  my_data(T type : numeric) is
+  my_data(T : numeric) is
     foo0(x T) => x + 0 + 0E0
     foo1(x T) => x * 1 + 1E0
     foo10(x T) => x + 1E1

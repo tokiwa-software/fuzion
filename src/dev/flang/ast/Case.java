@@ -60,6 +60,7 @@ public class Case extends AbstractCase
    * Field with type from this.type created in case fieldName != null.
    */
   private final Feature _field;
+  @Override
   public AbstractFeature field() { return _field; }
 
 
@@ -68,6 +69,7 @@ public class Case extends AbstractCase
    * everything.
    */
   private List<AbstractType> _types;
+  @Override
   public List<AbstractType> types() { return _types; }
 
 
@@ -75,6 +77,7 @@ public class Case extends AbstractCase
    * code to be executed in case of a match
    */
   public Expr _code;
+  @Override
   public Expr code() { return _code; }
 
 
@@ -99,11 +102,7 @@ public class Case extends AbstractCase
               Block c)
   {
     this(pos,
-         new Feature(pos, Visi.PRIV, t, n)
-         {
-           @Override
-           public boolean isCaseField() { return true; }
-         },
+         new Feature(pos, Visi.PRIV, t, n),
          null,
          c);
   }
@@ -191,14 +190,7 @@ public class Case extends AbstractCase
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
+  /** {@inheritDoc} */
   @Override
   public void visit(FeatureVisitor v, AbstractMatch m, AbstractFeature outer)
   {
@@ -298,7 +290,7 @@ public class Case extends AbstractCase
     List<AbstractType> matches = new List<>();
     int i = 0;
     t = t.resolve(res, context);
-    var inferGenerics = !t.isGenericArgument() && (t.isThisType() || t.generics().isEmpty()) && !t.feature().typeArguments().isEmpty();
+    var inferGenerics = !t.isParametricType() && (t.isThisType() || t.generics().isEmpty()) && !t.feature().typeArguments().isEmpty();
     var hasErrors = t.containsError();
     check
       (!hasErrors || Errors.any());
@@ -307,7 +299,7 @@ public class Case extends AbstractCase
         if (CHECKS) check
           (Errors.any() || cg != null);
         if (cg != null &&
-            (inferGenerics  && !cg.isGenericArgument() && t.feature() == cg.feature() /* match feature, take generics from cg */ ||
+            (inferGenerics  && !cg.isParametricType() && t.feature() == cg.feature() /* match feature, take generics from cg */ ||
              !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ ))
           {
             t = cg;
@@ -345,12 +337,13 @@ public class Case extends AbstractCase
    *
    * @return
    */
+  @Override
   public String toString()
   {
     var sb = new StringBuilder();
     if (_field != null)
       {
-        sb.append(_field.featureName().baseNameHuman() + " " + _field.returnType());
+        sb.append(_field.baseNameHuman() + " " + _field.returnType());
       }
     else if (_types == null)
       {

@@ -36,7 +36,7 @@ test_local_mutate is
     #
     l0 := [0,8,15,47,11]
 
-    sum(l Sequence i32) =>
+    sum(l Sequence i64) =>
 
       # define a local type `m` to identify the mutate effect:
       #
@@ -47,12 +47,12 @@ test_local_mutate is
       count =>
 
         # create mutable variable s:
-        s := m.env.new 0
+        s := m.env.var 0
 
         for e in l do
 
           # add e to s
-          s.update a->a+e
+          _ := s.update a->a+e
 
         # unwrap the sum value in s and return it
         s.get
@@ -60,20 +60,20 @@ test_local_mutate is
       # run code within an instance of m
       #
       m ! ()->
-        s := m.env.new 0
+        s := m.env.var 0
 
         for e in l do
-          s.update a->a+e
+          _ := s.update a->a+e
 
-        say "inside m.go: s.get = {s.get}"
-        say "inside m.go: count = {count}"
+        say "inside m.go: s.get = $(s.get)"
+        say "inside m.go: count = $(count)"
 
-      say "using m.instate_self and count: {m ! ()->count}"
+      say "using m.instate_self and count: $(m ! ()->count)"
 
       count2 =>
-        s := m.env.new 0
+        s := m.env.var 0
         for e in l do
-          s.update a->a+e
+          _ := s.update a->a+e
         option s
 
       # This was moved to test_local_mutate_neg
@@ -83,15 +83,15 @@ test_local_mutate is
       neg_test3 =>
         s := m ! ()->count2
         say s             # *** will cause an error, requires m to be installed
-        "** failed, did not panic **"
+        "** failed, did not cause precondition fault **"
 
       caught_msg(msg) => "*** got '$msg' ***\nok"
 
-      say (panic.try   neg_test3
-                .catch caught_msg)
+      say (fuzion.runtime.pre_fault.try   neg_test3
+                                   .catch caught_msg)
 
-      say (panic.try   neg_test4
-                .catch caught_msg)
+      say (fuzion.runtime.pre_fault.try   neg_test4
+                                   .catch caught_msg)
 
       neg_test4 =>
         s := m ! ()->count2
@@ -100,8 +100,8 @@ test_local_mutate is
           say s
         "** failed, did not panic **"
 
-      say (panic.try   neg_test5
-                .catch caught_msg)
+      say (fuzion.runtime.pre_fault.try   neg_test5
+                                   .catch caught_msg)
 
       neg_test5 =>
         q =>
@@ -121,7 +121,7 @@ test_local_mutate is
   #
   test_quicksort =>
 
-    quicksort(T type: property.orderable, data Sequence T) array T =>
+    quicksort(T : property.orderable, data Sequence T) array T =>
       c := data.count
       if c = 0
         []
@@ -131,14 +131,14 @@ test_local_mutate is
         # execute code with mutate effect `m`:
         m ! ()->
 
-          arr := (m.array T).new c.as_i64 data[0]
+          arr := (m.array T).new c.as_i64 _->data[0]
 
-          swap(i,j i32) =>
+          swap(i,j i64) =>
             t := arr[i]
             arr[i] := arr[j]
             arr[j] := t
 
-          partition(l, r, pivot i32) =>
+          partition(l, r, pivot i64) =>
             pv := arr[pivot]
             swap pivot r
             for
@@ -152,7 +152,7 @@ test_local_mutate is
               swap b r
               b
 
-          qs(l, r i32) unit => # =>  does not work
+          qs(l, r i64) unit => # =>  does not work
             if l < r
               pi := partition l r (l + r)/2
               qs l pi-1
@@ -167,8 +167,8 @@ test_local_mutate is
 
     say (quicksort [0, 8, 15, 47, 11])
     for i in -1..10 do
-      say (quicksort i32 0..i)
-      say (quicksort i32 (i..0 : -1))
+      say (quicksort i64 0..i)
+      say (quicksort i64 (i..0 : -1))
 
   test_quicksort
 
@@ -177,9 +177,9 @@ test_local_mutate is
   #
   test_ring1 =>
 
-    Cell(T type, LM type : mutate, data T) ref is
-      n := LM.env.new (Cell T LM) Cell.this
-      p := LM.env.new (Cell T LM) Cell.this
+    Cell(T : Any, LM : mutate, data T) ref is
+      n := LM.env.var (Cell T LM) Cell.this
+      p := LM.env.var (Cell T LM) Cell.this
       link(ne, pr Cell T LM) =>
         n <- ne
         p <- pr
@@ -187,7 +187,7 @@ test_local_mutate is
       next => n.get
       prev => p.get
 
-    ring(T type, from0 Sequence T)
+    ring(T : Any, from0 Sequence T)
     pre
       !from0.is_empty
     =>
@@ -211,7 +211,7 @@ test_local_mutate is
           i in 1..10
           e := r, e.n.get
         do
-          say "$i: {e.data}"
+          say "$i: $(e.data)"
 
         for cur := r, cur.next
         while cur.n.open do
@@ -225,7 +225,7 @@ test_local_mutate is
         i in 1..10
         e := r0, e.next
       do
-        say "$i: {e.data}"
+        say "$i: $(e.data)"
       r0
 
     _ := ring [0,1,2,3]
@@ -240,15 +240,16 @@ test_local_mutate is
 
     # abstract type for 'ring'
     #
-    Ring(T type) ref is
+    Ring(T : Any) ref is
       next Ring T => abstract
       prev Ring T => abstract
       data T => abstract
 
       public redef as_string String =>
         for
-          s := "[ ", s + "{e.data} <-> "
-          # e2 := r, e2.next    # NYI: BUG: causes crash!
+          s := "[ ", s + "$(e.data) <-> "
+          # NYI: UNDER DEVELOPMENT: type inference should
+          # infer Ring T for e not Ring.this
           e Ring T := Ring.this, e.next
           i in 0..3
         else
@@ -261,10 +262,10 @@ test_local_mutate is
     # add single cells, or `merge` to merge two rings into one larger ring.
     #
     Mut_Ring(# mutate effect to be used to create mutable variables
-             LM type : mutate,
+             LM : mutate,
 
              # type of data stored in ring cells
-             T type,
+             T : Any,
 
              # the data stored in this cell.
              redef data T) ref : Ring T is
@@ -273,8 +274,8 @@ test_local_mutate is
       # mutable references to next and previous. Initializes to refer to
       # Mut_Ring.this to form a minimal ring
       #
-      private n := LM.env.new (Mut_Ring LM T) Mut_Ring.this
-      private p := LM.env.new (Mut_Ring LM T) Mut_Ring.this
+      private n := LM.env.var (Mut_Ring LM T) Mut_Ring.this
+      private p := LM.env.var (Mut_Ring LM T) Mut_Ring.this
 
 
       # shorthand features to get the mutable references from `n` and `p`
@@ -343,7 +344,7 @@ test_local_mutate is
 
     # create a ring from the elements of a sequence
     #
-    create_ring(T type, from0 Sequence T)
+    create_ring(T : Any, from0 Sequence T)
     pre
       !from0.is_empty
     =>
@@ -366,7 +367,7 @@ test_local_mutate is
         e := r, e.next
         b := r, b.prev
       do
-        say "$i: {e.data} {b.data}"
+        say "$i: $(e.data) $(b.data)"
       r
 
     _ := create_ring [0,1,2,3]

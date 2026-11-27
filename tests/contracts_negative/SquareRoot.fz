@@ -25,7 +25,7 @@
 
 SquareRoot is
 
-  sqrt(a i32) i32
+  sqrt(a i64) i64
     pre
       a ≥ 0
     post
@@ -39,6 +39,6 @@ SquareRoot is
     else
       panic "*** error, sqrt diverges"
 
-  say "sqrt(16) = {sqrt(16)}"
-  say "sqrt(81) = {sqrt(81)}"
-  say "sqrt(-16) = {sqrt(-16)}" # 1. should flag an error, precondition failed
+  say "sqrt(16) = $(sqrt(16))"
+  say "sqrt(81) = $(sqrt(81))"
+  say "sqrt(-16) = $(sqrt(-16))" # 1. should flag an error, precondition failed

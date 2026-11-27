@@ -1,0 +1,39 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5998
+#
+# -----------------------------------------------------------------------
+
+# Original error message was bad:
+#
+# myfun.fz:4:3: error 1: Wrong number of arguments in lambda expression
+# q a->a>0
+#
+# Lambda expression has one argument while the target type expects -1 arguments.
+# Arguments of lambda expression: 'a'
+# Expected function type: myf
+# To solve this, remove 2 arguments from the list 'a' before the '->' of the lambda expression.
+#
+# one error.
+
+myf : Function bool i32 is
+q(f myf) => f.call 1 |> say
+
+q a->a>0

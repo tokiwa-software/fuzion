@@ -26,14 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.SpecialClazzes;
 
 /**
  * boolValue is a value of type bool
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class boolValue extends Value
+class boolValue extends Value
 {
 
 
@@ -66,6 +65,7 @@ public class boolValue extends Value
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return Boolean.toString(b);
@@ -77,6 +77,7 @@ public class boolValue extends Value
    *
    * @return the bool value
    */
+  @Override
   public boolean boolValue()
   {
     return b;
@@ -90,29 +91,13 @@ public class boolValue extends Value
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require
       (size == 1);
 
     slot.container.nonrefs[slot.offset] = b ? 1 : 0;
-  }
-
-
-  /**
-   * Debugging only: Check that this value is valid as the current instance for
-   * a feature with given static clazz.
-   *
-   * @param expected the static clazz of the feature this value is called on.
-   *
-   * @throws Error in case this does not match the expected clazz
-   */
-  void checkStaticClazz(int expected)
-  {
-    if (expected != fuir().clazz(SpecialClazzes.c_bool))
-      {
-        throw new Error("bool value not allowed for clazz " + expected);
-      }
   }
 
 

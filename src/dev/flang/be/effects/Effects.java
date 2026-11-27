@@ -97,14 +97,14 @@ public class Effects extends ANY
                {
                  if (_options.verbose(1))
                    {
-                     say("EFFECT type "+_fuir.clazzAsString(t)+" default used is "+_dfa._defaultEffects.get(t));
+                     say("EFFECT type "+_fuir.clazzName(t)+" default used is "+_dfa._defaultEffects.get(t));
                      var sb = new StringBuilder();
                      var ignore = _dfa._defaultEffectContexts.get(t).showWhy(sb);
                      say(sb);
                    }
                  else
                    {
-                     say(_fuir.clazzAsString(t));
+                     say(_fuir.clazzName(t));
                    }
                });
   }

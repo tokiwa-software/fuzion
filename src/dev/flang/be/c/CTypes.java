@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
+import dev.flang.ir.IR.FeatureKind;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 
@@ -39,7 +40,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class CTypes extends ANY
+class CTypes extends ANY
 {
 
 
@@ -293,7 +294,7 @@ public class CTypes extends ANY
     CStmnt result = CStmnt.EMPTY;
     if (needsTypeDeclaration(cl))
       {
-        var l = new List<CStmnt>(CStmnt.lineComment("for clazz#" + _fuir.clazzId2num(cl) + ": " + _fuir.clazzAsString(cl)));
+        var l = new List<CStmnt>(CStmnt.lineComment("for clazz#" + _fuir.clazzId2num(cl) + ": " + _fuir.clazzName(cl)));
         var els = new List<CStmnt>();
         if (_fuir.clazzIsRef(cl))
           {
@@ -327,10 +328,7 @@ public class CTypes extends ANY
             for (int i = 0; i < _fuir.clazzFieldCount(cl); i++)
               {
                 var f = _fuir.clazzField(cl, i);
-                var t = _fuir.clazzResultClazz(f);
-                // NYI: UNDER DEVELOPMENT: Why not just `if (fieldExists(f)`?
-                if (!_fuir.clazzIsUnitType(t) &&
-                    !_fuir.clazzIsVoidType(t))
+                if (fieldExists(f))
                   {
                     els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
                   }
@@ -356,7 +354,7 @@ public class CTypes extends ANY
    */
   public String atomicType(int rc)
   {
-    var res = "atomic type not found for: " + _fuir.clazzAsString(rc);
+    var res = "atomic type not found for: " + _fuir.clazzName(rc);
     if (_fuir.clazzIsRef(rc))
       {
         res = "atomic_uintptr_t";
@@ -392,12 +390,14 @@ public class CTypes extends ANY
    */
   boolean fieldExists(int field)
   {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(field) == FeatureKind.Field);
+
     var rt = _fuir.clazzResultClazz(field);
 
     return
-      !_fuir.clazzIsUnitType(rt) &&
-      !_fuir.clazzIsVoidType(rt) &&
-      _fuir.clazzNeedsCode(field);
+      _fuir.clazzNeedsCode(field) &&
+      _fuir.hasData(rt);
   }
 
 }

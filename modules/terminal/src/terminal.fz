@@ -95,7 +95,7 @@ public terminal is
     public background_purple                    String => "45"
     public background_cyan                      String => "46"
     public background_white                     String => "47"
-    public set_background_set_color             String => "48"  # next arguments are 5;n or 2;r;g;b
+    public set_background_color                 String => "48"  # next arguments are 5;n or 2;r;g;b
     public background_regular_color             String => "49"
     public disable_proportional_spacing         String => "50"
     public framed                               String => "51"
@@ -140,11 +140,11 @@ public terminal is
     public clear_line                           String => "2K"
     public erase_end_of_line                    String => "K"
     public clear_screen                         String => "2J"
-    public put_cursor(line, column i32)         String => "{line};{column}H" # or "{line};{column}f"
-    public cursor_up(n i32)                     String => "{n}A"
-    public cursor_down(n i32)                   String => "{n}B"
-    public cursor_forward(n i32)                String => "{n}C"
-    public cursor_backward(n i32)               String => "{n}D"
+    public put_cursor(line, column i32)         String => "$(line);$(column)H" # or "$(line);$(column)f"
+    public cursor_up(n i32)                     String => "$(n)A"
+    public cursor_down(n i32)                   String => "$(n)B"
+    public cursor_forward(n i32)                String => "$(n)C"
+    public cursor_backward(n i32)               String => "$(n)D"
     public save_cursor_pos                      String => "s"
     public restore_cursor_pos                   String => "u"
 
@@ -196,7 +196,7 @@ public terminal is
   public background_purple                      String => csi + raw.background_purple + "m"
   public background_cyan                        String => csi + raw.background_cyan + "m"
   public background_white                       String => csi + raw.background_white + "m"
-  public set_background_set_color               String => csi + raw.set_background_set_color + "m"
+  public set_background_color                   String => csi + raw.set_background_color + "m"
   public background_regular_color               String => csi + raw.background_regular_color + "m"
   public disable_proportional_spacing           String => csi + raw.disable_proportional_spacing + "m"
   public framed                                 String => csi + raw.framed + "m"
@@ -297,7 +297,7 @@ public String.background_blue                   String => terminal.background_bl
 public String.background_purple                 String => terminal.background_purple + String.this + terminal.reset
 public String.background_cyan                   String => terminal.background_cyan + String.this + terminal.reset
 public String.background_white                  String => terminal.background_white + String.this + terminal.reset
-public String.set_background_set_color          String => terminal.set_background_set_color + String.this + terminal.reset
+public String.set_background_color              String => terminal.set_background_color + String.this + terminal.reset
 public String.background_regular_color          String => terminal.background_regular_color + String.this + terminal.reset
 public String.disable_proportional_spacing      String => terminal.disable_proportional_spacing + String.this + terminal.reset
 public String.framed                            String => terminal.framed + String.this + terminal.reset

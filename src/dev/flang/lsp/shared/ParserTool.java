@@ -88,7 +88,7 @@ public class ParserTool extends ANY
     var errors = Errors.errors();
     var warnings = Errors.warnings();
 
-    return new ParserCacheItem(uri, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
+    return new ParserCacheItem(uri, frontEnd, errors, warnings, Types.resolved);
   }
 
   private static FrontEndOptions frontEndOptions(URI uri)
@@ -170,7 +170,7 @@ public class ParserTool extends ANY
 
   public static Stream<AbstractFeature> declaredFeatures(AbstractFeature f, boolean includeInternalFeatures)
   {
-    if (TypeTool.containsError(f.selfType()))
+    if (f.selfType().containsError())
       {
         return Stream.empty();
       }

@@ -23,7 +23,7 @@
 
 uuid_test =>
 
-  shw(id uuid) unit => say "$id (version {id.version.as_string.pad_left 2}, variant {id.var_field.bin 4})"
+  shw(id uuid) unit => say "$id (version $(id.version.as_string.pad_left 2), variant $(id.var_field.bin 4))"
 
 
   test_str := "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
@@ -37,16 +37,16 @@ uuid_test =>
   say my_uuid_2
   say ($my_uuid_1 = "f81d4fae-7dec-11d0-a765-00a0c91e6bf6" ? "OK" : "ERROR")
   say ($my_uuid_2 = "f81d4fae-7dec-11d0-a765-00a0c91e6bf6" ? "OK" : "ERROR")
-  say "my_uuid_1 {my_uuid_1 <> my_uuid_1} to itself"
-  say "my_uuid_2 {my_uuid_2 <> my_uuid_2} to itself"
-  say "1 <> 2 = {my_uuid_1 <> my_uuid_2}"
-  say "2 <> 1 = {my_uuid_2 <> my_uuid_1}"
+  say "my_uuid_1 $(my_uuid_1 <> my_uuid_1) to itself"
+  say "my_uuid_2 $(my_uuid_2 <> my_uuid_2) to itself"
+  say "1 <> 2 = $(my_uuid_1 <> my_uuid_2)"
+  say "2 <> 1 = $(my_uuid_2 <> my_uuid_1)"
 
   say "\nrandom:"
 
   rand_uuid := uuid.create_random
-  say "version = {rand_uuid.version} {rand_uuid.version = 4 ? "OK" : "ERROR"}"
-  say "variant is {8 <= rand_uuid.var_field <= 11 ? "OK" : "ERROR"}"
+  say "version = $(rand_uuid.version) $(rand_uuid.version = 4 ? "OK" : "ERROR")"
+  say "variant is $(8 <= rand_uuid.var_field <= 11 ? "OK" : "ERROR")"
 
   say "\nnil and max:"
   shw uuid.nil_uuid
@@ -67,5 +67,5 @@ uuid_test =>
   shw cust_1
   shw cust_2
 
-  say "{cust_1.data.hex 32} {cust_1.data = d1 ? "OK" : "ERROR"}"
-  say "{cust_2.data.hex 32} {cust_2.data = d2 ? "OK" : "ERROR"}"
+  say "$(cust_1.data.hex 32) $(cust_1.data = d1 ? "OK" : "ERROR")"
+  say "$(cust_2.data.hex 32) $(cust_2.data = d2 ? "OK" : "ERROR")"

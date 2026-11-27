@@ -76,9 +76,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Prefix used for all internal names
+   * symbol used for in internal names
    */
-  public static final String INTERNAL_NAME_PREFIX = "#";
+  public static final String INTERNAL_NAME_SYMBOL = "#";
 
   /**
    * Artificial name of universe feature.
@@ -88,7 +88,7 @@ public class FuzionConstants extends ANY
   /**
    * Prefix of artificially generated name of outer refs.
    */
-  public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^<";
+  public static final String OUTER_REF_PREFIX = INTERNAL_NAME_SYMBOL + "^<";
 
   /**
    * Suffix of artificially generated name of outer refs.
@@ -105,8 +105,16 @@ public class FuzionConstants extends ANY
   /**
    * Name of unit feature. The feature is used throughout the base library
    * to indicate that no result is returned.
+   *
+   * Also, this is used for parser rule `tuple` with an empty list of expressions.
    */
   public static final String UNIT_NAME   = "unit";
+
+
+  /**
+   * Name of tuple feature, used for parser rule `tuple`.
+   */
+  public static final String TUPLE_NAME   = "tuple";
 
 
   /**
@@ -152,21 +160,21 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of typed_zipper feature.
-   */
-  public static final String TYPED_ZIPPER_FEAT = "typed_zipper";
-
-
-  /**
-   * Name of typed_zipper.apply feature.
-   */
-  public static final String TYPED_ZIPPER_APPLY_FEAT = "apply";
-
-
-  /**
    * Name of String feature.
    */
   public static final String STRING_NAME = "String";
+
+
+  /**
+   * Name of const_string feature.
+   */
+  public static final String CONST_STRING_NAME = "const_string";
+
+
+  /**
+   * Name of const_string.utf8_data feature.
+   */
+  public static final String UTF8_DATA_NAME = "utf8_data";
 
 
   /**
@@ -277,7 +285,7 @@ public class FuzionConstants extends ANY
   public static final String POSTFIX_OPERATOR_PREFIX = "postfix ";
 
   /**
-   * Infix operator parsed for choice type syntax sugar `i32 | unit | bool`
+   * Infix operator parsed for choice type syntax sugar {@code i32 | unit | bool}
    */
   public static final String INFIX_PIPE = INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "|";
 
@@ -287,7 +295,7 @@ public class FuzionConstants extends ANY
   public static final String CHOICE_NAME = "choice";
 
   /**
-   * Infix operator parsed for function type `a.b->c`
+   * Infix operator parsed for function type {@code a.b->c}
    */
   public static final String INFIX_ARROW = INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "->";
 
@@ -309,19 +317,19 @@ public class FuzionConstants extends ANY
    * Artificial name of implicitly declared result field in case the assignment
    * to result is implicitly from the last expression's value.
    */
-  public static final String INTERNAL_RESULT_NAME = INTERNAL_NAME_PREFIX + "result";
+  public static final String INTERNAL_RESULT_NAME = INTERNAL_NAME_SYMBOL + "result";
 
 
   /**
    * Prefix for names of anonymous inner features.
    */
-  public static final String ANONYMOUS_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "anonymous";
+  public static final String ANONYMOUS_FEATURE_PREFIX = INTERNAL_NAME_SYMBOL + "anonymous";
 
 
   /**
    * Name of type features.
    */
-  public static final String TYPE_NAME = INTERNAL_NAME_PREFIX + "type";
+  public static final String TYPE_NAME = INTERNAL_NAME_SYMBOL + "type";
 
 
   /**
@@ -333,7 +341,7 @@ public class FuzionConstants extends ANY
    * names with this prefix will be removed from .fum files which results in
    * this not being found in redefinitions.
    */
-  public static final String COTYPE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
+  public static final String COTYPE_RELAY_TYPE = "RELAY" + INTERNAL_NAME_SYMBOL + "TYPE";
 
 
   /**
@@ -341,14 +349,14 @@ public class FuzionConstants extends ANY
    * a field whose type is an open type parameter is called without selecting
    * one specific variant.
    */
-  public static final String VALUES_OF_OPEN_TYPE_SUFFIX = "." + INTERNAL_NAME_PREFIX; /* e.g., `values.#` which stands for `values.0`/`values.1`/etc. */
+  public static final String VALUES_OF_OPEN_TYPE_SUFFIX = "." + INTERNAL_NAME_SYMBOL; /* e.g., `values.#` which stands for `values.0`/`values.1`/etc. */
 
 
   /**
    * Prefix of name of open type parameter, i.e., the feature that is called when
    * an open type parameter is called.
    */
-  public static final String OPEN_TYPES_PREFIX = INTERNAL_NAME_PREFIX + "Open_Types";
+  public static final String OPEN_TYPES_PREFIX = INTERNAL_NAME_SYMBOL + "Open_Types";
 
 
   /**
@@ -368,7 +376,7 @@ public class FuzionConstants extends ANY
    *   x := #exprResult123
    * }</pre>
    */
-  public static final String EXPRESSION_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "exprResult";
+  public static final String EXPRESSION_RESULT_PREFIX = INTERNAL_NAME_SYMBOL + "exprResult";
 
 
   /**
@@ -385,7 +393,7 @@ public class FuzionConstants extends ANY
    *   x := a < #chainedBoolTemp123 && #chainedBoolTemp123 < c
    * }</pre>
    */
-  public static final String CHAINED_BOOL_TMP_PREFIX = INTERNAL_NAME_PREFIX + "chainedBoolTemp";
+  public static final String CHAINED_BOOL_TMP_PREFIX = INTERNAL_NAME_SYMBOL + "chainedBoolTemp";
 
 
   /**
@@ -395,7 +403,16 @@ public class FuzionConstants extends ANY
    *    x := a,b -> a*b
    * }</pre>
    */
-  public static final String LAMBDA_PREFIX = INTERNAL_NAME_PREFIX + "fun";
+  public static final String LAMBDA_PREFIX = INTERNAL_NAME_SYMBOL + "fun";
+
+
+  /**
+   * Human-readable name to be used instead of a names starting in LAMBDA_PREFIX
+   * if there is no additional information available. @see
+   * dev.flang.ast.AbstractFeature.baseNameHuman() and
+   * dev.flang.ast.FeatureName.baseNameHuman().
+   */
+  public static final String HUMAN_READABLE_LAMBDA_NAME = "λ";
 
 
   /**
@@ -405,7 +422,7 @@ public class FuzionConstants extends ANY
    *    x := [a, b, c]
    * }</pre>
    */
-  public static final String INLINE_SYS_ARRAY_PREFIX = INTERNAL_NAME_PREFIX + "inlineSysArray";
+  public static final String INLINE_SYS_ARRAY_PREFIX = INTERNAL_NAME_SYMBOL + "inlineSysArray";
 
   /**
    * Field introduced in, e.g.,
@@ -415,14 +432,14 @@ public class FuzionConstants extends ANY
    *     say x
    * }</pre>
    */
-  public static final String REC_LOOP_PREFIX = INTERNAL_NAME_PREFIX + "loop";
+  public static final String REC_LOOP_PREFIX = INTERNAL_NAME_SYMBOL + "loop";
 
 
   /**
    * Fields introduced by Loop.java
    */
-  public static final String ITER_ARG_PREFIX_INIT = INTERNAL_NAME_PREFIX + "iter_arg_init_";
-  public static final String ITER_ARG_PREFIX_NEXT = INTERNAL_NAME_PREFIX + "iter_arg_next_";
+  public static final String ITER_ARG_PREFIX_INIT = INTERNAL_NAME_SYMBOL + "iter_arg_init_";
+  public static final String ITER_ARG_PREFIX_NEXT = INTERNAL_NAME_SYMBOL + "iter_arg_next_";
 
 
   /**
@@ -432,7 +449,7 @@ public class FuzionConstants extends ANY
    *    _ = f a
    * }</pre>
    */
-  public static final String UNDERSCORE_PREFIX = INTERNAL_NAME_PREFIX + "_";
+  public static final String UNDERSCORE_PREFIX = INTERNAL_NAME_SYMBOL + "_";
 
 
   /**
@@ -442,7 +459,7 @@ public class FuzionConstants extends ANY
    *    (a,b) = f c
    * }</pre>
    */
-  public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_PREFIX + "destructure";
+  public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_SYMBOL + "destructure";
 
 
   /**
@@ -458,16 +475,16 @@ public class FuzionConstants extends ANY
    *    m := s.map (#partialFunctionArg123 -> f 42 #partialFunctionArg123)
    * }</pre>
    */
-  public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_PREFIX + "partialFunctionArg";
+  public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_SYMBOL + "partialFunctionArg";
 
 
   /**
    * Prefixes of pre, pre bool, pre and call and post features.
    */
-  public static final String PRECONDITION_FEATURE_PREFIX        = INTERNAL_NAME_PREFIX + "pre";
-  public static final String PREBOOLCONDITION_FEATURE_PREFIX    = INTERNAL_NAME_PREFIX + "prebool";
-  public static final String PREANDCALLCONDITION_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "preandcall";
-  public static final String POSTCONDITION_FEATURE_PREFIX       = INTERNAL_NAME_PREFIX + "post";
+  public static final String PRECONDITION_FEATURE_PREFIX        = INTERNAL_NAME_SYMBOL + "pre";
+  public static final String PREBOOLCONDITION_FEATURE_PREFIX    = INTERNAL_NAME_SYMBOL + "prebool";
+  public static final String PREANDCALLCONDITION_FEATURE_PREFIX = INTERNAL_NAME_SYMBOL + "preandcall";
+  public static final String POSTCONDITION_FEATURE_PREFIX       = INTERNAL_NAME_SYMBOL + "post";
 
 
   /**
@@ -488,6 +505,15 @@ public class FuzionConstants extends ANY
    * Name of feature to call for unwrapping.
    */
   public static final String UNWRAP = "unwrap";
+
+
+  /**
+   * Prefix of name of field generated for cases in match generated by
+   * `choice.autogenerated_code_for_choice_apply`.
+   */
+  public static final String AUTO_CHOICE_APPLY_CASE_FIELD_PREFIX = INTERNAL_NAME_SYMBOL + "choice_value_";
+  public static final String AUTO_CHOICE_COMBINE_CASE_V_FIELD_PREFIX = INTERNAL_NAME_SYMBOL + "choice_value_v";
+  public static final String AUTO_CHOICE_COMBINE_CASE_W_FIELD_PREFIX = INTERNAL_NAME_SYMBOL + "choice_value_w";
 
 
   /*-----------------  special values used in MIR file  -----------------*/
@@ -594,6 +620,8 @@ public class FuzionConstants extends ANY
   public static final int FUIR_FILE_MAGIC0 = 0xF710DEED;  // FuZIOn DEED, fuzion IR, .fuir
   public static final byte[] FUIR_FILE_MAGIC = int2Bytes(FUIR_FILE_MAGIC0);
 
+  public static final String NO_CLAZZ = "-- no clazz --";
+
 
   /*-----------------  special values for modifiers  -----------------*/
 
@@ -665,7 +693,7 @@ public class FuzionConstants extends ANY
    *
    * @param argFieldBaseName the base name of the argument field
    *
-   * @return the names, looks something like `#Values_Of_Open_Type#argFieldBaseName#uniqueId`.
+   * @return the names, looks something like {@code #Values_Of_Open_Type#argFieldBaseName#uniqueId}.
    */
   public static String createFieldsOfOpenTypeName(String argFieldBaseName)
   {
@@ -674,11 +702,11 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Extract the field base name from a name created by `createValuesOfOpenTypeName`.
+   * Extract the field base name from a name created by {@code createValuesOfOpenTypeName}.
    *
-   * @param valuesAsOpenTypeName the name obtained form `createValuesOfOpenTypeName`.
+   * @param valuesAsOpenTypeName the name obtained form {@code createValuesOfOpenTypeName}.
    *
-   * @return the original `argFieldBaseName` passed to `createValuesOfOpenTypeName`.
+   * @return the original {@code argFieldBaseName} passed to {@code createValuesOfOpenTypeName}.
    */
   public static String extractBaseNameFromFieldsOfOpenTypeName(String valuesAsOpenTypeName)
   {

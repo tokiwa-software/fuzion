@@ -50,13 +50,13 @@ is
 
   # this xml node as String
   #
-  as_string(indent i32) String =>
+  as_string(indent i64) String =>
 
     attr =>
       attributes
         .items
         .map t->
-          "{t.0}=\"{t.1}\""
+          "$(t.0)=\"$(t.1)\""
         .as_string " "
 
     dat_str =>
@@ -66,14 +66,14 @@ is
             str String =>
               check debug: !(str.contains "<")
               check debug: !(str.contains ">")
-              "{"  "*(indent+1)}{str}"
+              "$("  "*{indent+1})$(str)"
             n nom.parsers.xml_node => n.as_string indent+1
         .as_string "\n"
 
     if attributes.is_empty
-      "{"  "*indent}<{name}>\n{dat_str}\n{"  "*(indent)}</{name}>"
+      "$("  "*indent)<$(name)>\n$(dat_str)\n$("  "*indent)</$(name)>"
     else
-      "{"  "*indent}<{name} {attr}>\n{dat_str}\n{"  "*(indent)}</{name}>"
+      "$("  "*indent)<$(name) $(attr)>\n$(dat_str)\n$("  "*indent)</$(name)>"
 
 
 
@@ -111,7 +111,7 @@ public xml Parser String (Sequence codepoint) (Sequence nom.parsers.xml_node) =>
     parser (Sequence codepoint) (Sequence codepoint) unit input->
       match input.find "-->".codepoints
         nil => (error "--> not found")
-        n i32 => success (input.drop n+3) unit
+        n i64 => success (input.drop n+3) unit
 
 
   # parser matching anything until ?>
@@ -121,7 +121,7 @@ public xml Parser String (Sequence codepoint) (Sequence nom.parsers.xml_node) =>
     parser (Sequence codepoint) (Sequence codepoint) unit input->
       match input.find "?>".codepoints
         nil => (error "?> not found")
-        n i32 => success (input.drop n+2) unit
+        n i64 => success (input.drop n+2) unit
 
 
   # parser for a name+attributes of a tag
@@ -192,7 +192,7 @@ public xml Parser String (Sequence codepoint) (Sequence nom.parsers.xml_node) =>
   #
   parser_attributes =>
     many0 (delimited whitespace0 parser_attribute whitespace0)
-      .map (o -> container.map_of o.as_array)
+      .map (o -> container.ps_map String String .of o.as_array)
 
 
   # parser for one attribute of a tag
@@ -208,14 +208,14 @@ public xml Parser String (Sequence codepoint) (Sequence nom.parsers.xml_node) =>
   # parser for a string enclosed in double quotes
   #
   parser_xml_string =>
-    delimited (tag "\"") (take_while0 codepoint (c -> c != "\"")) (tag "\"")
+    delimited (tag "\"") (take_while0 codepoint (!= "\"")) (tag "\"")
       .map (s -> String.from s)
 
 
   # parser for text, ends at first <
   #
   parser_text =>
-    take_while1 codepoint (c -> c != "<")
+    take_while1 codepoint (!= "<")
       .map o->
         String.from o .trim
 
@@ -223,12 +223,14 @@ public xml Parser String (Sequence codepoint) (Sequence nom.parsers.xml_node) =>
   # parser for sequence of texts/xml_nodes
   #
   xml_or_text_seq =>
-    (many0 (preceded whitespace0 (alt [
-      parser_text.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o],
-      parser_self_closing_tag.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o],
-      parser_full_tag.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o]
-    ]))).map o->
-      o.flat_map id
+    text_or_tag =>
+      alt [
+            parser_text.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o],
+            parser_self_closing_tag.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o],
+            parser_full_tag.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o]
+          ]
+    many0 (preceded whitespace0 text_or_tag)
+      .map (.flat_map id .as_array)
 
 
   # parse xml tags

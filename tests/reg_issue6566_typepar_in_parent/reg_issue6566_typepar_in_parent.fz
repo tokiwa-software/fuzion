@@ -21,8 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
-# This exmaple contains code that resulted in fz command crashing with a failing
-# require condition (or null pointer in case checkds were not enabled).
+# This example contains code that resulted in fz command crashing with a failing
+# require condition (or null pointer in case checks were not enabled).
 #
 # The problem was a call to a field `o.v` that is declared of a type parameter that is set
 # via inheritance of the actual type of the target `o` of the call.  If the underlying feature
@@ -45,7 +45,7 @@ public reg_issue6566_typepar_in_parent is
 
     m(v N) is
     s : m unit is
-    b(o s) => _ := o.v
+    b(o s) => o.v
     ignore s
     b s
 

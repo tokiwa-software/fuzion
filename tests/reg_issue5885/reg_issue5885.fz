@@ -1,0 +1,40 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5885
+#
+# -----------------------------------------------------------------------
+
+bad_hash(v u64) : property.hashable is
+  public redef fixed type.hash_code(bh bad_hash) u64 =>  bh.v >> 8
+  public redef fixed type.equality(a,b bad_hash) bool => a.v = b.v
+
+for i := u64 256, i*2 do
+  start := time.Nano.env.read
+  range := (u64 0)..(i-1)
+  keys := range.map (v->bad_hash v) .as_array
+  vals := (range.map **2).as_array
+  hm := container.hash_map bad_hash u64 .of keys vals
+  end := time.Nano.env.read
+  delta := end-start
+  per_entry := time.frequency hm.size.as_u64 delta .as_duration
+  per_entry² := time.frequency hm.size.as_u64**2 delta .as_duration
+  say "for $(($i).pad_left 8) entries, took $per_entry per entry,  $per_entry² per entry²"
+until delta > time.duration.s 20
+  say "done."

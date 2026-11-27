@@ -25,7 +25,7 @@
 
 # int -- signed integer values of arbitrary size
 #
-module:public int (is_positive bool, n uint) : has_interval
+module:public int (is_positive bool, n uint) : property.interval
 is
 
   # normalize the sign => no minus zero
@@ -36,11 +36,10 @@ is
   # zero is represented by the empty list.
   data := n.b.drop_while (=0)
 
-  name String =>
-    "int"
 
   public fixed redef type.zero int =>
     int true uint.zero
+
 
   public fixed redef type.one int =>
     int true uint.one
@@ -102,7 +101,7 @@ is
     int ns n%other.n
 
 
-  # exponentation operator:
+  # exponentiation operator:
   # this int to the power of other
   public fixed redef infix ** (other int) int
   =>
@@ -125,7 +124,7 @@ is
     if other.ns
       int.this ** other
     else
-      panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
+      panic "negative exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
 
   # equality: are these two ints equal?
   #
@@ -143,6 +142,10 @@ is
   public redef as_string String =>
     if ns then "$n" else "-$n"
 
+  # Convert this to a string with a fixed number of digits after the decimal point.
+    #
+  public as_string_decimals(fraction_digits i64) String =>
+    as_i64.as_f64.as_string_decimals fraction_digits
 
   # this int as an i32
   public redef as_i32 i32 =>

@@ -26,7 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -216,7 +219,37 @@ public class Resolution extends ANY
   /**
    * List of features scheduled for second pass of type checking
    */
-  final LinkedList<Feature> forCheckTypes = new LinkedList<>();
+  final SortedSet<Feature> forCheckTypes = new TreeSet<>(
+                                                Comparator.comparing(x->x,
+                                                  (x,y) ->
+                                                    {
+                                                      /**
+                                                       * The idea here is to check types in sourcecode order
+                                                       * and to check features like universe with built-in pos last.
+                                                       */
+                                                      var fc = x.compareTo(y);
+                                                      if (fc == 0 || x.pos().isBuiltIn() && y.pos().isBuiltIn())
+                                                        {
+                                                          return fc;
+                                                        }
+                                                      else if (x.pos().isBuiltIn())
+                                                        {
+                                                          return +1;
+                                                        }
+                                                      else if (y.pos().isBuiltIn())
+                                                        {
+                                                          return -1;
+                                                        }
+                                                      else
+                                                        {
+                                                          var c = x.pos().compareTo(y.pos());
+                                                          return c == 0
+                                                            ? fc
+                                                            : c;
+                                                        }
+                                                    }
+                                                )
+                                               );
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -428,7 +461,7 @@ public class Resolution extends ANY
     else if (!_waitingForCalls.isEmpty())
       {
         // there are some features that still require calls for type resolution,
-        // so try to find those fot which we have found a call meanwhile.  Only if none
+        // so try to find those for which we have found a call meanwhile.  Only if none
         // was found, start resolving declarations anyways.
         resolveDelayed().resolveDeclarations(this);
       }
@@ -559,7 +592,6 @@ public class Resolution extends ANY
   {
     if (PRECONDITIONS) require
       (Errors.any() || !af.isUniverse(),
-       Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS),
        !af.isCotype());
 
     if (af._cotype == null)
@@ -577,7 +609,7 @@ public class Resolution extends ANY
           }
         else
           {
-            var name = af.featureName().baseName() + ".";
+            var name = af.baseName() + ".";
             if (!af.isConstructor() && !af.isChoice())
               {
                 name = name + "_" + (_cotypeId_++) + "_" + _module.name();
@@ -587,15 +619,15 @@ public class Resolution extends ANY
             var p = af.pos();
             var inh = cotypeInherits(af);
             var typeArg = new Feature(p,
-                                      Visi.PRIV,
+                                      Visi.UNSPECIFIED,
                                       0,
                                       af.selfType(),
-                                      FuzionConstants.COTYPE_THIS_TYPE,
+                                      FuzionConstants.COTYPE_RELAY_TYPE,
                                       Contract.EMPTY_CONTRACT,
-                                      Impl.TYPE_PARAMETER)
+                                      Impl.EXPLICIT_TYPE_PARAMETER)
               {
                 @Override
-                public boolean isCoTypesThisType()
+                public boolean isRelayTypeParameter()
                 {
                   return true;
                 }
@@ -603,21 +635,26 @@ public class Resolution extends ANY
             var typeArgs = new List<AbstractFeature>(typeArg);
             for (var t : af.typeArguments())
               {
-                var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
-                                                : Impl.TYPE_PARAMETER;
-                var constraint0 = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
+                var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN :
+                        t.isFreeTypeParameter() ? Impl.FREE_TYPE_PARAMETER
+                                                : Impl.EXPLICIT_TYPE_PARAMETER;
+                var constraint = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
                   .resolve(this, af.context());
-                var constraint = af.rebaseTypeForCotype(constraint0);
-                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
-                                     Contract.EMPTY_CONTRACT,
-                                     i);
+                var ta = new Feature(
+                    p,
+                    Visi.UNSPECIFIED,
+                    t.modifiers() & FuzionConstants.MODIFIER_REDEFINE,
+                    constraint,
+                    t.baseName(),
+                    Contract.EMPTY_CONTRACT,
+                    i);
                 typeArgs.add(ta);
               }
 
             if (inh.isEmpty() && !Errors.any())
               { // let `Any.type` inherit from `Type`
                 if (CHECKS) check
-                  (af instanceof Feature && af.featureName().baseName().equals(FuzionConstants.ANY_NAME));
+                  (af instanceof Feature && af.baseName().equals(FuzionConstants.ANY_NAME));
                 inh.add(new Call(af.pos(), FuzionConstants.TYPE_FEAT));
               }
             existingOrNewCotype(af, name, typeArgs, inh);
@@ -639,7 +676,7 @@ public class Resolution extends ANY
     return af.inherits()
       .stream()
       .filter(pc -> pc.calledFeature() != Types.f_ERROR)
-      .map(pc -> pc.cotypeInheritanceCall(this, af))
+      .map(pc -> pc.cotypeInheritanceCall(this))
       .collect(List.collector());
   }
 

@@ -424,7 +424,7 @@ class ForClass extends ANY
       "#\n" +
       "# !!!!!!  DO NOT EDIT, GENERATED CODE !!!!!!\n" +
       "#\n" +
-      "# This code was generated automatically using the " + FZJava.FZJAVA_TOOL + " tool V" + fzj.version() + " called \n" +
+      "# This code was generated automatically using the " + FZJava.FZJAVA_TOOL + " tool V" + fzj.version() + " called\n" +
       "# as follows:\n" +
       "#\n" +
       "#   " + fzj.command() + "\n" +

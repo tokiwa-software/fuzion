@@ -25,8 +25,8 @@
 
 # Set -- an abstract set of values
 #
-public Set(public E type : property.equatable) ref : Sequence E,
-                                                     property.equatable
+public Set(E : property.equatable) ref : Sequence E,
+                                         property.equatable
 is
 
 
@@ -39,7 +39,7 @@ is
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  public size_option option i32 => nil
+  public size_option option i64 => nil
 
 
   # does this set contain the given value?
@@ -60,7 +60,7 @@ is
 
   # create a new Set from a sequence of elements
   #
-  public type.new (s Sequence E) container.Set E => abstract
+  public type.new (s Sequence E) container.Set E /*NYI: Set.this? */ => abstract
 
 
   # create a union of these two Sets
@@ -172,23 +172,20 @@ is
     if is_empty
       "∅"
     else
-      ("\{"
+      ("{"
        + (as_list.map (.as_string)).fold(String.concat ";")
        + "}")
 
 
   # equality
   #
-  # NYI: BUG: #4676 this could be
-  # public redef type.equality(a, b Set.this)
-  #
-  public fixed redef type.equality(a, b container.Set E) bool
-  pre else
-    debug: a.finite.is_yes_or_unknown
-    debug: b.finite.is_yes_or_unknown
+  public fixed redef type.equality(a, b Set.this) bool
   =>
-    # NYI: a bit expensive
-    (a ∪ b).size_option.or_panic = a.size_option.or_panic
+    if !a.finite.is_yes || !b.finite.is_yes
+      panic "Set.equality called on Set not known to be finite"
+
+    a.size_option = b.size_option &&
+      a.is_superset_of b
 
 
   # monoid of Set with infix ∪ operation.

@@ -22,8 +22,10 @@
 # -----------------------------------------------------------------------
 
 issue459 =>
-  t1 is
-  t2 is
-  say (exception t1 unit (()->))
-  say (exception t1 unit ()->
-    say (exception t2 unit (()->)))
+  t1 : flow.exception_tag is
+  t2 : flow.exception_tag is
+  say (flow.exception t1 .try unit (()->) .or_outcome)
+  say (flow.exception t1
+         .try unit ()->
+           say (flow.exception t2 .try unit (()->) .or_outcome)
+         .or_outcome)

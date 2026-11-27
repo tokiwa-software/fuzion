@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.HasSourcePosition;
 
 
 /**
@@ -65,7 +66,7 @@ class ArtificialBuiltInType extends ResolvedNormalType
 
   public ArtificialBuiltInType(String name)
   {
-    super(UnresolvedType.NONE, UnresolvedType.NONE, null, null, TypeKind.ValueType);
+    super(UnresolvedType.NONE, HasSourcePosition.NONE, null, null, TypeKind.ValueType);
     _name = name;
     _id = ids++;
   }
@@ -96,23 +97,15 @@ class ArtificialBuiltInType extends ResolvedNormalType
   public AbstractType outer()
   {
     return null;
+    // NYI: CLEANUP: throw new UnsupportedOperationException("outer of ArtificialBuiltInType");
   }
 
 
-  /**
-   * Id to differentiate artificial types.
-   */
+  /** {@inheritDoc} */
   @Override
-  public int artificialBuiltInID()
+  int artificialBuiltInID()
   {
     return _id;
-  }
-
-
-  @Override
-  public boolean isArtificialType()
-  {
-    return true;
   }
 
 

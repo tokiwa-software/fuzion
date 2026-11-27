@@ -408,13 +408,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -424,19 +418,13 @@ public class NumLiteral extends Constant
         var i = hasDot() ? null : intValue();
         result = i == null
           ? Types.resolved.t_f64
-          : Types.resolved.t_i32;
+          : Types.resolved.t_i64;
       }
     return result;
   }
 
 
-  /**
-   * typeForUnion returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForUnion()
   {
@@ -444,12 +432,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * During type inference: Inform this expression that it is
-   * expected to result in the given type.
-   *
-   * @param t the expected type.
-   */
+  /** {@inheritDoc} */
   @Override
   protected void propagateExpectedType(AbstractType t)
   {
@@ -554,7 +537,7 @@ public class NumLiteral extends Constant
         m = shiftWithRounding(m, deltaBits);
         e2 = e2 - deltaBits;
         // rounding changed mantissa length => shift again
-        if((m.bitLength() == ct._mBits + 1))
+        if ((m.bitLength() == ct._mBits + 1))
           {
             m = shiftWithRounding(m, -1);
             e2 = e2 + 1;
@@ -772,7 +755,7 @@ public class NumLiteral extends Constant
     else if (t.compareTo(Types.resolved.t_u64) == 0) { return ConstantType.ct_u64; }
     else if (t.compareTo(Types.resolved.t_f32) == 0) { return ConstantType.ct_f32; }
     else if (t.compareTo(Types.resolved.t_f64) == 0) { return ConstantType.ct_f64; }
-    else                                             { return t.isGenericArgument() ? ConstantType.ct_numeric : null; }
+    else                                             { return t.isParametricType() ? ConstantType.ct_numeric : null; }
   }
 
 
@@ -833,12 +816,13 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
+  @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     // if expected type is choice, examine if there is exactly one numeric
     // constant type in choice generics, if so use that for further type
     // propagation.
-    t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
+    t = t.findInChoice(cg -> !cg.isParametricType() && findConstantType(cg) != null, context);
     if (_propagatedType == null && findConstantType(t) != null)
       {
         _propagatedType = t;
@@ -847,18 +831,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * After propagateExpectedType: if type inference up until now has figured
-   * out that a Lazy feature is expected, but the current expression is not
-   * a Lazy feature, then wrap this expression in a Lazy feature.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the type this expression is assigned to.
-   */
+  /** {@inheritDoc} */
   @Override
   Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
@@ -876,6 +849,7 @@ public class NumLiteral extends Constant
    * @return an array with length findConstantType(type_)._bytes containing the
    * constant as a little-endian unsigned or two's complement value.
    */
+  @Override
   public byte[] data()
   {
     var ct = findConstantType(type());
@@ -912,40 +886,42 @@ public class NumLiteral extends Constant
   @Override
   protected Expr resolveSyntacticSugar2(Resolution res, Context _context)
   {
-    if (_propagatedType != null && _propagatedType.isGenericArgument())
+    Expr result = this;
+    if (_propagatedType != null && _propagatedType.isParametricType())
       {
-        Call result;
-
-        if (_originalString.equals("0"))
+        var typePar = _propagatedType.typeParameter();
+        var target = new ParsedCall(new ParsedName(pos(),
+                                                   // NYI: BUG: #8138: Replace String by Types.resolved.f_*
+                                                   typePar.baseName()));
+        var from_u32_name = switch (_originalString)
           {
-            result = new ParsedCall(
-                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
-                          new ParsedName(pos(), "zero"))
-                  .resolveTypes(res, _context);
-          }
-        else if (_originalString.equals("1"))
+          case "0" -> "zero";
+          case "1" -> "one";
+          default  -> "from_u32";
+          };
+        var from_u32_args = switch (_originalString)
           {
-            result = new ParsedCall(
-                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
-                          new ParsedName(pos(), "one"))
-                  .resolveTypes(res, _context);
+          case "0", "1" -> new List<Expr>();
+          default       -> new List<Expr>(this);
+          };
+        var from_u32 = new ParsedCall(target,
+                                      new ParsedName(pos(),
+                                                     // NYI: BUG: #8138: Replace String by Types.resolved.f_*
+                                                     from_u32_name),
+                                      from_u32_args)
+                             .resolveTypes(res, _context);
+        if (from_u32._pendingError == null)
+          {
+            _propagatedType = Types.resolved.t_u32;
+            result = from_u32;
           }
         else
           {
-            result = new ParsedCall(
-                      new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
-                      new ParsedName(pos(), "from_u32"),
-                      new List<>(this))
-                  .resolveTypes(res, _context);
+            AstErrors.illegalNumLiteral(this, typePar);
+            result = Call.ERROR;
           }
-
-        _propagatedType = Types.resolved.t_u32;
-        return result;
       }
-    else
-      {
-        return this;
-      }
+    return result;
   }
 
 
@@ -954,6 +930,7 @@ public class NumLiteral extends Constant
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return _originalString;

@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.ListIterator;
 
 import dev.flang.util.List;
 
@@ -63,35 +62,7 @@ public abstract class AbstractBlock extends Expr
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  public AbstractBlock visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    ListIterator<Expr> i = _expressions.listIterator();
-    while (i.hasNext())
-      {
-        Expr e = i.next();
-        i.set(e.visit(v, outer));
-      }
-    return this;
-  }
-
-
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
@@ -102,13 +73,17 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
-   */
+  @Override
+  AbstractType typeForInferencing(Context context)
+  {
+    Expr resExpr = resultExpression();
+    return resExpr == null
+      ? Types.resolved.t_unit
+      : resExpr.typeForInferencing(context);
+  }
+
+
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {
@@ -156,6 +131,7 @@ public abstract class AbstractBlock extends Expr
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */
+  @Override
   public boolean containsOnlyDeclarations()
   {
     boolean result = true;
@@ -167,9 +143,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * Is this Expr a call to an outer ref?
-   */
+  /** {@inheritDoc} */
   @Override
   boolean isCallToOuterRef()
   {
@@ -177,9 +151,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * This expression as a compile time constant.
-   */
+  /** {@inheritDoc} */
   @Override
   public Constant asCompileTimeConstant()
   {
@@ -187,12 +159,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * During type inference: Inform this expression that it is
-   * expected to result in the given type.
-   *
-   * @param t the expected type.
-   */
+  /** {@inheritDoc} */
   @Override
   protected void propagateExpectedType(AbstractType t)
   {
@@ -204,13 +171,7 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * typeForUnion returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForUnion()
   {
@@ -236,6 +197,7 @@ public abstract class AbstractBlock extends Expr
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return new StringBuilder().append("{\n").append(toString("  ")).append("}").toString();

@@ -62,17 +62,33 @@ public class Universe extends ExprWithPos
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType typeForInferencing()
   {
     return Types.resolved == null ? null : Types.resolved.universe.selfType();
+  }
+
+
+  @Override
+  public AbstractType type()
+  {
+    if (PRECONDITIONS) require
+      (Types.resolved != null);
+
+    return typeForInferencing();
+  }
+
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AbstractFeature inheritanceCallTargetFeature(Resolution res, Context context)
+  {
+    return Types.resolved != null
+      ? type().feature()
+      : super.inheritanceCallTargetFeature(res, context);  // create error, might happen while compiling base.fum
   }
 
 
@@ -86,7 +102,8 @@ public class Universe extends ExprWithPos
    *
    * @return this.
    */
-  public Universe visit(FeatureVisitor v, AbstractFeature outer)
+  @Override
+  protected Universe visit(FeatureVisitor v, AbstractFeature outer)
   {
     return this;
   }
@@ -98,7 +115,7 @@ public class Universe extends ExprWithPos
   @Override
   public UnresolvedType asParsedType()
   {
-    return new UnresolvedType(SourcePosition.notAvailable, FuzionConstants.UNIVERSE_NAME, UnresolvedType.NONE, null)
+    return new UnresolvedType(pos(), FuzionConstants.UNIVERSE_NAME, UnresolvedType.NONE, null)
     {
       @Override
       AbstractType resolve(Resolution res, Context context, boolean tolerant)
@@ -114,6 +131,7 @@ public class Universe extends ExprWithPos
    *
    * @return
    */
+  @Override
   public String toString()
   {
     return FuzionConstants.UNIVERSE_NAME;

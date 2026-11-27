@@ -35,7 +35,7 @@
 # O(m*n log² n) for adding an element m times.
 #
 private:public ps_set
-  (K type : property.orderable,
+  (K : property.orderable,
    psm container.ps_map K unit,
    dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
   )
@@ -99,7 +99,7 @@ is
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  public redef size_option option i32 => psm.size
+  public redef size_option option i64 => psm.size
 
 
   # does this set contain the given value?

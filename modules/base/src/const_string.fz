@@ -30,6 +30,6 @@
 #
 const_string : String is
 
-  utf8_data := array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit
+  utf8_data := array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit unit
 
   public redef utf8 Sequence u8 => utf8_data

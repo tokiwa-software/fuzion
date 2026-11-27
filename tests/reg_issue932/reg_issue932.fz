@@ -24,7 +24,7 @@
 reg_issue932 =>
 
   numeric  .foo => say "numeric.foo"
-  redef i32.foo => say "i32.foo"
+  redef i64.foo => say "i64.foo"
 
   (3.14).foo
   42.foo

@@ -33,28 +33,24 @@ import java.util.stream.Stream;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types.Resolved;
 import dev.flang.fe.FrontEnd;
-import dev.flang.fe.FrontEndOptions;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionOptions;
 
 /**
  * holds all artifacts of parsing that we later need
  */
-public class ParserCacheItem
+class ParserCacheItem
 {
 
   private final URI uri;
-  private final FrontEndOptions frontEndOptions;
   private final FrontEnd frontEnd;
   private final TreeSet<Errors.Error> errors;
   private final TreeSet<Errors.Error> warnings;
   private final Resolved resolved;
 
-  public ParserCacheItem(URI uri, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
+  public ParserCacheItem(URI uri, FrontEnd frontEnd,
     TreeSet<Errors.Error> errors, TreeSet<Errors.Error> warnings, Resolved resolved)
   {
     this.uri = uri;
-    this.frontEndOptions = frontEndOptions;
     this.frontEnd = frontEnd;
     this.errors = errors;
     this.warnings = warnings;
@@ -80,11 +76,6 @@ public class ParserCacheItem
   public TreeSet<Errors.Error> errors()
   {
     return errors;
-  }
-
-  public FuzionOptions frontEndOptions()
-  {
-    return frontEndOptions;
   }
 
   public Resolved resolved()

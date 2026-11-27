@@ -44,7 +44,7 @@ import java.util.function.Function;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Value extends Val
+class Value extends Val
 {
 
 
@@ -63,6 +63,7 @@ public class Value extends Val
       /**
        * compare two values.
        */
+      @Override
       public int compare(Value a, Value b)
       {
         if      (a == b)                                                       { return 0;                    }
@@ -90,6 +91,7 @@ public class Value extends Val
       /**
        * compare two values.
        */
+      @Override
       public int compare(Value a, Value b)
       {
         if      (a == b)                                                       { return 0;                    }
@@ -185,50 +187,6 @@ public class Value extends Val
     };
 
 
-  /**
-   * undefined value, used for not initialized fields.
-   */
-  static final Value UNDEFINED = new Value(NO_CLAZZ)
-    {
-      public String toString()
-      {
-        return "UNDEFINED";
-      }
-    };
-
-
-  /**
-   * used for jref field of Java_Objects
-   */
-  static final Value UNKNOWN_JAVA_REF = new Value(NO_CLAZZ)
-    {
-
-      /**
-       * Add v to the set of values of given field within this instance.
-       */
-      @Override
-      public void setField(DFA dfa, int field, Value v)
-      {
-        throw new Error("setField");
-      }
-
-      /**
-       * Get set of values of given field within this value.  This works for unit
-       * type results even if this is not an instance (but a unit type itself).
-       */
-      @Override
-      public Val readField(DFA dfa, int field, int site, Context why)
-      {
-        throw new Error("readField");
-      }
-
-      public String toString()
-      {
-        return "UNKNOWN_JAVA_REF";
-      }
-    };
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -318,7 +276,7 @@ public class Value extends Val
    */
   public void setField(DFA dfa, int field, Value v)
   {
-    throw new Error("Value.setField for '"+dfa._fuir.clazzAsString(field)+"' called on class " +
+    throw new Error("Value.setField for '"+dfa._fuir.clazzName(field)+"' called on class " +
                     this + " (" + getClass() + "), expected " + Instance.class);
   }
 
@@ -368,8 +326,8 @@ public class Value extends Val
     var rt = dfa._fuir.clazzResultClazz(field);
     if (!dfa._fuir.clazzIsUnitType(rt) && !Errors.any())
       {
-        throw new Error("Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class +
-                        " field type " + dfa._fuir.clazzAsString(rt) + " in "+this);
+        throw new Error("Value.readField '"+dfa._fuir.clazzName(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class +
+                        " field type " + dfa._fuir.clazzName(rt) + " in "+this);
       }
     return Value.UNIT;
   }
@@ -388,14 +346,6 @@ public class Value extends Val
   public Value join(DFA dfa, Value v, int clazz)
   {
     if (this == v)
-      {
-        return this;
-      }
-    else if (this == UNDEFINED)
-      {
-        return v;
-      }
-    else if (v == UNDEFINED)
       {
         return this;
       }
@@ -450,7 +400,7 @@ public class Value extends Val
 
 
   /**
-   * Wrapp this value into a tagged union type.
+   * Wrap this value into a tagged union type.
    *
    * @param dfa the current analysis context
    *
@@ -482,6 +432,7 @@ public class Value extends Val
    * information unrelated to the actual value (e.g. EmbeddedValue), get the
    * actual value.
    */
+  @Override
   Value value()
   {
     return this;
@@ -493,6 +444,7 @@ public class Value extends Val
    *
    * @param f function to apply to unwrapped value.
    */
+  @Override
   public Val rewrap(DFA dfa, Function<Value,Val> f)
   {
     return f.apply(this);

@@ -29,7 +29,7 @@ semicolon_parsing =>
   # TESTING CORRECT CODE
 
   if_test_1 (cond bool) =>
-    if cond then say "true" else yak "false"; say ": this should appear after false only"
+    if cond then say "true" else yap "false"; say ": this should appear after false only"
 
   # print "true" only
   if_test_1 true
@@ -55,19 +55,19 @@ semicolon_parsing =>
   if true then else say "dead code"; say "This should never be printed";
 
   # "this is fine"
-  if true then if true then yak "this";
+  if true then if true then yap "this";
                             say " is fine";
 
   # "this is fine"
-  if false then else yak "this";
+  if false then else yap "this";
                      say " is fine";
 
   # "this is fine"
-  if true then yak "this"; if false then say "dead code";
+  if true then yap "this"; if false then say "dead code";
                say " is fine";
 
   # "this is fine"
-  if false then else yak "this"; yak " is"; if true then say " fine" else say "dead code"
+  if false then else yap "this"; yap " is"; if true then say " fine" else say "dead code"
 
   # print "declared field a
   #        declared field b"
@@ -86,14 +86,14 @@ semicolon_parsing =>
   f4 => {say "I'm f4"}; say "feature f4 assigned"
 
   # no output or error
-  f5 => {yak "I'm "; say "f5"}
+  f5 => {yap "I'm "; say "f5"}
 
   # print "It is: a number
   #        It is: an error"
   match_test_1(val choice i32 codepoint) =>
     match val
-      i i32       => yak "'$i'"; say " is a number"
-      c codepoint => yak "'$c'"; say " is a codepoint"
+      i i32       => yap "'$i'"; say " is a number"
+      c codepoint => yap "'$c'"; say " is a codepoint"
   match_test_1 1
   match_test_1 "A"
 

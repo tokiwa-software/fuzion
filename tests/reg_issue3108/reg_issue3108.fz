@@ -31,8 +31,8 @@ reg_issue3108 =>
     field := 3
     routine => 4
 
-  b(redef field i32,           # should flag an error: redefining field forbidden
-    redef routine i32) : A =>
+  b(redef field i64,           # should flag an error: redefining field forbidden
+    redef routine i64) : A =>
 
     redef x := 3
     redef y := 4               # should flag an error: redefining field forbidden

@@ -32,6 +32,7 @@ reg_issue3734 =>
 
   # the original code from #3734
   e : effect is
+    public redef abortable bool => true
     stop => e.type.abort e
 
   codea1 => "hi"
@@ -44,8 +45,8 @@ reg_issue3734 =>
 
   say (e.instate String e codea1 defa)
   say (e.instate String e codea2 defa)
-  say (e.instate i32 e codeb1 defb)
-  say (e.instate i32 e codeb2 defb)
+  say (e.instate i64 e codeb1 defb)
+  say (e.instate i64 e codeb2 defb)
 
   # the simplified example from #3734
   f : effect is

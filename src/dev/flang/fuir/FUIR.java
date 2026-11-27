@@ -166,19 +166,22 @@ public abstract class FUIR extends IR
 
 
   /**
-   * String representation of clazz, for creation of unique type names.
+   * Unique String representation of a clazz, fully qualified and including type
+   * parameters, for creation of unique type names.
    *
    * @param cl a clazz id.
    */
-  public abstract String clazzAsString(int cl);
+  public abstract String clazzName(int cl);
 
 
   /**
-   * human readable String representation of clazz, for stack traces and debugging.
+   * human readable String representation of clazz, for stack traces and
+   * debugging. May not be used for code generation since this might not be
+   * unique.
    *
    * @param cl a clazz id.
    */
-  public abstract String clazzAsStringHuman(int cl);
+  public abstract String clazzNameHuman(int cl);
 
 
   /**
@@ -197,20 +200,20 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id.
    */
-  public String clazzAsStringWithArgsAndResult(int cl)
+  public String clazzNameWithArgsAndResult(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= firstClazz(),
        cl <= lastClazz());
 
     var sb = new StringBuilder();
-    sb.append(clazzAsString(cl))
+    sb.append(clazzName(cl))
       .append("(");
     var o = clazzOuterClazz(cl);
     if (o != NO_CLAZZ)
       {
         sb.append("outer ")
-          .append(clazzAsString(o));
+          .append(clazzName(o));
       }
     for (var i = 0; i < clazzArgCount(cl); i++)
       {
@@ -218,10 +221,10 @@ public abstract class FUIR extends IR
         sb.append(o != NO_CLAZZ || i > 0 ? ", " : "")
           .append(clazzBaseName(ai))
           .append(" ")
-          .append(clazzAsString(clazzResultClazz(ai)));
+          .append(clazzName(clazzResultClazz(ai)));
       }
     sb.append(") ")
-      .append(clazzAsString(clazzResultClazz(cl)));
+      .append(clazzName(clazzResultClazz(cl)));
     return sb.toString();
   }
 
@@ -561,26 +564,26 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Check if a clazz is the special clazz c.
+   * Check if a clazz is the special clazz sc.
    *
    * @param cl a clazz id
    *
-   * @param c one of the constants SpecialClazzes.c_i8,...
+   * @param sc one of the constants SpecialClazzes.c_i8,...
    *
-   * @return true iff cl is the specified special clazz c
+   * @return true iff cl is the specified special clazz sc
    */
-  public boolean clazzIs(int cl, SpecialClazzes c)
+  public boolean clazzIs(int cl, SpecialClazzes sc)
   {
-    return cl == clazz(c);
+    return cl == clazz(sc);
   }
 
 
   /**
    * Get the id of the given special clazz.
    *
-   * @param c the id of clazz c or -1 if that clazz was not created.
+   * @param sc the id of clazz sc or -1 if that clazz was not created.
    */
-  public abstract int clazz(SpecialClazzes c);
+  public abstract int clazz(SpecialClazzes sc);
 
 
   /**
@@ -617,17 +620,18 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a clazz of concur.atomic, lookup the inner clazz of the value field.
+   * For a clazz inheriting from {@code mutate.var}, lookup the inner clazz of
+   * the {@code mutable_value} field.
    *
-   * @param cl index of a clazz representing cl's value field
+   * @param cl index of a clazz representing cl's {@code mutable_value} field
    *
-   * @return the index of the requested {@code concur.atomic.value} field's clazz.
+   * @return the index of the requested {@code mutate.var.mutable_value} field's clazz.
    */
-  public abstract int lookupAtomicValue(int cl);
+  public abstract int lookupMutableValue(int cl);
 
 
   /**
-   * For a clazz of eff.fallible, lookup cause.
+   * For a clazz of flow.fallible, lookup cause.
    *
    * @param ecl index of a clazz representing fallible effect
    *
@@ -779,13 +783,24 @@ public abstract class FUIR extends IR
 
 
   /**
+   * Does this clazz contain any code?
+   *
+   * @param cl
+   * @return
+   */
+  public boolean hasCode(int cl)
+  {
+    return clazzCode(cl) != NO_SITE && withinCode(clazzCode(cl));
+  }
+
+
+  /**
    * Does the given clazz specify a scalar type in the C code, i.e, standard
    * numeric types i32, u64, etc.
    */
   public boolean isScalar(int cl)
   {
-    var id = getSpecialClazz(cl);
-    return switch (id)
+    return switch (getSpecialClazz(cl))
       {
       case
         c_i8  , c_i16 , c_i32 ,
@@ -817,7 +832,7 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @param gix indec of the generic parameter
+   * @param gix index of the generic parameter
    *
    * @return id of cl's actual generic parameter #gix
    */
@@ -925,6 +940,7 @@ public abstract class FUIR extends IR
    *
    * @param s site
    */
+  @Override
   public abstract ExprKind codeAt(int s);
 
 
@@ -1148,12 +1164,12 @@ public abstract class FUIR extends IR
   {
     return switch (codeAt(s))
       {
-      case Assign  -> "Assign " + clazzAsString(assignedType(s)) + " to " + clazzAsString(accessedClazz(s));
-      case Box     -> "Box "       + clazzAsString(boxValueClazz(s)) + " => " + clazzAsString(boxResultClazz  (s));
+      case Assign  -> "Assign " + clazzName(assignedType(s)) + " to " + clazzName(accessedClazz(s));
+      case Box     -> "Box "       + clazzName(boxValueClazz(s)) + " => " + clazzName(boxResultClazz  (s));
       case Call    -> {
                         var sb = new StringBuilder("Call ");
                         var cc = accessedClazz(s);
-                        sb.append(clazzAsStringWithArgsAndResult(cc));
+                        sb.append(clazzNameWithArgsAndResult(cc));
                         yield sb.toString();
                        }
       case Current -> "Current";
@@ -1161,7 +1177,7 @@ public abstract class FUIR extends IR
       case Const   -> {
                         var data = constData(s);
                         var sb = new StringBuilder("Const of type ");
-                        sb.append(clazzAsString(constClazz(s)));
+                        sb.append(clazzName(constClazz(s)));
                         for (var i = 0; i < Math.min(8, data.length); i++)
                           {
                             sb.append(String.format(" %02x", data[i] & 0xff));
@@ -1173,12 +1189,13 @@ public abstract class FUIR extends IR
                         for (var cix = 0; cix < matchCaseCount(s); cix++)
                           {
                             var f = matchCaseField(s, cix);
-                            sb.append(" " + cix + (f == NO_CLAZZ ? "" : "("+clazzAsString(clazzResultClazz(f))+")") + "=>" + label(matchCaseCode(s, cix)));
+                            sb.append(" " + cix + (f == NO_CLAZZ ? "" : "("+clazzName(clazzResultClazz(f))+")") + "=>" + label(matchCaseCode(s, cix)));
                           }
                         yield sb.toString();
                       }
       case Tag     -> "Tag";
       case Pop     -> "Pop";
+      case MatchCaseIndex -> "MatchCaseIndex";
       };
   }
 
@@ -1190,6 +1207,7 @@ public abstract class FUIR extends IR
    *
    * @return the source code position or null if not available.
    */
+  @Override
   public abstract SourcePosition sitePos(int s);
 
 
@@ -1251,9 +1269,10 @@ public abstract class FUIR extends IR
   public void dumpCode(int cl)
   {
     if (PRECONDITIONS) require
-      (clazzKind(cl) == FeatureKind.Routine);
+      (clazzKind(cl) == FeatureKind.Routine,
+       clazzNeedsCode(cl));
 
-    say("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazz() ? " *** main *** " : ""));
+    say("Code for " + clazzNameWithArgsAndResult(cl));
     dumpCode(cl, clazzCode(cl));
   }
 
@@ -1299,6 +1318,10 @@ public abstract class FUIR extends IR
       {
         s = codeIndex2(codeBlockStart(s), s, delta);
       }
+
+    if (POSTCONDITIONS) ensure
+      (withinCode(s));
+
     return s;
   }
 
@@ -1321,8 +1344,10 @@ public abstract class FUIR extends IR
    */
   private int codeIndex2(int si, int s, int delta)
   {
-    check
-      (si >= SITE_BASE && s >= SITE_BASE); // this code uses negative results if site was not found yet, so better make sure a site is never negative!
+    if (PRECONDITIONS) require
+      (withinCode(si),
+       withinCode(s),
+       delta < 0);
 
     if (si == s)
       {
@@ -1363,7 +1388,10 @@ public abstract class FUIR extends IR
    */
   public int skipBack(int s)
   {
-    return switch (codeAt(s))
+    if (PRECONDITIONS) require
+      (withinCode(s));
+
+    var result = switch (codeAt(s))
       {
       case Assign  ->
         {
@@ -1384,11 +1412,7 @@ public abstract class FUIR extends IR
           s = codeIndex(s, -1);
           for (var i = 0; i < ac; i++)
             {
-              var acl = clazzArgClazz(cc, ac-1-i);
-              if (clazzResultClazz(acl) != clazzUniverse())
-                {
-                  s = skipBack(s);
-                }
+              s = skipBack(s);
             }
           if (tc != clazzUniverse())
             {
@@ -1407,7 +1431,13 @@ public abstract class FUIR extends IR
         }
       case Tag     -> skipBack(codeIndex(s, -1));
       case Pop     -> skipBack(codeIndex(s, -1));
+      case MatchCaseIndex -> throw new UnsupportedOperationException("unexpected case MatchCaseIndex in skipBack");
       };
+
+    if (POSTCONDITIONS) ensure
+      (result == NO_SITE || withinCode(result));
+
+    return result;
   }
 
 
@@ -1431,11 +1461,12 @@ public abstract class FUIR extends IR
       (clazzKind(cl) == FeatureKind.Intrinsic) &&
       switch(clazzOriginalName(cl))
       {
-      case "effect.type.abort0"  ,
-           "effect.type.default0",
-           FuzionConstants.EFFECT_INSTATE_NAME,
-           "effect.type.is_instated0",
-           "effect.type.replace0" -> true;
+      case "effect.type.abort0"                 ,
+           "effect.type.instate_at_singularity0",
+           FuzionConstants.EFFECT_INSTATE_NAME  ,
+           "effect.type.is_instated0"           ,
+           "effect.type.set0"                   ,
+           "effect.type.remove0"                 -> true;
       default -> false;
       };
   }
@@ -1638,7 +1669,6 @@ public abstract class FUIR extends IR
    */
   public int matchCaseIndex(int s, int tag)
   {
-    // NYI: PERFORMANCE: cache this?
     var result = -1;
     for (var j = 0; result < 0 && j <  matchCaseCount(s); j++)
       {

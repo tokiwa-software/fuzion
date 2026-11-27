@@ -150,6 +150,7 @@ public class FZJava extends Tool
    *
    * @param xtra include extra options
    */
+  @Override
   protected String USAGE(boolean xtra)
   {
     return "Usage: " + _cmd + " [-h|--help|-version] " + STANDARD_OPTIONS(xtra) + "[-to=<dir>] {module}+\n";
@@ -164,6 +165,7 @@ public class FZJava extends Tool
    *
    * @return a Runnable to run the selected tool.
    */
+  @Override
   public Runnable parseArgs(String[] args)
   {
     for (var a : args)
@@ -270,9 +272,9 @@ public class FZJava extends Tool
     try
       {
         var str = """
-          public Java.as_java_object(T type : Java.java.lang.Object, seq Sequence T) fuzion.java.Array T =>
-            res := (Java.java.lang.reflect.Array.newInstance_Ljava_7_lang_7_Class_s_I T.get_java_class seq.count).or_panic
-            for i := 0, i+1
+          public Java.as_java_object(T : Java.java.lang.Object, seq Sequence T) fuzion.java.Array T =>
+            res := Java.java.lang.reflect.Array.newInstance_Ljava_7_lang_7_Class_s_I T.get_java_class seq.count.as_i32 .or_panic
+            for i := i32 0, i+1
                 el in seq
             do
               _ := Java.java.lang.reflect.Array.__k__set res i el
@@ -308,9 +310,10 @@ public class FZJava extends Tool
 
         for (var fn : df.values())
           {
-            if (name.startsWith(fn.qualifiedName()))
+            var qn = fn. qualifiedName();
+            if (name.startsWith(qn))
               {
-                _existingFeatures.add(fn.qualifiedName());
+                _existingFeatures.add(qn);
                 recurseDeclaredFeature(name, fn);
               }
           }

@@ -23,7 +23,7 @@
 
 # korean -- provides data for korean format
 #
-public korean : provide is
+public korean : Provide is
 
     # format date using the most common Korean formatting rules, see
     # https://en.wikipedia.org/wiki/Date_and_time_notation_in_South_Korea
@@ -32,10 +32,10 @@ public korean : provide is
     #
     public redef date(d i32, m i32, y i32) String
     =>
-        "{y}년 {m}월 {d}일"
+        "$(y)년 $(m)월 $(d)일"
 
     # example: `currency 300000` results in `300000₩`.
     #
     public redef currency(c i32) String
     =>
-        "{c}₩"
+        "$(c)₩"

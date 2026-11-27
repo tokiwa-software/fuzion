@@ -38,7 +38,7 @@ lib_knuth_morris_pratt =>
 
 
   performance =>
-    Sequence.find_brute_force(l Sequence T) option i32
+    Sequence.find_brute_force(l Sequence T) option i64
       pre
         T : property.equatable
     =>
@@ -50,17 +50,17 @@ lib_knuth_morris_pratt =>
           c Cons => (c.tail.find_brute_force l) >>= +1
 
 
-    test_brute_force(n i32) =>
+    test_brute_force(n i64) =>
       ("a"*2*n).utf8.find_brute_force ("a"*n+"b").utf8
 
-    test_kmp(n i32) =>
+    test_kmp(n i64) =>
       ("a"*2*n).utf8.find ("a"*n+"b").utf8
 
     say (test_kmp 1000)
 
     len := 250
 
-    if (envir.args.index_of "-benchmark")??
+    if (envir.Args.env.index_of "-benchmark")??
 
       # for len=250 and interpreter takes ~70s on my machine
       brute_force := time.stopwatch (()-> _:= test_brute_force len)

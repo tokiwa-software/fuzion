@@ -69,7 +69,7 @@ post
   result.map_pairs (<=)
         .reduce true (&&)
 =>
-  sort_by (<=)
+  sort_by id
 
 
 # is this Sequence sorted?

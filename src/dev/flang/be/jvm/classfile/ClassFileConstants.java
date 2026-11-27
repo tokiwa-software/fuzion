@@ -111,7 +111,7 @@ public interface ClassFileConstants
 
 
   /**
-   * JavaType provides an abstract of type sin the JVM and a basis for user
+   * JavaType provides an abstraction of types in the JVM and a basis for user
    * defined types that are useful for generating bytecode.
    */
   public static interface JavaType
@@ -507,61 +507,73 @@ public interface ClassFileConstants
       _stackSlots = stackSlots;
     }
 
+    @Override
     public int stackSlots()
     {
       return _stackSlots;
     }
 
+    @Override
     public String descriptor()
     {
       return _descriptor;
     }
 
+    @Override
     public String refDescriptor()
     {
       throw new Error("JavaType.refDescriptor only defined for ref type, not for " + this);
     }
 
+    @Override
     public Expr load(int index)
     {
       throw new Error("load for type " + this);
     }
 
+    @Override
     public Expr store(int index)
     {
       throw new Error("store for type " + this);
     }
 
+    @Override
     public Expr return0()
     {
       throw new Error("return for type " + this);
     }
 
+    @Override
     public Expr newArray()
     {
       throw new Error("newArray for type " + this);
     }
 
+    @Override
     public Expr xaload()
     {
       throw new Error("array load for type " + this);
     }
 
+    @Override
     public Expr xastore()
     {
       throw new Error("array load for type " + this);
     }
 
+    @Override
     public Expr pop()
     {
       throw new Error("pop for type " + this);
     }
 
+    @Override
     public String className()
     {
       throw new Error("className for type " + this);
     }
 
+    @Override
     public JavaType array()
     {
       return new ArrayType(this);
@@ -577,66 +589,79 @@ public interface ClassFileConstants
       _descriptor = descriptor;
     }
 
+    @Override
     public int stackSlots()
     {
       return 1;
     }
 
+    @Override
     public String descriptor()
     {
       return _descriptor;
     }
 
+    @Override
     public String refDescriptor()
     {
       return descriptor();
     }
 
+    @Override
     public Expr load(int index)
     {
       return Expr.aload(index, this, vti());
     }
 
+    @Override
     public Expr store(int index)
     {
       return Expr.astore(index, vti());
     }
 
+    @Override
     public Expr return0()
     {
       return Expr.ARETURN;
     }
 
+    @Override
     public Expr newArray()
     {
       return Expr.anewarray(this);
     }
 
+    @Override
     public Expr xaload()
     {
       return Expr.aaload(this);
     }
 
+    @Override
     public Expr xastore()
     {
       return Expr.AASTORE;
     }
 
+    @Override
     public Expr pop()
     {
       return Expr.POP;
     }
 
+    @Override
     public AType array()
     {
       return new ArrayType(this);
     }
 
+    @Override
     public String toString()
     {
       return "ClassType('" + _descriptor + "')";
     }
 
+    @Override
     public VerificationType vti()
     {
       return new VerificationType(className(), (cf)->cf.cpClass(this).index());
@@ -657,11 +682,13 @@ public interface ClassFileConstants
       _className = className;
     }
 
+    @Override
     public String className()
     {
       return _className;
     }
 
+    @Override
     public String refDescriptor()
     {
       return className();
@@ -675,10 +702,11 @@ public interface ClassFileConstants
   }
 
 
-  static final ClassType JAVA_LANG_CLASS  = new ClassType("java/lang/Class");
-  static final ClassType JAVA_LANG_OBJECT = new ClassType("java/lang/Object");
-  static final ClassType JAVA_LANG_STRING = new ClassType("java/lang/String");
-  static final ClassType JAVA_LANG_ERROR  = new ClassType("java/lang/Error");
+  static final ClassType JAVA_LANG_CLASS              = new ClassType("java/lang/Class");
+  static final ClassType JAVA_LANG_OBJECT             = new ClassType("java/lang/Object");
+  static final ClassType JAVA_LANG_STRING             = new ClassType("java/lang/String");
+  static final ClassType JAVA_LANG_ERROR              = new ClassType("java/lang/Error");
+  static final ClassType JAVA_LANG_STACKOVERFLOWERROR = new ClassType("java/lang/StackOverflowError");
 
   static final ClassType NULL_TYPE = new ClassType("java/lang/Object");
   static final ClassType ERROR_TYPE = new ClassType("dev/flang/be/jvm/runtime/JavaError");
@@ -693,6 +721,7 @@ public interface ClassFileConstants
       _elementType = elementType;
     }
 
+    @Override
     public String className()
     {
       return _elementType.className() + "[]";

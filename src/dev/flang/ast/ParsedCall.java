@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 
 
@@ -194,7 +195,7 @@ public class ParsedCall extends Call
             var a = new List<AbstractType>(tt);
             // NYI: if tt is of the form `()` or `(a,b,c)`, we need to create an
             // empty list or a list of types `a`, `b` and `c`.
-            result =  UnresolvedType.funType(pos(), l.getFirst(), a);
+            result =  UnresolvedType.funType(sourceRange(), l.getFirst(), a);
           }
         else
           {
@@ -205,7 +206,7 @@ public class ParsedCall extends Call
                 name = FuzionConstants.CHOICE_NAME;
                 tt = null;
               }
-            result = new ParsedType(pos(), name, l, tt);
+            result = new ParsedType(sourceRange(), name, l, tt);
           }
       }
     return result;
@@ -213,11 +214,11 @@ public class ParsedCall extends Call
 
 
   /**
-   * For a ParsedCall `x | y | z`, add the corresponding types of `x`, `y` and
-   * `z` to `l`.
+   * For a ParsedCall {@code x | y | z}, add the corresponding types of {@code x}, {@code y} and
+   * {@code z} to {@code l}.
    *
    * Note that the AST produced by the parser uses right associative operators,
-   * so this is `x | «y | z»`.
+   * so this is {@code x | «y | z»}.
    *
    * @param l list of types.
    */
@@ -315,8 +316,8 @@ public class ParsedCall extends Call
           }
         _actuals = new List<Expr>(ab);
         _calledFeature = Types.resolved.f_bool_AND;
-        _pendingError = null;
-        _name = _calledFeature.featureName().baseName();
+        suspendPendingNotFound();
+        _name = _calledFeature.baseName();
         var result = res.resolveType(ab, context);
         _actuals = new List<Expr>(result);
       }
@@ -324,17 +325,17 @@ public class ParsedCall extends Call
 
 
   /**
-   * For a chained boolean `a < b < c < d < e`, perform the chaining of one element `a < b < c`
+   * For a chained boolean {@code a < b < c < d < e}, perform the chaining of one element {@code a < b < c}
    *
    * @param res Resolution instance
    *
    * @param context the source code context where this Call is used
    *
-   * @param ab the expression `a < b`, will be changed into `a < { tmp := b; tmp }`
+   * @param ab the expression {@code a < b}, will be changed into {@code a < { tmp := b; tmp }}
    *
-   * @param b the expression `b`.
+   * @param b the expression {@code b}.
    *
-   * @return the right hand side of the chaining `tmp < c`
+   * @return the right hand side of the chaining {@code tmp < c}
    */
   private Call chainBool(Resolution res, Context context, Call ab, Expr b)
   {
@@ -372,13 +373,13 @@ public class ParsedCall extends Call
   private boolean isValidOperatorInChainedBoolean()
   {
     return
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≤") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≥") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<" ) ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">" ) ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≤" ) ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≥" ) ||
       _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<=") ||
       _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">=") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "=") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "=" ) ||
       _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "!=") ||
       // && is used to chain the calls together, needed for longer chains like `a < b < c < d`.
       _name.equals(FuzionConstants.INFIX_OPERATOR_PREFIX + "&&");
@@ -427,7 +428,7 @@ public class ParsedCall extends Call
 
   /**
    * Check if partial application would change this pre-/postfix call into an
-   * infix operator, e.g., `[1,2,3].map (*2)` ->  `[1,2,3].map (x->x*2)`
+   * infix operator, e.g., {@code [1,2,3].map (*2)} ->  {@code [1,2,3].map (x->x*2)}
    *
    * @param expectedType the expected function type
    *
@@ -468,30 +469,90 @@ public class ParsedCall extends Call
       (expectedType.isLambdaTargetButNotLazy(res));
 
     var paa = partiallyApplicableAlternative(res, context, expectedType);
-    Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
-                         : this;
+    Expr l = paa != null && !paa._feature.isTypeFeature()
+      ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
+      : this;
     if (l == this  /* resolution did not replace this call by sth different */ &&
         _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
         checkPartialAmbiguity(res, context, expectedType);
-        if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
-            _pendingError != null                       ||
+        checkTypeFeaturePartialAmbiguity(res, context, expectedType);
+        if (!isDefunct() &&/* checkTypeFeaturePartialAmbiguity may have set
+_calledFeature to error */
+          (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
+            _pendingError instanceof PendingNotFound pn     ||
 
             // convert pre/postfix to infix, e.g., `1-` -> `x->1-x` */
-            isPartialInfix(res, expectedType)           ||
+            isPartialInfix(res, expectedType)               ||
 
             // otherwise, try to solve inconsistent type
             paa != null                              &&
             (typeForInferencing() == null                             ||
-             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.feature())
+             typeForInferencing() != Types.t_ERROR &&
+             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.selfOrConstraint().feature())
              // !typeForInferencing().isFunctionType(res)                    -- original code
              // expectedType.isAssignableFrom(typeForInferencing()).no()     -- new code, does not work, unclear why!
-            ))
+            )))
           {
             l = applyPartially(res, context, expectedType);
           }
       }
     return l;
+  }
+
+
+ /**
+   * Check for ambiguity between partial application and a direct call if the
+   * target is a type {@code t}.
+   *
+   * Candidates for a direct call are the type features of {@code t} and, if
+   * {@code t} can be called without arguments, its inner features.
+   *
+   * Example: {@code "x" |> t.of} with
+   *
+   *   t is
+   *     type.of Unary t String => ...   # direct call
+   *     type.of(s String) t => ...      # partial application
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param expectedType the expected type, a function type for partial application
+   */
+  private void checkTypeFeaturePartialAmbiguity(Resolution res, Context context, AbstractType expectedType)
+  {
+    var paa = partiallyApplicableAlternative(res, context, expectedType);
+    var pt = _target == null ? null : _target.asParsedType();
+    var tt = pt == null ? null : pt.resolve(res, context, true);
+    var tf = tt != null && tt.isPlainType() ? tt.feature() : null;
+    if (paa != null && (paa._feature.isTypeFeature() || paa._feature.outer() == tf))
+      {
+
+        var n = _wasImplicitImmediateCall ? _originalArgCount : _actuals.size();
+        var fos = res._module.lookup(paa._feature.outer(), _name, this, false, false);
+        // inner features of the target type are candidates only if the target
+        // can be called without arguments, otherwise `t.f` cannot call inner `f`
+        if (tf != null && tf != paa._feature.outer() && tf.valueArguments().isEmpty())
+          {
+            fos.addAll(res._module.lookup(tf, _name, this, false, false));
+          }
+        // type features in the cotype of the target are candidates as well
+        if (tf != null && tf.hasCotype() && tf.cotype() != paa._feature.outer())
+          {
+            fos.addAll(res._module.lookup(tf.cotype(), _name, this, false, false));
+          }
+        var direct = FeatureAndOuter.filter(fos,
+                                            pos(),
+                                            FuzionConstants.OPERATION_CALL,
+                                            FeatureName.get(_name, n),
+                                            ff -> ff.valueArguments().size() == n);
+        if (direct != null && direct._feature != paa._feature)
+          {
+            AstErrors.partialApplicationAmbiguity(pos(), direct._feature, paa._feature);
+            clearPendingError();
+            setToErrorState();
+          }
+      }
   }
 
 
@@ -550,7 +611,7 @@ public class ParsedCall extends Call
     var n = t.arity(res);
     if (mustNotContainDeclarations("a partially applied function call", context.outerFeature()))
       {
-        _pendingError = null;
+        suspendPendingNotFound();
         List<Expr> pns = new List<>();
         for (var i = 0; i < n; i++)
           {
@@ -584,7 +645,6 @@ public class ParsedCall extends Call
               : /* v- ==> x->v-x */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
         _calledFeature = null;
-        _pendingError = null;
         var fn = new Function(pos(),
                               pns,
                               this)
@@ -619,7 +679,7 @@ public class ParsedCall extends Call
       {
         var g = NO_GENERICS;
         var a = new List<Expr>();
-        var ts = cf.typeArguments();
+        var ts = cf.explicitOrOpenTypeParameters();
         var tn = ts.size();
         var ti = 0;
         var vs = cf.valueArguments();  // NYI: must hand down to get the correct number!
@@ -664,8 +724,8 @@ types passed to `T`.  The actual types of `T` will always be inferred from the a
                 /*
     // tag::fuzion_rule_CALL_OPEN_TYPE_ARGS[]
 A xref:fuzion_call[call] to a xref:fuzion_feature[feature] that expects an xref:fuzion_opentypeparameter[open type parameter] must provide
-xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type paramaters] and all xref:fuzion_actual_value_argument[actual value arguments]
-expected by the called feature. For the non-open type paramaters, `_` may be used as a placeholder for a type inferred from the actual value arguments.
+xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type parameters] and all xref:fuzion_actual_value_argument[actual value arguments]
+expected by the called feature. For the non-open type parameters, `_` may be used as a placeholder for a type inferred from the actual value arguments.
     // end::fuzion_rule_CALL_OPEN_TYPE_ARGS[]
                 */
                 firstValueIndex = _actuals.size() - vn;  // number of value arguments is fixed, so all others are type parameters
@@ -675,17 +735,17 @@ expected by the called feature. For the non-open type paramaters, `_` may be use
                 /*
     // tag::fuzion_rule_CALL_NON_VARIADIC_ARGS[]
 A xref:fuzion_call[call] to a xref:fuzion_feature[feature] that expects no xref:fuzion_opentypeparameter[open type parameter] may either provide
-xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type paramater] and all xref:fuzion_actual_value_argument[actual value arguments]
+xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type parameter] and all xref:fuzion_actual_value_argument[actual value arguments]
 expected by the called feature, or, it may receive only xref:fuzion_actual_value_argument[actual value arguments] and infer the actual type parameter values from the
 static types of the actual value arguments. +
-A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual type paramaters] that shall be inferred from the xref:fuzion_actual_value_argument[actual value arguments].
+A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual type parameters] that shall be inferred from the xref:fuzion_actual_value_argument[actual value arguments].
     // end::fuzion_rule_CALL_NON_VARIADIC_ARGS[]
                 */
                 if (_actuals.size() == tn+vn)  // type and value args are present
                   {
                     firstValueIndex = tn;
                   }
-                else if (_actuals.size() == vn)  // value args are present, type args are inferred
+                else if (_actuals.size() == vn)  // value args are present, type parameters are inferred
                   {
                     firstValueIndex = 0;
                   }
@@ -706,9 +766,11 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             // only the last type parameter may be open
             if (CHECKS) check
               (ti >= tn-1 ||
-               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter    ,
+               ts.get(ti).kind() == AbstractFeature.Kind.ExplicitTypeParameter ||
+               ts.get(ti).kind() == AbstractFeature.Kind.FreeTypeParameter        ,
                ti != tn-1 ||
-               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
+               ts.get(ti).kind() == AbstractFeature.Kind.ExplicitTypeParameter ||
+               ts.get(ti).kind() == AbstractFeature.Kind.FreeTypeParameter     ||
                ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
 
             var t = ti < tn &&
@@ -739,6 +801,8 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             i++;
           }
         _generics = g;
+        _originalGenerics = g.map2(x -> x instanceof HasSourcePosition p ? p : null);
+        _splitOffGenerics = g.freeze();
         _actuals = a;
       }
   }

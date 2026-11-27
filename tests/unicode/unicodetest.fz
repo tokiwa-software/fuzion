@@ -32,12 +32,12 @@ unicodetest is
     s := if b
            "PASSED: "
          else
-           _ := set_exit_code 1
+           _ := Exit.env.set_exit_code 1
            "FAILED: "
     say (s + msg)
 
 
-  chck ("Hallo Welt".upper_case ≟ "HALLO WELT") "string to upper case"
-  chck ("Hallo Welt".lower_case ≟ "hallo welt") "string to lower case"
+  chck ("Hallo Welt".upper_case = "HALLO WELT") "string to upper case"
+  chck ("Hallo Welt".lower_case = "hallo welt") "string to lower case"
 
-  exit
+  Exit.env.exit

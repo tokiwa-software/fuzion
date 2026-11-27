@@ -103,7 +103,7 @@ public class Concurrency
         throw e.getCause();
       } finally
       {
-        if (!future.isCancelled() || !future.isDone())
+        if (!future.isCancelled() && !future.isDone())
           {
             future.cancel(true);
           }
