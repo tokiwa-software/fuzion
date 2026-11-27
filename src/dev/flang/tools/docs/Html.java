@@ -834,15 +834,7 @@ class Html extends ANY
       {
         return "";
       }
-    var line = af.pos().line() - 1;
-    var commentLines = new ArrayList<String>();
-
-    // NYI: OPTIMIZATION: use lexer to retrieve comments
-    while (line > 0 && af.pos()._sourceFile.line(line).matches("(?s)^\\s*#.*"))
-      {
-        commentLines.add(af.pos()._sourceFile.line(line));
-        line = line - 1;
-      }
+    var commentLines = commentLines(af);
 
     if (commentLines.stream().allMatch(l -> l.isBlank()))
       {
@@ -869,8 +861,6 @@ class Html extends ANY
         // say_err("Warning: No comment found for " + af.qualifiedNameHuman());
       }
 
-    Collections.reverse(commentLines);
-
     var result = Html.processComment(af.qualifiedNameHuman() + af.featureName().argCount() + "_", commentLines
       .stream()
       .map(l -> l.trim())
@@ -878,6 +868,44 @@ class Html extends ANY
         .replaceAll("^#", "")
         .replaceAll("^ ", ""))
       .collect(Collectors.joining(System.lineSeparator())));
+    return result;
+  }
+
+
+  /**
+   * Collect preceding comment lines.  For arguments, also
+   * include a comment immediately following the opening parenthesis, but stop
+   * there so that the enclosing feature's comment is not included.
+   *
+   * @param af the feature being documented
+   * @return the comment lines including their {@code #} markers, or an empty
+   *         list if none were found
+   */
+  static ArrayList<String> commentLines(AbstractFeature af)
+  {
+    var result = new ArrayList<String>();
+    var source = af.pos()._sourceFile;
+    var line = af.pos().line() - 1;
+
+    // NYI: OPTIMIZATION: use lexer to retrieve comments
+
+    while (line > 0 && source.line(line).matches("(?s)^\\s*#.*"))
+      {
+        result.add(source.line(line));
+        line--;
+      }
+
+    if (line > 0 && (af.isArgument() || af.isTypeParameter()))
+      {
+        var inline = Pattern.compile("(?s)^.*?\\(\\s*(#.*)$")
+          .matcher(source.line(line));
+        if (inline.matches())
+          {
+            result.add(inline.group(1));
+          }
+      }
+
+    Collections.reverse(result);
     return result;
   }
 
