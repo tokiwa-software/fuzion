@@ -896,14 +896,11 @@ public class GeneratingFUIR extends FUIR
        actualType != Types.t_ERROR);
 
     // NYI: BUG: test needed for: "Recursive value type is not allowed"
+    // NYI: CLEANUP: just use the result of  adjustOuter(outer, actualType) for
+    // checking if we have a recursive value type...
     checkIfRecursiveValueType(actualType, outer);
 
-    // normalize outer to be value in case t describes a field
-    // NYI: CLEANUP: ugly special handling.
-    // outers of fields are currently normalized to be values
-    // see also: Clazz.handDown
-    outer = actualType.feature().isField() ? outer.asValue() : outer;
-    var cl = new Clazz(this, outer, actualType, select);
+    var cl = new Clazz(this, adjustOuter(outer, actualType), select);
     var existing = _clazzesTM.get(cl);
     if (existing == null)
       {
@@ -912,6 +909,78 @@ public class GeneratingFUIR extends FUIR
     return existing == null
       ? cl
       : existing;
+  }
+
+
+  /**
+   * Adjust the outer of actualType to the given outer clazz `outer`
+   */
+  private AbstractType adjustOuter(Clazz outer, AbstractType actualType) {
+    // normalize outer to be value in case t describes a field
+    // NYI: CLEANUP: ugly special handling.
+    // outers of fields are currently normalized to be values
+    // see also: Clazz.handDown
+    outer = actualType.feature().isField() ? outer.asValue() : outer;
+    outer = normalizeOuter(actualType, outer);
+    actualType = outer != null
+      ? actualType.replaceGenericsAndOuter(actualType.generics(), outer._type)
+      : actualType;
+    return actualType;
+  }
+
+
+  /**
+   * Normalize an outer clazz for a given type. For a reference clazz that
+   * inherits from f, this will return the corresponding clazz derived from
+   * f. The idea is that, e.g., we do not need to distinguish const_string.length
+   * from (array u8).length.
+   *
+   * @param t the type of the newly created clazz
+   *
+   * @param outer the outer clazz that should be normalized for the newly
+   * created clazz
+   *
+   * @return the normalized version of outer.
+   */
+  private Clazz normalizeOuter(AbstractType t, Clazz outer)
+  {
+    var result = outer;
+    if (needsNormalization(t.feature(), outer))
+      {
+        if (CHECKS) check
+          // outers of fields are values anyway
+          (!t.feature().isField());
+
+        var f = t.feature().outer();
+        var t0 = f.selfType().asRef();
+        // we are dealing with a ref (`t0`) inside of a ref (`t0.outer()`)
+        // We have to use the outer-this type and use replaceThisType to find
+        // the correct t0.outer() within this clazz. see #5653 for an example
+        var t1 = t0.outer().isRef()
+          ? t0
+          : t0.replaceGenericsAndOuter(t0.generics(), outer._type.actualType(f.outer().thisType(false)));
+        result = clazz(f.handDownAndApply(t1, outer._type));
+        result._isNormalized = true;
+      }
+    return result;
+  }
+
+
+  /**
+   * Do we need to normalize outer for `f`
+   */
+  private boolean needsNormalization(AbstractFeature f, Clazz outer) {
+    return f != Types.f_ERROR &&
+        outer != null &&
+        // an outer clazz of value type is not normalized (except for
+        // universe, which was done already).
+        !outer.isValue() &&
+        // optimization: if feature() is already f, there is nothing to
+        // normalize anymore
+        outer.feature() != f.outer() &&
+        // does not need spezialization
+        // NYI: CLEANUP: add documentation why we do not specialize constructors
+        (f.isConstructor() || !f.hasOuterRef());
   }
 
 
