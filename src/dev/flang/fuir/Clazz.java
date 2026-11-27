@@ -1245,47 +1245,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Helper routine for compareTo: compare the outer classes.  If outer are refs
-   * for both clazzes, they can be considered the same as long as their outer
-   * classes (recursively) are the same. If they are values, they need to be
-   * exactly equal.
-   */
-  private int compareOuter(Clazz other)
-  {
-    var to = this ._outer;
-    var oo = other._outer;
-    int result = 0;
-    if (to != oo)
-      {
-        result =
-          to == null ? -1 :
-          oo == null ? +1 : 0;
-        if (result == 0)
-          {
-            if (to.isRef() && oo.isRef())
-              { // NYI: If outer is normalized for refs as described in the
-                // constructor, there should be no need for special handling of
-                // ref types here.
-                result = to._type.compareToIgnoreOuter(oo._type);
-                if (result == 0)
-                  {
-                    result = to.compareOuter(oo);
-                  }
-              }
-            else
-              {
-                result =
-                  to.isValue() && oo.isValue() ? to.compareTo(oo) :
-                  to.isRef() ? +1
-                             : -1;
-              }
-          }
-      }
-    return result;
-  }
-
-
-  /**
    * Compare this to other for creating unique clazzes.
    */
   @Override
@@ -1296,23 +1255,9 @@ class Clazz extends ANY implements Comparable<Clazz>
        this .getClass() == Clazz.class,
        other.getClass() == Clazz.class);
 
-    var result = compareToIgnoreOuter(other);
-    if (result == 0)
-      {
-        result = compareOuter(other);
-      }
-    return result;
-  }
-
-
-  /**
-   * Compare this to other ignoring outer.
-   */
-  private int compareToIgnoreOuter(Clazz other)
-  {
     var result =
       this._select < other._select ? -1 :
-      this._select > other._select ? +1 : this._type.compareToIgnoreOuter(other._type);
+      this._select > other._select ? +1 : this._type.compareTo(other._type);
     return result;
   }
 
