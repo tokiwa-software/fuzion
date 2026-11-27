@@ -157,10 +157,7 @@ public class ParsedCall extends Call
   }
 
 
-  /*
-   * Returns either result of asParsedType()
-   * or Types.t_UNDEFINED in case types name is '_'.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType asType()
   {
@@ -280,22 +277,7 @@ public class ParsedCall extends Call
   /*-------------------------------------------------------------------*/
 
 
-  /**
-   * if loadCalledFeature is about to fail, try if we can convert this call into
-   * a chain of boolean calls:
-   *
-   * check if we have a call of the form
-   *
-   * <pre>{@code a < b <= c}</pre>
-   *
-   * and convert it to
-   *
-   * <pre>{@code a < {tmp := b; tmp} && tmp <= c}</pre>
-   *
-   * @param res Resolution instance
-   *
-   * @param context the source code context where this Call is used
-   */
+  /** {@inheritDoc} */
   @Override
   protected void findChainedBooleans(Resolution res, Context context)
   {

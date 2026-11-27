@@ -73,16 +73,7 @@ public abstract class AbstractCurrent extends Expr
   }
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
+  /** {@inheritDoc} */
   @Override
   protected Expr visit(FeatureVisitor v, AbstractFeature outer)
   {

@@ -2527,10 +2527,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * For a type parameter, this gives the ResolvedParametricType instance
-   * corresponding to this type parameter.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType asParametricType()
   {
@@ -2541,13 +2538,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   }
 
 
-  /**
-   * After type resolution, resultType returns the result type of this
-   * feature using the formal generic argument.
-   *
-   * @return the result type, t_ERROR in case of an error.
-   * Never null.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType resultType()
   {

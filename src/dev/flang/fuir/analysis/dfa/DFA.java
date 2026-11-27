@@ -129,10 +129,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Called before each statement is processed. May be used to, e.g., produce
-     * tracing code for debugging or a comment.
-     */
+    /** {@inheritDoc} */
     @Override
     public void expressionHeader(int s)
     {
@@ -172,16 +169,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Perform an assignment of avalue to a field in tvalue. The type of tvalue
-     * might be dynamic (a reference). See FUIR.access*().
-     *
-     * @param s site of assignment
-     *
-     * @param tvalue the target instance
-     *
-     * @param avalue the new value to be assigned to the field.
-     */
+    /** {@inheritDoc} */
     @Override
     public void assign(int s, Val tvalue, Val avalue)
     {
@@ -623,9 +611,7 @@ public class DFA extends ANY
     }
 
 
-    /**
-     * Create a tagged value of type newcl from an untagged value.
-     */
+    /** {@inheritDoc} */
     @Override
     public Val tag(int s, Val value, int newcl, int tagNum)
     {

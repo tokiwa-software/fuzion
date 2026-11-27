@@ -109,9 +109,7 @@ public class Universe extends ExprWithPos
   }
 
 
-  /**
-   * Return this expression as an unresolved type.
-   */
+  /** {@inheritDoc} */
   @Override
   public UnresolvedType asParsedType()
   {

@@ -71,11 +71,7 @@ public class C extends ANY
   {
 
 
-    /**
-     * Join a List of RESULT from subsequent statements into a compound
-     * statement.  For a code generator, this could, e.g., join statements "a :=
-     * 3;" and "b(x);" into a block "{ a := 3; b(x); }".
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt sequence(List<CStmnt> l)
     {
@@ -83,10 +79,7 @@ public class C extends ANY
     }
 
 
-    /*
-     * Produce the unit type value.  This is used as a placeholder
-     * for the universe instance as well as for the instance 'unit'.
-     */
+    /** {@inheritDoc} */
     @Override
     public CExpr unitValue()
     {
@@ -134,19 +127,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Create code to assign value to a given field w/o dynamic binding.
-     *
-     * @param s site of the expression causing this assignment
-     *
-     * @param f clazz id of the assigned field
-     *
-     * @param tvalue the target instance
-     *
-     * @param val the new value to be assigned to the field.
-     *
-     * @return statement to perform the given access
-     */
+    /** {@inheritDoc} */
     @Override
     public CStmnt assignStatic(int s, int f, CExpr tvalue, CExpr val)
     {
@@ -192,9 +173,7 @@ public class C extends ANY
     }
 
 
-    /**
-     * Get the outer instance the given clazz is called on.
-     */
+    /** {@inheritDoc} */
     @Override
     public Pair<CExpr, CStmnt> outer(int s)
     {

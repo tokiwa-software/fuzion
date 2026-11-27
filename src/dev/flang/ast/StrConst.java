@@ -77,12 +77,7 @@ public class StrConst extends Constant
   }
 
 
-  /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType type()
   {

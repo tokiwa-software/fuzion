@@ -418,10 +418,7 @@ public class LibraryFeature extends FuirFeature
   }
 
 
-  /**
-   * For a type parameter, this gives the ResolvedParametricType instance
-   * corresponding to this type parameter.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType asParametricType()
   {

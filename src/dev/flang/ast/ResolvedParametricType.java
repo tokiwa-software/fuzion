@@ -100,11 +100,7 @@ class ResolvedParametricType extends ResolvedType
   }
 
 
-  /**
-   * traverse a type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
+  /** {@inheritDoc} */
   @Override
   void usedFeatures(Set<AbstractFeature> s)
   {

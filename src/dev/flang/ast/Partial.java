@@ -198,27 +198,7 @@ public class Partial extends AbstractLambda
   }
 
 
-  /**
-   * Special version of propagateExpectedType(res, outer, t) tries to infer the
-   * result type of a lambda.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   *
-   * @param inferResultType true if the result type of this lambda should be
-   * inferred.
-   *
-   * @param from for error output: if non-null, produces a String describing
-   * where the expected type came from.
-   *
-   * @return if inferResultType, the result type inferred from this lambda or
-   * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
-   * case of error, return Types.t_ERROR.
-   */
+  /** {@inheritDoc} */
   @Override
   AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {

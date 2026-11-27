@@ -86,11 +86,7 @@ public class FunctionReturnType extends ReturnType
   }
 
 
-  /**
-   * For a function, the return type.
-   *
-   * @return the function return type.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType functionReturnType(boolean allowIncomplete)
   {

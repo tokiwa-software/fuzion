@@ -671,9 +671,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * Check that this constant is in the range allowed for its type_.
-   */
+  /** {@inheritDoc} */
   @Override
   void checkRange()
   {
@@ -759,19 +757,7 @@ public class NumLiteral extends Constant
   }
 
 
-  /**
-   * Perform partial application for a NumLiteral. In particular, this converts
-   * a literal with a sign such as {@code -2} into a lambda of the form {@code x -> x - 2}.
-   *
-   * @see Expr#propagateExpectedTypeForPartial for details.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   */
+  /** {@inheritDoc} */
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {

@@ -373,9 +373,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     }
 
 
-    /**
-     * Add exception table that was found in the code.
-     */
+    /** {@inheritDoc} */
     @Override
     void addExceptionTable(Expr.TryCatch et)
     {

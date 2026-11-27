@@ -75,9 +75,7 @@ public abstract class LibraryType extends ResolvedType
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * Dummy visit() for Library types.
-   */
+  /** {@inheritDoc} */
   @Override
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {

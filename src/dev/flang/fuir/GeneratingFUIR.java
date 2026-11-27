@@ -1319,14 +1319,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /**
-   * Get the outer clazz of the given clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @return clazz id of cl's outer clazz, NO_CLAZZ if cl is universe or a value-less
-   * type.
-   */
+  /** {@inheritDoc} */
   @Override
   public int clazzOuterClazz(int cl)
   {
@@ -1580,14 +1573,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /**
-   * Get the id of the result field of a given clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @return id of cl's result field or NO_CLAZZ if f has no result field (NYI: or a
-   * result field that contains no data)
-   */
+  /** {@inheritDoc} */
   @Override
   public int clazzResultField(int cl)
   {
@@ -1907,11 +1893,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /**
-   * Get the id of the given special clazz.
-   *
-   * @param sc the special clazz we are looking for
-   */
+  /** {@inheritDoc} */
   @Override
   public int clazz(SpecialClazzes sc)
   {
@@ -2054,18 +2036,7 @@ public class GeneratingFUIR extends FUIR
 
 
 
-  /**
-   * Add entries of type ExprKind created from the given expression (and its
-   * nested expressions) to list l. pop the result in case dumpResult==true.
-   *
-   * @param stack the work stack for the nested expressions.
-   *
-   * @param l list of ExprKind that should be extended by s's expressions
-   *
-   * @param e a expression.
-   *
-   * @param dumpResult flag indicating that we are not interested in the result.
-   */
+  /** {@inheritDoc} */
   @Override
   protected void toStack(ArrayDeque<Runnable> stack, List<Object> l, Expr e, boolean dumpResult)
   {
@@ -2203,15 +2174,7 @@ public class GeneratingFUIR extends FUIR
   /*----------------------  type parameters  ---------------------*/
 
 
-  /**
-   * Get the id of an actual generic parameter of a given clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @param gix index of the generic parameter
-   *
-   * @return id of cl's actual generic parameter #gix
-   */
+  /** {@inheritDoc} */
   @Override
   public int clazzActualGeneric(int cl, int gix)
   {
@@ -2360,15 +2323,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /**
-   * For an instruction of type ExprKind.Tag at site s, return the type of the
-   * original value that will be tagged.
-   *
-   * @param s a code site for an Env instruction.
-   *
-   * @return the new choice type, i.e., for {@code o option i32 := 42}, this is
-   * {@code option i32}.
-   */
+  /** {@inheritDoc} */
   @Override
   public int tagNewClazz(int s)
   {
@@ -3004,9 +2959,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /**
-   * @return If the expression has only been found to result in void.
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean alwaysResultsInVoid(int s)
   {
