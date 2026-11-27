@@ -1,0 +1,77 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue8463
+#
+# -----------------------------------------------------------------------
+
+
+# test inheriting from features with open type parameters
+
+reg_issue8463 is
+
+  # the original examples from #8463
+
+  test1 : tuple is
+
+  test2 : tuple 3 is
+
+  say test1
+  say test2
+
+  # some more tests
+
+  test3 : tuple "hi" 3.14 unit (num.complex 2 3) is
+
+  say test3
+
+  test1_1 : test1 is
+  test2_1 : test2 is
+  test3_1 : test3 is
+
+  say test1_1
+  say test2_1
+  say test3_1
+
+  # some test using Function where the inheritance provides only actual type parameters, no value
+  # arguemnts
+
+  testA1 : Function i64 unit (option void) is
+
+     public redef call(a unit, b option void) i64 =>
+       r := "$a $b".byte_count
+       say "$a $b $r"
+       r
+
+  say testA1
+  say <| testA1.call unit nil
+
+  # An another test with value arguments, but the open type parameter coming from outer features
+
+  outer(A... : Any) is
+    inner(v A...) is
+      show => say "types: $A values $v"
+
+# NYI: DOES NOT WORK YET:
+
+#  testB1 : (outer String u16).inner "hi" 12345 is
+
+#    show
+
+##  say testB1
