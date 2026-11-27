@@ -62,3 +62,17 @@ ctrie_test is
   say all_items.items.count # 101
 
   say half_of_items.items.count # 50
+
+
+  persistent =>
+    pm := (lock_free.Map i64 String).empty .as_persistent_map
+    pm2 := pm.put 1 "eins"
+    pm3 := pm2.put 2 "zwei"
+    pm4 := pm.put 3 "drei"
+
+    say pm
+    say pm2
+    say pm3
+    say pm4
+
+  persistent
