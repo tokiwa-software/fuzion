@@ -852,7 +852,6 @@ public class GeneratingFUIR extends FUIR
     _specialClazzes[SpecialClazzes.c_NOT_FOUND.ordinal()] = null;
     _specialClazzes[SpecialClazzes.c_universe .ordinal()] = universe;
     _inh = new List<>();
-    _clazzesForTypes = new TreeMap<>();
 
     _mainClazz = clazz(mir.main().selfType())._id;
     doesNeedCode(_mainClazz);
