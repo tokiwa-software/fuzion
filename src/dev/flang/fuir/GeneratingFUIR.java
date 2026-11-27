@@ -805,6 +805,7 @@ public class GeneratingFUIR extends FUIR
     _siteClazzCache = new IntMap<>();
     _accessedClazzes = new IntMap<>();
     _accessedTarget = new IntMap<>();
+    _clazzesForTypes = new TreeMap<>();
     _redefinitionLookup = rl;
     _clazzes = new List<>();
     if (CACHE_RESULT_CLAZZ)
@@ -835,18 +836,17 @@ public class GeneratingFUIR extends FUIR
           }
       }
 
-    var universe  = newClazz(null, mir.universe().selfType(), FuzionConstants.NO_SELECT);
-    _universe  = universe._id;
+    var universe = clazz(mir.universe().selfType());
+    _universe = universe._id;
     doesNeedCode(_universe);
 
     _specialClazzes = new Clazz[SpecialClazzes.values().length];
     _specialClazzes[SpecialClazzes.c_NOT_FOUND.ordinal()] = null;
     _specialClazzes[SpecialClazzes.c_universe .ordinal()] = universe;
 
-    _mainClazz = newClazz(mir.main().selfType())._id;
+    _mainClazz = clazz(mir.main().selfType())._id;
     doesNeedCode(_mainClazz);
     _inh = new List<>();
-    _clazzesForTypes = new TreeMap<>();
   }
 
 
@@ -885,17 +885,7 @@ public class GeneratingFUIR extends FUIR
 
 
 
-  Clazz newClazz(AbstractType actualType)
-  {
-    if (PRECONDITIONS) require
-      (!actualType.dependsOnGenericsNoOuter(),
-       !actualType.containsThisType(),
-       actualType != Types.t_ERROR);
-
-    var o = actualType.outer();
-    return newClazz(o == null ? null : newClazz(o), actualType, FuzionConstants.NO_SELECT);
-  }
-  Clazz newClazz(Clazz outerR, AbstractType actualType, int select)
+  Clazz clazz(Clazz outer, AbstractType actualType, int select)
   {
     if (PRECONDITIONS) require
       (!actualType.dependsOnGenericsNoOuter(),
@@ -903,130 +893,147 @@ public class GeneratingFUIR extends FUIR
        actualType.feature().resultType().isOpenGeneric() == (select >= 0),
        actualType != Types.t_ERROR);
 
-    Clazz result;
-
-    var outer = outerR;
-    Clazz o = outerR;
-    var ao = actualType.feature().outer();
-    while (o != null)
-      {
-        if (actualType.isRef() && ao != null && ao.inheritsFrom(o.feature()) && outer.isValue())
-          {
-            outer = o;  // short-circuit outer relation if suitable outer was found
-          }
-
-        if (o._type.compareTo(actualType) == 0 &&
-            // example where the following logic is relevant:
-            // `((Unary i32 i32).compose i32).#fun`
-            // here `compose i32` is not a constructor but a normal routine.
-            // `compose i32` does not define a type. Thus it will not lead
-            // to a recursive value type.
-            actualType.feature().definesType() &&
-            actualType != Types.t_ERROR &&
-            // a recursive outer-relation
-
-            // This is a little ugly: we do not want outer to be a value
-            // type in the source code (see tests/inheritance_negative for
-            // reasons why), but we are fine if outer is an 'artificial'
-            // value type that is created by Clazz.asValue(), since these
-            // will never be instantiated at runtime but are here only for
-            // the convenience of the backend.
-            //
-            // So instead of testing !o.isRef() we use
-            // !o.feature().isThisRef().
-            !o.feature().isRef() &&
-            !o.feature().isIntrinsic())
-          {  // but a recursive chain of value types is not permitted
-
-            // NYI: recursive chain of value types should be detected during
-            // types checking phase!
-            StringBuilder chain = new StringBuilder();
-            chain.append("1: "+actualType+" at "+actualType.declarationPos().show()+"\n");
-            int i = 2;
-            Clazz c = outer;
-            while (c._type.compareTo(actualType) != 0)
-              {
-                chain.append(""+i+": "+c._type+" at "+c._type.declarationPos().show()+"\n");
-                c = c._outer;
-                i++;
-              }
-            chain.append(""+i+": "+c._type+" at "+c._type.declarationPos().show()+"\n");
-            Errors.error(actualType.declarationPos(),
-                         "Recursive value type is not allowed",
-                         "Value type " + actualType + " equals type of outer feature.\n"+
-                         "The chain of outer types that lead to this recursion is:\n"+
-                         chain + "\n" +
-                         "To solve this, you could add a 'ref' after the arguments list at "+o.feature().pos().show());
-          }
-        o = o._outer;
-      }
+    // NYI: BUG: test needed for: "Recursive value type is not allowed"
+    checkIfRecursiveValueType(actualType, outer);
 
     // normalize outer to be value in case t describes a field
     // NYI: CLEANUP: ugly special handling.
     // outers of fields are currently normalized to be values
     // see also: Clazz.handDown
-    outerR = actualType.feature().isField() ? outerR.asValue() : outerR;
-    var cl = new Clazz(this, outerR, actualType, select);
+    outer = actualType.feature().isField() ? outer.asValue() : outer;
+    var cl = new Clazz(this, outer, actualType, select);
     var existing = _clazzesTM.get(cl);
-    if (existing != null)
+    if (existing == null)
       {
-        result = existing;
+        init(cl);
       }
-    else
+    return existing == null
+      ? cl
+      : existing;
+  }
+
+
+  /**
+   * Initialize the clazz since it was not already found in _clazzesTM
+   */
+  private void init(Clazz cl) {
+    if (CHECKS) check
+      (!_lookupDone);
+
+    var fuirId = CLAZZ_BASE + _clazzes.size();
+    _clazzes.add(cl);
+
+    if (CHECKS) check
+      (_clazzes.get(clazzId2num(fuirId)) == cl);
+
+    if (CACHE_RESULT_CLAZZ && _clazzes.size() > _resultClazzes.length)
       {
-        if (CHECKS) check
-          (!_lookupDone);
+        var rc = _resultClazzes;
+        _resultClazzes = new int[rc.length * 3];
+        Arrays.fill(_resultClazzes, NO_CLAZZ);
+        System.arraycopy(rc, 0, _resultClazzes, 0, rc.length);
+      }
+    if (CACHE_RESULT_CLAZZ && _clazzes.size() > _argClazzes.length)
+      {
+        var ac = _argClazzes;
+        _argClazzes = new int[ac.length * 3][];
+        System.arraycopy(ac, 0, _argClazzes, 0, ac.length);
+      }
+    _clazzesTM.put(cl, cl);
 
-        result = cl;
-        var fuirId = CLAZZ_BASE + _clazzes.size();
-        _clazzes.add(cl);
+    if (cl._outer != null)
+      {
+        cl._outer.addInner(cl);
+      }
 
-        if (CHECKS) check
-          (_clazzes.get(clazzId2num(fuirId)) == cl);
-
-        if (CACHE_RESULT_CLAZZ && _clazzes.size() > _resultClazzes.length)
+    if (cl.isRef() == cl.feature().isRef())  // not a boxed or explicit value clazz
+      {
+        var sc = _specialFeatures.get(cl.feature());
+        if (sc != null)
           {
-            var rc = _resultClazzes;
-            _resultClazzes = new int[rc.length * 3];
-            Arrays.fill(_resultClazzes, NO_CLAZZ);
-            System.arraycopy(rc, 0, _resultClazzes, 0, rc.length);
+            if (CHECKS) check
+              (_specialClazzes[sc.ordinal()] == null);
+
+            _specialClazzes[sc.ordinal()] = cl;
+            cl._specialClazzId = sc;
           }
-        if (CACHE_RESULT_CLAZZ && _clazzes.size() > _argClazzes.length)
-          {
-            var ac = _argClazzes;
-            _argClazzes = new int[ac.length * 3][];
-            System.arraycopy(ac, 0, _argClazzes, 0, ac.length);
-          }
-        _clazzesTM.put(cl, cl);
+      }
 
-        if (outerR != null)
-          {
-            outerR.addInner(result);
-          }
+    if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
+    cl.init(fuirId);
 
-        if (cl.isRef() == cl.feature().isRef())  // not a boxed or explicit value clazz
+    cl.registerAsHeir();
+
+    // backends require the value variant for all ref clazzes, so we make
+    // sure we have the value clazz as well:
+    var ignore = clazzAsValue(cl._id);
+  }
+
+
+  /**
+   * check if actualType+outer would result in a recursive value type
+   */
+  private void checkIfRecursiveValueType(AbstractType actualType, Clazz outer)
+  {
+    if (actualType.feature().isConstructor())
+      {
+        var curOuter = outer;
+        Clazz c = outer;
+        var actualOuter = actualType.feature().outer();
+
+        while (c != null)
           {
-            var sc = _specialFeatures.get(cl.feature());
-            if (sc != null)
+            if (actualType.isRef() && actualOuter != null && actualOuter.inheritsFrom(c.feature()) && curOuter.isValue())
               {
-                if (CHECKS) check
-                  (_specialClazzes[sc.ordinal()] == null);
-
-                _specialClazzes[sc.ordinal()] = cl;
-                cl._specialClazzId = sc;
+                curOuter = c;  // short-circuit outer relation if suitable outer was found
               }
+
+            if (c._type.compareTo(actualType) == 0 &&
+                // a recursive outer-relation
+
+                // This is a little ugly: we do not want outer to be a value
+                // type in the source code (see tests/inheritance_negative for
+                // reasons why), but we are fine if outer is an 'artificial'
+                // value type that is created by Clazz.asValue(), since these
+                // will never be instantiated at runtime but are here only for
+                // the convenience of the backend.
+                //
+                // So instead of testing !o.isRef() we use
+                // !o.feature().isThisRef().
+                !c.feature().isRef())
+              {  // but a recursive chain of value types is not permitted
+                recursiveValueError(actualType, curOuter._type, c.feature());
+              }
+            c = c._outer;
           }
-
-        if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
-        cl.init(fuirId);
-
-        result.registerAsHeir();
-
-        // backends require the value variant for all ref clazzes, so we make
-        // sure we have the value clazz as well:
-        var ignore = clazzAsValue(result._id);
       }
-    return result;
+  }
+
+
+  /**
+   * Show "Recursive value type is not allowed" error
+   */
+  private void recursiveValueError(AbstractType actualType, AbstractType outer, AbstractFeature o)
+  {
+    // NYI: UNDER DEVELOPMENT:recursive chain of value types should be detected during
+    // types checking phase!
+    StringBuilder chain = new StringBuilder();
+    chain.append("1: "+actualType+" at "+actualType.declarationPos().show()+"\n");
+    int i = 2;
+    var c = outer;
+    while (c.compareTo(actualType) != 0)
+      {
+        chain.append(""+i+": "+c+" at "+c.declarationPos().show()+"\n");
+        c = c.outer();
+        i++;
+      }
+    chain.append(""+i+": "+c+" at "+c.declarationPos().show()+"\n");
+    Errors.error(actualType.declarationPos(),
+                  "Recursive value type is not allowed",
+                  "Value type " + actualType + " equals type of outer feature.\n"+
+                  "The chain of outer types that lead to this recursion is:\n"+
+                  chain + "\n" +
+                  "To solve this, you could add a 'ref' after the arguments list at " + o.pos().show());
   }
 
 
@@ -1174,7 +1181,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return
    */
-  Clazz type2clazz(AbstractType thiz)
+  Clazz clazz(AbstractType thiz)
   {
     if (PRECONDITIONS) require
       (Errors.any() || !thiz.dependsOnGenerics(),
@@ -1184,8 +1191,8 @@ public class GeneratingFUIR extends FUIR
     if (result == null)
       {
         var ot = thiz.outer();
-        var oc = ot != null ? type2clazz(ot) : null;
-        result = newClazz(oc, thiz, FuzionConstants.NO_SELECT);
+        var oc = ot != null ? clazz(ot) : null;
+        result = clazz(oc, thiz, FuzionConstants.NO_SELECT);
         _clazzesForTypes.put(thiz, result);
       }
 
@@ -1895,10 +1902,8 @@ public class GeneratingFUIR extends FUIR
     var result = _specialClazzes[sc.ordinal()];
     if (result == null && !_lookupDone)
       {
-        var o = clazz(sc._outer);
-        var oc = clazz(o);
         var f = sc._getFeature.get();
-        result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
+        result = clazz(f.selfType());
         if (CHECKS) check
           (f.isRef() == (result.isRef()));
         _specialClazzes[sc.ordinal()] = result;
