@@ -500,7 +500,7 @@ public class Function extends AbstractLambda
    * @param tt the target type of the lambda or any outer, can be a this type as in #6044
    *
    * @return the code to create the outer instances of {@code null} if outer is
-   * the unverse.
+   * the universe.
    */
   private Expr targetCalls(Resolution res, Context context, AbstractType tt)
   {
@@ -508,13 +508,13 @@ public class Function extends AbstractLambda
       {
         case TypeKind.ThisType -> new Current(pos(), tt.feature());
         case TypeKind.ParametricType -> {
-          AstErrors.lamdaOuterMustNotBeTypeParameter(pos(), tt);
+          AstErrors.lambdaOuterMustNotBeTypeParameter(pos(), tt);
           yield Call.ERROR;
         }
         default -> {
           if (!tt.feature().valueArguments().isEmpty())
             {
-              AstErrors.lamdaOuterMustNotHaveArgs(pos(), tt);
+              AstErrors.lambdaOuterMustNotHaveArgs(pos(), tt);
               yield Call.ERROR;
             }
           else
@@ -637,7 +637,7 @@ public class Function extends AbstractLambda
             // `()->nil` if this is supposed to result in, e.g., option.
             //
             // So we create a Runnable to do this that is to be called when the
-            // going get's tough during a call to `type()` if we still have
+            // going gets tough during a call to `type()` if we still have
             // nothing to offer.
             _resultTypeLastResort = ()->
               {

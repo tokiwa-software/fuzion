@@ -21,10 +21,9 @@
 #
 # -----------------------------------------------------------------------
 
-# tests free type (A) in contraint of free type (S)
+# tests free type (A) in constraint of free type (S)
 
 sum_(l S : Sequence (A : numeric))
   => l.reduce A.zero (+)
 
 [1,2,3] |> sum_ |> say
-

@@ -41,7 +41,7 @@ reg_issue8278 =>
 
     c.bb
 
-  yap "simplfied: expected `a`, got: "
+  yap "simplified: expected `a`, got: "
   simplified
 
   # the original version from issue #8278 using

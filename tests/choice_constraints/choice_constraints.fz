@@ -25,7 +25,7 @@ choice_constraints =>
 
 
   /*
-   * match on a constrainted arg
+   * match on a constrained arg
    */
 
   a(T : option String, t T) =>
@@ -37,7 +37,7 @@ choice_constraints =>
   a (option String) "hello"
 
   /*
-   * return a constrainted arg
+   * return a constrained arg
    */
 
   b(T : option String, seq Sequence T) T =>
@@ -47,7 +47,7 @@ choice_constraints =>
 
 
   /*
-   * match on returned constrainted type
+   * match on returned constrained type
    */
 
   match b (option String) [(id (option String) nil)]

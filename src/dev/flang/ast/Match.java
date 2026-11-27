@@ -65,7 +65,7 @@ public class Match extends AbstractMatch
 
 
   /**
-   * Static type of this match or null if none. Set by propgateExpectedType.
+   * Static type of this match or null if none. Set by propagateExpectedType.
    */
   private AbstractType _type;
 

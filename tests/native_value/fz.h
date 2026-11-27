@@ -70,7 +70,7 @@ int fzE_get_peer_address(int sockfd, void * buf);
 
 // get the peer's port
 // result is the port number
-// might return useless infomrmation when called on udp socket
+// might return useless information when called on udp socket
 unsigned short fzE_get_peer_port(int sockfd);
 
 // unmap an address that was previously mapped by fzE_mmap
@@ -79,20 +79,20 @@ int fzE_munmap(void * mapped_address, const int file_size);
 
 /**
  * Perform bitwise comparison of two float values. This is used by
- * concur.atmic.compare_and_swap/set to compare floats. In particular, this
- * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * concur.atomic.compare_and_swap/set to compare floats. In particular, this
+ * results in inequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
  * @param f1, f2 two float values
  *
- * @return true iff f1 and f2 are represented in memory by the same bit patternsx.
+ * @return true iff f1 and f2 are represented in memory by the same bit patterns.
  */
 bool fzE_bitwise_compare_float(float f1, float f2);
 
 /**
  * Perform bitwise comparison of two double values. This is used by
- * concur.atmic.compare_and_swap/set to compare floats. In particular, this
- * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * concur.atomic.compare_and_swap/set to compare doubles. In particular, this
+ * results in inequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
  * @param d1, d2 two double values
@@ -107,7 +107,7 @@ bool fzE_bitwise_compare_double(double d1, double d2);
 int fzE_rm(char * path);
 
 /**
- * Run plattform specific initialisation code
+ * Run platform-specific initialisation code
  */
 void fzE_init(void);
 

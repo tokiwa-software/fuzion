@@ -494,7 +494,7 @@ Fuzion input uses UTF8 encoding version {UNICODE_VERSION} from {UNICODE_SOURCE}[
    * @param sz the byte size of cp in the UTF-8 encoding in the source code, in
    * the range 1..4.
    *
-   * @return a combination of cp ans sz such that
+   * @return a combination of cp and sz such that
    * cp==codePointFromCpAndSize(result) and sz==sizeFromCpAndSize(result).
    */
   private int makeCodePointWithSize(int cp,

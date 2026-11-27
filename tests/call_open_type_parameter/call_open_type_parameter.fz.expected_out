@@ -1,21 +1,21 @@
 ----
 
-case1: expecing 'i32 unit f64' and `...#Open_Types<n>`
+case1: expecting 'i32 unit f64' and `...#Open_Types<n>`
 [i32, unit, f64]
 (call_open_type_parameter.case1.x i32 unit f64)._
 ----
 
-case2: expecing 'i32 unit f64' and `...#Open_Types<n>`
+case2: expecting 'i32 unit f64' and `...#Open_Types<n>`
 [i32, unit, f64]
 (call_open_type_parameter.case2.x i32 unit f64)._
 ----
 
-case3: expecing 'u16'' and `Type of 'Type`
+case3: expecting 'u16' and `Type`
 u16
 Type
 ----
 
-case4: expecing 3 numerics and 3 strings
+case4: expecting 4 numerics and 3 strings
 4 numeric and 3 String types
 ----
 

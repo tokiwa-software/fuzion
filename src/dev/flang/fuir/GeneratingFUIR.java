@@ -203,7 +203,7 @@ public class GeneratingFUIR extends FUIR
                  @Override public AbstractFeature    calledFeature()        { return currentClazz.feature().outerRef(); }
                  @Override public AbstractType       type()                 { return currentClazz.feature().outerRef().resultType(); }
                };
-             var featureWithOpenTypeParamter = new AbstractCall()  // e.g. tuple
+             var featureWithOpenTypeParameter = new AbstractCall() // e.g. tuple
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
                  @Override public Expr               target()               { return openTypeInstance; }
@@ -213,7 +213,7 @@ public class GeneratingFUIR extends FUIR
              var field = new AbstractCall()                        // e.g. tuple.values.3
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
-                 @Override public Expr               target()               { return featureWithOpenTypeParamter; }
+                 @Override public Expr               target()               { return featureWithOpenTypeParameter; }
                  @Override public AbstractFeature    calledFeature()        { return f.feature(); }
                  @Override public int                select()               { return f._select; }
                  @Override public AbstractType       type()                 { return t; }
@@ -256,7 +256,7 @@ public class GeneratingFUIR extends FUIR
                  @Override public AbstractFeature    calledFeature()        { return currentClazz.feature().outerRef(); }
                  @Override public AbstractType       type()                 { return currentClazz.feature().outerRef().resultType(); }
                };
-             var featureWithOpenTypeParamter = new AbstractCall()  // e.g. tuple
+             var featureWithOpenTypeParameter = new AbstractCall() // e.g. tuple
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
                  @Override public Expr               target()               { return openTypeInstance; }
@@ -266,12 +266,12 @@ public class GeneratingFUIR extends FUIR
              var field = new AbstractCall()                        // e.g. tuple.values.3
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
-                 @Override public Expr               target()               { return featureWithOpenTypeParamter; }
+                 @Override public Expr               target()               { return featureWithOpenTypeParameter; }
                  @Override public AbstractFeature    calledFeature()        { return f.feature(); }
                  @Override public int                select()               { return f._select; }
                  @Override public AbstractType       type()                 { return t; }
                };
-             var other_featureWithOpenTypeParamter = new AbstractCall()  // e.g. tuple from other.outer
+             var other_featureWithOpenTypeParameter = new AbstractCall() // e.g. tuple from other.outer
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
                  @Override public Expr               target()               { return other; }
@@ -281,7 +281,7 @@ public class GeneratingFUIR extends FUIR
              var other_field = new AbstractCall()                  // e.g. other.outer.values.3
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
-                 @Override public Expr               target()               { return other_featureWithOpenTypeParamter; }
+                 @Override public Expr               target()               { return other_featureWithOpenTypeParameter; }
                  @Override public AbstractFeature    calledFeature()        { return f.feature(); }
                  @Override public int                select()               { return f._select; }
                  @Override public AbstractType       type()                 { return t; }
@@ -305,7 +305,7 @@ public class GeneratingFUIR extends FUIR
        (call, currentClazz, fuir) ->
        {
          if (CHECKS) check
-           (currentClazz.feature() == Types.resolved.f_Open_Types_type_foldf);  // make sure noone tries to call this in a different context
+           (currentClazz.feature() == Types.resolved.f_Open_Types_type_foldf);  // make sure no one tries to call this in a different context
 
          var openTypesFeature          = currentClazz._outer.feature();         // the actual outer instance of (xyz T U O...).#Open_Types<n>
          var featWithOpenTypeParameter = openTypesFeature.outer();              // the feature with open type parameter: `xyz(T, U : Any, O... : Any)`
@@ -322,7 +322,7 @@ public class GeneratingFUIR extends FUIR
        (call, currentClazz, fuir) ->
        {
          if (CHECKS) check
-           (currentClazz.feature() == Types.resolved.f_choice_apply); // make sure noone tries to call this in a different context
+           (currentClazz.feature() == Types.resolved.f_choice_apply); // make sure no one tries to call this in a different context
 
          var tr = currentClazz.actualTypeParameters()[0]; // result type
          var tf = currentClazz.actualTypeParameters()[1]; // function type
@@ -433,7 +433,7 @@ public class GeneratingFUIR extends FUIR
        (call, currentClazz, fuir) ->
        {
          if (CHECKS) check
-           (currentClazz.feature() == Types.resolved.f_choice_combine); // make sure noone tries to call this in a different context
+           (currentClazz.feature() == Types.resolved.f_choice_combine); // make sure no one tries to call this in a different context
 
          var tr = currentClazz.actualTypeParameters()[0]; // result type
          var tf = currentClazz.actualTypeParameters()[1]; // function type
@@ -623,7 +623,7 @@ public class GeneratingFUIR extends FUIR
          fuir._clazzesWhoseCodeDependsOnUsedEffectTypes.add(currentClazz);
 
          if (CHECKS) check
-           (currentClazz.feature() == Types.resolved.f_effect_types_type_foldf);// make sure noone tries to call this in a different context
+           (currentClazz.feature() == Types.resolved.f_effect_types_type_foldf);// make sure no one tries to call this in a different context
 
          return codeForTypeFold(call,
                                 currentClazz,
@@ -771,7 +771,7 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For recording which sites and code where used by DFA.
+   * For recording which sites and code were used by DFA.
    * Used when serializing the FUIR.
    *
    * NYI: CLEANUP: should we remove this?
@@ -2570,7 +2570,7 @@ public class GeneratingFUIR extends FUIR
             // NYI: CLEANUP: need to detect pre condition feature properly!
              && outerClazz.feature().featureName().isInternal())
               {
-                FuirErrors.unmetTypeContraint(c.pos(), tclazz._type.generics().get(0), T);
+                FuirErrors.unmetTypeConstraint(c.pos(), tclazz._type.generics().get(0), T);
               }
             cf = T._type.constraintSatisfiedBy(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true

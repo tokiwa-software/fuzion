@@ -73,7 +73,7 @@ public composition is
   #
   # This is not representable in Fuzion, we would need arguments with generic arguments
   # here.  Using pseudo-syntax ((T,U : Any) <type using T,U>) to denote a type that is
-  # itself type parameteric...:
+  # itself type parametric...:
   #
   # public M(f ((T,U : Any) T -> U)) ((V,W : Any) V->W) => f f
   #

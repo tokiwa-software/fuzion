@@ -45,7 +45,7 @@ reg_issue7791_type_infer_from_actual_type_par =>
   f4(T : Any, S : Sequence T, O : option T) => say "f4: $T"
   f4 _ (array u64) (option u64)
 
-  # an interesting case that occured applying this to `list.map_to_list`:
+  # an interesting case that occurred applying this to `list.map_to_list`:
 
   # recursive call requiring `B` to be inferred from `F`'s constraint `A -> B`:
   list.m2la(B : Any, F : A -> B, f F) list B =>

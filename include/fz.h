@@ -350,20 +350,20 @@ int fzE_munmap(void * mapped_address, const int file_size);
 
 /**
  * Perform bitwise comparison of two float values. This is used by
- * concur.atmic.compare_and_swap/set to compare floats. In particular, this
- * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * concur.atomic.compare_and_swap/set to compare floats. In particular, this
+ * results in inequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
  * @param f1, f2 two float values
  *
- * @return true iff f1 and f2 are represented in memory by the same bit patternsx.
+ * @return true iff f1 and f2 are represented in memory by the same bit patterns.
  */
 bool fzE_bitwise_compare_float(float f1, float f2);
 
 /**
  * Perform bitwise comparison of two double values. This is used by
- * concur.atmic.compare_and_swap/set to compare floats. In particular, this
- * results is unequality of +0 and -0 and equality of NaN unless undefined bits
+ * concur.atomic.compare_and_swap/set to compare doubles. In particular, this
+ * results in inequality of +0 and -0 and equality of NaN unless undefined bits
  * differ, etc.
  *
  * @param d1, d2 two double values
@@ -407,7 +407,7 @@ int fzE_stat(const char *pathname, int64_t * metadata);
 int fzE_lstat(const char *pathname, int64_t * metadata);
 
 /**
- * Run plattform specific initialisation code
+ * Run platform-specific initialisation code
  */
 void fzE_init(void);
 
@@ -779,10 +779,10 @@ void    fzE_mtx_destroy  (void * mtx);
  * @param clock the clock to be used:
  *
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
- *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds or when system time is changed)
  *
  * NYI: support for other values defined in
- * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ * /usr/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
  *
  * @return NULL on error or pointer to condition
  *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.

@@ -1393,7 +1393,7 @@ should be avoided as much as possible.
    *
    * @param cl id of clazz to generate code for
    *
-   * @return the number of slotes used for local vars
+   * @return the number of slots used for local vars
    */
   int numLocals(int cl)
   {

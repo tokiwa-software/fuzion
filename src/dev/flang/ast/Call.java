@@ -84,8 +84,8 @@ public class Call extends AbstractCall
     AbstractFeature _targetFeature;
 
     /**
-     * FeatureNmae that was searched for when this pending error was created.  This is stored here
-     * since the name and argcount may change for partial applicaiton ("prefix +",0 may become
+     * FeatureName that was searched for when this pending error was created.  This is stored here
+     * since the name and argcount may change for partial application ("prefix +",0 may become
      * "infix +",1).
      */
     FeatureName _calledName;
@@ -261,7 +261,7 @@ public class Call extends AbstractCall
 
 
   /**
-   *  Set actual argumment at given index to actual unless `this.isDefunct` or
+   *  Set actual argument at given index to actual unless `this.isDefunct` or
    *  `argnum` is out of range due to previous errors.
    *
    * @param argnum the index of the actual to replace
@@ -922,7 +922,7 @@ public class Call extends AbstractCall
    * inferred yet) or if the call is unqualified, i.e., we have to search for target in the outer
    * context.
    *
-   * @param mayBeSpeciaWrtArgs if nothing found try an implicit call `f()` that expand to
+   * @param mayBeSpecialWrtArgs if nothing found try an implicit call `f()` that expands to
    * `f.call()`.
    *
    * @return the matching FeatureAndOuter or null if none was found
@@ -931,7 +931,7 @@ public class Call extends AbstractCall
                                                   Context context,
                                                   AbstractFeature target,
                                                   AbstractType targetType,
-                                                  boolean mayBeSpeciaWrtArgs)
+                                                  boolean mayBeSpecialWrtArgs)
   {
     var fos_fo = findOnTarget
       (res, target,
@@ -942,7 +942,7 @@ public class Call extends AbstractCall
 
     var fos = fos_fo.v0();
     var fo = fos_fo.v1();
-    if (fo == null && mayBeSpeciaWrtArgs)
+    if (fo == null && mayBeSpecialWrtArgs)
       { // handle implicit calls `f()` that expand to `f.call()`:
         fo =
           FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, FeatureName.get(_name, 0), ff->false);
@@ -953,7 +953,7 @@ public class Call extends AbstractCall
 
   /**
    * record a pending error for this call.  Do not overwrite an existing
-   * error. If there is an exsiting suspended PendingNotFound and `r instanceof
+   * error. If there is an existing suspended PendingNotFound and `r instanceof
    * PendingNotFound`, unsuspend the existing one.
    */
   public void setPendingError(Runnable r)
@@ -1189,7 +1189,7 @@ public class Call extends AbstractCall
    *
    *   X.Y.Z.this.infix  ⨁ a b     -- or --
    *   X.Y.Z.this.prefix ⨁ a       -- or --
-   *   X.Y.Z.this.postix ⨁ a       ,
+   *   X.Y.Z.this.postfix ⨁ a      ,
    *
    * respectively.  This permits the introduction of binary or unary operators
    * within any feature, e.g., within unit type features that can be inherited
@@ -2273,7 +2273,7 @@ public class Call extends AbstractCall
                                 setActual(argnum, actual);
                                 actualType = typeFromActual(res, context, actual, false);
                                 if (actualType != null && !c.constraintSatisfiedBy(actualType))
-                                  { // in case actual is not assignabnle, not a lambda or partially applied call,
+                                  { // in case actual is not assignable, not a lambda or partially applied call,
                                     // ignore this for type inference to avoid a bigger mess for code like
                                     //
                                     //    x := [0,1,2].map 42

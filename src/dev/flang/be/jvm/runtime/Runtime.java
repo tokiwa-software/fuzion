@@ -458,7 +458,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper for instrinsic for {@code effect.instate_at_singularity0} to instate
+   * Helper for intrinsic for {@code effect.instate_at_singularity0} to instate
    * an effect at startup.
    */
   public static void effect_instate_at_singularity(int id, AnyI instance)
@@ -557,7 +557,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.type.instante0. Instate a new instance for
+   * Helper method to implement effect.type.instate0. Instate a new instance for
    * effect type with given id.
    *
    * The existing value instated for the effect type identified by id will be
@@ -582,7 +582,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement effect.type.instante0. Un-instate an instance
+   * Helper method to implement effect.type.instate0. Un-instate an instance
    * instated by effect_push.
    *
    * The original instance that was saved to FuzionThread._effectStack will be

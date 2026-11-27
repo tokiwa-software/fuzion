@@ -141,7 +141,7 @@ public typed_fold(E : Any, e E, s container.Typed_Sequence) : container.typed_ap
 #         say "$n: $v"
 #         n + 1
 #
-#       process 1 a    # precess returns result of last `apply`
+#       process 1 a    # process returns result of last `apply`
 #
 # NYI: CLEANUP: #6896 This is somewhat redundant with `typed_fold`, we should
 # decide on only one of these variants or find a different solution now that

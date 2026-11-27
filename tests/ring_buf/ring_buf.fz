@@ -170,7 +170,7 @@ ring_buf =>
           expect "t2" "H"     (rb.poll           )    # poll on one element       [H]     -> []
           expect "t2" true    (rb.add "I"        )    # add first element         []      -> [I]
           expect "t2" true    (rb.add "J"        )    # add second element        [I]     -> [I,J]
-          expect "t2" true    (rb.add "K"        )    # add fhird element         [I,J]   -> [I,J,K]
+          expect "t2" true    (rb.add "K"        )    # add third element         [I,J]   -> [I,J,K]
           expect "t2" false   (rb.add "L"        )    # add to full ring          [I,J,K] -> [I,J,K]
           expect "t2" "I"     (rb.poll           )    # poll on three elements    [I,J,K] -> [J,K]
         .catch m->

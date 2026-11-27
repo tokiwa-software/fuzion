@@ -78,7 +78,7 @@ reg_issue5818_calling_with_open_type_negative =>
 
   # ------------------------------
 
-  # Now an open type parameter that is used as the type of a value arguemnt.
+  # Now an open type parameter that is used as the type of a value argument.
   #
   # if open type parameters are used as type of value arguments, the types must be inferred:
   #

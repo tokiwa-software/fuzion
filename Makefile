@@ -714,7 +714,7 @@ else
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $@
 endif
-# NYI: eventuall link libgc
+# NYI: eventually link libgc
 # ifeq ($(OS),Windows_NT)
 # 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
 # 	-DPTW32_STATIC_LIB -DGC_WIN32_PTHREADS \

@@ -28,7 +28,7 @@
 # A monad in X is just a monoid in the category of endofunctors of X, with
 # product × replaced by composition of endofunctors and unit set by the
 # identity endofunctor.
-#       -- Saunder Mac Lane, Categories for the Working Mathematician, 1971
+#       -- Saunders Mac Lane, Categories for the Working Mathematician, 1971
 #
 # Don't be scared, in Java terms: A monad is a means to compose functions
 # applied to generic types.

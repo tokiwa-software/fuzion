@@ -61,7 +61,7 @@ is
   # this frequency in Hertz (1/s)
   #
   # Note that this might be inaccurate,
-  # due to floating point arithmethic.
+  # due to floating point arithmetic.
   #
   public as_hz f64 =>
     f.as_f64 * 1E9 / base.nanos.as_f64

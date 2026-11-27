@@ -116,7 +116,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return the generics of this type.
    * In case this is a this-type return the features generics.
    */
-  public List<AbstractType> actualGenerics()
+  List<AbstractType> actualGenerics()
   {
     return isThisType()
       ? feature().genericsAsActuals()
@@ -318,7 +318,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isPlainType()
   {
     return
-      this != Types.t_ERROR &&
+      !isArtificialType() &&
       switch (kind())
       {
         case RefType, ValueType        -> true;
@@ -344,7 +344,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       ? AbstractCall.NO_GENERICS
       : isThisType()
       ? g
-      : replaceGenerics(g).map(t -> t.replace_this_type_by_actual_outer(outer(), context));
+      : replaceGenerics(g).map(t -> t.isParametricType() ? t : outer().actualType(t, context));
   }
 
 
@@ -570,7 +570,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * This method contains the logic of the assignabilty rules for the Fuzion language.
+   * This method contains the logic of the assignability rules for the Fuzion language.
    *
    * @param actual the actual type.
    *
@@ -672,7 +672,7 @@ NYI: UNDER DEVELOPMENT:
    */
   public boolean isArtificialType()
   {
-    return false;
+    return artificialBuiltInID() != 0;
   }
 
 
@@ -843,7 +843,7 @@ NYI: UNDER DEVELOPMENT:
    * might be of any length, including empty, otherwise the list will have
    * exactly one element.
    */
-  public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
+  List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
                                                    List<AbstractType> actualTypes,
                                                    int select)
   {
@@ -857,14 +857,14 @@ NYI: UNDER DEVELOPMENT:
    * Convenience wrapper for applyTypeParsMaybeOpen for a given target type
    * t. If t is a plain type, apply t's feature and type parameters to this.
    *
-   * @param t the type describing the feature and actual type parameters to applay.
+   * @param t the type describing the feature and actual type parameters to apply.
    *
    * @return the list of resulting types after applying t's actual type
    * parameters to this. In case this is an open type parameter, this list might
    * be of any length, including empty, otherwise the list will have exactly one
    * element.
    */
-  public List<AbstractType> applyTypeParsMaybeOpen(AbstractType t)
+  List<AbstractType> applyTypeParsMaybeOpen(AbstractType t)
   {
     return t.isPlainType() ? applyTypeParsMaybeOpen(t.feature(), t.generics(), NO_SELECT)
                            : new List<>(t);
@@ -967,7 +967,7 @@ NYI: UNDER DEVELOPMENT:
    * @return this with all generic arguments from target.feature._generics
    * replaced by target._generics.
    */
-  public AbstractType applyTypePars(AbstractType target)
+  AbstractType applyTypePars(AbstractType target)
   {
     if (PRECONDITIONS) require
       (target != null,
@@ -1188,8 +1188,7 @@ NYI: UNDER DEVELOPMENT:
                 var this_type = g2.get(0);
                 g3 = g2.map(x -> x == this_type                ||        // leave first type parameter unchanged
                                  this_type.isParametricType()    ? x    // no actuals to apply in a generic arg
-                                                                  : x.applyTypePars(this_type)
-                                                                     .replace_this_type_by_actual_outer(this_type, Context.NONE));
+                                                                 : this_type.actualType(x));
               }
 
             var o1 = outer();
@@ -1287,7 +1286,7 @@ NYI: UNDER DEVELOPMENT:
        !t.isOpenGeneric());
 
     return t.applyTypePars(this)
-      .replace_this_type_by_actual_outer(this, context);
+      .replace_this_type_by_actual_outer(this, null, context);
   }
 
 
@@ -1731,7 +1730,7 @@ there is no common super type of the two types (Types.t_ERROR)
   /**
    * Id to differentiate artificial types.
    */
-  public int artificialBuiltInID()
+  int artificialBuiltInID()
   {
     return 0;
   }
@@ -1824,21 +1823,6 @@ there is no common super type of the two types (Types.t_ERROR)
       }
     while (tt != null);
     return result;
-  }
-
-
-  /**
-   * Convenience version of replace_this_type_by_actual_outer with {@code null} as
-   * argument to {@code foundRef}.
-   *
-   * @param tt the type feature we are calling ({@code equatable.type} in the example)
-   * above).
-   *
-   * @param context the source code context where this Type is used
-   */
-  AbstractType replace_this_type_by_actual_outer(AbstractType tt, Context context)
-  {
-    return replace_this_type_by_actual_outer(tt, null, context);
   }
 
 
@@ -2228,7 +2212,7 @@ there is no common super type of the two types (Types.t_ERROR)
    *     a : choice bool i64 is
    *       type.answer a.this => 42
    *
-   * the result type of {@code a.type.answer} is a relay type, the corrsponding {@code thisType} is
+   * the result type of {@code a.type.answer} is a relay type, and the corresponding {@code thisType} is
    * `a.this`.
    *
    * @return the corresponding {@code thisType} iff {@code isRelayType()}, otherwise {@code this}.
@@ -2245,7 +2229,7 @@ there is no common super type of the two types (Types.t_ERROR)
    * must not be the case for any clazzes in FUIR since clazzes require concrete
    * types.
    *
-   * @return true if an {@code this.type} where found
+   * @return true if a {@code this.type} was found
    */
   public boolean containsThisType()
   {
@@ -2420,7 +2404,7 @@ there is no common super type of the two types (Types.t_ERROR)
    * @param actuals the actual type parameters
    *
    * @param actualPos the position of the actual arguments or unresolved types that `actuals` came
-   * from, either directly or via type inference.  Used to diplay source code position for inferred
+   * from, either directly or via type inference.  Used to display source code position for inferred
    * type, e.g. for `option _ "bla"`, this will give the position of `"bla"`.  May be null or
    * contain null for unknown positions.
    *
@@ -2475,7 +2459,7 @@ there is no common super type of the two types (Types.t_ERROR)
    * @param tp the formal type parameter to check against
    *
    * @param pos the position of the actual argument or unresolved type that `actual` came from or,
-   * if not available, source posittion of the cal we are checking. Never null.
+   * if not available, source position of the call we are checking. Never null.
    *
    * @param constraint the constraint on the type parameter
    *

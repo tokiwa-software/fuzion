@@ -165,7 +165,7 @@ is
 
   # create a detailed string from this choice.
   #
-  # This will createa string of the form `type.tag(T,v)` consisting of
+  # This will create a string of the form `type.tag(T,v)` consisting of
   # the string representations of
   #
   #     `type`: `choice.this.type`
@@ -183,7 +183,7 @@ is
 
   # apply -- apply `f.call` to the value stored in this choice
   #
-  # This can be used to perform operation on values of arbitray choice types.
+  # This can be used to perform operations on values of arbitrary choice types.
   #
   # Example:
   #
@@ -305,7 +305,7 @@ is
   # create hash code for this choice
   #
   # This can be used for child types like `option i64` as well. Note that the
-  # result of of children will be the same, i.e.,
+  # result of children will be the same, i.e.,
   #
   #     (choice i64 nil).hash_code 42
   #

@@ -370,7 +370,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Additional initialization code that has to be run after this Clazz was
-   * added to FUIRI._clazzes for recursive clazz lookup.
+   * added to FUIR._clazzes for recursive clazz lookup.
    */
   void init(int id)
   {

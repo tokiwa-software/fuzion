@@ -64,7 +64,7 @@ public mail is
 
     # from: https://en.wikipedia.org/wiki/List_of_SMTP_server_return_codes
     #
-    auth_succeded => 235
+    auth_succeeded => 235
 
 
     mail_from => """
@@ -136,7 +136,7 @@ public mail is
       write_or_cause wolfssl_lm "AUTH PLAIN $cred\r\n"
 
       # NYI: BUG: might end up blocking
-      _ := (io.buffered wolfssl_lm).read_line_while (s -> !s.starts_with $auth_succeded)
+      _ := (io.buffered wolfssl_lm).read_line_while (s -> !s.starts_with $auth_succeeded)
 
       write_or_cause wolfssl_lm mail_from
 

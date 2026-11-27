@@ -711,7 +711,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * resolve 'abc.this.type' within a cotype. If this designates a
-   * 'this.type' withing a cotype, then return the type parameter of the
+   * 'this.type' within a cotype, then return the type parameter of the
    * corresponding outer type.
    *
    * Example: if this is

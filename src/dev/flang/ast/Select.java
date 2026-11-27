@@ -251,7 +251,7 @@ public class Select extends Call {
               }
             else
               {
-                AstErrors.destructuringMisMatch(pos(), va, _totalNames);
+                AstErrors.destructuringMismatch(pos(), va, _totalNames);
               }
           }
         else

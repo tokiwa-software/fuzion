@@ -69,7 +69,7 @@ tupletest is
 # ()             := tuple  ; p "nothing10 is ()"                   # should cause syntax error
 # ()             := tuple  ; p "nothing11 is ()"                   # should cause syntax error
 # ()             :=      (); p "nothing12 is ()"                   # should cause syntax error
-  # cant do any chck()s on empty tuples, let's hope everything is fine
+  # can't do any chck()s on empty tuples, let's hope everything is fine
 
   one2 tuple i64 := tuple(     42); p "one2 is $(one2.values.0)" # one-tuple using explicit type and inferring generic
   public one16 i64 := 42
